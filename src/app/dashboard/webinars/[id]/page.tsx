@@ -6,6 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "../status-badge";
 import { WebinarRowActions } from "../webinar-row-actions";
 import { VideoSection } from "./video-section";
+import { ScheduleSection } from "./schedule-section";
+import { WaitingRoomSection } from "./waiting-room-section";
+import { ChatSection } from "./chat-section";
+import { CtasSection } from "./ctas-section";
+import type { Database } from "@/lib/supabase/database.types";
 
 export default async function WebinarDetailPage({
   params,
@@ -26,6 +31,45 @@ export default async function WebinarDetailPage({
   if (!webinar) notFound();
 
   const canManage = current.user.role === "owner" || current.user.role === "editor";
+
+  let schedules: Pick<
+    Database["public"]["Tables"]["webinar_schedules"]["Row"],
+    "id" | "day_of_week" | "time_of_day" | "timezone"
+  >[] = [];
+  let waitingRoom: Database["public"]["Tables"]["waiting_room_config"]["Row"] | null = null;
+  let chatMessages: Pick<
+    Database["public"]["Tables"]["chat_messages"]["Row"],
+    "id" | "timestamp_seconds" | "fake_name" | "message_text" | "message_type"
+  >[] = [];
+  let ctas: Pick<
+    Database["public"]["Tables"]["ctas"]["Row"],
+    "id" | "type" | "timestamp_start_seconds" | "timestamp_end_seconds" | "config"
+  >[] = [];
+
+  if (canManage) {
+    const [schedulesRes, waitingRoomRes, chatRes, ctasRes] = await Promise.all([
+      supabase
+        .from("webinar_schedules")
+        .select("id, day_of_week, time_of_day, timezone")
+        .eq("webinar_id", id)
+        .order("day_of_week", { ascending: true, nullsFirst: true }),
+      supabase.from("waiting_room_config").select("*").eq("webinar_id", id).maybeSingle(),
+      supabase
+        .from("chat_messages")
+        .select("id, timestamp_seconds, fake_name, message_text, message_type")
+        .eq("webinar_id", id)
+        .order("timestamp_seconds", { ascending: true }),
+      supabase
+        .from("ctas")
+        .select("id, type, timestamp_start_seconds, timestamp_end_seconds, config")
+        .eq("webinar_id", id)
+        .order("timestamp_start_seconds", { ascending: true }),
+    ]);
+    schedules = schedulesRes.data ?? [];
+    waitingRoom = waitingRoomRes.data;
+    chatMessages = chatRes.data ?? [];
+    ctas = ctasRes.data ?? [];
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -85,12 +129,19 @@ export default async function WebinarDetailPage({
         </Card>
       ) : null}
 
-      <Card>
-        <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          El editor de programación, sala de espera, chat simulado y CTAs se
-          agrega en la próxima etapa del build.
-        </CardContent>
-      </Card>
+      {canManage && (
+        <>
+          <ScheduleSection
+            webinarId={webinar.id}
+            scheduleMode={webinar.schedule_mode}
+            offsets={webinar.just_in_time_offsets_minutes}
+            schedules={schedules ?? []}
+          />
+          <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />
+          <ChatSection webinarId={webinar.id} messages={chatMessages ?? []} />
+          <CtasSection webinarId={webinar.id} ctas={ctas ?? []} />
+        </>
+      )}
     </div>
   );
 }
