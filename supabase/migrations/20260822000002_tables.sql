@@ -271,7 +271,7 @@ create table public.webhook_endpoints (
   id uuid primary key default gen_random_uuid(),
   account_id uuid not null references public.accounts (id) on delete cascade,
   url text not null,
-  secret text not null default encode(gen_random_bytes(24), 'hex'),
+  secret text not null default encode(extensions.gen_random_bytes(24), 'hex'),
   event_types text[] not null default '{registration,attendance,cta_click,completion}',
   is_active boolean not null default true,
   created_at timestamptz not null default now()
