@@ -13,6 +13,7 @@ import { ScheduleSection } from "./schedule-section";
 import { WaitingRoomSection } from "./waiting-room-section";
 import { ChatSection } from "./chat-section";
 import { CtasSection } from "./ctas-section";
+import { EmailTemplatesSection } from "./email-templates-section";
 import type { Database } from "@/lib/supabase/database.types";
 
 export default async function WebinarDetailPage({
@@ -48,9 +49,13 @@ export default async function WebinarDetailPage({
     Database["public"]["Tables"]["ctas"]["Row"],
     "id" | "type" | "timestamp_start_seconds" | "timestamp_end_seconds" | "config"
   >[] = [];
+  let emailTemplates: Pick<
+    Database["public"]["Tables"]["email_templates"]["Row"],
+    "id" | "type" | "reminder_offset_minutes" | "subject" | "body"
+  >[] = [];
 
   if (canManage) {
-    const [schedulesRes, waitingRoomRes, chatRes, ctasRes] = await Promise.all([
+    const [schedulesRes, waitingRoomRes, chatRes, ctasRes, emailTemplatesRes] = await Promise.all([
       supabase
         .from("webinar_schedules")
         .select("id, day_of_week, time_of_day, timezone")
@@ -67,11 +72,16 @@ export default async function WebinarDetailPage({
         .select("id, type, timestamp_start_seconds, timestamp_end_seconds, config")
         .eq("webinar_id", id)
         .order("timestamp_start_seconds", { ascending: true }),
+      supabase
+        .from("email_templates")
+        .select("id, type, reminder_offset_minutes, subject, body")
+        .eq("webinar_id", id),
     ]);
     schedules = schedulesRes.data ?? [];
     waitingRoom = waitingRoomRes.data;
     chatMessages = chatRes.data ?? [];
     ctas = ctasRes.data ?? [];
+    emailTemplates = emailTemplatesRes.data ?? [];
   }
 
   return (
@@ -151,6 +161,7 @@ export default async function WebinarDetailPage({
           <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />
           <ChatSection webinarId={webinar.id} messages={chatMessages ?? []} />
           <CtasSection webinarId={webinar.id} ctas={ctas ?? []} />
+          <EmailTemplatesSection webinarId={webinar.id} templates={emailTemplates} />
         </>
       )}
     </div>

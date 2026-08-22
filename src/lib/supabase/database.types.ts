@@ -508,6 +508,37 @@ export interface Database {
           },
         ];
       };
+      email_sends: {
+        Row: {
+          id: string;
+          registrant_id: string;
+          webinar_id: string;
+          kind: string;
+          sent_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["email_sends"]["Row"]> & {
+          registrant_id: string;
+          webinar_id: string;
+          kind: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["email_sends"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_registrant_id_fkey";
+            columns: ["registrant_id"];
+            isOneToOne: false;
+            referencedRelation: "registrants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_sends_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       account_public_profile: {
@@ -623,6 +654,39 @@ export interface Database {
           question: string | null;
           option: string | null;
           votes: number;
+        }[];
+      };
+      get_due_reminder_recipients: {
+        Args: { p_tolerance_minutes?: number };
+        Returns: {
+          registrant_id: string;
+          webinar_id: string;
+          account_id: string;
+          access_token: string;
+          email: string;
+          name: string;
+          computed_session_start: string;
+          visitor_timezone: string | null;
+          offset_minutes: number;
+          webinar_title: string;
+          webinar_slug: string;
+          account_slug: string;
+        }[];
+      };
+      get_due_replay_recipients: {
+        Args: { p_lookback_hours?: number };
+        Returns: {
+          registrant_id: string;
+          webinar_id: string;
+          account_id: string;
+          access_token: string;
+          email: string;
+          name: string;
+          computed_session_start: string;
+          visitor_timezone: string | null;
+          webinar_title: string;
+          webinar_slug: string;
+          account_slug: string;
         }[];
       };
     };

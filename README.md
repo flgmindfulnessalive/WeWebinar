@@ -18,8 +18,9 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 3. **Wizard de creación del webinar** — listo: video (Mux), programación, sala de espera, chat simulado, CTAs.
 4. **Experiencia del asistente** — listo: registro público, sala de espera con countdown, sala del webinar con player restringido y sincronización server-side.
 5. **Dashboard de analíticas** — listo: registrados/asistentes/tiempo de visualización, curva de abandono por minuto, clics y conversión por CTA, resultados de encuestas, export a CSV.
+6. **Emails automáticos** — listo: confirmación de registro, recordatorios configurables, email de "te lo perdiste" con replay.
 
-Todavía faltan: emails automáticos, panel de Super Admin, integraciones/webhooks salientes activos.
+Todavía falta: panel de Super Admin, integraciones/webhooks salientes activos.
 
 ## Esquema de base de datos (`supabase/migrations/`)
 
@@ -34,6 +35,9 @@ Las migraciones se aplican en orden:
 7. `20260822000007_public_profile_views.sql` — vistas `account_public_profile` y `presenter_public_profile`: proyecciones públicas seguras de `accounts`/`users` (branding, nombre del presentador) sin exponer facturación/email/rol.
 8. `20260822000008_register_for_webinar_rpc.sql` — `register_for_webinar(...)`: único camino sancionado para crear un `registrant`. Valida que el horario elegido realmente coincide con el schedule (día/hora en su propia timezone) antes de confiar en un timestamp del cliente, materializa la fila de `webinar_sessions` on-demand (find-or-create, sin cron), y **elimina** la política de INSERT público directa que había quedado en la migración 4 (esa política solo chequeaba "webinar publicado", nunca validaba `computed_session_start`).
 9. `20260822000009_webinar_analytics_rpcs.sql` — `get_webinar_summary`, `get_webinar_retention_curve`, `get_webinar_cta_stats`, `get_webinar_poll_results`: agregaciones para el dashboard, `SECURITY INVOKER` (corren como el usuario que llama y heredan las políticas RLS ya existentes de `registrants`/`viewer_events`/`ctas`, en vez de pull-ear filas crudas al servidor de Next.js para agregarlas ahí).
+10. `20260822000010_email_sends.sql` — tabla `email_sends`: log de qué email (confirmación/recordatorio N/replay) ya se le mandó a qué registrante, `unique(registrant_id, kind)` para que el cron nunca duplique un envío. Sin política de escritura — solo el cliente admin (service role) inserta.
+11. `20260822000011_email_cron_rpcs.sql` — `get_due_reminder_recipients` y `get_due_replay_recipients`: `SECURITY DEFINER`, solo otorgadas a `service_role` (devuelven PII de todas las cuentas). Encapsulan toda la lógica de "quién tiene que recibir qué email ahora" — ventana de tiempo contra `computed_session_start`, y el anti-join contra `email_sends` — en una sola query en vez de loopear en Node.
+12. `20260822000012_email_templates_constraints.sql` — índices únicos parciales para que el editor pueda hacer upsert: como mucho una plantilla de confirmación/replay por webinar, como mucho un recordatorio por offset.
 
 ### Modelo de tenancy
 
@@ -196,6 +200,37 @@ heredan las políticas RLS existentes de account member.
   cualquier rol de la cuenta (Owner/Editor/Viewer tienen lectura de
   analíticas), no solo Owner/Editor.
 
+## Emails automáticos (`src/lib/email-templates.ts`, `src/lib/resend.ts`)
+
+- **Motor de plantillas** — `{{nombre}}`, `{{webinar_titulo}}`,
+  `{{hora_webinar}}` (formateada en la timezone del propio destinatario,
+  guardada en `registrants.visitor_timezone`) y `{{link_acceso}}`.
+  `resolveTemplate()` busca primero una plantilla específica del webinar,
+  después el default de la cuenta (`webinar_id is null`), y si no hay
+  ninguna usa una plantilla built-in en código — el registro nunca se
+  queda sin email de confirmación solo porque el host no abrió el editor.
+- **Confirmación de registro** — se envía inline desde la Server Action
+  `registerForWebinar`, con `try/catch`: un email que falla nunca rompe
+  un registro que ya se guardó (el asistente igual tiene su link en la
+  redirección).
+- **Recordatorios configurables** — el host agrega tantos como quiera
+  (`email_templates` con `type='reminder'` + `reminder_offset_minutes`,
+  no un set fijo de 3). El cron los dispara vía `get_due_reminder_recipients`
+  (migración 11), que hace todo el matching — ventana de tiempo con
+  tolerancia de 5 min contra `computed_session_start`, y el anti-join
+  contra `email_sends` — en una sola query.
+- **"Te lo perdiste" con replay** — `get_due_replay_recipients` encuentra
+  registrantes cuya sesión ya terminó y que nunca tuvieron un evento
+  `join`; el link de acceso es el mismo `/room/[token]` de siempre — como
+  ese asistente llega tarde, la sala de espera lo manda derecho a la sala
+  del webinar, que ya arranca en estado "terminado" con los CTAs de
+  cierre. No hace falta una página de replay separada.
+- **`/api/cron/send-reminders`** — protegido con `CRON_SECRET` (Vercel
+  inyecta automáticamente `Authorization: Bearer $CRON_SECRET` en cron
+  jobs que declares en `vercel.json`, que ya está configurado para pegarle
+  cada 5 minutos). Cada destinatario es independiente — que falle el
+  envío de uno no aborta el resto del batch.
+
 ### Validado
 
 `npm run build` y `npm run lint` corren limpios (incluyendo las reglas
@@ -215,7 +250,13 @@ mismo horario (sin duplicar). La migración 9 se probó con datos
 sembrados a mano (9 registrados, 8 asistentes con distintos niveles de
 abandono, clics de CTA, votos de encuesta) y los cuatro RPCs devolvieron
 exactamente los números calculados a mano — incluyendo los casos límite
-de un webinar sin registrados (sin división por cero).
+de un webinar sin registrados (sin división por cero). Las migraciones
+10–12 también se probaron con datos sembrados: `get_due_reminder_recipients`
+distingue correctamente a un registrante dentro de la ventana de
+tolerancia de uno fuera de ella y respeta el anti-join contra
+`email_sends`; `get_due_replay_recipients` excluye correctamente a quien
+sí asistió y a sesiones fuera del lookback de 24h. En runtime, el cron
+devuelve 401 sin el secret correcto y 200 con él.
 
 ## Próximos pasos (orden del MVP)
 
@@ -226,7 +267,8 @@ de un webinar sin registrados (sin división por cero).
 5. ~~Sala de espera con countdown~~ ✅
 6. ~~Sala del webinar con player restringido y sincronización server-side~~ ✅
 7. ~~Dashboard de analíticas~~ ✅
-8. Emails automáticos, panel de Super Admin.
+8. ~~Emails automáticos~~ ✅
+9. Panel de Super Admin.
 
 Fase 2 (fuera del MVP, arquitectura de eventos ya lista vía
 `record_viewer_event`/`webhook_endpoints`): integraciones nativas con
