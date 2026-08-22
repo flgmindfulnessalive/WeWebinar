@@ -689,6 +689,21 @@ export interface Database {
           account_slug: string;
         }[];
       };
+      is_platform_admin: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      get_platform_metrics: {
+        Args: Record<string, never>;
+        Returns: {
+          total_accounts: number;
+          active_accounts: number;
+          mrr_usd: number;
+          arr_usd: number;
+          active_webinars: number;
+          total_attendees: number;
+        }[];
+      };
     };
     Enums: {
       user_role: UserRole;

@@ -19,8 +19,9 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 4. **Experiencia del asistente** — listo: registro público, sala de espera con countdown, sala del webinar con player restringido y sincronización server-side.
 5. **Dashboard de analíticas** — listo: registrados/asistentes/tiempo de visualización, curva de abandono por minuto, clics y conversión por CTA, resultados de encuestas, export a CSV.
 6. **Emails automáticos** — listo: confirmación de registro, recordatorios configurables, email de "te lo perdiste" con replay.
+7. **Panel de Super Admin** — listo: métricas globales (MRR/ARR), listado de cuentas con suspender/reactivar/cambiar plan, leads de Enterprise, edición de los 4 planes.
 
-Todavía falta: panel de Super Admin, integraciones/webhooks salientes activos.
+Con esto el MVP completo (sección 7 del prompt original) está terminado. Lo que queda es fase 2: integraciones nativas con CRMs, encuestas avanzadas, lista de espera.
 
 ## Esquema de base de datos (`supabase/migrations/`)
 
@@ -38,6 +39,7 @@ Las migraciones se aplican en orden:
 10. `20260822000010_email_sends.sql` — tabla `email_sends`: log de qué email (confirmación/recordatorio N/replay) ya se le mandó a qué registrante, `unique(registrant_id, kind)` para que el cron nunca duplique un envío. Sin política de escritura — solo el cliente admin (service role) inserta.
 11. `20260822000011_email_cron_rpcs.sql` — `get_due_reminder_recipients` y `get_due_replay_recipients`: `SECURITY DEFINER`, solo otorgadas a `service_role` (devuelven PII de todas las cuentas). Encapsulan toda la lógica de "quién tiene que recibir qué email ahora" — ventana de tiempo contra `computed_session_start`, y el anti-join contra `email_sends` — en una sola query en vez de loopear en Node.
 12. `20260822000012_email_templates_constraints.sql` — índices únicos parciales para que el editor pueda hacer upsert: como mucho una plantilla de confirmación/replay por webinar, como mucho un recordatorio por offset.
+13. `20260822000013_platform_metrics_rpc.sql` — `get_platform_metrics()` (cuentas totales/activas, MRR/ARR, webinars activos, asistentes totales) y la política `plans_update_admin` — un gap real que encontré probando: `plans` nunca tuvo política de `UPDATE`, así que ni el Super Admin podía editarla hasta esta migración.
 
 ### Modelo de tenancy
 
@@ -231,6 +233,55 @@ heredan las políticas RLS existentes de account member.
   cada 5 minutos). Cada destinatario es independiente — que falle el
   envío de uno no aborta el resto del batch.
 
+## Panel de Super Admin (`src/app/admin/`)
+
+`platform_admins` es un allowlist sin ninguna política de lectura para
+clientes — ni sus propios miembros pueden listarlo. El acceso se
+resuelve siempre a través del RPC `is_platform_admin()`, la misma
+función `SECURITY DEFINER` de la que ya dependían casi todas las
+políticas RLS del esquema desde la migración 4 (`accounts`, `users`,
+`webinars`, `registrants`, etc. ya tenían un `or is_platform_admin()`
+en su policy de `SELECT`/`UPDATE`). Eso significa que este panel no
+necesitó abrir nuevas policies para leer o mutar across-tenant — con
+la única excepción real que encontré: `plans` nunca tuvo policy de
+`UPDATE` (migración 13).
+
+- **`/admin`** — resumen con `get_platform_metrics()`: cuentas totales/
+  activas, MRR/ARR (suma de `plans.price_annual_usd` de cuentas con
+  `subscription_status = 'active'`, dividido 12 para MRR), webinars
+  activos y asistentes totales.
+- **`/admin/accounts`** — listado con búsqueda por nombre/slug, badge de
+  estado de suscripción, botón suspender/reactivar, y un select para
+  reasignar cualquier plan (incluido Enterprise) — el mismo trigger de
+  bloqueo de downgrade que protege al host normal también protege acá:
+  si la cuenta supera los límites del plan nuevo, el `UPDATE` falla y
+  el error se muestra tal cual.
+- **`/admin/leads`** — leads del formulario de contacto de Enterprise,
+  con cambio de status (nuevo/contactado/convertido/cerrado). El flujo
+  real es: el lead se contacta por fuera de la app, esa persona se
+  registra normalmente (onboarding en el plan self-serve que más se
+  acerque), y ahí el admin la encuentra en `/admin/accounts` y la pasa
+  a Enterprise.
+- **`/admin/plans`** — edita precio y los tres límites de cada plan.
+  Como el schema tiene un solo row compartido por plan (`plans.key` es
+  único), "Enterprise a medida" en la práctica es: el dueño de la
+  plataforma ajusta acá los números que representan el trato vigente.
+  Un Enterprise realmente per-cuenta (límites distintos para cada
+  cliente Enterprise a la vez) necesitaría columnas de override en
+  `accounts` que los triggers de límite chequeen antes que el plan —
+  no lo construí porque el schema actual no lo soporta y hubiera sido
+  fingir una funcionalidad que no está — dejo la limitación anotada
+  acá en vez de simularla.
+
+**Bootstrap del primer Super Admin:** no hay UI para esto a propósito
+(nadie debería poder auto-otorgarse el rol desde un form). Se hace una
+vez, a mano, con la service role key:
+
+```sql
+insert into public.platform_admins (user_id)
+values ('<uuid del usuario en auth.users>');
+```
+
 ### Validado
 
 `npm run build` y `npm run lint` corren limpios (incluyendo las reglas
@@ -256,7 +307,15 @@ distingue correctamente a un registrante dentro de la ventana de
 tolerancia de uno fuera de ella y respeta el anti-join contra
 `email_sends`; `get_due_replay_recipients` excluye correctamente a quien
 sí asistió y a sesiones fuera del lookback de 24h. En runtime, el cron
-devuelve 401 sin el secret correcto y 200 con él.
+devuelve 401 sin el secret correcto y 200 con él. La migración 13 se
+probó con 3 cuentas sembradas a mano (dos activas en Pro/Business, una
+en trial) — `get_platform_metrics()` devolvió exactamente MRR $50/ARR
+$600 calculados a mano, y falla con "not authorized" para un usuario
+no-admin; confirmé además que un platform admin ya podía listar/
+suspender/reasignar cualquier cuenta con las policies existentes (sin
+tocar nada), y que el `UPDATE` de `plans` pasó de afectar 0 filas a
+funcionar una vez agregada `plans_update_admin`. En runtime, las 4
+rutas de `/admin` redirigen a `/login` sin sesión.
 
 ## Próximos pasos (orden del MVP)
 
@@ -268,7 +327,9 @@ devuelve 401 sin el secret correcto y 200 con él.
 6. ~~Sala del webinar con player restringido y sincronización server-side~~ ✅
 7. ~~Dashboard de analíticas~~ ✅
 8. ~~Emails automáticos~~ ✅
-9. Panel de Super Admin.
+9. ~~Panel de Super Admin~~ ✅
+
+**El MVP completo (sección 7 del prompt original) está terminado.**
 
 Fase 2 (fuera del MVP, arquitectura de eventos ya lista vía
 `record_viewer_event`/`webhook_endpoints`): integraciones nativas con

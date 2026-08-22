@@ -1,0 +1,67 @@
+"use client";
+
+import { useState, useTransition } from "react";
+
+import { suspendAccount, reactivateAccount, changeAccountPlan } from "@/lib/actions/admin";
+import { Button } from "@/components/ui/button";
+
+type Plan = { id: string; key: string; name: string };
+
+export function AccountRowActions({
+  accountId,
+  subscriptionStatus,
+  currentPlanId,
+  plans,
+}: {
+  accountId: string;
+  subscriptionStatus: string;
+  currentPlanId: string | null;
+  plans: Plan[];
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const isSuspended = subscriptionStatus === "suspended";
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex items-center gap-2">
+        <select
+          defaultValue={currentPlanId ?? ""}
+          disabled={isPending}
+          onChange={(e) => {
+            const planId = e.target.value;
+            setError(null);
+            startTransition(async () => {
+              const result = await changeAccountPlan(accountId, planId);
+              if (result?.error) setError(result.error);
+            });
+          }}
+          className="flex h-8 rounded-md border border-input bg-transparent px-2 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          {plans.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isPending}
+          onClick={() =>
+            startTransition(async () => {
+              setError(null);
+              const result = isSuspended
+                ? await reactivateAccount(accountId)
+                : await suspendAccount(accountId);
+              if (result?.error) setError(result.error);
+            })
+          }
+        >
+          {isSuspended ? "Reactivar" : "Suspender"}
+        </Button>
+      </div>
+      {error && <span className="text-xs text-destructive">{error}</span>}
+    </div>
+  );
+}

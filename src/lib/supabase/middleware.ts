@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "./database.types";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding"];
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/admin"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 export async function updateSession(request: NextRequest) {
