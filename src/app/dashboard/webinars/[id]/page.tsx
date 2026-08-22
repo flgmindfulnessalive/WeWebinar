@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BarChart3 } from "lucide-react";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../status-badge";
 import { WebinarRowActions } from "../webinar-row-actions";
 import { VideoSection } from "./video-section";
@@ -78,9 +81,17 @@ export default async function WebinarDetailPage({
           <h1 className="text-2xl font-semibold tracking-tight">{webinar.title}</h1>
           <StatusBadge status={webinar.status} />
         </div>
-        {canManage && (
-          <WebinarRowActions webinarId={webinar.id} status={webinar.status} />
-        )}
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/dashboard/webinars/${webinar.id}/analytics`}>
+              <BarChart3 className="size-4" />
+              Analíticas
+            </Link>
+          </Button>
+          {canManage && (
+            <WebinarRowActions webinarId={webinar.id} status={webinar.status} />
+          )}
+        </div>
       </div>
 
       <Card>

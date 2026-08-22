@@ -17,8 +17,9 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 2. **Scaffold de Next.js** — listo: Auth, onboarding, dashboard, facturación con Stripe.
 3. **Wizard de creación del webinar** — listo: video (Mux), programación, sala de espera, chat simulado, CTAs.
 4. **Experiencia del asistente** — listo: registro público, sala de espera con countdown, sala del webinar con player restringido y sincronización server-side.
+5. **Dashboard de analíticas** — listo: registrados/asistentes/tiempo de visualización, curva de abandono por minuto, clics y conversión por CTA, resultados de encuestas, export a CSV.
 
-Todavía faltan: emails automáticos, dashboard de analíticas, panel de Super Admin, integraciones/webhooks salientes activos.
+Todavía faltan: emails automáticos, panel de Super Admin, integraciones/webhooks salientes activos.
 
 ## Esquema de base de datos (`supabase/migrations/`)
 
@@ -31,7 +32,8 @@ Las migraciones se aplican en orden:
 5. `20260822000005_seed_plans.sql` — seed de los 4 planes (Core/Pro/Business/Enterprise).
 6. `20260822000006_registrant_session_rpc.sql` — `get_registrant_session(token)`: resuelve un `access_token` a la sesión del asistente (webinar_id, computed_session_start, y un par `server_now` para anclar countdowns sin confiar en el reloj del cliente).
 7. `20260822000007_public_profile_views.sql` — vistas `account_public_profile` y `presenter_public_profile`: proyecciones públicas seguras de `accounts`/`users` (branding, nombre del presentador) sin exponer facturación/email/rol.
-8. `20260822000008_register_for_webinar_rpc.sql` — `register_for_webinar(...)`: único camino sanceionado para crear un `registrant`. Valida que el horario elegido realmente coincide con el schedule (día/hora en su propia timezone) antes de confiar en un timestamp del cliente, materializa la fila de `webinar_sessions` on-demand (find-or-create, sin cron), y **elimina** la política de INSERT público directa que había quedado en la migración 4 (esa política solo chequeaba "webinar publicado", nunca validaba `computed_session_start`).
+8. `20260822000008_register_for_webinar_rpc.sql` — `register_for_webinar(...)`: único camino sancionado para crear un `registrant`. Valida que el horario elegido realmente coincide con el schedule (día/hora en su propia timezone) antes de confiar en un timestamp del cliente, materializa la fila de `webinar_sessions` on-demand (find-or-create, sin cron), y **elimina** la política de INSERT público directa que había quedado en la migración 4 (esa política solo chequeaba "webinar publicado", nunca validaba `computed_session_start`).
+9. `20260822000009_webinar_analytics_rpcs.sql` — `get_webinar_summary`, `get_webinar_retention_curve`, `get_webinar_cta_stats`, `get_webinar_poll_results`: agregaciones para el dashboard, `SECURITY INVOKER` (corren como el usuario que llama y heredan las políticas RLS ya existentes de `registrants`/`viewer_events`/`ctas`, en vez de pull-ear filas crudas al servidor de Next.js para agregarlas ahí).
 
 ### Modelo de tenancy
 
@@ -167,6 +169,33 @@ Action sobre las tablas ya protegidas por RLS (Owner/Editor):
   y evento de `join`/`leave` vía `record_viewer_event`. Al terminar,
   estado de cierre con los CTAs tipo link como oferta final.
 
+## Dashboard de analíticas (`dashboard/webinars/[id]/analytics/`)
+
+La agregación corre en Postgres (migración 9), no en Next.js: cuatro
+RPCs `SECURITY INVOKER` sobre `viewer_events`/`registrants`/`ctas` que
+heredan las políticas RLS existentes de account member.
+
+- **Stat tiles** — registrados, asistentes reales (+ tasa de
+  asistencia), tiempo de visualización promedio (+ % del video).
+  "Asistente" = un registrante con al menos un `viewer_event` con
+  posición de video; como el player bloquea el seek, la posición máxima
+  registrada por heartbeat es un proxy razonable de cuánto vio.
+- **Curva de abandono** — % de audiencia que seguía viendo en cada
+  minuto (`get_webinar_retention_curve`, un `generate_series` de
+  minutos cruzado contra la posición máxima por asistente). Gráfico de
+  área + línea en SVG con crosshair/tooltip al hover y toggle a vista
+  de tabla, siguiendo el skill de `dataviz` (una sola serie → un solo
+  hue, sin necesidad de paleta categórica; specs de línea 2px, gridlines
+  hairline, tokens de shadcn para los colores en vez de valores fijos
+  para que funcione en light/dark).
+- **Clics por CTA y conversión** (clics / asistentes) y **resultados de
+  encuestas** — barras horizontales de un solo hue con el valor
+  siempre afuera de la barra (nunca hay que decidir si "entra" el
+  label).
+- **Exportar a CSV** — `GET /api/webinars/[id]/export`, accesible para
+  cualquier rol de la cuenta (Owner/Editor/Viewer tienen lectura de
+  analíticas), no solo Owner/Editor.
+
 ### Validado
 
 `npm run build` y `npm run lint` corren limpios (incluyendo las reglas
@@ -182,7 +211,11 @@ columnas esperadas, y `register_for_webinar` rechaza correctamente un
 horario que no coincide con el día del schedule, uno que ya pasó, y un
 offset de just-in-time inválido, mientras que el camino válido
 reutiliza la misma fila de `webinar_sessions` para dos registrantes del
-mismo horario (sin duplicar).
+mismo horario (sin duplicar). La migración 9 se probó con datos
+sembrados a mano (9 registrados, 8 asistentes con distintos niveles de
+abandono, clics de CTA, votos de encuesta) y los cuatro RPCs devolvieron
+exactamente los números calculados a mano — incluyendo los casos límite
+de un webinar sin registrados (sin división por cero).
 
 ## Próximos pasos (orden del MVP)
 
@@ -192,7 +225,8 @@ mismo horario (sin duplicar).
 4. ~~Página pública de registro + programación (horarios fijos / just-in-time)~~ ✅
 5. ~~Sala de espera con countdown~~ ✅
 6. ~~Sala del webinar con player restringido y sincronización server-side~~ ✅
-7. Dashboard de analíticas, emails automáticos, panel de Super Admin.
+7. ~~Dashboard de analíticas~~ ✅
+8. Emails automáticos, panel de Super Admin.
 
 Fase 2 (fuera del MVP, arquitectura de eventos ya lista vía
 `record_viewer_event`/`webhook_endpoints`): integraciones nativas con

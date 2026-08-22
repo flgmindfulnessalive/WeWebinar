@@ -588,6 +588,43 @@ export interface Database {
           computed_session_start: string;
         }[];
       };
+      get_webinar_summary: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          registrant_count: number;
+          attendee_count: number;
+          avg_watch_seconds: number;
+          duration_seconds: number | null;
+        }[];
+      };
+      get_webinar_retention_curve: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          minute: number;
+          viewers_remaining: number;
+          pct: number;
+        }[];
+      };
+      get_webinar_cta_stats: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          cta_id: string;
+          cta_type: CtaType;
+          timestamp_start_seconds: number;
+          config: Json;
+          clicks: number;
+          conversion_pct: number;
+        }[];
+      };
+      get_webinar_poll_results: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          cta_id: string;
+          question: string | null;
+          option: string | null;
+          votes: number;
+        }[];
+      };
     };
     Enums: {
       user_role: UserRole;
