@@ -92,6 +92,7 @@ export function VideoSection({
           <MuxPlayer
             playbackId={state.mux_playback_id}
             streamType="on-demand"
+            envKey={process.env.NEXT_PUBLIC_MUX_DATA_ENV_KEY}
             metadata={{ video_id: webinarId }}
           />
         ) : (

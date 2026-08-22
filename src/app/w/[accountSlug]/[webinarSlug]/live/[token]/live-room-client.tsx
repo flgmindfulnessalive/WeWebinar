@@ -259,6 +259,7 @@ export function LiveRoomClient({
                 nohotkeys
                 disablePictureInPicture
                 playbackRates={[1]}
+                envKey={process.env.NEXT_PUBLIC_MUX_DATA_ENV_KEY}
                 metadata={{ video_id: webinarId, viewer_user_id: accessToken }}
                 onLoadedMetadata={handleLoadedMetadata}
                 onTimeUpdate={handleTimeUpdate}
