@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "../status-badge";
 import { WebinarRowActions } from "../webinar-row-actions";
+import { VideoSection } from "./video-section";
 
 export default async function WebinarDetailPage({
   params,
@@ -60,10 +61,34 @@ export default async function WebinarDetailPage({
         </CardContent>
       </Card>
 
+      {canManage ? (
+        <VideoSection
+          webinarId={webinar.id}
+          initial={{
+            mux_asset_id: webinar.mux_asset_id,
+            mux_playback_id: webinar.mux_playback_id,
+            duration_seconds: webinar.duration_seconds,
+          }}
+        />
+      ) : webinar.mux_playback_id ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Video
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Video cargado ({Math.round((webinar.duration_seconds ?? 0) / 60)} min).
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          El editor de video, programación, sala de espera, chat simulado y
-          CTAs se agrega en la próxima etapa del build.
+          El editor de programación, sala de espera, chat simulado y CTAs se
+          agrega en la próxima etapa del build.
         </CardContent>
       </Card>
     </div>
