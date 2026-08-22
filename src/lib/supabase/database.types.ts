@@ -1,0 +1,559 @@
+// Hand-written to mirror supabase/migrations/*.sql exactly.
+// Regenerate with `supabase gen types typescript` once a live project exists,
+// and diff against this file rather than blindly overwriting it.
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export type UserRole = "owner" | "editor" | "viewer";
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "suspended"
+  | "canceled";
+export type WebinarStatus = "draft" | "published" | "archived";
+export type ScheduleMode = "fixed" | "just_in_time";
+export type CtaType = "link" | "poll" | "overlay";
+export type ChatMessageType = "message" | "question" | "host_reply";
+export type ViewerEventType =
+  | "join"
+  | "heartbeat"
+  | "leave"
+  | "cta_click"
+  | "poll_response";
+export type EmailTemplateType =
+  | "registration_confirmation"
+  | "reminder"
+  | "replay_missed";
+export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
+export type LeadStatus = "new" | "contacted" | "converted" | "closed";
+
+export interface Database {
+  public: {
+    Tables: {
+      plans: {
+        Row: {
+          id: string;
+          key: "core" | "pro" | "business" | "enterprise";
+          name: string;
+          price_annual_usd: number | null;
+          max_active_webinars: number | null;
+          max_users: number | null;
+          max_attendees_per_webinar: number | null;
+          features: Json;
+          is_self_serve: boolean;
+          stripe_price_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["plans"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["plans"]["Row"]>;
+        Relationships: [];
+      };
+      accounts: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          branding: Json;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          subscription_status: SubscriptionStatus;
+          plan_id: string | null;
+          timezone_default: string;
+          grace_period_days: number;
+          suspended_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["accounts"]["Row"]> & {
+          name: string;
+          slug: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["accounts"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "accounts_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "plans";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      users: {
+        Row: {
+          id: string;
+          account_id: string | null;
+          email: string;
+          role: UserRole;
+          display_name: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["users"]["Row"]> & {
+          id: string;
+          email: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["users"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "users_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      platform_admins: {
+        Row: { user_id: string; created_at: string };
+        Insert: { user_id: string; created_at?: string };
+        Update: Partial<{ user_id: string; created_at: string }>;
+        Relationships: [];
+      };
+      account_invitations: {
+        Row: {
+          id: string;
+          account_id: string;
+          email: string;
+          role: UserRole;
+          invited_by: string;
+          token: string;
+          status: InvitationStatus;
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["account_invitations"]["Row"]
+        > & {
+          account_id: string;
+          email: string;
+          invited_by: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["account_invitations"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "account_invitations_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      webinars: {
+        Row: {
+          id: string;
+          account_id: string;
+          presenter_user_id: string | null;
+          title: string;
+          slug: string;
+          description: string | null;
+          category: string | null;
+          mux_asset_id: string | null;
+          mux_playback_id: string | null;
+          duration_seconds: number | null;
+          schedule_mode: ScheduleMode;
+          just_in_time_offsets_minutes: number[];
+          status: WebinarStatus;
+          attendee_count: number;
+          fake_viewer_min: number;
+          fake_viewer_max: number;
+          published_at: string | null;
+          archived_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["webinars"]["Row"]> & {
+          account_id: string;
+          title: string;
+          slug: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinars"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "webinars_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      webinar_schedules: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          day_of_week: number | null;
+          time_of_day: string;
+          timezone: string;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["webinar_schedules"]["Row"]
+        > & {
+          webinar_id: string;
+          time_of_day: string;
+          timezone: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["webinar_schedules"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "webinar_schedules_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      waiting_room_config: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          template_id: string;
+          background_url: string | null;
+          background_type: "image" | "video" | null;
+          headline: string | null;
+          subheadline: string | null;
+          bullets: Json;
+          show_calendar_button: boolean;
+          show_fake_counter: boolean;
+          testimonials: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["waiting_room_config"]["Row"]
+        > & {
+          webinar_id: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["waiting_room_config"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "waiting_room_config_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: true;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      webinar_sessions: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          schedule_id: string | null;
+          starts_at: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["webinar_sessions"]["Row"]
+        > & {
+          webinar_id: string;
+          starts_at: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["webinar_sessions"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "webinar_sessions_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "webinar_sessions_schedule_id_fkey";
+            columns: ["schedule_id"];
+            isOneToOne: false;
+            referencedRelation: "webinar_schedules";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      registrants: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          session_id: string | null;
+          email: string;
+          name: string;
+          custom_fields: Json;
+          computed_session_start: string;
+          access_token: string;
+          visitor_timezone: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["registrants"]["Row"]> & {
+          webinar_id: string;
+          email: string;
+          name: string;
+          computed_session_start: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["registrants"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "registrants_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      registrant_messages: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          registrant_id: string;
+          message_text: string;
+          video_timestamp_seconds: number;
+          host_replied: boolean;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["registrant_messages"]["Row"]
+        > & {
+          webinar_id: string;
+          registrant_id: string;
+          message_text: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["registrant_messages"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "registrant_messages_registrant_id_fkey";
+            columns: ["registrant_id"];
+            isOneToOne: false;
+            referencedRelation: "registrants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          timestamp_seconds: number;
+          fake_name: string;
+          message_text: string;
+          message_type: ChatMessageType;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["chat_messages"]["Row"]> & {
+          webinar_id: string;
+          timestamp_seconds: number;
+          fake_name: string;
+          message_text: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["chat_messages"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ctas: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          type: CtaType;
+          timestamp_start_seconds: number;
+          timestamp_end_seconds: number | null;
+          config: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["ctas"]["Row"]> & {
+          webinar_id: string;
+          type: CtaType;
+          timestamp_start_seconds: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["ctas"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "ctas_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      viewer_events: {
+        Row: {
+          id: string;
+          registrant_id: string;
+          webinar_id: string;
+          event_type: ViewerEventType;
+          occurred_at: string;
+          video_timestamp_seconds: number | null;
+          metadata: Json;
+        };
+        Insert: Partial<Database["public"]["Tables"]["viewer_events"]["Row"]> & {
+          registrant_id: string;
+          webinar_id: string;
+          event_type: ViewerEventType;
+        };
+        Update: Partial<Database["public"]["Tables"]["viewer_events"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "viewer_events_registrant_id_fkey";
+            columns: ["registrant_id"];
+            isOneToOne: false;
+            referencedRelation: "registrants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      email_templates: {
+        Row: {
+          id: string;
+          account_id: string;
+          webinar_id: string | null;
+          type: EmailTemplateType;
+          reminder_offset_minutes: number | null;
+          subject: string;
+          body: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["email_templates"]["Row"]
+        > & {
+          account_id: string;
+          type: EmailTemplateType;
+          subject: string;
+          body: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["email_templates"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      enterprise_leads: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          company: string | null;
+          phone: string | null;
+          message: string | null;
+          status: LeadStatus;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["enterprise_leads"]["Row"]
+        > & {
+          name: string;
+          email: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["enterprise_leads"]["Row"]>;
+        Relationships: [];
+      };
+      webhook_endpoints: {
+        Row: {
+          id: string;
+          account_id: string;
+          url: string;
+          secret: string;
+          event_types: string[];
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["webhook_endpoints"]["Row"]
+        > & {
+          account_id: string;
+          url: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webhook_endpoints"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoints_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      create_account_with_owner: {
+        Args: { p_name: string; p_slug: string; p_plan_key?: string };
+        Returns: Database["public"]["Tables"]["accounts"]["Row"];
+      };
+      record_viewer_event: {
+        Args: {
+          p_access_token: string;
+          p_event_type: ViewerEventType;
+          p_video_timestamp_seconds?: number | null;
+          p_metadata?: Json;
+        };
+        Returns: Database["public"]["Tables"]["viewer_events"]["Row"];
+      };
+      post_registrant_message: {
+        Args: {
+          p_access_token: string;
+          p_message_text: string;
+          p_video_timestamp_seconds?: number;
+        };
+        Returns: Database["public"]["Tables"]["registrant_messages"]["Row"];
+      };
+      get_registrant_playback_state: {
+        Args: { p_access_token: string };
+        Returns: {
+          webinar_id: string;
+          elapsed_seconds: number;
+          duration_seconds: number | null;
+          is_ended: boolean;
+        }[];
+      };
+    };
+    Enums: {
+      user_role: UserRole;
+      subscription_status: SubscriptionStatus;
+      webinar_status: WebinarStatus;
+      schedule_mode: ScheduleMode;
+      cta_type: CtaType;
+      chat_message_type: ChatMessageType;
+      viewer_event_type: ViewerEventType;
+      email_template_type: EmailTemplateType;
+      invitation_status: InvitationStatus;
+      lead_status: LeadStatus;
+    };
+    CompositeTypes: Record<string, never>;
+  };
+}

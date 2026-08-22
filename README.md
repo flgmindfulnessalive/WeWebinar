@@ -13,7 +13,10 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 
 ## Estado actual
 
-Este primer commit sienta la base de todo lo demás: el **esquema de Supabase con RLS**. Next.js y las integraciones (Mux, Stripe, Resend) todavía no están scaffoldeadas — son el siguiente paso.
+1. **Esquema de Supabase + RLS** — listo.
+2. **Scaffold de Next.js** — listo: Auth (email/password + Google), onboarding, dashboard con CRUD básico de webinars (respetando el límite de plan), gestión de equipo, branding y facturación con Stripe. Ver detalle abajo.
+
+Todavía faltan: subida de video a Mux, wizard completo del webinar (programación, sala de espera, chat simulado, CTAs), la sala del webinar en sí, emails automáticos y el panel de Super Admin.
 
 ## Esquema de base de datos (`supabase/migrations/`)
 
@@ -72,10 +75,49 @@ supabase start
 supabase db reset
 ```
 
+## Scaffold de Next.js (`src/`)
+
+App Router + TypeScript + Tailwind v4 + un puñado de primitivas shadcn/ui
+escritas a mano (`src/components/ui/`) — el CLI de shadcn no pudo
+inicializarse por una restricción de red del entorno, así que `button`,
+`input`, `label`, `card` y `badge` siguen exactamente el código fuente
+estándar de shadcn.
+
+### Estructura
+
+- `src/app/(marketing)/` — home y `/pricing` (planes leídos de la tabla
+  `plans` + formulario de lead para Enterprise).
+- `src/app/(auth)/` — `/login` y `/signup` (email/password + Google OAuth).
+- `src/app/auth/callback/` — intercambio de código OAuth / confirmación de email.
+- `src/app/onboarding/` — alta de cuenta (llama al RPC `create_account_with_owner`).
+- `src/app/dashboard/` — shell protegido (sidebar por rol) con:
+  - `webinars/` — listado, alta (borrador) y publicar/archivar, mostrando el
+    error `plan_limit_exceeded` del trigger como upsell en vez de un 500.
+  - `team/` — invitar/revocar/quitar miembros (Pro/Business), respeta
+    `plan.max_users` vía el trigger correspondiente.
+  - `settings/billing/` — checkout y Billing Portal de Stripe.
+  - `settings/branding/` — logo/colores de cuenta (`accounts.branding`).
+- `src/app/api/stripe/` — `checkout`, `portal` y `webhook` (éste último
+  sincroniza `accounts.plan_id`/`subscription_status` usando el cliente
+  admin, ya que no hay sesión de usuario asociada al webhook).
+- `src/lib/supabase/` — clientes `client.ts` (browser), `server.ts`
+  (Server Components/Actions, anon key + RLS), `admin.ts` (service role,
+  solo para webhooks/cron) y `database.types.ts` (tipos escritos a mano
+  espejando el schema SQL — reemplazar por `supabase gen types` cuando
+  haya un proyecto real).
+- `src/middleware.ts` → `src/proxy.ts` (Next.js 16 renombró la
+  convención) — refresca la sesión y protege `/dashboard` y `/onboarding`.
+
+### Validado
+
+`npm run build` y `npm run lint` corren limpios. Se probó en runtime
+(`next dev`) que `/`, `/login`, `/signup`, `/pricing` y el redirect de
+`/dashboard` sin sesión responden correctamente.
+
 ## Próximos pasos (orden del MVP)
 
 1. ~~Esquema de Supabase + RLS~~ ✅
-2. Scaffold de Next.js (App Router) + Supabase Auth (email/password + Google) + Stripe Billing para las 3 suscripciones self-serve.
+2. ~~Scaffold de Next.js + Auth + Stripe Billing~~ ✅
 3. CRUD de webinars + subida a Mux (Direct Upload).
 4. Página pública de registro + programación (horarios fijos / just-in-time).
 5. Sala de espera con countdown.
