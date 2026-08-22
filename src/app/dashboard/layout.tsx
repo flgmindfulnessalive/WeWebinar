@@ -1,0 +1,43 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+
+import { getCurrentAccount } from "@/lib/data/account";
+import { DashboardNav } from "./dashboard-nav";
+import { UserMenu } from "./user-menu";
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const current = await getCurrentAccount();
+
+  if (!current) {
+    redirect("/onboarding");
+  }
+
+  return (
+    <div className="grid min-h-svh grid-cols-1 md:grid-cols-[240px_1fr]">
+      <aside className="hidden flex-col gap-6 border-r bg-muted/20 p-4 md:flex">
+        <Link href="/dashboard" className="px-2 text-lg font-semibold tracking-tight">
+          WeWebinar
+        </Link>
+        <DashboardNav role={current.user.role} />
+      </aside>
+
+      <div className="flex flex-col">
+        <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
+          <div className="text-sm text-muted-foreground">
+            {current.account.name} ·{" "}
+            <span className="capitalize">{current.plan.key}</span>
+          </div>
+          <UserMenu
+            email={current.user.email}
+            displayName={current.user.display_name}
+          />
+        </header>
+        <main className="flex-1 p-4 md:p-6">{children}</main>
+      </div>
+    </div>
+  );
+}

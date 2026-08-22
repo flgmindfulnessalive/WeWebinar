@@ -1,0 +1,83 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentAccount } from "@/lib/data/account";
+import { slugify } from "@/lib/slug";
+
+export type WebinarActionState = { error: string } | null;
+
+export async function createWebinar(
+  _prevState: WebinarActionState,
+  formData: FormData
+): Promise<WebinarActionState> {
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const category = String(formData.get("category") ?? "").trim();
+
+  if (!title) {
+    return { error: "El título es obligatorio." };
+  }
+
+  const current = await getCurrentAccount();
+  if (!current) {
+    redirect("/onboarding");
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("webinars")
+    .insert({
+      account_id: current.account.id,
+      presenter_user_id: current.user.id,
+      title,
+      description: description || null,
+      category: category || null,
+      slug: slugify(title) || "webinar",
+      status: "draft",
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect(`/dashboard/webinars/${data.id}`);
+}
+
+// Plan limit (max_active_webinars) is enforced by the
+// enforce_webinar_publish_limit trigger — this can legitimately fail.
+export async function publishWebinar(webinarId: string): Promise<WebinarActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ status: "published", published_at: new Date().toISOString() })
+    .eq("id", webinarId);
+
+  revalidatePath("/dashboard/webinars");
+  revalidatePath("/dashboard");
+
+  if (error) {
+    return { error: error.message };
+  }
+  return null;
+}
+
+export async function archiveWebinar(webinarId: string): Promise<WebinarActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ status: "archived", archived_at: new Date().toISOString() })
+    .eq("id", webinarId);
+
+  revalidatePath("/dashboard/webinars");
+  revalidatePath("/dashboard");
+
+  if (error) {
+    return { error: error.message };
+  }
+  return null;
+}
