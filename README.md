@@ -14,9 +14,11 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 ## Estado actual
 
 1. **Esquema de Supabase + RLS** — listo.
-2. **Scaffold de Next.js** — listo: Auth (email/password + Google), onboarding, dashboard con CRUD básico de webinars (respetando el límite de plan), gestión de equipo, branding y facturación con Stripe. Ver detalle abajo.
+2. **Scaffold de Next.js** — listo: Auth, onboarding, dashboard, facturación con Stripe.
+3. **Wizard de creación del webinar** — listo: video (Mux), programación, sala de espera, chat simulado, CTAs.
+4. **Experiencia del asistente** — listo: registro público, sala de espera con countdown, sala del webinar con player restringido y sincronización server-side.
 
-Todavía faltan: subida de video a Mux, wizard completo del webinar (programación, sala de espera, chat simulado, CTAs), la sala del webinar en sí, emails automáticos y el panel de Super Admin.
+Todavía faltan: emails automáticos, dashboard de analíticas, panel de Super Admin, integraciones/webhooks salientes activos.
 
 ## Esquema de base de datos (`supabase/migrations/`)
 
@@ -27,6 +29,9 @@ Las migraciones se aplican en orden:
 3. `20260822000003_functions_and_triggers.sql` — funciones helper de RLS, triggers de reglas de negocio y RPCs para asistentes anónimos.
 4. `20260822000004_rls_policies.sql` — políticas RLS de cada tabla.
 5. `20260822000005_seed_plans.sql` — seed de los 4 planes (Core/Pro/Business/Enterprise).
+6. `20260822000006_registrant_session_rpc.sql` — `get_registrant_session(token)`: resuelve un `access_token` a la sesión del asistente (webinar_id, computed_session_start, y un par `server_now` para anclar countdowns sin confiar en el reloj del cliente).
+7. `20260822000007_public_profile_views.sql` — vistas `account_public_profile` y `presenter_public_profile`: proyecciones públicas seguras de `accounts`/`users` (branding, nombre del presentador) sin exponer facturación/email/rol.
+8. `20260822000008_register_for_webinar_rpc.sql` — `register_for_webinar(...)`: único camino sanceionado para crear un `registrant`. Valida que el horario elegido realmente coincide con el schedule (día/hora en su propia timezone) antes de confiar en un timestamp del cliente, materializa la fila de `webinar_sessions` on-demand (find-or-create, sin cron), y **elimina** la política de INSERT público directa que había quedado en la migración 4 (esa política solo chequeaba "webinar publicado", nunca validaba `computed_session_start`).
 
 ### Modelo de tenancy
 
@@ -50,8 +55,10 @@ Los asistentes (`registrants`) no tienen cuenta de Supabase Auth — se identifi
 - `record_viewer_event(access_token, event_type, ...)` — heartbeat, join, leave, cta_click, poll_response.
 - `post_registrant_message(access_token, message_text, ...)` — chat real del asistente.
 - `get_registrant_playback_state(access_token)` — calcula el tiempo transcurrido del video **en el servidor** (`now() - computed_session_start`), nunca confiando en el reloj del cliente.
+- `get_registrant_session(access_token)` — resuelve el token a la sesión del asistente para la sala de espera/sala del webinar.
+- `register_for_webinar(...)` — único camino para crear un `registrant`; valida el horario elegido contra el schedule real antes de confiar en el timestamp del cliente (ver migración 8).
 
-El registro inicial (`INSERT` en `registrants`) sí es una política RLS pública directa (solo si el webinar está `published`), porque el trigger `enforce_attendee_limit` ya garantiza la validación atómica del cupo.
+`registrants` no tiene ninguna política de `INSERT` pública: el registro pasa siempre por `register_for_webinar()`, que corre como `SECURITY DEFINER` y por lo tanto sí dispara el trigger `enforce_attendee_limit` igual que un insert directo (los triggers no se saltean por RLS/RPC, solo las policies).
 
 Todas las tablas relacionadas a un webinar (`webinar_schedules`, `waiting_room_config`, `chat_messages`, `ctas`, `webinar_sessions`) son legibles públicamente solo cuando el webinar padre está `published`, y editables solo por Owner/Editor de la cuenta dueña.
 
@@ -108,20 +115,87 @@ estándar de shadcn.
 - `src/middleware.ts` → `src/proxy.ts` (Next.js 16 renombró la
   convención) — refresca la sesión y protege `/dashboard` y `/onboarding`.
 
+## Wizard de creación del webinar (`dashboard/webinars/[id]/`)
+
+Cada sección es su propia card en la página de detalle, con su Server
+Action sobre las tablas ya protegidas por RLS (Owner/Editor):
+
+- **Video** (`video-section.tsx`) — Direct Upload a Mux (`@mux/mux-uploader-react`,
+  nunca pasa por nuestro servidor). `api/mux/upload` crea el upload
+  scopeado a un webinar (con el `webinar_id` como `passthrough` del
+  asset); `api/mux/webhook` escribe `mux_asset_id`/`mux_playback_id`/
+  `duration_seconds` cuando Mux termina de procesar, y borra el asset
+  viejo en Mux si el host reemplaza el video.
+- **Programación** — toggle horarios fijos / just-in-time, offsets de
+  inicio, y CRUD de horarios recurrentes (día + hora + timezone IANA).
+  `src/lib/scheduling.ts` convierte esos horarios a instantes UTC
+  (algoritmo de 2 pasadas con `Intl`, sin librería de timezones).
+- **Sala de espera** — upsert de `waiting_room_config` (headline, fondo,
+  bullets, testimonios, toggles de calendario/contador).
+- **Chat simulado** — timeline CRUD + preview a 12x de velocidad.
+- **CTAs** — CRUD con ventana de tiempo y config por tipo (link/overlay/poll).
+
+## Experiencia del asistente (`src/app/w/[accountSlug]/[webinarSlug]/`)
+
+- **`/` — Registro público.** Lee `account_public_profile` y el webinar
+  (RLS pública solo si `status = published`). En modo fijo muestra los
+  próximos horarios ya convertidos a la timezone del visitante
+  (`Intl`); en just-in-time, botones de "empezar en N minutos". Si el
+  webinar llegó al cupo del plan (`plans.max_attendees_per_webinar`,
+  join público ya que `plans` es de lectura pública), muestra "cupo
+  alcanzado" en vez del formulario. El submit llama al RPC
+  `register_for_webinar` y redirige a la sala de espera con el
+  `access_token`.
+- **`/room/[token]` — Sala de espera.** `get_registrant_session` da un
+  par `(computed_session_start, server_now)` en un solo round trip; el
+  countdown se ancla a ese par y tickea localmente con el delta de
+  reloj del propio cliente (nunca con su hora absoluta). Si el
+  asistente llega tarde, redirige directo a la sala en vez de mostrar
+  el countdown. Contador ficticio, bullets, testimonios, y botón de
+  calendario (.ics + link de Google Calendar).
+- **`/live/[token]` — Sala del webinar (pieza crítica).** Mux Player
+  con `--play-button`, `--seek-backward/forward-button`, `--time-range`
+  y `--playback-rate-button` puestos en `none` (oculta pausa/seek/
+  velocidad), `nohotkeys` y `disablePictureInPicture` para cerrar los
+  bypasses obvios. La posición se recalcula en cada `timeupdate` contra
+  `elapsed = ahora - computed_session_start`; cualquier drift (seek
+  manual, buffering) se corrige de vuelta. Resync periódico contra
+  `get_registrant_playback_state` cada 20s (cubre sleep/background del
+  tab). Chat simulado corriendo por timestamp real + input real
+  (`post_registrant_message`, se muestra optimista sin necesitar leer
+  la tabla de otros asistentes). CTAs por timestamp. Heartbeat cada 15s
+  y evento de `join`/`leave` vía `record_viewer_event`. Al terminar,
+  estado de cierre con los CTAs tipo link como oferta final.
+
 ### Validado
 
-`npm run build` y `npm run lint` corren limpios. Se probó en runtime
-(`next dev`) que `/`, `/login`, `/signup`, `/pricing` y el redirect de
-`/dashboard` sin sesión responden correctamente.
+`npm run build` y `npm run lint` corren limpios (incluyendo las reglas
+de purity del nuevo linter de React Compiler — el countdown y el motor
+de sincronización del player evitan `Date.now()`/lecturas de `ref`
+durante el render, y la timezone del visitante usa
+`useSyncExternalStore` en vez de `useEffect` + `setState`). Se probó en
+runtime que las páginas de registro/sala de espera/sala del webinar
+devuelven 404 de forma controlada ante slugs o tokens inválidos, sin
+tirar abajo el servidor. Las migraciones nuevas (6–8) se probaron
+end-to-end contra Postgres real: la vista pública expone solo las
+columnas esperadas, y `register_for_webinar` rechaza correctamente un
+horario que no coincide con el día del schedule, uno que ya pasó, y un
+offset de just-in-time inválido, mientras que el camino válido
+reutiliza la misma fila de `webinar_sessions` para dos registrantes del
+mismo horario (sin duplicar).
 
 ## Próximos pasos (orden del MVP)
 
 1. ~~Esquema de Supabase + RLS~~ ✅
 2. ~~Scaffold de Next.js + Auth + Stripe Billing~~ ✅
-3. CRUD de webinars + subida a Mux (Direct Upload).
-4. Página pública de registro + programación (horarios fijos / just-in-time).
-5. Sala de espera con countdown.
-6. Sala del webinar con player restringido y sincronización server-side.
-7. Editor de CTAs, dashboard de analíticas, emails automáticos, panel de Super Admin.
+3. ~~CRUD de webinars + subida a Mux + wizard completo~~ ✅
+4. ~~Página pública de registro + programación (horarios fijos / just-in-time)~~ ✅
+5. ~~Sala de espera con countdown~~ ✅
+6. ~~Sala del webinar con player restringido y sincronización server-side~~ ✅
+7. Dashboard de analíticas, emails automáticos, panel de Super Admin.
+
+Fase 2 (fuera del MVP, arquitectura de eventos ya lista vía
+`record_viewer_event`/`webhook_endpoints`): integraciones nativas con
+CRMs, encuestas avanzadas, lista de espera cuando el cupo está lleno.
 
 Ver `.env.example` para las variables de entorno necesarias.

@@ -509,7 +509,28 @@ export interface Database {
         ];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      account_public_profile: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          branding: Json;
+          timezone_default: string;
+          plan_id: string | null;
+        };
+        Relationships: [];
+      };
+      presenter_public_profile: {
+        Row: {
+          id: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       create_account_with_owner: {
         Args: { p_name: string; p_slug: string; p_plan_key?: string };
@@ -539,6 +560,32 @@ export interface Database {
           elapsed_seconds: number;
           duration_seconds: number | null;
           is_ended: boolean;
+        }[];
+      };
+      get_registrant_session: {
+        Args: { p_access_token: string };
+        Returns: {
+          registrant_id: string;
+          webinar_id: string;
+          name: string;
+          email: string;
+          computed_session_start: string;
+          server_now: string;
+        }[];
+      };
+      register_for_webinar: {
+        Args: {
+          p_webinar_id: string;
+          p_name: string;
+          p_email: string;
+          p_visitor_timezone?: string | null;
+          p_schedule_id?: string | null;
+          p_session_starts_at?: string | null;
+          p_offset_minutes?: number | null;
+        };
+        Returns: {
+          access_token: string;
+          computed_session_start: string;
         }[];
       };
     };

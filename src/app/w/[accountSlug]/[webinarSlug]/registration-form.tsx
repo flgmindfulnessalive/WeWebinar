@@ -1,0 +1,174 @@
+"use client";
+
+import { useActionState, useMemo, useState, useSyncExternalStore } from "react";
+
+import { registerForWebinar } from "@/lib/actions/register";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import type { ScheduleMode } from "@/lib/supabase/database.types";
+
+type Occurrence = { scheduleId: string; startsAt: string };
+
+function occurrenceKey(occ: Occurrence): string {
+  return `${occ.startsAt}|${occ.scheduleId}`;
+}
+
+function noopSubscribe() {
+  return () => {};
+}
+function getBrowserTimezone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+function getServerTimezone() {
+  return "UTC";
+}
+
+export function RegistrationForm({
+  webinarId,
+  returnTo,
+  scheduleMode,
+  offsets,
+  occurrences,
+  isFull,
+}: {
+  webinarId: string;
+  returnTo: string;
+  scheduleMode: ScheduleMode;
+  offsets: number[];
+  occurrences: Occurrence[];
+  isFull: boolean;
+}) {
+  const [state, formAction, isPending] = useActionState(registerForWebinar, null);
+  const [selectedOccurrence, setSelectedOccurrence] = useState(
+    occurrences[0] ? occurrenceKey(occurrences[0]) : ""
+  );
+  const [selectedOffset, setSelectedOffset] = useState(offsets[0] ?? 5);
+
+  // Visitor's timezone is a browser-only value that can legitimately differ
+  // from the server's default — useSyncExternalStore reads it without a
+  // hydration mismatch: "UTC" during SSR, the real zone once mounted.
+  const visitorTimezone = useSyncExternalStore(
+    noopSubscribe,
+    getBrowserTimezone,
+    getServerTimezone
+  );
+
+  const formatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    []
+  );
+
+  if (isFull) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
+          <p className="text-lg font-medium">Este webinar alcanzó su cupo máximo</p>
+          <p className="text-sm text-muted-foreground">
+            Dejanos tu email y te avisamos si se libera un lugar.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (scheduleMode === "fixed" && occurrences.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          Este webinar todavía no tiene horarios disponibles. Volvé a intentarlo más tarde.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const [selectedStartsAt, selectedScheduleId] = selectedOccurrence.split("|");
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Reservá tu lugar</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="webinar_id" value={webinarId} />
+          <input type="hidden" name="return_to" value={returnTo} />
+          <input type="hidden" name="visitor_timezone" value={visitorTimezone} />
+
+          {scheduleMode === "fixed" ? (
+            <div className="grid gap-2">
+              <input type="hidden" name="schedule_id" value={selectedScheduleId ?? ""} />
+              <input type="hidden" name="session_starts_at" value={selectedStartsAt ?? ""} />
+              <Label>Elegí un horario ({visitorTimezone})</Label>
+              <div className="flex flex-col gap-2">
+                {occurrences.map((occ) => {
+                  const key = occurrenceKey(occ);
+                  return (
+                    <label
+                      key={key}
+                      className={cn(
+                        "flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        className="mr-3 size-4"
+                        checked={selectedOccurrence === key}
+                        onChange={() => setSelectedOccurrence(key)}
+                      />
+                      {formatter.format(new Date(occ.startsAt))}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <input type="hidden" name="offset_minutes" value={selectedOffset} />
+              <Label>¿Cuándo querés empezar?</Label>
+              <div className="flex flex-wrap gap-2">
+                {offsets.map((minutes) => (
+                  <button
+                    key={minutes}
+                    type="button"
+                    onClick={() => setSelectedOffset(minutes)}
+                    className={cn(
+                      "rounded-md border px-4 py-2 text-sm",
+                      selectedOffset === minutes && "border-primary bg-accent"
+                    )}
+                  >
+                    En {minutes} min
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-2">
+            <Label htmlFor="name">Nombre</Label>
+            <Input id="name" name="name" required autoComplete="name" />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" required autoComplete="email" />
+          </div>
+
+          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+
+          <Button type="submit" size="lg" disabled={isPending}>
+            {isPending ? "Reservando..." : "Reservar mi lugar"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
