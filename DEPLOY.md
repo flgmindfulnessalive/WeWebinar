@@ -70,8 +70,20 @@ Orden recomendado (cada paso depende del anterior):
      5aec8c4fc868ce66b7582154004e344f5abdb0752ecff084262c81b547e8a094
      ```
      (Vercel lo inyecta solo como `Authorization: Bearer $CRON_SECRET` en
-     el cron de `vercel.json`, que corre cada 5 minutos contra
-     `/api/cron/send-reminders`.)
+     el cron de `vercel.json`.)
+
+   **Nota sobre el cron en el plan gratuito (Hobby):** Vercel Hobby solo
+   permite crons que corran una vez al día, así que `vercel.json` quedó
+   configurado a `0 8 * * *` (una vez por día, 8am UTC) para poder
+   deployar gratis. Esto alcanza para probar la app, pero en producción
+   real los recordatorios/"te lo perdiste" van a salir con hasta 24hs de
+   demora en vez de cada 5 minutos. Para tener la cadencia real de 5
+   minutos sin pagar el plan Pro de Vercel, usá un servicio externo
+   gratuito (ej. [cron-job.org](https://cron-job.org)) que haga un
+   `GET` cada 5 minutos a `https://tudominio.com/api/cron/send-reminders`
+   con el header `Authorization: Bearer <tu CRON_SECRET>` — el endpoint
+   ya valida ese secret, así que funciona igual sin depender del cron
+   nativo de Vercel.
    - `NEXT_PUBLIC_APP_URL` = tu dominio final (ej. `https://tudominio.com`).
 3. Deploy.
 4. (Opcional) conectar tu dominio propio en Vercel → Settings → Domains.

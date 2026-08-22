@@ -4,7 +4,25 @@ import type { Database } from "@/lib/supabase/database.types";
 
 // No explicit apiVersion: let the SDK pin its own default so the type
 // always matches the installed `stripe` package version.
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+//
+// Constructed lazily, behind a Proxy, so a missing STRIPE_SECRET_KEY
+// doesn't crash `next build` while it statically evaluates every route
+// module — the Stripe SDK throws eagerly in its constructor even with
+// an empty string, only once a route actually runs does this matter.
+let stripeClient: Stripe | null = null;
+
+function getStripeClient() {
+  if (!stripeClient) {
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+  }
+  return stripeClient;
+}
+
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getStripeClient(), prop, receiver);
+  },
+});
 
 export type SelfServePlanKey = Exclude<
   Database["public"]["Tables"]["plans"]["Row"]["key"],
