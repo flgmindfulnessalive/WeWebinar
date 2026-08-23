@@ -637,7 +637,7 @@ export interface Database {
         }[];
       };
       get_account_recent_registrants: {
-        Args: { p_account_id: string; p_limit?: number };
+        Args: { p_account_id: string; p_limit?: number; p_offset?: number };
         Returns: {
           id: string;
           name: string;
