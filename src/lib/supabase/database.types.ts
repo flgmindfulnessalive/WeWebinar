@@ -628,6 +628,24 @@ export interface Database {
           duration_seconds: number | null;
         }[];
       };
+      get_account_summary: {
+        Args: { p_account_id: string };
+        Returns: {
+          registrant_count: number;
+          attendee_count: number;
+          avg_watch_pct: number;
+        }[];
+      };
+      get_account_recent_registrants: {
+        Args: { p_account_id: string; p_limit?: number };
+        Returns: {
+          id: string;
+          name: string;
+          email: string;
+          webinar_title: string;
+          created_at: string;
+        }[];
+      };
       get_webinar_retention_curve: {
         Args: { p_webinar_id: string };
         Returns: {
