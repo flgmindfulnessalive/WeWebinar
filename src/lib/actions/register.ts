@@ -108,7 +108,7 @@ export async function registerForWebinar(
 
   if (error) {
     if (error.message.includes("plan_limit_exceeded")) {
-      return { error: "Este webinar alcanzó el cupo máximo de registrados." };
+      return { error: "Ese horario alcanzó el cupo máximo de esta sesión. Elegí otro horario." };
     }
     if (error.message.includes("already started") || error.message.includes("does not match")) {
       return { error: "Ese horario ya no está disponible. Elegí otro." };

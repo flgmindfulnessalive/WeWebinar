@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ScheduleMode } from "@/lib/supabase/database.types";
 
-type Occurrence = { scheduleId: string; startsAt: string };
+type Occurrence = { scheduleId: string; startsAt: string; spotsLeft: number | null };
 
 function occurrenceKey(occ: Occurrence): string {
   return `${occ.startsAt}|${occ.scheduleId}`;
@@ -32,26 +32,29 @@ export function RegistrationForm({
   scheduleMode,
   offsets,
   occurrences,
-  isFull,
+  allFixedSlotsFull,
 }: {
   webinarId: string;
   returnTo: string;
   scheduleMode: ScheduleMode;
   offsets: number[];
   occurrences: Occurrence[];
-  isFull: boolean;
+  allFixedSlotsFull: boolean;
 }) {
   const [state, formAction, isPending] = useActionState(registerForWebinar, null);
-  const [selectedOccurrence, setSelectedOccurrence] = useState(
-    occurrences[0] ? occurrenceKey(occurrences[0]) : ""
-  );
+  const [selectedOccurrence, setSelectedOccurrence] = useState(() => {
+    const firstAvailable = occurrences.find((o) => o.spotsLeft !== 0) ?? occurrences[0];
+    return firstAvailable ? occurrenceKey(firstAvailable) : "";
+  });
   const [selectedOffset, setSelectedOffset] = useState(offsets[0] ?? 5);
 
   // A "both" webinar lets the visitor pick either path; a pure fixed/JIT
-  // webinar only ever has one to show. If "both" has no upcoming
-  // occurrences yet, fall back to the offset picker instead of an empty tab.
+  // webinar only ever has one to show. If "both" has no bookable
+  // occurrences (none exist yet, or every one is at capacity), fall back
+  // to the offset picker instead of an empty/all-disabled tab.
+  const availableOccurrences = occurrences.filter((o) => o.spotsLeft !== 0);
   const showFixedOption =
-    (scheduleMode === "fixed" || scheduleMode === "both") && occurrences.length > 0;
+    (scheduleMode === "fixed" || scheduleMode === "both") && availableOccurrences.length > 0;
   const showJitOption = scheduleMode === "just_in_time" || scheduleMode === "both";
   const showBothTabs = showFixedOption && showJitOption;
   const [activeTab, setActiveTab] = useState<"fixed" | "jit">(
@@ -79,13 +82,13 @@ export function RegistrationForm({
     []
   );
 
-  if (isFull) {
+  if (allFixedSlotsFull) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
-          <p className="text-lg font-medium">Este webinar alcanzó su cupo máximo</p>
+          <p className="text-lg font-medium">Todos los horarios disponibles están completos</p>
           <p className="text-sm text-muted-foreground">
-            Dejanos tu email y te avisamos si se libera un lugar.
+            Volvé a intentarlo más tarde para ver nuevas fechas.
           </p>
         </CardContent>
       </Card>
@@ -148,20 +151,26 @@ export function RegistrationForm({
               <div className="flex flex-col gap-2">
                 {occurrences.map((occ) => {
                   const key = occurrenceKey(occ);
+                  const full = occ.spotsLeft === 0;
                   return (
                     <label
                       key={key}
                       className={cn(
-                        "flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent"
+                        "flex items-center rounded-md border px-3 py-2 text-sm",
+                        full
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-accent"
                       )}
                     >
                       <input
                         type="radio"
                         className="mr-3 size-4"
                         checked={selectedOccurrence === key}
+                        disabled={full}
                         onChange={() => setSelectedOccurrence(key)}
                       />
-                      {formatter.format(new Date(occ.startsAt))}
+                      <span className="flex-1">{formatter.format(new Date(occ.startsAt))}</span>
+                      {full && <span className="text-xs text-muted-foreground">Cupo lleno</span>}
                     </label>
                   );
                 })}

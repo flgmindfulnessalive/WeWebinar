@@ -50,7 +50,7 @@ Las migraciones se aplican en orden:
 ### Reglas de negocio implementadas como triggers/funciones (no solo en la UI)
 
 - **Límite de webinars activos por plan** (`enforce_webinar_publish_limit`): solo cuenta el estado `published`; draft/archived no bloquean.
-- **Límite de attendees acumulado por webinar** (`enforce_attendee_limit`): valida contra el plan y suma `webinars.attendee_count` en la misma transacción (con `FOR UPDATE` para evitar condiciones de carrera).
+- **Límite de attendees simultáneos por sesión** (`enforce_attendee_limit`): valida contra el plan comparando la cantidad de registrados cuya ventana de reproducción (`computed_session_start` + `duration_seconds`) se superpone con la del nuevo registro, en la misma transacción (con `FOR UPDATE` para evitar condiciones de carrera). No es un tope acumulado de por vida del webinar — el mismo webinar evergreen puede tener infinitas sesiones a lo largo del tiempo, cada una con su propio cupo. `webinars.attendee_count` se sigue incrementando como total histórico informativo, pero ya no bloquea nada.
 - **Límite de usuarios por plan al invitar** (`enforce_invitation_user_limit`).
 - **Bloqueo de downgrade de plan** si el uso actual (webinars publicados o usuarios) excede los límites del nuevo plan (`enforce_plan_downgrade_limits`).
 - **Protección del último Owner**: no se puede degradar ni eliminar al único Owner de una cuenta (`guard_user_row_changes`), que también bloquea que un usuario se auto-asigne un rol distinto o mueva su cuenta.
