@@ -22,6 +22,7 @@ interface YTPlayer {
   isMuted(): boolean;
   getPlaybackRate(): number;
   setPlaybackRate(rate: number): void;
+  getIframe(): HTMLIFrameElement;
   destroy(): void;
 }
 
@@ -215,6 +216,21 @@ export const LockedYouTubePlayer = forwardRef<
         },
         events: {
           onReady: (e) => {
+            // Belt-and-suspenders on top of our own blocking overlay div:
+            // the generated <iframe> is natively focusable, and YouTube can
+            // show its chrome (title bar, control bar) on focus the same
+            // way it does on hover -- something can focus it without any
+            // mouse movement at all (tab order, autoplay-related focus
+            // handling). tabIndex=-1 takes it out of focus entirely, and
+            // pointer-events:none on the iframe itself means even a gap in
+            // our overlay's coverage (subpixel rounding, zoom) can't let a
+            // real hover reach it either -- our overlay div still owns all
+            // clicks (including the "tap anywhere to unmute" behavior).
+            const iframe = e.target.getIframe();
+            if (iframe) {
+              iframe.tabIndex = -1;
+              iframe.style.pointerEvents = "none";
+            }
             callbacksRef.current.onLoadedMetadata?.(e.target.getDuration());
             if (autoPlay) e.target.playVideo();
           },
