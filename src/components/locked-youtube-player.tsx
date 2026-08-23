@@ -89,7 +89,8 @@ export type LockedYouTubePlayerHandle = {
   play: () => void;
   /** Unmutes and briefly re-covers the player -- YouTube can flash its own
    * native UI right when audio state changes via the API, even with
-   * controls:0. See the cover-until-ready comment below for why. */
+   * controls:0. See the coverVisible comment below for why a cover is
+   * needed at all. */
   unmuteSmoothly: () => void;
 };
 
@@ -122,17 +123,21 @@ export const LockedYouTubePlayer = forwardRef<
   const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded });
   callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded };
 
-  // Covers the player (with a branded loading mark) for a fixed delay
-  // after mount. YouTube shows its own splash (thumbnail + big play
-  // button + title) for the first few seconds after the iframe loads,
-  // regardless of controls:0 -- that only suppresses the control bar
-  // during playback, not the initial load state. A fixed delay is used
-  // instead of waiting for the PLAYING event because that event's exact
-  // timing relative to the splash turned out not to be reliable enough in
-  // practice. Only autoplaying instances (the live room) need this; a
+  // Covers the player (with a branded loading mark) any time YouTube isn't
+  // actually reporting PLAYING -- not just on initial load. YouTube shows
+  // its own UI (thumbnail/title on load, a center play/pause "toast" on
+  // every state change) whenever it isn't playing, regardless of
+  // controls:0 -- that only suppresses the persistent control bar, not
+  // these transient states. A fixed timer only for the initial load isn't
+  // enough: the video can also pause and flash the same native UI later
+  // (a buffering stall, the tab backgrounding, our own auto-resume-on-
+  // pause elsewhere reacting to any of that) -- tracking the real state
+  // covers all of those the same way, automatically, for the whole
+  // session. Only autoplaying instances (the live room) need this; a
   // static preview (the wizard) never plays on its own, so it starts
-  // already "ready" and just shows its paused frame.
-  const [ready, setReady] = useState(!autoPlay);
+  // already uncovered and just shows its paused frame.
+  const [coverVisible, setCoverVisible] = useState(Boolean(autoPlay));
+  const hasPlayedOnceRef = useRef(false);
 
   useImperativeHandle(
     ref,
@@ -158,9 +163,12 @@ export const LockedYouTubePlayer = forwardRef<
       },
       play: () => playerRef.current?.playVideo(),
       unmuteSmoothly: () => {
+        // Muting/unmuting doesn't change the PLAYING state, so the
+        // automatic state-driven cover above won't catch this on its own
+        // -- cover manually for a moment around the call.
         playerRef.current?.unMute();
-        setReady(false);
-        window.setTimeout(() => setReady(true), 400);
+        setCoverVisible(true);
+        window.setTimeout(() => setCoverVisible(false), 400);
       },
     }),
     []
@@ -168,8 +176,18 @@ export const LockedYouTubePlayer = forwardRef<
 
   useEffect(() => {
     let cancelled = false;
+    hasPlayedOnceRef.current = false;
 
-    const revealTimer = autoPlay ? window.setTimeout(() => setReady(true), 5000) : null;
+    // Last-resort escape hatch: if PLAYING never fires at all (autoplay
+    // fully blocked, video unavailable), don't leave the viewer stuck on
+    // the loading mark forever -- reveal once, whatever's actually there.
+    // Only fires if playback never started even once; once it has, the
+    // state-driven cover above takes over completely and this is moot.
+    const stuckTimer = autoPlay
+      ? window.setTimeout(() => {
+          if (!hasPlayedOnceRef.current) setCoverVisible(false);
+        }, 8000)
+      : null;
 
     loadYouTubeIframeApi().then((YT) => {
       if (cancelled || !containerRef.current) return;
@@ -202,9 +220,12 @@ export const LockedYouTubePlayer = forwardRef<
           },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
+              hasPlayedOnceRef.current = true;
+              if (autoPlay) setCoverVisible(false);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = setInterval(() => callbacksRef.current.onTimeUpdate?.(), TIME_UPDATE_INTERVAL_MS);
             } else {
+              if (autoPlay) setCoverVisible(true);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = null;
             }
@@ -218,7 +239,7 @@ export const LockedYouTubePlayer = forwardRef<
 
     return () => {
       cancelled = true;
-      if (revealTimer) window.clearTimeout(revealTimer);
+      if (stuckTimer) window.clearTimeout(stuckTimer);
       if (tickRef.current) clearInterval(tickRef.current);
       playerRef.current?.destroy();
       playerRef.current = null;
@@ -240,9 +261,9 @@ export const LockedYouTubePlayer = forwardRef<
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            opacity: ready ? 0 : 1,
+            opacity: coverVisible ? 1 : 0,
             transition: "opacity 600ms ease",
-            pointerEvents: ready ? "none" : "auto",
+            pointerEvents: coverVisible ? "auto" : "none",
           }}
         >
           <div
