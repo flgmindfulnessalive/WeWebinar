@@ -1,30 +1,31 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CreditCard, Palette, Users } from "lucide-react";
+import { CreditCard, Palette, User, Users } from "lucide-react";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function SettingsPage() {
   const current = await getCurrentAccount();
-  if (!current) return null;
-
-  if (current.user.role !== "owner") {
-    redirect("/dashboard");
-  }
+  if (!current) redirect("/onboarding");
 
   const links = [
-    {
-      href: "/dashboard/settings/billing",
-      label: "Facturación y plan",
-      icon: CreditCard,
-    },
-    { href: "/dashboard/team", label: "Equipo", icon: Users },
-    {
-      href: "/dashboard/settings/branding",
-      label: "Marca (logo, colores)",
-      icon: Palette,
-    },
+    { href: "/dashboard/settings/profile", label: "Perfil", icon: User },
+    ...(current.user.role === "owner"
+      ? [
+          {
+            href: "/dashboard/settings/billing",
+            label: "Facturación y plan",
+            icon: CreditCard,
+          },
+          { href: "/dashboard/team", label: "Equipo", icon: Users },
+          {
+            href: "/dashboard/settings/branding",
+            label: "Marca (logo, colores)",
+            icon: Palette,
+          },
+        ]
+      : []),
   ];
 
   return (
