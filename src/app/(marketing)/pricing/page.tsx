@@ -12,7 +12,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EnterpriseLeadForm } from "./enterprise-lead-form";
-import type { Json } from "@/lib/supabase/database.types";
+import type { Database, Json } from "@/lib/supabase/database.types";
+
+type Plan = Database["public"]["Tables"]["plans"]["Row"];
 
 function featureList(plan: {
   max_active_webinars: number | null;
@@ -38,10 +40,20 @@ function featureList(plan: {
 
 export default async function PricingPage() {
   const supabase = await createClient();
-  const { data: plans } = await supabase
-    .from("plans")
-    .select("*")
-    .order("price_annual_usd", { ascending: true, nullsFirst: false });
+
+  let plans: Plan[] | null = null;
+  try {
+    const result = await supabase
+      .from("plans")
+      .select("*")
+      .order("price_annual_usd", { ascending: true, nullsFirst: false });
+    if (result.error) {
+      console.error("[pricing] Failed to load plans (query error):", result.error);
+    }
+    plans = result.data;
+  } catch (err) {
+    console.error("[pricing] Failed to load plans (thrown):", err);
+  }
 
   const selfServe = (plans ?? []).filter((p) => p.is_self_serve);
   const enterprise = (plans ?? []).find((p) => p.key === "enterprise");
