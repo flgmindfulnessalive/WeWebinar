@@ -54,7 +54,7 @@ export default async function RegisterPage({
 
   const occurrences =
     webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both"
-      ? computeUpcomingOccurrences(schedules ?? [], { limit: 10 }).map((o) => ({
+      ? computeUpcomingOccurrences(schedules ?? [], { limit: 5 }).map((o) => ({
           scheduleId: o.scheduleId,
           startsAt: o.startsAt.toISOString(),
         }))
