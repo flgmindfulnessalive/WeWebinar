@@ -37,12 +37,17 @@ export default async function WebinarAnalyticsPage({
 
   if (!webinar || webinar.account_id !== current.account.id) notFound();
 
-  const [{ data: summaryRows }, { data: retentionRows }, { data: ctaRows }, { data: pollRows }] =
+  const [{ data: summaryRows }, { data: retentionRows }, { data: ctaRows }, { data: pollRows }, { data: registrants }] =
     await Promise.all([
       supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
       supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
       supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId }),
       supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId }),
+      supabase
+        .from("registrants")
+        .select("id, name, email, computed_session_start, created_at")
+        .eq("webinar_id", webinarId)
+        .order("created_at", { ascending: false }),
     ]);
 
   const summary = summaryRows?.[0];
@@ -113,6 +118,44 @@ export default async function WebinarAnalyticsPage({
           sublabel={durationSeconds > 0 ? `${watchPct}% del video` : undefined}
         />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Registrados ({registrants?.length ?? 0})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!registrants || registrants.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Todavía no hay nadie registrado.</p>
+          ) : (
+            <div className="max-h-96 overflow-y-auto rounded-md border">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-muted/50">
+                  <tr>
+                    <th className="p-2 text-left font-medium">Nombre</th>
+                    <th className="p-2 text-left font-medium">Email</th>
+                    <th className="p-2 text-left font-medium">Horario asignado</th>
+                    <th className="p-2 text-left font-medium">Registrado el</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registrants.map((r) => (
+                    <tr key={r.id} className="border-t">
+                      <td className="p-2">{r.name}</td>
+                      <td className="p-2">{r.email}</td>
+                      <td className="p-2">
+                        {new Date(r.computed_session_start).toLocaleString("es")}
+                      </td>
+                      <td className="p-2">{new Date(r.created_at).toLocaleString("es")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
