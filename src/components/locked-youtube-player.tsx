@@ -5,6 +5,7 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
 } from "react";
 
 // Minimal typing for the subset of the YouTube IFrame Player API we use —
@@ -84,6 +85,10 @@ export type LockedYouTubePlayerHandle = {
   muted: boolean;
   playbackRate: number;
   play: () => void;
+  /** Unmutes and briefly re-covers the player -- YouTube can flash its own
+   * native UI right when audio state changes via the API, even with
+   * controls:0. See the cover-until-ready comment below for why. */
+  unmuteSmoothly: () => void;
 };
 
 export const LockedYouTubePlayer = forwardRef<
@@ -110,6 +115,15 @@ export const LockedYouTubePlayer = forwardRef<
   const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded });
   callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded };
 
+  // Covers the player until it's actually playing. YouTube shows its own
+  // branded splash (thumbnail + big play button + title) for the first
+  // second or two after the iframe loads, regardless of controls:0 --
+  // that only suppresses the control bar during playback, not the initial
+  // load state. Only autoplaying instances (the live room) need this; a
+  // static preview (the wizard) never plays on its own, so it starts
+  // already "ready" and just shows its paused frame as before.
+  const [ready, setReady] = useState(!autoPlay);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -133,12 +147,23 @@ export const LockedYouTubePlayer = forwardRef<
         playerRef.current?.setPlaybackRate(rate);
       },
       play: () => playerRef.current?.playVideo(),
+      unmuteSmoothly: () => {
+        playerRef.current?.unMute();
+        setReady(false);
+        window.setTimeout(() => setReady(true), 400);
+      },
     }),
     []
   );
 
   useEffect(() => {
     let cancelled = false;
+
+    // Safety net: if PLAYING never fires (slow network, blocked autoplay,
+    // an unavailable video), don't leave the viewer staring at the cover
+    // forever -- reveal whatever YouTube ends up showing after a few
+    // seconds instead.
+    const fallbackTimer = autoPlay ? window.setTimeout(() => setReady(true), 4000) : null;
 
     loadYouTubeIframeApi().then((YT) => {
       if (cancelled || !containerRef.current) return;
@@ -163,6 +188,7 @@ export const LockedYouTubePlayer = forwardRef<
           },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
+              setReady(true);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = setInterval(() => callbacksRef.current.onTimeUpdate?.(), TIME_UPDATE_INTERVAL_MS);
             } else {
@@ -179,6 +205,7 @@ export const LockedYouTubePlayer = forwardRef<
 
     return () => {
       cancelled = true;
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
       if (tickRef.current) clearInterval(tickRef.current);
       playerRef.current?.destroy();
       playerRef.current = null;
@@ -189,6 +216,12 @@ export const LockedYouTubePlayer = forwardRef<
   return (
     <div className={className} style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+      {!ready && (
+        <div
+          aria-hidden
+          style={{ position: "absolute", inset: 0, zIndex: 2, background: "black" }}
+        />
+      )}
       {/* Blocks every click/right-click from reaching the YouTube iframe
           underneath — the iframe is cross-origin, so we can't hide its
           native controls/branding directly; this overlay is what actually
