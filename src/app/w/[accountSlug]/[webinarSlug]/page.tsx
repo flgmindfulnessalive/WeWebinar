@@ -40,7 +40,7 @@ export default async function RegisterPage({
     webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both"
       ? supabase
           .from("webinar_schedules")
-          .select("id, day_of_week, time_of_day, timezone")
+          .select("id, day_of_week, time_of_day, timezone, exclude_weekends")
           .eq("webinar_id", webinar.id)
       : Promise.resolve({ data: [] }),
     account.plan_id

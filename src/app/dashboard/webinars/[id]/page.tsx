@@ -38,7 +38,7 @@ export default async function WebinarDetailPage({
 
   let schedules: Pick<
     Database["public"]["Tables"]["webinar_schedules"]["Row"],
-    "id" | "day_of_week" | "time_of_day" | "timezone"
+    "id" | "day_of_week" | "time_of_day" | "timezone" | "exclude_weekends"
   >[] = [];
   let waitingRoom: Database["public"]["Tables"]["waiting_room_config"]["Row"] | null = null;
   let chatMessages: Pick<
@@ -58,7 +58,7 @@ export default async function WebinarDetailPage({
     const [schedulesRes, waitingRoomRes, chatRes, ctasRes, emailTemplatesRes] = await Promise.all([
       supabase
         .from("webinar_schedules")
-        .select("id, day_of_week, time_of_day, timezone")
+        .select("id, day_of_week, time_of_day, timezone, exclude_weekends")
         .eq("webinar_id", id)
         .order("day_of_week", { ascending: true, nullsFirst: true }),
       supabase.from("waiting_room_config").select("*").eq("webinar_id", id).maybeSingle(),
