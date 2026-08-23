@@ -267,7 +267,7 @@ export function LiveRoomClient({
                 <button
                   type="button"
                   onClick={() => {
-                    if (playerRef.current) playerRef.current.muted = false;
+                    playerRef.current?.unmuteSmoothly();
                     setIsMuted(false);
                   }}
                   className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg"
