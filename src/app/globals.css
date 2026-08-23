@@ -96,6 +96,20 @@
   background-size: 48px 48px;
 }
 
+/* Used by LockedYouTubePlayer's loading cover (app-wide, not just
+   marketing) -- a subtle pulse on the brand mark while the video loads. */
+@keyframes locked-player-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.8;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

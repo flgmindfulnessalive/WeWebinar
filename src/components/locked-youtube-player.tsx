@@ -122,15 +122,16 @@ export const LockedYouTubePlayer = forwardRef<
   const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded });
   callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded };
 
-  // Covers the player for a fixed delay after mount. YouTube shows its own
-  // branded splash (thumbnail + big play button + title) for the first
-  // second or two after the iframe loads, regardless of controls:0 -- that
-  // only suppresses the control bar during playback, not the initial load
-  // state. A fixed delay is used instead of waiting for the PLAYING event
-  // because that event's exact timing relative to the splash turned out
-  // not to be reliable enough in practice. Only autoplaying instances (the
-  // live room) need this; a static preview (the wizard) never plays on its
-  // own, so it starts already "ready" and just shows its paused frame.
+  // Covers the player (with a branded loading mark) for a fixed delay
+  // after mount. YouTube shows its own splash (thumbnail + big play
+  // button + title) for the first few seconds after the iframe loads,
+  // regardless of controls:0 -- that only suppresses the control bar
+  // during playback, not the initial load state. A fixed delay is used
+  // instead of waiting for the PLAYING event because that event's exact
+  // timing relative to the splash turned out not to be reliable enough in
+  // practice. Only autoplaying instances (the live room) need this; a
+  // static preview (the wizard) never plays on its own, so it starts
+  // already "ready" and just shows its paused frame.
   const [ready, setReady] = useState(!autoPlay);
 
   useImperativeHandle(
@@ -168,7 +169,7 @@ export const LockedYouTubePlayer = forwardRef<
   useEffect(() => {
     let cancelled = false;
 
-    const revealTimer = autoPlay ? window.setTimeout(() => setReady(true), 3000) : null;
+    const revealTimer = autoPlay ? window.setTimeout(() => setReady(true), 5000) : null;
 
     loadYouTubeIframeApi().then((YT) => {
       if (cancelled || !containerRef.current) return;
@@ -228,11 +229,40 @@ export const LockedYouTubePlayer = forwardRef<
   return (
     <div className={className} style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
-      {!ready && (
+      {autoPlay && (
         <div
           aria-hidden
-          style={{ position: "absolute", inset: 0, zIndex: 2, background: "black" }}
-        />
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 2,
+            background: "black",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: ready ? 0 : 1,
+            transition: "opacity 600ms ease",
+            pointerEvents: ready ? "none" : "auto",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              height: 56,
+              width: 56,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 12,
+              fontSize: 22,
+              fontWeight: 700,
+              color: "white",
+              background: "linear-gradient(135deg, #4f46e5, #c026d3)",
+              animation: "locked-player-pulse 1.6s ease-in-out infinite",
+            }}
+          >
+            W
+          </div>
+        </div>
       )}
       {/* Blocks every click/right-click from reaching the YouTube iframe
           underneath — the iframe is cross-origin, so we can't hide its
