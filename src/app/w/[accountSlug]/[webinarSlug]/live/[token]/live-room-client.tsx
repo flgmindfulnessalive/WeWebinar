@@ -246,7 +246,7 @@ export function LiveRoomClient({
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
         <div className="relative flex flex-1 items-center justify-center bg-black">
           {isEnded ? (
             <EndedState webinarTitle={webinarTitle} ctas={ctas} onCtaClick={recordCtaClick} />
@@ -288,7 +288,7 @@ export function LiveRoomClient({
         </div>
 
         {showChat && (
-          <div className="w-80 shrink-0">
+          <div className="h-56 w-full shrink-0 md:h-auto md:w-80">
             <ChatPanel
               accessToken={accessToken}
               visitorName={visitorName}

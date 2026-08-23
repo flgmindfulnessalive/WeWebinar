@@ -110,7 +110,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full flex-col border-l bg-background">
+    <div className="flex h-full flex-col border-t bg-background md:border-t-0 md:border-l">
       <div className="flex items-center justify-between border-b px-3 py-2">
         <p className="text-sm font-medium">Chat en vivo</p>
         {onClose && (
