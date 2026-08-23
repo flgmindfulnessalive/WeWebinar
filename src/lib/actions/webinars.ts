@@ -100,3 +100,21 @@ export async function archiveWebinar(webinarId: string): Promise<WebinarActionSt
   }
   return null;
 }
+
+// Permanently removes the webinar and everything under it (schedules,
+// registrants, chat, CTAs, analytics, email templates/sends) via ON DELETE
+// CASCADE. Restricted to account owners by the webinars_delete_owner RLS
+// policy. Irreversible -- the client confirms with the user before calling
+// this.
+export async function deleteWebinar(webinarId: string): Promise<WebinarActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("webinars").delete().eq("id", webinarId);
+
+  revalidatePath("/dashboard/webinars");
+  revalidatePath("/dashboard");
+
+  if (error) {
+    return { error: error.message };
+  }
+  return null;
+}

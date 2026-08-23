@@ -71,6 +71,7 @@ export default async function WebinarsPage() {
                     <WebinarRowActions
                       webinarId={webinar.id}
                       status={webinar.status}
+                      isOwner={current.user.role === "owner"}
                     />
                   )}
                 </div>
