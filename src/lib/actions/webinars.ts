@@ -66,6 +66,25 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
   return null;
 }
 
+export async function setWebinarVideo(
+  webinarId: string,
+  youtubeVideoId: string,
+  durationSeconds: number
+): Promise<WebinarActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ youtube_video_id: youtubeVideoId, duration_seconds: Math.round(durationSeconds) })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+
+  if (error) {
+    return { error: error.message };
+  }
+  return null;
+}
+
 export async function archiveWebinar(webinarId: string): Promise<WebinarActionState> {
   const supabase = await createClient();
   const { error } = await supabase

@@ -130,12 +130,11 @@ export default async function WebinarDetailPage({
         <VideoSection
           webinarId={webinar.id}
           initial={{
-            mux_asset_id: webinar.mux_asset_id,
-            mux_playback_id: webinar.mux_playback_id,
+            youtube_video_id: webinar.youtube_video_id,
             duration_seconds: webinar.duration_seconds,
           }}
         />
-      ) : webinar.mux_playback_id ? (
+      ) : webinar.youtube_video_id ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
