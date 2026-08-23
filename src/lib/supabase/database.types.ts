@@ -161,8 +161,7 @@ export interface Database {
           slug: string;
           description: string | null;
           category: string | null;
-          mux_asset_id: string | null;
-          mux_playback_id: string | null;
+          youtube_video_id: string | null;
           duration_seconds: number | null;
           schedule_mode: ScheduleMode;
           just_in_time_offsets_minutes: number[];

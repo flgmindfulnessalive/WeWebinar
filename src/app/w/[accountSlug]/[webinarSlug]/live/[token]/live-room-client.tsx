@@ -1,15 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
-import type MuxPlayerElement from "@mux/mux-player";
-import type { MuxCSSProperties } from "@mux/mux-player-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fakeViewerCount } from "@/lib/fake-viewers";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  LockedYouTubePlayer,
+  type LockedYouTubePlayerHandle,
+} from "@/components/locked-youtube-player";
 import { ChatPanel } from "./chat-panel";
 import type {
   ChatMessageType,
@@ -17,8 +18,6 @@ import type {
   Database,
   Json,
 } from "@/lib/supabase/database.types";
-
-const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), { ssr: false });
 
 type ChatMessage = {
   id: string;
@@ -46,7 +45,7 @@ export function LiveRoomClient({
   accessToken,
   webinarId,
   webinarTitle,
-  muxPlaybackId,
+  youtubeVideoId,
   durationSeconds: initialDurationSeconds,
   initialElapsedSeconds,
   fakeViewerMin,
@@ -62,7 +61,7 @@ export function LiveRoomClient({
   accessToken: string;
   webinarId: string;
   webinarTitle: string;
-  muxPlaybackId: string;
+  youtubeVideoId: string;
   durationSeconds: number;
   initialElapsedSeconds: number;
   fakeViewerMin: number;
@@ -75,7 +74,7 @@ export function LiveRoomClient({
   chatMessages: ChatMessage[];
   ctas: Cta[];
 }) {
-  const playerRef = useRef<MuxPlayerElement | null>(null);
+  const playerRef = useRef<LockedYouTubePlayerHandle | null>(null);
   // Set from an effect, never read during render — only inside effects and
   // event handlers, where accessing refs and calling Date.now() is fine.
   const mountedAtRef = useRef<number | null>(null);
@@ -149,8 +148,11 @@ export function LiveRoomClient({
     return () => clearInterval(interval);
   }, [supabase, accessToken]);
 
-  const handleLoadedMetadata = () => {
+  const handleLoadedMetadata = (playerDurationSeconds: number) => {
     if (playerRef.current) playerRef.current.currentTime = getElapsedSeconds();
+    if (durationSeconds === 0 && playerDurationSeconds > 0) {
+      setDurationSeconds(Math.round(playerDurationSeconds));
+    }
   };
 
   const handleTimeUpdate = () => {
@@ -164,7 +166,7 @@ export function LiveRoomClient({
   };
 
   const handlePause = () => {
-    if (!isEnded) playerRef.current?.play().catch(() => {});
+    if (!isEnded) playerRef.current?.play();
   };
 
   const handleRateChange = () => {
@@ -250,33 +252,16 @@ export function LiveRoomClient({
             <EndedState webinarTitle={webinarTitle} ctas={ctas} onCtaClick={recordCtaClick} />
           ) : (
             <>
-              <MuxPlayer
+              <LockedYouTubePlayer
                 ref={playerRef}
-                playbackId={muxPlaybackId}
-                streamType="on-demand"
+                videoId={youtubeVideoId}
                 autoPlay
                 muted={isMuted}
-                nohotkeys
-                disablePictureInPicture
-                playbackRates={[1]}
-                envKey={process.env.NEXT_PUBLIC_MUX_DATA_ENV_KEY}
-                metadata={{ video_id: webinarId, viewer_user_id: accessToken }}
                 onLoadedMetadata={handleLoadedMetadata}
                 onTimeUpdate={handleTimeUpdate}
                 onPause={handlePause}
                 onRateChange={handleRateChange}
                 onEnded={() => setIsEnded(true)}
-                style={
-                  {
-                    width: "100%",
-                    height: "100%",
-                    "--play-button": "none",
-                    "--seek-backward-button": "none",
-                    "--seek-forward-button": "none",
-                    "--time-range": "none",
-                    "--playback-rate-button": "none",
-                  } as MuxCSSProperties
-                }
               />
               {isMuted && (
                 <button

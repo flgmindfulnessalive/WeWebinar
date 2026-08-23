@@ -6,7 +6,7 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 
 - **Frontend/Backend:** Next.js 14+ (App Router), TypeScript.
 - **Base de datos + Auth + Storage:** Supabase (Postgres con Row Level Security).
-- **Video:** Mux.
+- **Video:** YouTube (link no listado) reproducido dentro de un player propio con controles nativos bloqueados.
 - **Pagos de suscripción:** Stripe.
 - **Email transaccional:** Resend.
 - **UI:** Tailwind CSS + shadcn/ui.
@@ -15,7 +15,7 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 
 1. **Esquema de Supabase + RLS** — listo.
 2. **Scaffold de Next.js** — listo: Auth, onboarding, dashboard, facturación con Stripe.
-3. **Wizard de creación del webinar** — listo: video (Mux), programación, sala de espera, chat simulado, CTAs.
+3. **Wizard de creación del webinar** — listo: video (YouTube), programación, sala de espera, chat simulado, CTAs.
 4. **Experiencia del asistente** — listo: registro público, sala de espera con countdown, sala del webinar con player restringido y sincronización server-side.
 5. **Dashboard de analíticas** — listo: registrados/asistentes/tiempo de visualización, curva de abandono por minuto, clics y conversión por CTA, resultados de encuestas, export a CSV.
 6. **Emails automáticos** — listo: confirmación de registro, recordatorios configurables, email de "te lo perdiste" con replay.
@@ -128,12 +128,13 @@ estándar de shadcn.
 Cada sección es su propia card en la página de detalle, con su Server
 Action sobre las tablas ya protegidas por RLS (Owner/Editor):
 
-- **Video** (`video-section.tsx`) — Direct Upload a Mux (`@mux/mux-uploader-react`,
-  nunca pasa por nuestro servidor). `api/mux/upload` crea el upload
-  scopeado a un webinar (con el `webinar_id` como `passthrough` del
-  asset); `api/mux/webhook` escribe `mux_asset_id`/`mux_playback_id`/
-  `duration_seconds` cuando Mux termina de procesar, y borra el asset
-  viejo en Mux si el host reemplaza el video.
+- **Video** (`video-section.tsx`) — el host pega el link de un video de
+  YouTube "no listado" (`src/lib/youtube.ts` extrae el ID de cualquier
+  formato de URL). Se monta un preview con `LockedYouTubePlayer`, que al
+  cargar reporta la duración real (`onReady` de la IFrame Player API); ese
+  único round trip guarda `youtube_video_id` + `duration_seconds` vía
+  Server Action (`setWebinarVideo`) — sin cuenta de terceros ni webhook
+  de procesamiento async como hacía Mux.
 - **Programación** — toggle horarios fijos / just-in-time, offsets de
   inicio, y CRUD de horarios recurrentes (día + hora + timezone IANA).
   `src/lib/scheduling.ts` convierte esos horarios a instantes UTC
@@ -161,11 +162,14 @@ Action sobre las tablas ya protegidas por RLS (Owner/Editor):
   asistente llega tarde, redirige directo a la sala en vez de mostrar
   el countdown. Contador ficticio, bullets, testimonios, y botón de
   calendario (.ics + link de Google Calendar).
-- **`/live/[token]` — Sala del webinar (pieza crítica).** Mux Player
-  con `--play-button`, `--seek-backward/forward-button`, `--time-range`
-  y `--playback-rate-button` puestos en `none` (oculta pausa/seek/
-  velocidad), `nohotkeys` y `disablePictureInPicture` para cerrar los
-  bypasses obvios. La posición se recalcula en cada `timeupdate` contra
+- **`/live/[token]` — Sala del webinar (pieza crítica).**
+  `LockedYouTubePlayer` (`src/components/locked-youtube-player.tsx`)
+  monta el iframe de YouTube con `controls=0`/`disablekb=1`/`fs=0` y un
+  div invisible superpuesto que absorbe todo click y bloquea el menú
+  contextual (así no hay forma de llegar a "Copiar URL del video" ni a
+  los controles nativos) — el playback lo maneja enteramente la IFrame
+  Player API (`seekTo`, `playVideo`, `getCurrentTime`), nunca el usuario.
+  La posición se recalcula en un polling propio de 250ms contra
   `elapsed = ahora - computed_session_start`; cualquier drift (seek
   manual, buffering) se corrige de vuelta. Resync periódico contra
   `get_registrant_playback_state` cada 20s (cubre sleep/background del
@@ -321,7 +325,7 @@ rutas de `/admin` redirigen a `/login` sin sesión.
 
 1. ~~Esquema de Supabase + RLS~~ ✅
 2. ~~Scaffold de Next.js + Auth + Stripe Billing~~ ✅
-3. ~~CRUD de webinars + subida a Mux + wizard completo~~ ✅
+3. ~~CRUD de webinars + video de YouTube + wizard completo~~ ✅
 4. ~~Página pública de registro + programación (horarios fijos / just-in-time)~~ ✅
 5. ~~Sala de espera con countdown~~ ✅
 6. ~~Sala del webinar con player restringido y sincronización server-side~~ ✅

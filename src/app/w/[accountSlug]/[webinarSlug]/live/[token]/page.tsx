@@ -20,12 +20,12 @@ export default async function LiveRoomPage({
   const { data: webinar } = await supabase
     .from("webinars")
     .select(
-      "id, title, presenter_user_id, mux_playback_id, duration_seconds, fake_viewer_min, fake_viewer_max, account_id"
+      "id, title, presenter_user_id, youtube_video_id, duration_seconds, fake_viewer_min, fake_viewer_max, account_id"
     )
     .eq("id", session.webinar_id)
     .eq("status", "published")
     .maybeSingle();
-  if (!webinar || !webinar.mux_playback_id) notFound();
+  if (!webinar || !webinar.youtube_video_id) notFound();
 
   const [{ data: account }, { data: presenter }, { data: chatMessages }, { data: ctas }] =
     await Promise.all([
@@ -59,7 +59,7 @@ export default async function LiveRoomPage({
       accessToken={token}
       webinarId={webinar.id}
       webinarTitle={webinar.title}
-      muxPlaybackId={webinar.mux_playback_id}
+      youtubeVideoId={webinar.youtube_video_id}
       durationSeconds={webinar.duration_seconds ?? 0}
       initialElapsedSeconds={initialElapsedSeconds}
       fakeViewerMin={webinar.fake_viewer_min}

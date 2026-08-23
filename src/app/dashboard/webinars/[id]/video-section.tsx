@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-import MuxUploader from "@mux/mux-uploader-react";
+import { useRef, useState } from "react";
 
-import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), { ssr: false });
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  LockedYouTubePlayer,
+  type LockedYouTubePlayerHandle,
+} from "@/components/locked-youtube-player";
+import { extractYouTubeVideoId } from "@/lib/youtube";
+import { setWebinarVideo } from "@/lib/actions/webinars";
 
 type VideoState = {
-  mux_asset_id: string | null;
-  mux_playback_id: string | null;
+  youtube_video_id: string | null;
   duration_seconds: number | null;
 };
 
@@ -24,30 +26,40 @@ export function VideoSection({
   initial: VideoState;
 }) {
   const [state, setState] = useState<VideoState>(initial);
-  const [showUploader, setShowUploader] = useState(!initial.mux_asset_id);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showInput, setShowInput] = useState(!initial.youtube_video_id);
+  const [urlInput, setUrlInput] = useState("");
+  const [pendingVideoId, setPendingVideoId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const previewRef = useRef<LockedYouTubePlayerHandle | null>(null);
 
-  const isProcessing = state.mux_asset_id && !state.mux_playback_id;
+  function handleLoad() {
+    const id = extractYouTubeVideoId(urlInput);
+    if (!id) {
+      setError("No pude reconocer ese link de YouTube. Probá pegando la URL completa.");
+      return;
+    }
+    setError(null);
+    setPendingVideoId(id);
+  }
 
-  useEffect(() => {
-    if (!isProcessing) return;
+  async function handleDurationReady(durationSeconds: number) {
+    if (!pendingVideoId || durationSeconds <= 0) return;
+    setIsSaving(true);
+    const result = await setWebinarVideo(webinarId, pendingVideoId, durationSeconds);
+    setIsSaving(false);
+    if (result?.error) {
+      setError(result.error);
+      setPendingVideoId(null);
+      return;
+    }
+    setState({ youtube_video_id: pendingVideoId, duration_seconds: Math.round(durationSeconds) });
+    setPendingVideoId(null);
+    setShowInput(false);
+    setUrlInput("");
+  }
 
-    const supabase = createClient();
-    pollRef.current = setInterval(async () => {
-      const { data } = await supabase
-        .from("webinars")
-        .select("mux_asset_id, mux_playback_id, duration_seconds")
-        .eq("id", webinarId)
-        .single();
-      if (data) setState(data);
-    }, 4000);
-
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [isProcessing, webinarId]);
-
-  if (showUploader) {
+  if (showInput) {
     return (
       <Card>
         <CardHeader>
@@ -55,23 +67,49 @@ export function VideoSection({
             Video
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <MuxUploader
-            endpoint={async () => {
-              const res = await fetch("/api/mux/upload", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ webinar_id: webinarId }),
-              });
-              const data = await res.json();
-              if (!res.ok) throw new Error(data.error ?? "upload failed");
-              return data.url as string;
-            }}
-            onSuccess={() => {
-              setShowUploader(false);
-              setState((s) => ({ ...s, mux_asset_id: "pending" }));
-            }}
-          />
+        <CardContent className="flex flex-col gap-3">
+          <p className="text-sm text-muted-foreground">
+            Pegá el link de un video de YouTube &ldquo;no listado&rdquo;
+            (Visibilidad → Oculto, en YouTube Studio). No hace falta que sea
+            público.
+          </p>
+          <div className="grid gap-1.5">
+            <Label htmlFor="youtube-url">Link de YouTube</Label>
+            <div className="flex gap-2">
+              <Input
+                id="youtube-url"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="https://youtu.be/..."
+              />
+              <Button type="button" onClick={handleLoad} disabled={!urlInput.trim()}>
+                Cargar
+              </Button>
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+
+          {pendingVideoId && (
+            <div className="flex flex-col gap-2">
+              <div className="aspect-video w-full overflow-hidden rounded-md bg-black">
+                <LockedYouTubePlayer
+                  ref={previewRef}
+                  videoId={pendingVideoId}
+                  muted
+                  onLoadedMetadata={handleDurationReady}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {isSaving ? "Guardando..." : "Cargando duración del video..."}
+              </p>
+            </div>
+          )}
+
+          {state.youtube_video_id && (
+            <Button type="button" variant="ghost" onClick={() => setShowInput(false)}>
+              Cancelar
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -83,22 +121,15 @@ export function VideoSection({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           Video
         </CardTitle>
-        <Button size="sm" variant="outline" onClick={() => setShowUploader(true)}>
+        <Button size="sm" variant="outline" onClick={() => setShowInput(true)}>
           Reemplazar video
         </Button>
       </CardHeader>
       <CardContent>
-        {state.mux_playback_id ? (
-          <MuxPlayer
-            playbackId={state.mux_playback_id}
-            streamType="on-demand"
-            envKey={process.env.NEXT_PUBLIC_MUX_DATA_ENV_KEY}
-            metadata={{ video_id: webinarId }}
-          />
-        ) : (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Procesando video... esto puede tardar unos minutos.
-          </p>
+        {state.youtube_video_id && (
+          <div className="aspect-video w-full overflow-hidden rounded-md bg-black">
+            <LockedYouTubePlayer videoId={state.youtube_video_id} muted />
+          </div>
         )}
       </CardContent>
     </Card>
