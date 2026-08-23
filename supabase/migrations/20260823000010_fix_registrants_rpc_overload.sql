@@ -1,0 +1,12 @@
+-- 20260823000009 added a p_offset param to get_account_recent_registrants
+-- via `create or replace function`, but `create or replace` only replaces
+-- a function when its argument types match exactly -- adding a trailing
+-- parameter changes the signature, so that migration actually left the
+-- OLD 2-arg function in place and created a SEPARATE 3-arg overload next
+-- to it, rather than replacing it. PostgREST's RPC resolution treats a
+-- same-named function with only a differing default-valued trailing
+-- argument as ambiguous, breaking the endpoint entirely -- confirmed by
+-- reproducing the exact "function ... is not unique" error locally.
+--
+-- Drop the old signature so exactly one function remains.
+drop function if exists public.get_account_recent_registrants(uuid, int);
