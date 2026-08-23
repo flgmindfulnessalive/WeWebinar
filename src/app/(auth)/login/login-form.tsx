@@ -49,7 +49,15 @@ export function LoginForm({ next }: { next: string }) {
             <Input id="email" name="email" type="email" required autoComplete="email" />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="password">Contraseña</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Contraseña</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground underline underline-offset-4"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
             <Input
               id="password"
               name="password"

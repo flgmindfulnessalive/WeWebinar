@@ -82,6 +82,55 @@ export async function signInWithGoogle(next: string = "/dashboard") {
   redirect(destination);
 }
 
+export type ForgotPasswordState = { error: string } | { success: true } | null;
+
+export async function requestPasswordReset(
+  _prevState: ForgotPasswordState,
+  formData: FormData
+): Promise<ForgotPasswordState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "El email es obligatorio." };
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
+    });
+    // Never reveal whether the email exists -- always report success from
+    // the caller's point of view, but still surface a real infra failure.
+    if (error) {
+      console.error("[auth] requestPasswordReset failed:", error);
+      return { error: "No pudimos enviar el email. Probá de nuevo en un momento." };
+    }
+  } catch (err) {
+    console.error("[auth] requestPasswordReset failed:", err);
+    return { error: "No pudimos enviar el email. Probá de nuevo en un momento." };
+  }
+
+  return { success: true };
+}
+
+export async function updatePassword(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { error: error.message };
+  } catch (err) {
+    console.error("[auth] updatePassword failed:", err);
+    return { error: "No pudimos conectar con el servidor de autenticación. Probá de nuevo en un momento." };
+  }
+
+  redirect("/dashboard");
+}
+
 export async function signOut() {
   try {
     const supabase = await createClient();
