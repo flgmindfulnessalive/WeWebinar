@@ -57,7 +57,17 @@ export async function upsertSingletonTemplate(
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("[email-templates] upsertSingletonTemplate failed:", {
+      type,
+      hadExisting: Boolean(existing),
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+    return { error: error.message };
+  }
   return null;
 }
 
