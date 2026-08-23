@@ -262,7 +262,14 @@ export const LockedYouTubePlayer = forwardRef<
             alignItems: "center",
             justifyContent: "center",
             opacity: coverVisible ? 1 : 0,
-            transition: "opacity 600ms ease",
+            // Covering must be instant -- any fade-in here is a window where
+            // the cover is still translucent while YouTube's native UI
+            // (e.g. the pause/play "toast" icon on a state change, or our
+            // own handlePause -> play() resume) is already flashing
+            // underneath, so the fade briefly reveals exactly what this is
+            // supposed to hide. Only the reveal (uncovering, once playback
+            // is confirmed clean) should be a smooth fade.
+            transition: coverVisible ? "none" : "opacity 600ms ease",
             pointerEvents: coverVisible ? "auto" : "none",
           }}
         >
