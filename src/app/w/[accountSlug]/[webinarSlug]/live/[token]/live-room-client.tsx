@@ -270,7 +270,7 @@ export function LiveRoomClient({
                     if (playerRef.current) playerRef.current.muted = false;
                     setIsMuted(false);
                   }}
-                  className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg"
+                  className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg"
                 >
                   🔇 Click para activar el sonido
                 </button>
@@ -332,7 +332,7 @@ function CtaOverlay({
         rel="noreferrer"
         onClick={onLinkClick}
         className={cn(
-          "absolute rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg",
+          "absolute z-10 rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg",
           positionClass
         )}
       >
@@ -345,7 +345,7 @@ function CtaOverlay({
     const text = config.text ? String(config.text) : null;
     const imageUrl = config.image_url ? String(config.image_url) : null;
     return (
-      <div className="absolute bottom-16 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 rounded-md bg-black/80 p-4 text-white shadow-lg">
+      <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 rounded-md bg-black/80 p-4 text-white shadow-lg">
         {imageUrl && (
           <Image src={imageUrl} alt="" width={240} height={120} className="max-h-32 w-auto object-contain" unoptimized />
         )}
@@ -358,7 +358,7 @@ function CtaOverlay({
     const question = String(config.question ?? "");
     const options = Array.isArray(config.options) ? (config.options as string[]) : [];
     return (
-      <div className="absolute bottom-16 left-1/2 flex w-80 -translate-x-1/2 flex-col gap-2 rounded-md bg-black/85 p-4 text-white shadow-lg">
+      <div className="absolute bottom-16 left-1/2 z-10 flex w-80 -translate-x-1/2 flex-col gap-2 rounded-md bg-black/85 p-4 text-white shadow-lg">
         <p className="text-sm font-medium">{question}</p>
         <div className="flex flex-col gap-1.5">
           {options.map((option) => (
