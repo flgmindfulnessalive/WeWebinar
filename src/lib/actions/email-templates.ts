@@ -27,17 +27,33 @@ export async function upsertSingletonTemplate(
   if (!current) return { error: "No autenticado." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("email_templates").upsert(
-    {
-      account_id: current.account.id,
-      webinar_id: webinarId,
-      type,
-      subject,
-      body,
-      is_active: true,
-    },
-    { onConflict: "webinar_id,type" }
-  );
+
+  // email_templates_singleton_idx is a *partial* unique index (scoped to
+  // just these two types), and Postgres won't match a bare
+  // ON CONFLICT (webinar_id, type) target against a partial index --
+  // .upsert() would fail with "no unique or exclusion constraint matching
+  // the ON CONFLICT specification". Do the find-then-write explicitly
+  // instead of relying on native upsert.
+  const { data: existing } = await supabase
+    .from("email_templates")
+    .select("id")
+    .eq("webinar_id", webinarId)
+    .eq("type", type)
+    .maybeSingle();
+
+  const { error } = existing
+    ? await supabase
+        .from("email_templates")
+        .update({ subject, body, is_active: true })
+        .eq("id", existing.id)
+    : await supabase.from("email_templates").insert({
+        account_id: current.account.id,
+        webinar_id: webinarId,
+        type,
+        subject,
+        body,
+        is_active: true,
+      });
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
 
