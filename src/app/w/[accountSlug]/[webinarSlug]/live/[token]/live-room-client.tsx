@@ -174,6 +174,11 @@ export function LiveRoomClient({
     if (player && player.playbackRate !== 1) player.playbackRate = 1;
   };
 
+  const handleUnmute = () => {
+    playerRef.current?.unmuteSmoothly();
+    setIsMuted(false);
+  };
+
   const viewerCount = fakeViewerCount({
     seed: `${webinarId}:${sessionStart}`,
     elapsedSeconds,
@@ -257,6 +262,7 @@ export function LiveRoomClient({
                 videoId={youtubeVideoId}
                 autoPlay
                 muted={isMuted}
+                onOverlayClick={isMuted ? handleUnmute : undefined}
                 onLoadedMetadata={handleLoadedMetadata}
                 onTimeUpdate={handleTimeUpdate}
                 onPause={handlePause}
@@ -266,13 +272,10 @@ export function LiveRoomClient({
               {isMuted && (
                 <button
                   type="button"
-                  onClick={() => {
-                    playerRef.current?.unmuteSmoothly();
-                    setIsMuted(false);
-                  }}
+                  onClick={handleUnmute}
                   className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg"
                 >
-                  🔇 Click para activar el sonido
+                  🔇 Click en cualquier parte del video para activar el sonido
                 </button>
               )}
               {activeCtas.map((cta) => (
