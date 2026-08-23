@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { DashboardNav } from "./dashboard-nav";
+import { MobileNav } from "./mobile-nav";
 import { UserMenu } from "./user-menu";
 
 export default async function DashboardLayout({
@@ -27,9 +28,18 @@ export default async function DashboardLayout({
 
       <div className="flex flex-col">
         <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
-          <div className="text-sm text-muted-foreground">
-            {current.account.name} ·{" "}
-            <span className="capitalize">{current.plan.key}</span>
+          <div className="flex items-center gap-2">
+            <MobileNav role={current.user.role} />
+            <Link
+              href="/dashboard"
+              className="text-lg font-semibold tracking-tight md:hidden"
+            >
+              WeWebinar
+            </Link>
+            <div className="hidden text-sm text-muted-foreground md:block">
+              {current.account.name} ·{" "}
+              <span className="capitalize">{current.plan.key}</span>
+            </div>
           </div>
           <UserMenu
             email={current.user.email}
