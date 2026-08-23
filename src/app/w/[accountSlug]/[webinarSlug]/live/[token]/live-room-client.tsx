@@ -98,6 +98,29 @@ export function LiveRoomClient({
 
   const supabase = useMemo(() => createClient(), []);
 
+  // These calls were previously fire-and-forgotten with no error check --
+  // a failure (bad token, RLS, a transient network blip) was completely
+  // invisible, which made "no analytics data at all despite testing a lot"
+  // impossible to diagnose. Log failures to the browser console instead.
+  const recordViewerEvent = useCallback(
+    (
+      eventType: "join" | "heartbeat" | "leave" | "cta_click" | "poll_response",
+      opts?: { videoTimestampSeconds?: number; metadata?: Json }
+    ) => {
+      supabase
+        .rpc("record_viewer_event", {
+          p_access_token: accessToken,
+          p_event_type: eventType,
+          p_video_timestamp_seconds: opts?.videoTimestampSeconds,
+          p_metadata: opts?.metadata,
+        })
+        .then(({ error }) => {
+          if (error) console.error(`[live-room] record_viewer_event(${eventType}) failed:`, error);
+        });
+    },
+    [supabase, accessToken]
+  );
+
   useEffect(() => {
     mountedAtRef.current = Date.now();
     const interval = setInterval(() => setElapsedSeconds(getElapsedSeconds()), 1000);
@@ -106,13 +129,9 @@ export function LiveRoomClient({
 
   // join event once, best-effort leave event on unload.
   useEffect(() => {
-    supabase.rpc("record_viewer_event", { p_access_token: accessToken, p_event_type: "join" });
+    recordViewerEvent("join");
     const onUnload = () => {
-      supabase.rpc("record_viewer_event", {
-        p_access_token: accessToken,
-        p_event_type: "leave",
-        p_video_timestamp_seconds: Math.round(getElapsedSeconds()),
-      });
+      recordViewerEvent("leave", { videoTimestampSeconds: Math.round(getElapsedSeconds()) });
     };
     window.addEventListener("pagehide", onUnload);
     return () => window.removeEventListener("pagehide", onUnload);
@@ -122,14 +141,10 @@ export function LiveRoomClient({
   // Heartbeat.
   useEffect(() => {
     const interval = setInterval(() => {
-      supabase.rpc("record_viewer_event", {
-        p_access_token: accessToken,
-        p_event_type: "heartbeat",
-        p_video_timestamp_seconds: Math.round(getElapsedSeconds()),
-      });
+      recordViewerEvent("heartbeat", { videoTimestampSeconds: Math.round(getElapsedSeconds()) });
     }, HEARTBEAT_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [supabase, accessToken, getElapsedSeconds]);
+  }, [recordViewerEvent, getElapsedSeconds]);
 
   // Periodic server resync — corrects drift from sleep/backgrounding and
   // catches the ended state even if this tab never fires 'ended'.
@@ -195,20 +210,16 @@ export function LiveRoomClient({
   );
 
   function recordCtaClick(ctaId: string) {
-    supabase.rpc("record_viewer_event", {
-      p_access_token: accessToken,
-      p_event_type: "cta_click",
-      p_video_timestamp_seconds: Math.round(getElapsedSeconds()),
-      p_metadata: { cta_id: ctaId },
+    recordViewerEvent("cta_click", {
+      videoTimestampSeconds: Math.round(getElapsedSeconds()),
+      metadata: { cta_id: ctaId },
     });
   }
 
   function recordPollResponse(ctaId: string, option: string) {
-    supabase.rpc("record_viewer_event", {
-      p_access_token: accessToken,
-      p_event_type: "poll_response",
-      p_video_timestamp_seconds: Math.round(getElapsedSeconds()),
-      p_metadata: { cta_id: ctaId, option },
+    recordViewerEvent("poll_response", {
+      videoTimestampSeconds: Math.round(getElapsedSeconds()),
+      metadata: { cta_id: ctaId, option },
     });
   }
 
