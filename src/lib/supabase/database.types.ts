@@ -18,7 +18,7 @@ export type SubscriptionStatus =
   | "suspended"
   | "canceled";
 export type WebinarStatus = "draft" | "published" | "archived";
-export type ScheduleMode = "fixed" | "just_in_time";
+export type ScheduleMode = "fixed" | "just_in_time" | "both";
 export type CtaType = "link" | "poll" | "overlay";
 export type ChatMessageType = "message" | "question" | "host_reply";
 export type ViewerEventType =
