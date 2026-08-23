@@ -35,6 +35,8 @@ interface YTNamespace {
     el: HTMLElement,
     opts: {
       videoId: string;
+      width: string;
+      height: string;
       playerVars: Record<string, number | string>;
       events: {
         onReady?: (e: YTPlayerEvent) => void;
@@ -170,6 +172,14 @@ export const LockedYouTubePlayer = forwardRef<
 
       playerRef.current = new YT.Player(containerRef.current, {
         videoId,
+        // Without these, the API defaults the generated <iframe> to a
+        // fixed 640x390px box instead of filling its container -- on a
+        // viewport a different size/aspect than that, the real iframe can
+        // extend beyond where our overlay divs (sized to 100%/100% of the
+        // container) actually cover, letting the mouse reach YouTube's own
+        // UI directly in the uncovered strip.
+        width: "100%",
+        height: "100%",
         playerVars: {
           controls: 0,
           disablekb: 1,
