@@ -25,7 +25,6 @@ const NAV_ITEMS: {
     href: "/dashboard/settings",
     label: "Configuración",
     icon: Settings,
-    minRole: ["owner"],
   },
 ];
 
