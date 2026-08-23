@@ -39,10 +39,9 @@ function featureList(plan: {
 }
 
 export default async function PricingPage() {
-  const supabase = await createClient();
-
   let plans: Plan[] | null = null;
   try {
+    const supabase = await createClient();
     const result = await supabase
       .from("plans")
       .select("*")
@@ -52,7 +51,14 @@ export default async function PricingPage() {
     }
     plans = result.data;
   } catch (err) {
-    console.error("[pricing] Failed to load plans (thrown):", err);
+    console.error(
+      "[pricing] Failed to load plans (thrown). NEXT_PUBLIC_SUPABASE_URL set:",
+      Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY set:",
+      Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+      "error:",
+      err
+    );
   }
 
   const selfServe = (plans ?? []).filter((p) => p.is_self_serve);
