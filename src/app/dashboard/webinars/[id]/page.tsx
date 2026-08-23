@@ -101,7 +101,11 @@ export default async function WebinarDetailPage({
             </Link>
           </Button>
           {canManage && (
-            <WebinarRowActions webinarId={webinar.id} status={webinar.status} />
+            <WebinarRowActions
+              webinarId={webinar.id}
+              status={webinar.status}
+              isOwner={current.user.role === "owner"}
+            />
           )}
         </div>
       </div>
