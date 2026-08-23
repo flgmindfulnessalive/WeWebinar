@@ -100,6 +100,11 @@ export const LockedYouTubePlayer = forwardRef<
     autoPlay?: boolean;
     muted?: boolean;
     className?: string;
+    /** Called on any click on the video's blocking overlay -- e.g. so a
+     * caller can let a click anywhere unmute, not just a dedicated button
+     * (easy to miss, and a muted webinar with no obvious way to unmute it
+     * makes people leave). Omit to leave clicks on the overlay a no-op. */
+    onOverlayClick?: () => void;
     onLoadedMetadata?: (durationSeconds: number) => void;
     onTimeUpdate?: () => void;
     onPause?: () => void;
@@ -107,7 +112,7 @@ export const LockedYouTubePlayer = forwardRef<
     onEnded?: () => void;
   }
 >(function LockedYouTubePlayer(
-  { videoId, autoPlay, muted, className, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded },
+  { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -117,13 +122,15 @@ export const LockedYouTubePlayer = forwardRef<
   const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded });
   callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded };
 
-  // Covers the player until it's actually playing. YouTube shows its own
+  // Covers the player for a fixed delay after mount. YouTube shows its own
   // branded splash (thumbnail + big play button + title) for the first
-  // second or two after the iframe loads, regardless of controls:0 --
-  // that only suppresses the control bar during playback, not the initial
-  // load state. Only autoplaying instances (the live room) need this; a
-  // static preview (the wizard) never plays on its own, so it starts
-  // already "ready" and just shows its paused frame as before.
+  // second or two after the iframe loads, regardless of controls:0 -- that
+  // only suppresses the control bar during playback, not the initial load
+  // state. A fixed delay is used instead of waiting for the PLAYING event
+  // because that event's exact timing relative to the splash turned out
+  // not to be reliable enough in practice. Only autoplaying instances (the
+  // live room) need this; a static preview (the wizard) never plays on its
+  // own, so it starts already "ready" and just shows its paused frame.
   const [ready, setReady] = useState(!autoPlay);
 
   useImperativeHandle(
@@ -161,11 +168,7 @@ export const LockedYouTubePlayer = forwardRef<
   useEffect(() => {
     let cancelled = false;
 
-    // Safety net: if PLAYING never fires (slow network, blocked autoplay,
-    // an unavailable video), don't leave the viewer staring at the cover
-    // forever -- reveal whatever YouTube ends up showing after a few
-    // seconds instead.
-    const fallbackTimer = autoPlay ? window.setTimeout(() => setReady(true), 4000) : null;
+    const revealTimer = autoPlay ? window.setTimeout(() => setReady(true), 3000) : null;
 
     loadYouTubeIframeApi().then((YT) => {
       if (cancelled || !containerRef.current) return;
@@ -198,7 +201,6 @@ export const LockedYouTubePlayer = forwardRef<
           },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
-              setReady(true);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = setInterval(() => callbacksRef.current.onTimeUpdate?.(), TIME_UPDATE_INTERVAL_MS);
             } else {
@@ -215,7 +217,7 @@ export const LockedYouTubePlayer = forwardRef<
 
     return () => {
       cancelled = true;
-      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      if (revealTimer) window.clearTimeout(revealTimer);
       if (tickRef.current) clearInterval(tickRef.current);
       playerRef.current?.destroy();
       playerRef.current = null;
@@ -240,7 +242,8 @@ export const LockedYouTubePlayer = forwardRef<
           handle above (the IFrame Player API), not by user interaction. */}
       <div
         onContextMenu={(e) => e.preventDefault()}
-        style={{ position: "absolute", inset: 0, zIndex: 1 }}
+        onClick={onOverlayClick}
+        style={{ position: "absolute", inset: 0, zIndex: 1, cursor: onOverlayClick ? "pointer" : undefined }}
       />
     </div>
   );
