@@ -47,6 +47,17 @@ export function RegistrationForm({
   );
   const [selectedOffset, setSelectedOffset] = useState(offsets[0] ?? 5);
 
+  // A "both" webinar lets the visitor pick either path; a pure fixed/JIT
+  // webinar only ever has one to show. If "both" has no upcoming
+  // occurrences yet, fall back to the offset picker instead of an empty tab.
+  const showFixedOption =
+    (scheduleMode === "fixed" || scheduleMode === "both") && occurrences.length > 0;
+  const showJitOption = scheduleMode === "just_in_time" || scheduleMode === "both";
+  const showBothTabs = showFixedOption && showJitOption;
+  const [activeTab, setActiveTab] = useState<"fixed" | "jit">(
+    showFixedOption ? "fixed" : "jit"
+  );
+
   // Visitor's timezone is a browser-only value that can legitimately differ
   // from the server's default — useSyncExternalStore reads it without a
   // hydration mismatch: "UTC" during SSR, the real zone once mounted.
@@ -104,7 +115,32 @@ export function RegistrationForm({
           <input type="hidden" name="return_to" value={returnTo} />
           <input type="hidden" name="visitor_timezone" value={visitorTimezone} />
 
-          {scheduleMode === "fixed" ? (
+          {showBothTabs && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("fixed")}
+                className={cn(
+                  "rounded-md border px-3 py-1.5 text-sm font-medium",
+                  activeTab === "fixed" ? "border-primary bg-accent" : "text-muted-foreground"
+                )}
+              >
+                Elegir horario
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("jit")}
+                className={cn(
+                  "rounded-md border px-3 py-1.5 text-sm font-medium",
+                  activeTab === "jit" ? "border-primary bg-accent" : "text-muted-foreground"
+                )}
+              >
+                Empezar ahora
+              </button>
+            </div>
+          )}
+
+          {activeTab === "fixed" ? (
             <div className="grid gap-2">
               <input type="hidden" name="schedule_id" value={selectedScheduleId ?? ""} />
               <input type="hidden" name="session_starts_at" value={selectedStartsAt ?? ""} />

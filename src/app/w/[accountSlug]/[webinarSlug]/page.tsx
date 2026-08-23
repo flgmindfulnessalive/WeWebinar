@@ -37,7 +37,7 @@ export default async function RegisterPage({
           .eq("id", webinar.presenter_user_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
-    webinar.schedule_mode === "fixed"
+    webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both"
       ? supabase
           .from("webinar_schedules")
           .select("id, day_of_week, time_of_day, timezone")
@@ -53,7 +53,7 @@ export default async function RegisterPage({
     webinar.attendee_count >= plan.max_attendees_per_webinar;
 
   const occurrences =
-    webinar.schedule_mode === "fixed"
+    webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both"
       ? computeUpcomingOccurrences(schedules ?? [], { limit: 10 }).map((o) => ({
           scheduleId: o.scheduleId,
           startsAt: o.startsAt.toISOString(),

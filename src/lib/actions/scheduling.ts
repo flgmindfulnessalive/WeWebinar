@@ -15,7 +15,7 @@ export async function updateSchedulingMode(
   const scheduleMode = String(formData.get("schedule_mode") ?? "") as ScheduleMode;
   const offsetsRaw = String(formData.get("offsets") ?? "");
 
-  if (scheduleMode !== "fixed" && scheduleMode !== "just_in_time") {
+  if (scheduleMode !== "fixed" && scheduleMode !== "just_in_time" && scheduleMode !== "both") {
     return { error: "Modo de programación inválido." };
   }
 
@@ -23,9 +23,10 @@ export async function updateSchedulingMode(
     schedule_mode: scheduleMode,
   };
 
-  // Fixed-schedule webinars don't use offsets — leave the column as-is
-  // instead of overwriting it with a throwaway value.
-  if (scheduleMode === "just_in_time") {
+  // A pure fixed-schedule webinar doesn't use offsets — leave the column
+  // as-is instead of overwriting it with a throwaway value. "both" needs
+  // offsets same as "just_in_time" since either path has to work.
+  if (scheduleMode === "just_in_time" || scheduleMode === "both") {
     const offsets = offsetsRaw
       .split(",")
       .map((s) => Number(s.trim()))

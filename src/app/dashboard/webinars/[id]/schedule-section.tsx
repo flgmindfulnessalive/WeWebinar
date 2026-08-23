@@ -82,10 +82,11 @@ export function ScheduleSection({
             >
               <option value="just_in_time">Just-in-time</option>
               <option value="fixed">Horarios fijos</option>
+              <option value="both">Ambos</option>
             </select>
           </div>
 
-          {mode === "just_in_time" && (
+          {(mode === "just_in_time" || mode === "both") && (
             <div className="grid gap-2">
               <Label htmlFor="offsets">
                 Opciones de inicio (minutos desde ahora, separados por coma)
@@ -108,7 +109,7 @@ export function ScheduleSection({
           </Button>
         </form>
 
-        {mode === "fixed" && (
+        {(mode === "fixed" || mode === "both") && (
           <div className="flex flex-col gap-4 border-t pt-6">
             <p className="text-sm font-medium">Horarios recurrentes</p>
 
