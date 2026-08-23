@@ -139,8 +139,12 @@ export default async function WebinarDetailPage({
             {webinar.category ?? "—"}
           </p>
           <p>
-            <span className="text-muted-foreground">Registrados:</span>{" "}
-            {webinar.attendee_count} / {current.plan.max_attendees_per_webinar ?? "∞"}
+            <span className="text-muted-foreground">Registrados (histórico):</span>{" "}
+            {webinar.attendee_count}
+          </p>
+          <p>
+            <span className="text-muted-foreground">Cupo simultáneo por sesión:</span>{" "}
+            {current.plan.max_attendees_per_webinar ?? "Ilimitado"}
           </p>
           <p className="sm:col-span-2">
             <span className="text-muted-foreground">Descripción:</span>{" "}
