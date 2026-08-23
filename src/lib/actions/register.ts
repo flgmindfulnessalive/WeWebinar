@@ -79,7 +79,17 @@ export async function registerForWebinar(
   formData: FormData
 ): Promise<RegisterActionState> {
   const webinarId = String(formData.get("webinar_id") ?? "");
-  const returnTo = String(formData.get("return_to") ?? "");
+  const returnToRaw = String(formData.get("return_to") ?? "");
+  // return_to is a client-supplied hidden field, always set by our own UI to
+  // a relative path like /w/<slug>/<slug> -- but a raw POST could put
+  // anything there. Used both in the emailed access link and as the actual
+  // redirect() target below, so an unvalidated value is an open redirect.
+  // Require a single leading slash (not "//", which browsers treat as
+  // protocol-relative to another host) and no embedded scheme.
+  const returnTo =
+    returnToRaw.startsWith("/") && !returnToRaw.startsWith("//") && !returnToRaw.includes("://")
+      ? returnToRaw
+      : "";
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const visitorTimezone = String(formData.get("visitor_timezone") ?? "") || null;

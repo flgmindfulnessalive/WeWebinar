@@ -32,7 +32,7 @@ export default async function WebinarDetailPage({
     .eq("id", id)
     .single();
 
-  if (!webinar) notFound();
+  if (!webinar || webinar.account_id !== current.account.id) notFound();
 
   const canManage = current.user.role === "owner" || current.user.role === "editor";
 

@@ -43,6 +43,26 @@ export async function GET(request: Request) {
   });
 
   for (const r of dueReminders ?? []) {
+    // Claim this (registrant, kind) pair by inserting the dedup row BEFORE
+    // sending — email_sends has a unique (registrant_id, kind) constraint,
+    // so this insert is the atomic gate. Inserting after the send left a
+    // window where two overlapping cron runs (a slow run still in flight
+    // when the next ~5min tick fires) could both see the recipient as due
+    // and both send. If the send below then fails, we roll the claim back
+    // so this recipient is picked up again on the next run instead of
+    // being silently skipped forever.
+    const kind = `reminder:${r.offset_minutes}`;
+    const { error: claimError } = await admin.from("email_sends").insert({
+      registrant_id: r.registrant_id,
+      webinar_id: r.webinar_id,
+      kind,
+    });
+    if (claimError) {
+      if (claimError.code !== "23505") {
+        errors.push(`reminder ${r.registrant_id}: ${claimError.message}`);
+      }
+      continue;
+    }
     try {
       const template = await resolveTemplate(admin, {
         accountId: r.account_id,
@@ -61,13 +81,13 @@ export async function GET(request: Request) {
         subject: renderTemplate(template.subject, vars),
         html: renderTemplate(template.body, vars),
       });
-      await admin.from("email_sends").insert({
-        registrant_id: r.registrant_id,
-        webinar_id: r.webinar_id,
-        kind: `reminder:${r.offset_minutes}`,
-      });
       remindersSent++;
     } catch (err) {
+      await admin
+        .from("email_sends")
+        .delete()
+        .eq("registrant_id", r.registrant_id)
+        .eq("kind", kind);
       errors.push(`reminder ${r.registrant_id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
@@ -77,6 +97,17 @@ export async function GET(request: Request) {
   });
 
   for (const r of (dueReplays ?? []) as Database["public"]["Functions"]["get_due_replay_recipients"]["Returns"]) {
+    const { error: claimError } = await admin.from("email_sends").insert({
+      registrant_id: r.registrant_id,
+      webinar_id: r.webinar_id,
+      kind: "replay_missed",
+    });
+    if (claimError) {
+      if (claimError.code !== "23505") {
+        errors.push(`replay ${r.registrant_id}: ${claimError.message}`);
+      }
+      continue;
+    }
     try {
       const template = await resolveTemplate(admin, {
         accountId: r.account_id,
@@ -94,13 +125,13 @@ export async function GET(request: Request) {
         subject: renderTemplate(template.subject, vars),
         html: renderTemplate(template.body, vars),
       });
-      await admin.from("email_sends").insert({
-        registrant_id: r.registrant_id,
-        webinar_id: r.webinar_id,
-        kind: "replay_missed",
-      });
       replaysSent++;
     } catch (err) {
+      await admin
+        .from("email_sends")
+        .delete()
+        .eq("registrant_id", r.registrant_id)
+        .eq("kind", "replay_missed");
       errors.push(`replay ${r.registrant_id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }

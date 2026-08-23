@@ -9,9 +9,23 @@ export type TemplateVars = {
   link_acceso: string;
 };
 
+// Templates are sent as HTML email bodies, and `nombre` is attacker-
+// controlled (the free-text name field on the public registration form) --
+// escape every substituted value so a registration like
+// `name: <a href="evil">click</a>` can't inject markup/links into an email
+// sent from our trusted domain.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function renderTemplate(template: string, vars: TemplateVars): string {
   return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) => {
-    return key in vars ? vars[key as keyof TemplateVars] : match;
+    return key in vars ? escapeHtml(vars[key as keyof TemplateVars]) : match;
   });
 }
 
