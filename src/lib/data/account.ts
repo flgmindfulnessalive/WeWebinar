@@ -20,42 +20,47 @@ export type CurrentAccount = {
 // Returns null when the caller isn't authenticated or hasn't
 // completed onboarding yet — callers decide how to redirect.
 export async function getCurrentAccount(): Promise<CurrentAccount | null> {
-  const supabase = await createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
 
-  if (!authUser) return null;
+    if (!authUser) return null;
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, email, role, display_name, avatar_url, account_id")
-    .eq("id", authUser.id)
-    .single();
+    const { data: profile } = await supabase
+      .from("users")
+      .select("id, email, role, display_name, avatar_url, account_id")
+      .eq("id", authUser.id)
+      .single();
 
-  if (!profile?.account_id) return null;
+    if (!profile?.account_id) return null;
 
-  const { data: account } = await supabase
-    .from("accounts")
-    .select("*, plan:plans(*)")
-    .eq("id", profile.account_id)
-    .single();
+    const { data: account } = await supabase
+      .from("accounts")
+      .select("*, plan:plans(*)")
+      .eq("id", profile.account_id)
+      .single();
 
-  if (!account?.plan) return null;
+    if (!account?.plan) return null;
 
-  const { plan, ...accountRow } = account as typeof account & {
-    plan: Database["public"]["Tables"]["plans"]["Row"];
-  };
+    const { plan, ...accountRow } = account as typeof account & {
+      plan: Database["public"]["Tables"]["plans"]["Row"];
+    };
 
-  return {
-    user: {
-      id: profile.id,
-      email: profile.email,
-      role: profile.role,
-      display_name: profile.display_name,
-      avatar_url: profile.avatar_url,
-    },
-    account: accountRow,
-    plan,
-  };
+    return {
+      user: {
+        id: profile.id,
+        email: profile.email,
+        role: profile.role,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+      },
+      account: accountRow,
+      plan,
+    };
+  } catch (err) {
+    console.error("[account] getCurrentAccount failed:", err);
+    return null;
+  }
 }
