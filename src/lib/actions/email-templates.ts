@@ -41,7 +41,7 @@ export async function upsertSingletonTemplate(
     .eq("type", type)
     .maybeSingle();
 
-  const { error } = existing
+  let { error } = existing
     ? await supabase
         .from("email_templates")
         .update({ subject, body, is_active: true })
@@ -55,6 +55,27 @@ export async function upsertSingletonTemplate(
         is_active: true,
       });
 
+  // The find-then-insert above isn't atomic, so a second concurrent save
+  // (double-click, two tabs) can race in between: both see no `existing`
+  // row, both try to insert, and the second hits the partial unique index
+  // (email_templates_singleton_idx) instead of finding a row to update.
+  // Rather than surface that raw constraint violation, retry once as an
+  // update against the row the other request just created.
+  if (error?.code === "23505" && !existing) {
+    const { data: raced } = await supabase
+      .from("email_templates")
+      .select("id")
+      .eq("webinar_id", webinarId)
+      .eq("type", type)
+      .maybeSingle();
+    if (raced) {
+      ({ error } = await supabase
+        .from("email_templates")
+        .update({ subject, body, is_active: true })
+        .eq("id", raced.id));
+    }
+  }
+
   revalidatePath(`/dashboard/webinars/${webinarId}`);
 
   if (error) {
@@ -66,7 +87,7 @@ export async function upsertSingletonTemplate(
       details: error.details,
       hint: error.hint,
     });
-    return { error: error.message };
+    return { error: "No pudimos guardar la plantilla. Probá de nuevo." };
   }
   return null;
 }

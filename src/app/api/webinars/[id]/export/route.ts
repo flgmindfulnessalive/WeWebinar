@@ -4,6 +4,14 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
 
 function csvEscape(value: string): string {
+  // Registrant-controlled fields (name, custom_fields) land straight in a
+  // CSV a host opens in Excel/Sheets. A value starting with =, +, - or @
+  // is executed as a live formula by those apps on open (CSV/formula
+  // injection) -- prefix with a leading apostrophe to force text
+  // interpretation, same as Excel's own "Show formula injection warning".
+  if (/^[=+\-@]/.test(value)) {
+    value = `'${value}`;
+  }
   if (/[",\n]/.test(value)) {
     return `"${value.replace(/"/g, '""')}"`;
   }
