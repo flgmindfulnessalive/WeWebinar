@@ -84,6 +84,8 @@ export default async function WebinarDetailPage({
     emailTemplates = emailTemplatesRes.data ?? [];
   }
 
+  const publicPath = `/w/${current.account.slug}/${webinar.slug}`;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -103,6 +105,27 @@ export default async function WebinarDetailPage({
           )}
         </div>
       </div>
+
+      {webinar.status === "published" ? (
+        <Card>
+          <CardContent className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="truncate text-sm">
+              <span className="text-muted-foreground">Link público:</span>{" "}
+              <span className="font-mono">{publicPath}</span>
+            </p>
+            <Button asChild size="sm" variant="outline">
+              <Link href={publicPath} target="_blank" rel="noreferrer">
+                Abrir página pública
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          El link público (<span className="font-mono">{publicPath}</span>) se
+          activa cuando publiques el webinar.
+        </p>
+      )}
 
       <Card>
         <CardHeader>
