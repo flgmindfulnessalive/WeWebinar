@@ -12,19 +12,33 @@ export default async function DashboardPage() {
   if (!current) return null;
 
   const supabase = await createClient();
-  const [{ count: publishedCount }, { data: summaryRows }, { data: recentRegistrants }] =
-    await Promise.all([
-      supabase
-        .from("webinars")
-        .select("id", { count: "exact", head: true })
-        .eq("account_id", current.account.id)
-        .eq("status", "published"),
-      supabase.rpc("get_account_summary", { p_account_id: current.account.id }),
-      supabase.rpc("get_account_recent_registrants", {
-        p_account_id: current.account.id,
-        p_limit: 10,
-      }),
-    ]);
+  const [
+    { count: publishedCount },
+    { data: summaryRows, error: summaryError },
+    { data: recentRegistrants, error: recentError },
+  ] = await Promise.all([
+    supabase
+      .from("webinars")
+      .select("id", { count: "exact", head: true })
+      .eq("account_id", current.account.id)
+      .eq("status", "published"),
+    supabase.rpc("get_account_summary", { p_account_id: current.account.id }),
+    supabase.rpc("get_account_recent_registrants", {
+      p_account_id: current.account.id,
+      p_limit: 10,
+    }),
+  ]);
+
+  // Surface RPC failures instead of silently rendering as if there were no
+  // data — a missing/misnamed function (e.g. a migration that wasn't
+  // deployed yet) would otherwise look identical to "0 registrados".
+  if (summaryError) {
+    console.error("[dashboard] get_account_summary failed:", summaryError);
+  }
+  if (recentError) {
+    console.error("[dashboard] get_account_recent_registrants failed:", recentError);
+  }
+  const metricsFailed = Boolean(summaryError || recentError);
 
   const maxActiveWebinars = current.plan.max_active_webinars;
   const summary = summaryRows?.[0];
@@ -85,18 +99,30 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {metricsFailed && (
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          No pudimos cargar las métricas de registrados. Puede que falte aplicar una migración de
+          base de datos (<code className="font-mono">supabase db push</code>) — revisá los logs
+          del servidor para más detalle.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Registrados totales" value={String(registrantCount)} icon={Users} />
+        <StatTile
+          label="Registrados totales"
+          value={metricsFailed ? "—" : String(registrantCount)}
+          icon={Users}
+        />
         <StatTile
           label="Asistentes reales"
-          value={String(attendeeCount)}
-          sublabel={`${joinRatePct}% tasa de asistencia`}
+          value={metricsFailed ? "—" : String(attendeeCount)}
+          sublabel={metricsFailed ? undefined : `${joinRatePct}% tasa de asistencia`}
           icon={UserCheck}
         />
         <StatTile
           label="Visualización promedio"
-          value={`${avgWatchPct}%`}
-          sublabel="del video, en promedio"
+          value={metricsFailed ? "—" : `${avgWatchPct}%`}
+          sublabel={metricsFailed ? undefined : "del video, en promedio"}
           icon={Eye}
         />
       </div>
@@ -108,7 +134,11 @@ export default async function DashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!recentRegistrants || recentRegistrants.length === 0 ? (
+          {metricsFailed ? (
+            <p className="text-sm text-muted-foreground">
+              No pudimos cargar la lista de registrados.
+            </p>
+          ) : !recentRegistrants || recentRegistrants.length === 0 ? (
             <p className="text-sm text-muted-foreground">Todavía no hay nadie registrado.</p>
           ) : (
             <div className="overflow-x-auto rounded-md border">
