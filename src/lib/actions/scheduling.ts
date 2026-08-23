@@ -61,6 +61,9 @@ export async function addSchedule(
   }
 
   const dayOfWeek = dayOfWeekRaw === "" ? null : Number(dayOfWeekRaw);
+  // Only meaningful for "Todos los días" — a specific weekday is already a
+  // single day, weekend or not.
+  const excludeWeekends = dayOfWeek === null && formData.get("exclude_weekends") === "on";
 
   const supabase = await createClient();
   const { error } = await supabase.from("webinar_schedules").insert({
@@ -68,6 +71,7 @@ export async function addSchedule(
     day_of_week: dayOfWeek,
     time_of_day: timeOfDay,
     timezone,
+    exclude_weekends: excludeWeekends,
   });
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);

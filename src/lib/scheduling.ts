@@ -57,6 +57,7 @@ export type FixedSchedule = {
   day_of_week: number | null; // 0=Sunday..6=Saturday, null = every day
   time_of_day: string; // "HH:MM:SS"
   timezone: string;
+  exclude_weekends?: boolean; // only meaningful when day_of_week is null
 };
 
 export type UpcomingOccurrence = {
@@ -85,6 +86,7 @@ export function computeUpcomingOccurrences(
       const weekday = candidateDate.getUTCDay();
 
       if (schedule.day_of_week !== null && schedule.day_of_week !== weekday) continue;
+      if (schedule.exclude_weekends && (weekday === 0 || weekday === 6)) continue;
 
       const startsAt = zonedWallTimeToUtc(
         {

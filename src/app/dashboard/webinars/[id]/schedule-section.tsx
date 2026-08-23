@@ -28,6 +28,7 @@ type ScheduleRow = {
   day_of_week: number | null;
   time_of_day: string;
   timezone: string;
+  exclude_weekends: boolean;
 };
 
 function useTimezones() {
@@ -59,6 +60,7 @@ export function ScheduleSection({
     addSchedule,
     null
   );
+  const [newScheduleDay, setNewScheduleDay] = useState("");
   const timezones = useTimezones();
 
   return (
@@ -132,7 +134,8 @@ export function ScheduleSection({
                 <select
                   id="day_of_week"
                   name="day_of_week"
-                  defaultValue=""
+                  value={newScheduleDay}
+                  onChange={(e) => setNewScheduleDay(e.target.value)}
                   className="flex h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   <option value="">Todos los días</option>
@@ -143,6 +146,12 @@ export function ScheduleSection({
                   ))}
                 </select>
               </div>
+              {newScheduleDay === "" && (
+                <label className="flex items-center gap-2 pb-2 text-sm">
+                  <input type="checkbox" name="exclude_weekends" className="size-4" />
+                  Excluir fines de semana
+                </label>
+              )}
               <div className="grid gap-1.5">
                 <Label htmlFor="time_of_day">Hora</Label>
                 <Input
@@ -195,8 +204,9 @@ function ScheduleRowItem({
   return (
     <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
       <span>
-        {schedule.day_of_week === null ? "Todos los días" : DAY_LABELS[schedule.day_of_week]}{" "}
-        · {schedule.time_of_day.slice(0, 5)} · {schedule.timezone}
+        {schedule.day_of_week === null ? "Todos los días" : DAY_LABELS[schedule.day_of_week]}
+        {schedule.exclude_weekends && " (sin fines de semana)"} ·{" "}
+        {schedule.time_of_day.slice(0, 5)} · {schedule.timezone}
       </span>
       <Button
         size="sm"

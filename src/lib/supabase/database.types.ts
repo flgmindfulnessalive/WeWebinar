@@ -198,6 +198,7 @@ export interface Database {
           time_of_day: string;
           timezone: string;
           is_active: boolean;
+          exclude_weekends: boolean;
           created_at: string;
         };
         Insert: Partial<
