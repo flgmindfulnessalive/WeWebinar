@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { getCurrentAccount } from "@/lib/data/account";
+import { Logo } from "@/components/logo";
 import { DashboardNav } from "./dashboard-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserMenu } from "./user-menu";
@@ -20,7 +21,8 @@ export default async function DashboardLayout({
   return (
     <div className="grid min-h-svh grid-cols-1 md:grid-cols-[240px_1fr]">
       <aside className="hidden flex-col gap-6 border-r bg-muted/20 p-4 md:flex">
-        <Link href="/dashboard" className="px-2 text-lg font-semibold tracking-tight">
+        <Link href="/dashboard" className="flex items-center gap-2 px-2 text-lg font-semibold tracking-tight">
+          <Logo />
           WeWebinar
         </Link>
         <DashboardNav role={current.user.role} />
@@ -32,8 +34,9 @@ export default async function DashboardLayout({
             <MobileNav role={current.user.role} />
             <Link
               href="/dashboard"
-              className="text-lg font-semibold tracking-tight md:hidden"
+              className="flex items-center gap-2 text-lg font-semibold tracking-tight md:hidden"
             >
+              <Logo />
               WeWebinar
             </Link>
             <div className="hidden text-sm text-muted-foreground md:block">
