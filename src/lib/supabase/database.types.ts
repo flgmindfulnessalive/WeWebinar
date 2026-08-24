@@ -675,6 +675,17 @@ export interface Database {
           votes: number;
         }[];
       };
+      get_webinar_cta_clickers: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          cta_id: string;
+          registrant_id: string;
+          name: string;
+          email: string;
+          clicked_at: string;
+          click_count: number;
+        }[];
+      };
       get_due_reminder_recipients: {
         Args: { p_tolerance_minutes?: number };
         Returns: {
