@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/logo";
-import { ParticleNetwork } from "./_components/particle-network";
+import { ParticleNetwork } from "@/components/particle-network";
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage({

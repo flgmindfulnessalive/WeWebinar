@@ -2,10 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
-const PARTICLE_COUNT = 70;
 const LINK_DISTANCE = 130;
 const MOUSE_LINK_DISTANCE = 180;
-const PARTICLE_COLOR = "148, 163, 255"; // soft indigo, matches --brand family
 const SPEED = 0.15;
 
 type Particle = { x: number; y: number; vx: number; vy: number };
@@ -14,9 +12,20 @@ type Particle = { x: number; y: number; vx: number; vy: number };
 // connected by thin lines when close to each other, plus extra lines
 // reaching toward the cursor so the whole thing visibly reacts to mouse
 // movement. Zero dependencies (no particles.js/tsparticles), matching how
-// the marketing hero's own background effects (GradientBlobs,
-// MouseSpotlight) are built.
-export function ParticleNetwork() {
+// the marketing hero's other background effects (GradientBlobs,
+// MouseSpotlight) are built. Shared between the login page's dark panel
+// (denser, more prominent) and the marketing home hero (sparser, subtler
+// -- an accent detail, not a dominant background), tuned via props rather
+// than two near-duplicate components.
+export function ParticleNetwork({
+  color = "148, 163, 255", // rgb triplet, no alpha -- soft indigo by default
+  particleCount = 70,
+  opacity = 1,
+}: {
+  color?: string;
+  particleCount?: number;
+  opacity?: number;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -44,7 +53,7 @@ export function ParticleNetwork() {
     }
 
     function seed() {
-      particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+      particles = Array.from({ length: particleCount }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * SPEED,
@@ -70,7 +79,7 @@ export function ParticleNetwork() {
           const b = particles[j];
           const dist = Math.hypot(a.x - b.x, a.y - b.y);
           if (dist < LINK_DISTANCE) {
-            ctx!.strokeStyle = `rgba(${PARTICLE_COLOR}, ${0.25 * (1 - dist / LINK_DISTANCE)})`;
+            ctx!.strokeStyle = `rgba(${color}, ${0.25 * (1 - dist / LINK_DISTANCE) * opacity})`;
             ctx!.beginPath();
             ctx!.moveTo(a.x, a.y);
             ctx!.lineTo(b.x, b.y);
@@ -81,7 +90,7 @@ export function ParticleNetwork() {
         if (mouse) {
           const dist = Math.hypot(particles[i].x - mouse.x, particles[i].y - mouse.y);
           if (dist < MOUSE_LINK_DISTANCE) {
-            ctx!.strokeStyle = `rgba(${PARTICLE_COLOR}, ${0.5 * (1 - dist / MOUSE_LINK_DISTANCE)})`;
+            ctx!.strokeStyle = `rgba(${color}, ${0.5 * (1 - dist / MOUSE_LINK_DISTANCE) * opacity})`;
             ctx!.beginPath();
             ctx!.moveTo(particles[i].x, particles[i].y);
             ctx!.lineTo(mouse.x, mouse.y);
@@ -90,7 +99,7 @@ export function ParticleNetwork() {
         }
       }
 
-      ctx!.fillStyle = `rgba(${PARTICLE_COLOR}, 0.8)`;
+      ctx!.fillStyle = `rgba(${color}, ${0.8 * opacity})`;
       for (const p of particles) {
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
@@ -122,13 +131,7 @@ export function ParticleNetwork() {
       canvas.removeEventListener("pointermove", handleMove);
       canvas.removeEventListener("pointerleave", handleLeave);
     };
-  }, []);
+  }, [color, particleCount, opacity]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden
-      className="absolute inset-0 size-full"
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden className="absolute inset-0 size-full" />;
 }
