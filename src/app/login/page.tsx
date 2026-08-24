@@ -21,8 +21,13 @@ export default async function LoginPage({
             the panel where the particle network stops reacting to the
             mouse. */}
         <div className="pointer-events-none relative z-10 flex flex-col items-center gap-4 px-10 text-center">
-          <Logo className="size-16 rounded-2xl text-2xl shadow-2xl shadow-indigo-500/30" />
-          <span className="text-2xl font-semibold tracking-tight text-white">WeWebinar</span>
+          <Link
+            href="/"
+            className="pointer-events-auto flex flex-col items-center gap-4 transition-opacity hover:opacity-80"
+          >
+            <Logo className="size-16 rounded-2xl text-2xl shadow-2xl shadow-indigo-500/30" />
+            <span className="text-2xl font-semibold tracking-tight text-white">WeWebinar</span>
+          </Link>
           <p className="max-w-xs text-sm text-white/60">
             Webinars evergreen que se sienten en vivo.
           </p>
