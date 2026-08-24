@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CreditCard, Palette, User, Users } from "lucide-react";
+import { Building2, CreditCard, Palette, User, Users } from "lucide-react";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,11 @@ export default async function SettingsPage() {
     { href: "/dashboard/settings/profile", label: "Perfil", icon: User },
     ...(current.user.role === "owner"
       ? [
+          {
+            href: "/dashboard/settings/general",
+            label: "General",
+            icon: Building2,
+          },
           {
             href: "/dashboard/settings/billing",
             label: "Facturación y plan",
