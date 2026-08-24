@@ -16,6 +16,7 @@ interface YTPlayer {
   getCurrentTime(): number;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
   getDuration(): number;
+  getPlayerState(): YTPlayerState;
   playVideo(): void;
   mute(): void;
   unMute(): void;
@@ -139,12 +140,41 @@ export const LockedYouTubePlayer = forwardRef<
   // already uncovered and just shows its paused frame.
   const [coverVisible, setCoverVisible] = useState(Boolean(autoPlay));
   const hasPlayedOnceRef = useRef(false);
-  // Bumped on every corrective seek so an older seek's fallback-reveal
-  // timer (below) can't fire after a newer seek has already re-covered
-  // the player -- without this, two corrections close together could
-  // have the first one's timer reveal the cover while the second's
-  // rebuffer is still genuinely in progress.
-  const seekTokenRef = useRef(0);
+  // Bumped on every manual cover (a corrective seek or an unmute) so an
+  // older call's poll (below) can't reveal the cover after a newer call
+  // has already re-covered the player -- without this, two of these
+  // close together could have the first one's poll reveal the cover
+  // while the second's rebuffer is still genuinely in progress.
+  const revealTokenRef = useRef(0);
+
+  // Reveals the cover only once the player actually confirms it's
+  // PLAYING again (polling getPlayerState directly, not just waiting on
+  // onStateChange -- some triggers, like unmuting, don't reliably fire a
+  // state-change event even when they do cause a brief real rebuffer).
+  // maxWaitMs is a bounded safety net for the case where the state
+  // never departs from PLAYING at all (so there's nothing to poll for)
+  // -- without it the cover could get stuck forever.
+  function revealOnceConfirmedPlaying(maxWaitMs: number) {
+    const token = ++revealTokenRef.current;
+    const start = Date.now();
+    const check = () => {
+      if (revealTokenRef.current !== token) return;
+      const playing = playerRef.current?.getPlayerState() === 1;
+      if (!playing && Date.now() - start < maxWaitMs) {
+        window.setTimeout(check, 150);
+      } else {
+        setCoverVisible(false);
+      }
+    };
+    // The very first check can NOT run synchronously/immediately: the
+    // action that triggered this (a seek, an unmute) can cause the
+    // player to start buffering, but that transition happens
+    // asynchronously -- checking in the same tick would still see the
+    // stale "still PLAYING" state from *before* the action, revealing
+    // the cover right as the real rebuffer is about to start. Giving it
+    // one poll interval first lets that transition actually happen.
+    window.setTimeout(check, 150);
+  }
 
   useImperativeHandle(
     ref,
@@ -159,24 +189,12 @@ export const LockedYouTubePlayer = forwardRef<
         // fires -- same class of glitch unmuteSmoothly guards against below.
         // This is what causes the room's periodic drift-correction re-seek
         // (see handleTimeUpdate in live-room-client) to flash YouTube's own
-        // pause icon through mid-video, uncovered.
-        //
-        // Unlike unmuteSmoothly, this can NOT reveal on a short fixed
-        // timer: a corrective seek can trigger a real, variable-length
-        // rebuffer (not just an instant native toast), and revealing
-        // before that finishes is exactly what let YouTube's own paused
-        // UI flash through here before. The real reveal is onStateChange's
-        // PLAYING branch below, which only fires once playback has
-        // actually resumed. This timer is just a bounded safety net for
-        // the rarer case where the seek is short enough that no state-
-        // change event fires at all -- long enough to not race a normal
-        // rebuffer, short enough to never look stuck.
+        // pause icon through mid-video, uncovered. A corrective seek can
+        // trigger a real, variable-length rebuffer, so the reveal below
+        // only fires once playback is actually confirmed resumed.
         if (autoPlay) {
           setCoverVisible(true);
-          const token = ++seekTokenRef.current;
-          window.setTimeout(() => {
-            if (seekTokenRef.current === token) setCoverVisible(false);
-          }, 2000);
+          revealOnceConfirmedPlaying(2000);
         }
       },
       get muted() {
@@ -194,12 +212,17 @@ export const LockedYouTubePlayer = forwardRef<
       },
       play: () => playerRef.current?.playVideo(),
       unmuteSmoothly: () => {
-        // Muting/unmuting doesn't change the PLAYING state, so the
-        // automatic state-driven cover above won't catch this on its own
-        // -- cover manually for a moment around the call.
+        // Muting/unmuting doesn't reliably fire onStateChange, so the
+        // automatic state-driven cover above won't necessarily catch this
+        // on its own -- cover manually for a moment around the call. It
+        // can also genuinely trigger a brief rebuffer on some browsers
+        // (audio-enabled playback isn't always the same stream/bitrate as
+        // muted), which a short fixed reveal timer would race and lose --
+        // same class of glitch as the corrective seek above, so this uses
+        // the same confirmed-state reveal instead of a blind timeout.
         playerRef.current?.unMute();
         setCoverVisible(true);
-        window.setTimeout(() => setCoverVisible(false), 400);
+        revealOnceConfirmedPlaying(2000);
       },
     }),
     [autoPlay]
