@@ -1,9 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slug";
+import { getCurrentAccount } from "@/lib/data/account";
 
 export type CreateAccountState = { error: string } | null;
 
@@ -75,4 +77,35 @@ export async function createAccount(
 
   if (redirectTo) redirect(redirectTo);
   return result;
+}
+
+export type UpdateAccountNameState = { error: string } | { success: true } | null;
+
+export async function updateAccountName(
+  _prevState: UpdateAccountNameState,
+  formData: FormData
+): Promise<UpdateAccountNameState> {
+  const current = await getCurrentAccount();
+  if (!current || current.user.role !== "owner") {
+    return { error: "No tienes permisos para editar la cuenta." };
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) {
+    return { error: "El nombre de la cuenta es obligatorio." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("accounts")
+    .update({ name })
+    .eq("id", current.account.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/settings/general");
+  revalidatePath("/dashboard", "layout");
+  return { success: true };
 }
