@@ -360,6 +360,7 @@ export function LiveRoomClient({
                 <ConnectedTab
                   viewerCount={viewerCount}
                   visitorName={visitorName}
+                  presenterName={presenter?.display_name ?? null}
                   chatMessages={chatMessages}
                 />
               )}
@@ -430,13 +431,16 @@ function PanelTabButton({
 function ConnectedTab({
   viewerCount,
   visitorName,
+  presenterName,
   chatMessages,
 }: {
   viewerCount: number;
   visitorName: string;
+  presenterName: string | null;
   chatMessages: ChatMessage[];
 }) {
   const seen = new Set<string>([visitorName]);
+  if (presenterName) seen.add(presenterName);
   const names: string[] = [];
   for (const m of chatMessages) {
     if (!seen.has(m.fake_name)) {
@@ -452,6 +456,12 @@ function ConnectedTab({
         <p className="text-xs text-muted-foreground">personas conectadas ahora</p>
       </div>
       <div className="flex flex-col gap-2">
+        {presenterName && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+            <span className="truncate font-medium text-primary">{presenterName} (host)</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 text-sm">
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
           <span className="truncate font-medium text-primary">{visitorName} (tú)</span>
