@@ -41,10 +41,13 @@ function noiseComponents(seed: string, count: number): NoiseComponent[] {
 }
 
 const PRE_SHOW_RAMP_SECONDS = 300; // waiting room counter starts climbing 5 min out
+const POST_SHOW_DRAIN_SECONDS = 120; // once it ends, viewers "leave" down to 0 over 2 min
 
 /**
  * @param elapsedSeconds Negative while in the waiting room (seconds until
- *   start), 0..durationSeconds during playback.
+ *   start), 0..durationSeconds during playback, and can keep growing past
+ *   durationSeconds once the webinar has ended (drives the post-show drain
+ *   toward 0 below).
  */
 export function fakeViewerCount({
   seed,
@@ -59,6 +62,15 @@ export function fakeViewerCount({
   min: number;
   max: number;
 }): number {
+  // Once the webinar has ended, people leave -- keep draining the count
+  // down to 0 over POST_SHOW_DRAIN_SECONDS instead of holding forever at
+  // wherever the live curve happened to land.
+  if (durationSeconds > 0 && elapsedSeconds > durationSeconds) {
+    const atEnd = fakeViewerCount({ seed, elapsedSeconds: durationSeconds, durationSeconds, min, max });
+    const drainT = smoothstep((elapsedSeconds - durationSeconds) / POST_SHOW_DRAIN_SECONDS);
+    return Math.max(0, Math.round(atEnd * (1 - drainT)));
+  }
+
   const range = Math.max(1, max - min);
 
   let envelope: number;

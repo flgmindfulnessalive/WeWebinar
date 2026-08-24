@@ -97,9 +97,12 @@ export function LiveRoomClient({
   const getElapsedSeconds = useCallback(() => {
     const mountedAt = mountedAtRef.current;
     if (mountedAt === null) return elapsedAnchorRef.current;
-    const raw = elapsedAnchorRef.current + (Date.now() - mountedAt) / 1000;
-    return durationSeconds > 0 ? Math.min(raw, durationSeconds) : raw;
-  }, [durationSeconds]);
+    // Deliberately not clamped to durationSeconds: once the webinar ends,
+    // this keeps growing so the fake viewer count can keep draining toward
+    // 0 (see fakeViewerCount) instead of freezing at whatever it was the
+    // instant the video ended.
+    return elapsedAnchorRef.current + (Date.now() - mountedAt) / 1000;
+  }, []);
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -354,7 +357,11 @@ export function LiveRoomClient({
                 />
               )}
               {activeTab === "connected" && (
-                <ConnectedTab viewerCount={viewerCount} chatMessages={chatMessages} />
+                <ConnectedTab
+                  viewerCount={viewerCount}
+                  visitorName={visitorName}
+                  chatMessages={chatMessages}
+                />
               )}
               {activeTab === "presenter" && presenter && <PresenterTab presenter={presenter} />}
               {activeTab === "notifications" && (
@@ -422,12 +429,14 @@ function PanelTabButton({
 
 function ConnectedTab({
   viewerCount,
+  visitorName,
   chatMessages,
 }: {
   viewerCount: number;
+  visitorName: string;
   chatMessages: ChatMessage[];
 }) {
-  const seen = new Set<string>();
+  const seen = new Set<string>([visitorName]);
   const names: string[] = [];
   for (const m of chatMessages) {
     if (!seen.has(m.fake_name)) {
@@ -442,16 +451,18 @@ function ConnectedTab({
         <p className="text-3xl font-semibold text-primary">{viewerCount}</p>
         <p className="text-xs text-muted-foreground">personas conectadas ahora</p>
       </div>
-      {names.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {names.map((name) => (
-            <div key={name} className="flex items-center gap-2 text-sm">
-              <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-              <span className="truncate text-muted-foreground">{name}</span>
-            </div>
-          ))}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+          <span className="truncate font-medium text-primary">{visitorName} (tú)</span>
         </div>
-      )}
+        {names.map((name) => (
+          <div key={name} className="flex items-center gap-2 text-sm">
+            <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+            <span className="truncate text-muted-foreground">{name}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
