@@ -65,12 +65,12 @@ export async function createAccount(
       }
 
       if (!resolved) {
-        result = { error: "No se pudo generar un slug disponible, probá con otro nombre." };
+        result = { error: "No se pudo generar un slug disponible, prueba con otro nombre." };
       }
     }
   } catch (err) {
     console.error("[account] createAccount failed:", err);
-    result = { error: "No pudimos conectar con el servidor. Probá de nuevo en un momento." };
+    result = { error: "No pudimos conectar con el servidor. Prueba de nuevo en un momento." };
   }
 
   if (redirectTo) redirect(redirectTo);

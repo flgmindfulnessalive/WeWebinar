@@ -48,9 +48,9 @@ export const DEFAULT_TEMPLATES: Record<EmailTemplateType, { subject: string; bod
 <p><a href="{{link_acceso}}">Acceder al webinar</a></p>`,
   },
   replay_missed: {
-    subject: "Te perdiste {{webinar_titulo}} — mirá el replay",
+    subject: "Te perdiste {{webinar_titulo}} — mira el replay",
     body: `<p>Hola {{nombre}},</p>
-<p>No te vimos en <strong>{{webinar_titulo}}</strong>, pero podés ver el replay ahora.</p>
+<p>No te vimos en <strong>{{webinar_titulo}}</strong>, pero puedes ver el replay ahora.</p>
 <p><a href="{{link_acceso}}">Ver el replay</a></p>`,
   },
 };

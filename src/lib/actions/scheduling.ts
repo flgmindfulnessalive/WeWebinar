@@ -33,7 +33,7 @@ export async function updateSchedulingMode(
       .filter((n) => Number.isInteger(n) && n > 0);
 
     if (offsets.length === 0) {
-      return { error: "Definí al menos una opción de minutos para empezar." };
+      return { error: "Define al menos una opción de minutos para empezar." };
     }
     update.just_in_time_offsets_minutes = offsets;
   }

@@ -130,7 +130,7 @@ export function ChatPanel({
               )}
             >
               {m.name}
-              {m.kind === "own" && " (vos)"}:
+              {m.kind === "own" && " (tú)"}:
             </span>{" "}
             <span className="text-muted-foreground">{m.text}</span>
           </div>
@@ -146,7 +146,7 @@ export function ChatPanel({
               handleSend();
             }
           }}
-          placeholder="Escribí un mensaje..."
+          placeholder="Escribe un mensaje..."
           disabled={sending}
         />
         <Button size="sm" onClick={handleSend} disabled={sending || !draft.trim()}>

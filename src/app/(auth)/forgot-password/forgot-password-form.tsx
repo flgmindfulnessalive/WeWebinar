@@ -25,7 +25,7 @@ export function ForgotPasswordForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Revisá tu email</CardTitle>
+          <CardTitle>Revisa tu email</CardTitle>
           <CardDescription>
             Si existe una cuenta con ese email, te enviamos un link para
             elegir una contraseña nueva.

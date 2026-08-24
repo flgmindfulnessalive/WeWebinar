@@ -46,7 +46,7 @@ export async function addCta(
     const text = String(formData.get("overlay_text") ?? "").trim();
     const imageUrl = String(formData.get("overlay_image_url") ?? "").trim();
     if (!text && !imageUrl) {
-      return { error: "Agregá un texto o una imagen para el overlay." };
+      return { error: "Agrega un texto o una imagen para el overlay." };
     }
     config = { text: text || null, image_url: imageUrl || null };
   } else if (type === "poll") {

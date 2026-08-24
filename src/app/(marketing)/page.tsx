@@ -17,7 +17,7 @@ import { ProductPreview } from "./_components/product-preview";
 const FEATURES = [
   {
     icon: Video,
-    title: "Grabá una vez, presentalo para siempre",
+    title: "Graba una vez, preséntalo para siempre",
     description:
       "Cada visitante ve tu webinar como si fuera en vivo, con reproductor bloqueado para que no adelante ni descargue el video.",
   },
@@ -25,7 +25,7 @@ const FEATURES = [
     icon: CalendarClock,
     title: "Programación a tu manera",
     description:
-      "Horarios fijos recurrentes, arranque inmediato (\"empezá ahora\"), o ambos combinados en el mismo webinar.",
+      "Horarios fijos recurrentes, arranque inmediato (\"empieza ahora\"), o ambos combinados en el mismo webinar.",
   },
   {
     icon: MessageSquare,
@@ -56,18 +56,18 @@ const FEATURES = [
 const STEPS = [
   {
     n: "01",
-    title: "Grabá tu presentación",
-    description: "Subí tu video a YouTube (como no listado) y cargá el link en el wizard.",
+    title: "Graba tu presentación",
+    description: "Sube tu video a YouTube (como no listado) y carga el link en el wizard.",
   },
   {
     n: "02",
-    title: "Programá tus horarios",
-    description: "Elegí días y horas fijas, arranque inmediato, o las dos opciones juntas.",
+    title: "Programa tus horarios",
+    description: "Elige días y horas fijas, arranque inmediato, o las dos opciones juntas.",
   },
   {
     n: "03",
-    title: "Compartí tu link y vendé",
-    description: "Los CTAs y el chat simulado hacen el trabajo mientras vos generás tráfico.",
+    title: "Comparte tu link y vende",
+    description: "Los CTAs y el chat simulado hacen el trabajo mientras tú generas tráfico.",
   },
 ];
 
@@ -87,7 +87,7 @@ export default function HomePage() {
             className="animate-fade-up inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium"
             style={{ borderColor: "var(--brand)", color: "var(--brand)" }}
           >
-            🚀 Vendé mientras dormís
+            🚀 Vende mientras duermes
           </div>
 
           <h1
@@ -107,8 +107,8 @@ export default function HomePage() {
             className="animate-fade-up max-w-xl text-lg text-muted-foreground"
             style={{ animationDelay: "0.1s" }}
           >
-            Grabá una vez, presentalo para siempre. Programá sesiones automáticas,
-            simulá chat en vivo y vendé tus productos con CTAs cronometrados —
+            Graba una vez, preséntalo para siempre. Programa sesiones automáticas,
+            simula chat en vivo y vende tus productos con CTAs cronometrados —
             sin depender de una transmisión real.
           </p>
 
@@ -184,7 +184,7 @@ export default function HomePage() {
           style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
         >
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Empezá a vender con tu primer webinar evergreen
+            Empieza a vender con tu primer webinar evergreen
           </h2>
           <p className="max-w-xl text-white/80">
             Configuralo en minutos y dejalo vendiendo las 24 horas.

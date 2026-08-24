@@ -114,7 +114,7 @@ export default async function DashboardPage({
       {metricsFailed && (
         <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           No pudimos cargar las métricas de registrados. Puede que falte aplicar una migración de
-          base de datos (<code className="font-mono">supabase db push</code>) — revisá los logs
+          base de datos (<code className="font-mono">supabase db push</code>) — revisa los logs
           del servidor para más detalle.
         </p>
       )}

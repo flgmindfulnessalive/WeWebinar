@@ -13,7 +13,7 @@ export async function updateBranding(
 ): Promise<BrandingActionState> {
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
-    return { error: "No tenés permisos para editar la marca de la cuenta." };
+    return { error: "No tienes permisos para editar la marca de la cuenta." };
   }
 
   const branding = {

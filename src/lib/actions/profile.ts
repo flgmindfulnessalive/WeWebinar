@@ -45,7 +45,7 @@ export async function changePassword(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[profile] changePassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Probá de nuevo en un momento." };
+    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
   }
 
   return { success: true };

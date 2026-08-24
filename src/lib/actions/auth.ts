@@ -22,7 +22,7 @@ export async function signInWithPassword(
     redirectTo = next;
   } catch (err) {
     console.error("[auth] signInWithPassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Probá de nuevo en un momento." };
+    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
   }
 
   redirect(redirectTo);
@@ -49,7 +49,7 @@ export async function signUpWithPassword(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[auth] signUpWithPassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Probá de nuevo en un momento." };
+    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
   }
 
   redirect("/onboarding");
@@ -100,11 +100,11 @@ export async function requestPasswordReset(
     // the caller's point of view, but still surface a real infra failure.
     if (error) {
       console.error("[auth] requestPasswordReset failed:", error);
-      return { error: "No pudimos enviar el email. Probá de nuevo en un momento." };
+      return { error: "No pudimos enviar el email. Prueba de nuevo en un momento." };
     }
   } catch (err) {
     console.error("[auth] requestPasswordReset failed:", err);
-    return { error: "No pudimos enviar el email. Probá de nuevo en un momento." };
+    return { error: "No pudimos enviar el email. Prueba de nuevo en un momento." };
   }
 
   return { success: true };
@@ -125,7 +125,7 @@ export async function updatePassword(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[auth] updatePassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Probá de nuevo en un momento." };
+    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
   }
 
   redirect("/dashboard");
