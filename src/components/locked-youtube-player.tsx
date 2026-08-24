@@ -139,6 +139,12 @@ export const LockedYouTubePlayer = forwardRef<
   // already uncovered and just shows its paused frame.
   const [coverVisible, setCoverVisible] = useState(Boolean(autoPlay));
   const hasPlayedOnceRef = useRef(false);
+  // Bumped on every corrective seek so an older seek's fallback-reveal
+  // timer (below) can't fire after a newer seek has already re-covered
+  // the player -- without this, two corrections close together could
+  // have the first one's timer reveal the cover while the second's
+  // rebuffer is still genuinely in progress.
+  const seekTokenRef = useRef(0);
 
   useImperativeHandle(
     ref,
@@ -154,9 +160,23 @@ export const LockedYouTubePlayer = forwardRef<
         // This is what causes the room's periodic drift-correction re-seek
         // (see handleTimeUpdate in live-room-client) to flash YouTube's own
         // pause icon through mid-video, uncovered.
+        //
+        // Unlike unmuteSmoothly, this can NOT reveal on a short fixed
+        // timer: a corrective seek can trigger a real, variable-length
+        // rebuffer (not just an instant native toast), and revealing
+        // before that finishes is exactly what let YouTube's own paused
+        // UI flash through here before. The real reveal is onStateChange's
+        // PLAYING branch below, which only fires once playback has
+        // actually resumed. This timer is just a bounded safety net for
+        // the rarer case where the seek is short enough that no state-
+        // change event fires at all -- long enough to not race a normal
+        // rebuffer, short enough to never look stuck.
         if (autoPlay) {
           setCoverVisible(true);
-          window.setTimeout(() => setCoverVisible(false), 400);
+          const token = ++seekTokenRef.current;
+          window.setTimeout(() => {
+            if (seekTokenRef.current === token) setCoverVisible(false);
+          }, 2000);
         }
       },
       get muted() {
