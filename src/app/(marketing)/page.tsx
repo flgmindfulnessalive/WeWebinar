@@ -10,6 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { GradientBlobs } from "./_components/gradient-blobs";
+import { MouseSpotlight } from "./_components/mouse-spotlight";
 import { ProductPreview } from "./_components/product-preview";
 
 const FEATURES = [
@@ -75,6 +76,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="bg-grid-pattern absolute inset-0 -z-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
         <GradientBlobs />
+        <MouseSpotlight />
 
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 pb-20 pt-20 text-center sm:pt-28">
           <div
