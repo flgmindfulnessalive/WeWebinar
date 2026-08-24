@@ -25,5 +25,14 @@ export async function sendEmail({
   if (!from) {
     throw new Error("RESEND_FROM_EMAIL is not configured");
   }
-  return getResendClient().emails.send({ from, to, subject, html });
+  // The SDK resolves with { data, error } instead of rejecting on API-side
+  // failures (invalid_from_address, validation_error, quota exceeded,
+  // etc.) -- without this check a rejected send looks identical to a
+  // successful one to every caller, so nothing gets logged and no email
+  // arrives, with no trace anywhere.
+  const result = await getResendClient().emails.send({ from, to, subject, html });
+  if (result.error) {
+    throw new Error(`Resend: ${result.error.name} - ${result.error.message}`);
+  }
+  return result;
 }
