@@ -4,6 +4,7 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileForm } from "./profile-form";
 import { PasswordForm } from "./password-form";
+import { TestEmailForm } from "./test-email-form";
 
 export default async function ProfilePage() {
   const current = await getCurrentAccount();
@@ -33,6 +34,19 @@ export default async function ProfilePage() {
         </CardHeader>
         <CardContent>
           <PasswordForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Diagnóstico de emails</CardTitle>
+          <CardDescription>
+            Probá el envío de emails (confirmación, recordatorios) sin tener que
+            registrarte a un webinar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TestEmailForm email={current.user.email} />
         </CardContent>
       </Card>
     </div>
