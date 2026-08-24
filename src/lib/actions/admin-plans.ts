@@ -19,6 +19,7 @@ export async function updatePlan(
 ): Promise<AdminPlanActionState> {
   const planId = String(formData.get("plan_id") ?? "");
   const priceRaw = String(formData.get("price_annual_usd") ?? "").trim();
+  const priceMonthlyRaw = String(formData.get("price_monthly_usd") ?? "").trim();
   const removeBranding = formData.get("remove_branding") === "on";
   const customDomain = formData.get("custom_domain") === "on";
 
@@ -27,6 +28,7 @@ export async function updatePlan(
     .from("plans")
     .update({
       price_annual_usd: priceRaw === "" ? null : Number(priceRaw),
+      price_monthly_usd: priceMonthlyRaw === "" ? null : Number(priceMonthlyRaw),
       max_active_webinars: parseNullableInt(formData.get("max_active_webinars")),
       max_users: parseNullableInt(formData.get("max_users")),
       max_attendees_per_webinar: parseNullableInt(formData.get("max_attendees_per_webinar")),

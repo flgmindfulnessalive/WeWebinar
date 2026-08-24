@@ -14,6 +14,7 @@ type Plan = {
   key: string;
   name: string;
   price_annual_usd: number | null;
+  price_monthly_usd: number | null;
   max_active_webinars: number | null;
   max_users: number | null;
   max_attendees_per_webinar: number | null;
@@ -46,6 +47,18 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 min={0}
                 step="0.01"
                 defaultValue={plan.price_annual_usd ?? ""}
+                placeholder="A medida"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor={`${plan.id}-price-monthly`}>Precio mensual (USD)</Label>
+              <Input
+                id={`${plan.id}-price-monthly`}
+                name="price_monthly_usd"
+                type="number"
+                min={0}
+                step="0.01"
+                defaultValue={plan.price_monthly_usd ?? ""}
                 placeholder="A medida"
               />
             </div>
