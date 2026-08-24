@@ -117,7 +117,7 @@ export default function HomePage() {
             style={{ animationDelay: "0.15s" }}
           >
             <Button asChild size="lg" className="text-white shadow-lg" style={{ background: "var(--brand)" }}>
-              <Link href="/signup">Empezar gratis</Link>
+              <Link href="/signup">Empezar ahora</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="/pricing">Ver planes</Link>
@@ -190,7 +190,7 @@ export default function HomePage() {
             Configuralo en minutos y dejalo vendiendo las 24 horas.
           </p>
           <Button asChild size="lg" variant="secondary">
-            <Link href="/signup">Empezar gratis</Link>
+            <Link href="/signup">Empezar ahora</Link>
           </Button>
         </div>
       </section>
