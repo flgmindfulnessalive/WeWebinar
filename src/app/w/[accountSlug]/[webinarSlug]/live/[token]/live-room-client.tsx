@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { MessageSquare } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fakeViewerCount } from "@/lib/fake-viewers";
@@ -225,23 +226,23 @@ export function LiveRoomClient({
 
   return (
     <div className="flex h-svh flex-col">
-      <header className="flex h-14 shrink-0 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-3">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           {accountLogoUrl && (
             <Image
               src={accountLogoUrl}
               alt={accountName}
               width={100}
               height={28}
-              className="h-7 w-auto object-contain"
+              className="h-6 w-auto shrink-0 object-contain sm:h-7"
               unoptimized
             />
           )}
-          <span className="text-sm font-medium">{webinarTitle}</span>
+          <span className="truncate text-sm font-medium">{webinarTitle}</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {presenter?.display_name && (
-            <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 md:flex">
               {presenter.avatar_url && (
                 <Image
                   src={presenter.avatar_url}
@@ -255,9 +256,12 @@ export function LiveRoomClient({
               <span className="text-xs text-muted-foreground">{presenter.display_name}</span>
             </div>
           )}
-          <span className="text-xs text-muted-foreground">{viewerCount} conectados</span>
+          <span className="hidden text-xs text-muted-foreground sm:inline">
+            {viewerCount} conectados
+          </span>
           <Button size="sm" variant="outline" onClick={() => setShowChat((s) => !s)}>
-            {showChat ? "Ocultar chat" : "Mostrar chat"}
+            <MessageSquare className="size-4 sm:hidden" />
+            <span className="hidden sm:inline">{showChat ? "Ocultar chat" : "Mostrar chat"}</span>
           </Button>
         </div>
       </header>
