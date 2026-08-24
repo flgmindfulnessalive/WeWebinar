@@ -203,13 +203,20 @@ export function LiveRoomClient({
     setIsMuted(false);
   };
 
-  const viewerCount = fakeViewerCount({
-    seed: `${webinarId}:${sessionStart}`,
-    elapsedSeconds,
-    durationSeconds,
-    min: fakeViewerMin,
-    max: fakeViewerMax,
-  });
+  // Floored at 1: whatever the simulated curve says, the current visitor is
+  // always actually connected (they're the one looking at this page), so
+  // showing "0 conectados" while they watch the ended screen is never
+  // accurate.
+  const viewerCount = Math.max(
+    1,
+    fakeViewerCount({
+      seed: `${webinarId}:${sessionStart}`,
+      elapsedSeconds,
+      durationSeconds,
+      min: fakeViewerMin,
+      max: fakeViewerMax,
+    })
+  );
 
   const elapsed = elapsedSeconds;
   const activeCtas = ctas.filter(
@@ -460,12 +467,21 @@ function ConnectedTab({
     }
   }
 
-  const pinnedCount = (presenterName ? 1 : 0) + 1; // presenter (if any) + the visitor
-  const targetListSize = Math.min(CONNECTED_LIST_CAP, viewerCount);
-  const fillerSlots = Math.max(0, targetListSize - pinnedCount - chatNames.length);
+  // Only the visitor is guaranteed to actually be connected (they're the
+  // one looking at this page) -- everyone else here is simulated, so as
+  // viewerCount drains toward 1 (e.g. after the webinar ends), the fake
+  // names must drain with it instead of lingering forever. They drop in
+  // priority order -- filler names first, then the configured chat names,
+  // then the presenter -- reserving one slot for the visitor, who is never
+  // dropped.
+  const availableSlots = Math.max(0, Math.min(CONNECTED_LIST_CAP, viewerCount) - 1);
+  const showHost = presenterName !== null && availableSlots >= 1;
+  const chatSlots = Math.max(0, availableSlots - (showHost ? 1 : 0));
+  const shownChatNames = chatNames.slice(0, chatSlots);
+  const fillerSlots = Math.max(0, availableSlots - (showHost ? 1 : 0) - shownChatNames.length);
   const fillerNames = fakeConnectedNames({ seed, count: fillerSlots, exclude: seen });
 
-  const shownCount = pinnedCount + chatNames.length + fillerNames.length;
+  const shownCount = 1 + (showHost ? 1 : 0) + shownChatNames.length + fillerNames.length;
   const moreCount = Math.max(0, viewerCount - shownCount);
 
   return (
@@ -475,7 +491,7 @@ function ConnectedTab({
         <p className="text-xs text-muted-foreground">personas conectadas ahora</p>
       </div>
       <div className="flex flex-col gap-2">
-        {presenterName && (
+        {showHost && (
           <div className="flex items-center gap-2 text-sm">
             <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
             <span className="truncate font-medium text-primary">{presenterName} (host)</span>
@@ -485,7 +501,7 @@ function ConnectedTab({
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
           <span className="truncate font-medium text-primary">{visitorName} (tú)</span>
         </div>
-        {chatNames.map((name) => (
+        {shownChatNames.map((name) => (
           <div key={name} className="flex items-center gap-2 text-sm">
             <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
             <span className="truncate text-muted-foreground">{name}</span>
