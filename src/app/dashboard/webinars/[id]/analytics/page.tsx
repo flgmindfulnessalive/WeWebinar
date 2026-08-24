@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatTile } from "./stat-tile";
 import { RetentionChart } from "./retention-chart";
 import { HorizontalBarChart } from "./bar-chart";
+import { CtaClickersToggle } from "./cta-clickers";
 
 function ctaLabel(config: unknown, type: string): string {
   const c = (config ?? {}) as Record<string, unknown>;
@@ -37,18 +38,25 @@ export default async function WebinarAnalyticsPage({
 
   if (!webinar || webinar.account_id !== current.account.id) notFound();
 
-  const [{ data: summaryRows }, { data: retentionRows }, { data: ctaRows }, { data: pollRows }, { data: registrants }] =
-    await Promise.all([
-      supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
-      supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
-      supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId }),
-      supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId }),
-      supabase
-        .from("registrants")
-        .select("id, name, email, computed_session_start, created_at")
-        .eq("webinar_id", webinarId)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: summaryRows },
+    { data: retentionRows },
+    { data: ctaRows },
+    { data: pollRows },
+    { data: registrants },
+    { data: clickerRows },
+  ] = await Promise.all([
+    supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId }),
+    supabase
+      .from("registrants")
+      .select("id, name, email, computed_session_start, created_at")
+      .eq("webinar_id", webinarId)
+      .order("created_at", { ascending: false }),
+    supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
+  ]);
 
   const summary = summaryRows?.[0];
   const registrantCount = summary?.registrant_count ?? 0;
@@ -71,6 +79,21 @@ export default async function WebinarAnalyticsPage({
     value: c.clicks,
     valueLabel: `${c.clicks} clics · ${c.conversion_pct}%`,
   }));
+
+  const clickersByCta = new Map<
+    string,
+    { registrantId: string; name: string; email: string; clickedAt: string; clickCount: number }[]
+  >();
+  for (const row of clickerRows ?? []) {
+    if (!clickersByCta.has(row.cta_id)) clickersByCta.set(row.cta_id, []);
+    clickersByCta.get(row.cta_id)!.push({
+      registrantId: row.registrant_id,
+      name: row.name,
+      email: row.email,
+      clickedAt: row.clicked_at,
+      clickCount: row.click_count,
+    });
+  }
 
   const pollsByQuestion = new Map<string, { question: string; bars: { id: string; label: string; value: number; valueLabel: string }[] }>();
   for (const row of pollRows ?? []) {
@@ -174,8 +197,15 @@ export default async function WebinarAnalyticsPage({
             Clics por CTA
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <HorizontalBarChart bars={ctaBars} />
+          {ctaBars.map((bar) => (
+            <CtaClickersToggle
+              key={bar.id}
+              label={bar.label}
+              clickers={clickersByCta.get(bar.id) ?? []}
+            />
+          ))}
         </CardContent>
       </Card>
 
