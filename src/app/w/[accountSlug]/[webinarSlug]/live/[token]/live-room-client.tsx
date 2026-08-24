@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { MessageSquare } from "lucide-react";
+import { Bell, MessageSquare, User, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fakeViewerCount } from "@/lib/fake-viewers";
@@ -37,6 +38,8 @@ type Cta = {
 };
 
 type Presenter = Database["public"]["Views"]["presenter_public_profile"]["Row"] | null;
+
+type PanelTab = "chat" | "connected" | "presenter" | "notifications";
 
 const RESYNC_INTERVAL_MS = 20_000;
 const HEARTBEAT_INTERVAL_MS = 15_000;
@@ -85,7 +88,8 @@ export function LiveRoomClient({
     durationSeconds > 0 && initialElapsedSeconds >= durationSeconds
   );
   const [isMuted, setIsMuted] = useState(true);
-  const [showChat, setShowChat] = useState(true);
+  const [showPanel, setShowPanel] = useState(true);
+  const [activeTab, setActiveTab] = useState<PanelTab>("chat");
   // Ticks once a second so the fake counter/CTAs stay current; computed
   // inside the effect (an event-handler-like context), not during render.
   const [elapsedSeconds, setElapsedSeconds] = useState(initialElapsedSeconds);
@@ -259,9 +263,9 @@ export function LiveRoomClient({
           <span className="hidden text-xs text-muted-foreground sm:inline">
             {viewerCount} conectados
           </span>
-          <Button size="sm" variant="outline" onClick={() => setShowChat((s) => !s)}>
+          <Button size="sm" variant="outline" onClick={() => setShowPanel((s) => !s)}>
             <MessageSquare className="size-4 sm:hidden" />
-            <span className="hidden sm:inline">{showChat ? "Ocultar chat" : "Mostrar chat"}</span>
+            <span className="hidden sm:inline">{showPanel ? "Ocultar panel" : "Mostrar panel"}</span>
           </Button>
         </div>
       </header>
@@ -272,6 +276,7 @@ export function LiveRoomClient({
             <EndedState webinarTitle={webinarTitle} ctas={ctas} onCtaClick={recordCtaClick} />
           ) : (
             <>
+              <LiveBadge />
               <LockedYouTubePlayer
                 ref={playerRef}
                 videoId={youtubeVideoId}
@@ -305,18 +310,266 @@ export function LiveRoomClient({
           )}
         </div>
 
-        {showChat && (
-          <div className="h-56 w-full shrink-0 md:h-auto md:w-80">
-            <ChatPanel
-              accessToken={accessToken}
-              visitorName={visitorName}
-              simulatedMessages={chatMessages}
-              getElapsedSeconds={getElapsedSeconds}
-              onClose={() => setShowChat(false)}
-            />
+        {showPanel && (
+          <div className="flex h-64 w-full shrink-0 flex-col border-t bg-background md:h-auto md:w-80 md:border-t-0 md:border-l">
+            <div className="flex shrink-0 border-b">
+              <PanelTabButton
+                label="Chat"
+                icon={MessageSquare}
+                active={activeTab === "chat"}
+                onClick={() => setActiveTab("chat")}
+              />
+              <PanelTabButton
+                label="Conectados"
+                icon={Users}
+                active={activeTab === "connected"}
+                onClick={() => setActiveTab("connected")}
+                badge={viewerCount}
+              />
+              {presenter?.display_name && (
+                <PanelTabButton
+                  label="Presentador"
+                  icon={User}
+                  active={activeTab === "presenter"}
+                  onClick={() => setActiveTab("presenter")}
+                />
+              )}
+              {ctas.length > 0 && (
+                <PanelTabButton
+                  label="Avisos"
+                  icon={Bell}
+                  active={activeTab === "notifications"}
+                  onClick={() => setActiveTab("notifications")}
+                  badge={activeCtas.length || undefined}
+                />
+              )}
+            </div>
+            <div className="min-h-0 flex-1">
+              {activeTab === "chat" && (
+                <ChatPanel
+                  accessToken={accessToken}
+                  visitorName={visitorName}
+                  simulatedMessages={chatMessages}
+                  getElapsedSeconds={getElapsedSeconds}
+                />
+              )}
+              {activeTab === "connected" && (
+                <ConnectedTab viewerCount={viewerCount} chatMessages={chatMessages} />
+              )}
+              {activeTab === "presenter" && presenter && <PresenterTab presenter={presenter} />}
+              {activeTab === "notifications" && (
+                <NotificationsTab
+                  ctas={activeCtas}
+                  onLinkClick={recordCtaClick}
+                  onPollAnswer={recordPollResponse}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function LiveBadge() {
+  return (
+    <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+      <span className="relative flex size-2">
+        <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75" />
+        <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+      </span>
+      En vivo
+    </div>
+  );
+}
+
+function PanelTabButton({
+  label,
+  icon: Icon,
+  active,
+  onClick,
+  badge,
+}: {
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  onClick: () => void;
+  badge?: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      className={cn(
+        "flex min-w-0 flex-1 items-center justify-center gap-1 border-b-2 px-1.5 py-2 text-xs font-medium transition-colors",
+        active
+          ? "border-primary text-primary"
+          : "border-transparent text-muted-foreground hover:text-foreground"
+      )}
+    >
+      <Icon className="size-3.5 shrink-0" />
+      <span className={cn("truncate", !active && "sr-only")}>{label}</span>
+      {typeof badge === "number" && badge > 0 && (
+        <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ConnectedTab({
+  viewerCount,
+  chatMessages,
+}: {
+  viewerCount: number;
+  chatMessages: ChatMessage[];
+}) {
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const m of chatMessages) {
+    if (!seen.has(m.fake_name)) {
+      seen.add(m.fake_name);
+      names.push(m.fake_name);
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-y-auto p-4">
+      <div className="mb-4 text-center">
+        <p className="text-3xl font-semibold text-primary">{viewerCount}</p>
+        <p className="text-xs text-muted-foreground">personas conectadas ahora</p>
+      </div>
+      {names.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {names.map((name) => (
+            <div key={name} className="flex items-center gap-2 text-sm">
+              <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+              <span className="truncate text-muted-foreground">{name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PresenterTab({ presenter }: { presenter: NonNullable<Presenter> }) {
+  return (
+    <div className="flex h-full flex-col items-center gap-3 overflow-y-auto p-4 text-center">
+      {presenter.avatar_url && (
+        <Image
+          src={presenter.avatar_url}
+          alt={presenter.display_name ?? ""}
+          width={80}
+          height={80}
+          className="size-20 rounded-full object-cover"
+          unoptimized
+        />
+      )}
+      {presenter.display_name && <p className="text-sm font-semibold">{presenter.display_name}</p>}
+      {presenter.bio && <p className="text-xs text-muted-foreground">{presenter.bio}</p>}
+    </div>
+  );
+}
+
+function NotificationsTab({
+  ctas,
+  onLinkClick,
+  onPollAnswer,
+}: {
+  ctas: Cta[];
+  onLinkClick: (ctaId: string) => void;
+  onPollAnswer: (ctaId: string, option: string) => void;
+}) {
+  if (ctas.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center p-4 text-center text-xs text-muted-foreground">
+        Aquí verás encuestas, mensajes y ofertas cuando aparezcan.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col gap-2 overflow-y-auto p-3">
+      {ctas.map((cta) => (
+        <NotificationCard
+          key={cta.id}
+          cta={cta}
+          onLinkClick={() => onLinkClick(cta.id)}
+          onPollAnswer={(option) => onPollAnswer(cta.id, option)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function NotificationCard({
+  cta,
+  onLinkClick,
+  onPollAnswer,
+}: {
+  cta: Cta;
+  onLinkClick: () => void;
+  onPollAnswer: (option: string) => void;
+}) {
+  const config = (cta.config ?? {}) as Record<string, unknown>;
+
+  if (cta.type === "poll") {
+    const question = String(config.question ?? "");
+    const options = Array.isArray(config.options) ? (config.options as string[]) : [];
+    return (
+      <div className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
+        <p className="text-sm font-medium">📊 {question}</p>
+        <div className="flex flex-col gap-1.5">
+          {options.map((option) => (
+            <button
+              key={option}
+              onClick={() => onPollAnswer(option)}
+              className="rounded-md border px-3 py-1.5 text-left text-sm hover:bg-muted"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (cta.type === "link") {
+    const text = String(config.text ?? "");
+    const url = String(config.url ?? "#");
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        onClick={onLinkClick}
+        className="flex flex-col gap-1 rounded-md border bg-muted/40 p-3 text-sm hover:bg-muted"
+      >
+        <span className="font-medium">🔗 {text}</span>
+        <span className="text-xs text-muted-foreground">Toca para ver más</span>
+      </a>
+    );
+  }
+
+  const text = config.text ? String(config.text) : null;
+  const imageUrl = config.image_url ? String(config.image_url) : null;
+  return (
+    <div className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
+      {imageUrl && (
+        <Image
+          src={imageUrl}
+          alt=""
+          width={240}
+          height={120}
+          className="max-h-24 w-auto object-contain"
+          unoptimized
+        />
+      )}
+      {text && <p className="text-sm">📢 {text}</p>}
     </div>
   );
 }
