@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "./_components/gradient-blobs";
 import { MouseSpotlight } from "./_components/mouse-spotlight";
 import { ProductPreview } from "./_components/product-preview";
@@ -77,6 +78,9 @@ export default function HomePage() {
         <div className="bg-grid-pattern absolute inset-0 -z-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
         <GradientBlobs />
         <MouseSpotlight />
+        <div aria-hidden className="absolute inset-0 -z-10">
+          <ParticleNetwork color="79, 70, 229" particleCount={34} opacity={0.35} />
+        </div>
 
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 pb-20 pt-20 text-center sm:pt-28">
           <div
