@@ -56,6 +56,7 @@ export default async function WaitingRoomPage({
       serverNow={session.server_now}
       config={waitingRoom}
       presenter={presenter}
+      isFixedSchedule={session.session_id !== null}
     />
   );
 }

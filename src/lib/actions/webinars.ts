@@ -48,6 +48,39 @@ export async function createWebinar(
   redirect(`/dashboard/webinars/${data.id}`);
 }
 
+// Title/category/description are set once at creation (createWebinar
+// above) and were never editable afterward -- this is the only write path
+// for them post-creation. Deliberately doesn't touch `slug`: the public
+// registration URL is built from it, so renaming the webinar shouldn't
+// break a link that's already been shared.
+export async function updateWebinarDetails(
+  _prevState: WebinarActionState,
+  formData: FormData
+): Promise<WebinarActionState> {
+  const webinarId = String(formData.get("webinar_id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const category = String(formData.get("category") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+
+  if (!title) {
+    return { error: "El título es obligatorio." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ title, category: category || null, description: description || null })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath("/dashboard/webinars");
+
+  if (error) {
+    return { error: error.message };
+  }
+  return null;
+}
+
 // Plan limit (max_active_webinars) is enforced by the
 // enforce_webinar_publish_limit trigger — this can legitimately fail.
 export async function publishWebinar(webinarId: string): Promise<WebinarActionState> {

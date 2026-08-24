@@ -31,6 +31,7 @@ export function WaitingRoomClient({
   serverNow,
   config,
   presenter,
+  isFixedSchedule,
 }: {
   webinarId: string;
   webinarTitle: string;
@@ -39,6 +40,11 @@ export function WaitingRoomClient({
   serverNow: string;
   config: WaitingRoomConfig;
   presenter: Presenter;
+  // Fixed-schedule waits can be hours or days long, unlike a just-in-time
+  // start (always a few minutes away) -- a "N personas esperando" counter
+  // ticking for that whole window reads as obviously fake, so it's
+  // suppressed for fixed schedules regardless of the host's own toggle.
+  isFixedSchedule: boolean;
 }) {
   const router = useRouter();
 
@@ -78,6 +84,8 @@ export function WaitingRoomClient({
     Array.isArray(config?.testimonials) ? config.testimonials : []
   ) as { name: string; text: string }[];
   const startDate = new Date(sessionStart);
+  const roomUrl =
+    typeof window !== "undefined" ? `${window.location.origin}${liveRoomPath}` : liveRoomPath;
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-8 overflow-hidden px-6 py-16 text-center">
@@ -116,7 +124,7 @@ export function WaitingRoomClient({
         {formatCountdown(remainingMs)}
       </div>
 
-      {config?.show_fake_counter !== false && (
+      {config?.show_fake_counter !== false && !isFixedSchedule && (
         <p className="text-sm text-muted-foreground">{viewerCount} personas ya están esperando</p>
       )}
 
@@ -153,7 +161,12 @@ export function WaitingRoomClient({
         <div className="flex flex-wrap justify-center gap-2">
           <Button asChild variant="outline" size="sm">
             <a
-              href={buildIcsDataUri({ title: webinarTitle, startsAt: startDate })}
+              href={buildIcsDataUri({
+                title: webinarTitle,
+                startsAt: startDate,
+                url: roomUrl,
+                description: `Accedé al webinar acá: ${roomUrl}`,
+              })}
               download={`${webinarTitle}.ics`}
             >
               Agregar a mi calendario (.ics)
@@ -161,7 +174,11 @@ export function WaitingRoomClient({
           </Button>
           <Button asChild variant="outline" size="sm">
             <a
-              href={googleCalendarUrl({ title: webinarTitle, startsAt: startDate })}
+              href={googleCalendarUrl({
+                title: webinarTitle,
+                startsAt: startDate,
+                details: `Accedé al webinar acá: ${roomUrl}`,
+              })}
               target="_blank"
               rel="noreferrer"
             >

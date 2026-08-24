@@ -46,7 +46,11 @@ export function WaitingRoomSection({
           <input type="hidden" name="webinar_id" value={webinarId} />
 
           <div className="grid gap-2">
-            <Label htmlFor="headline">Título</Label>
+            <Label htmlFor="headline">Mensaje superior</Label>
+            <p className="text-xs text-muted-foreground">
+              Aparece arriba del título del webinar (que ya se muestra
+              automáticamente) — no hace falta repetirlo acá.
+            </p>
             <Input
               id="headline"
               name="headline"

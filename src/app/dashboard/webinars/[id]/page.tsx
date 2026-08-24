@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../status-badge";
 import { WebinarRowActions } from "../webinar-row-actions";
+import { DetailSection } from "./detail-section";
 import { VideoSection } from "./video-section";
 import { ScheduleSection } from "./schedule-section";
 import { WaitingRoomSection } from "./waiting-room-section";
@@ -131,31 +132,34 @@ export default async function WebinarDetailPage({
         </p>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            Detalle
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <p>
-            <span className="text-muted-foreground">Categoría:</span>{" "}
-            {webinar.category ?? "—"}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Registrados (histórico):</span>{" "}
-            {webinar.attendee_count}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Cupo simultáneo por sesión:</span>{" "}
-            {current.plan.max_attendees_per_webinar ?? "Ilimitado"}
-          </p>
-          <p className="sm:col-span-2">
-            <span className="text-muted-foreground">Descripción:</span>{" "}
-            {webinar.description ?? "—"}
-          </p>
-        </CardContent>
-      </Card>
+      {canManage ? (
+        <DetailSection
+          webinarId={webinar.id}
+          initial={{
+            title: webinar.title,
+            category: webinar.category,
+            description: webinar.description,
+          }}
+        />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Detalle
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
+            <p>
+              <span className="text-muted-foreground">Categoría:</span>{" "}
+              {webinar.category ?? "—"}
+            </p>
+            <p className="sm:col-span-2">
+              <span className="text-muted-foreground">Descripción:</span>{" "}
+              {webinar.description ?? "—"}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {canManage ? (
         <VideoSection
