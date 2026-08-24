@@ -42,7 +42,7 @@ export default function MarketingLayout({
               className="text-white shadow-sm"
               style={{ background: "var(--brand)" }}
             >
-              <Link href="/signup">Empezar gratis</Link>
+              <Link href="/signup">Empezar ahora</Link>
             </Button>
           </nav>
         </div>
