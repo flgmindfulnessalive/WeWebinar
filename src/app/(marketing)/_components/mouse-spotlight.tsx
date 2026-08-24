@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
-// A soft brand-colored light that follows the cursor across the hero
-// section -- layered above the static GradientBlobs, purely decorative.
-// Tracks the pointer via a CSS custom property set directly on the node
-// (no React state/re-render per mouse move) and stays invisible (opacity
-// 0) until the pointer actually enters the section, so there's no flash
-// at a default position on load.
+// A small, soft brand-colored light that follows the cursor across the
+// hero section -- layered above the static GradientBlobs, purely
+// decorative. Tight radius + a blur filter so it reads as a fine, modern
+// glow "behind" the content rather than a flat colored disc. Tracks the
+// pointer via a CSS custom property set directly on the node (no React
+// state/re-render per mouse move) and stays invisible (opacity 0) until
+// the pointer actually enters the section, so there's no flash at a
+// default position on load.
 //
 // Expects to be rendered as a direct child of the positioned section it
 // should track (matches how GradientBlobs is used) -- it reads that
@@ -25,7 +27,7 @@ export function MouseSpotlight() {
       if (!node) return;
       node.style.setProperty("--spotlight-x", `${e.clientX - rect.left}px`);
       node.style.setProperty("--spotlight-y", `${e.clientY - rect.top}px`);
-      node.style.setProperty("--spotlight-opacity", "1");
+      node.style.setProperty("--spotlight-opacity", "0.7");
     }
     function handleLeave() {
       ref.current?.style.setProperty("--spotlight-opacity", "0");
@@ -47,7 +49,8 @@ export function MouseSpotlight() {
       style={{
         opacity: "var(--spotlight-opacity, 0)",
         background:
-          "radial-gradient(500px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), color-mix(in srgb, var(--brand) 25%, transparent), transparent 70%)",
+          "radial-gradient(220px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), color-mix(in srgb, var(--brand) 14%, transparent), transparent 60%)",
+        filter: "blur(30px)",
       }}
     />
   );
