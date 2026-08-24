@@ -5,7 +5,7 @@
 // of the *same* session sees the same curve, while different sessions (or
 // different webinars) get visibly different ones.
 
-function hash32(input: string): number {
+export function hash32(input: string): number {
   let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
     h ^= input.charCodeAt(i);
@@ -14,7 +14,7 @@ function hash32(input: string): number {
   return h >>> 0;
 }
 
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   let a = seed;
   return function next() {
     a = (a + 0x6d2b79f5) | 0;
