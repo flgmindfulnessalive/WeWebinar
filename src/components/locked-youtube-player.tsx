@@ -83,6 +83,7 @@ function loadYouTubeIframeApi(): Promise<YTNamespace> {
 }
 
 const TIME_UPDATE_INTERVAL_MS = 250;
+const STATE_POLL_INTERVAL_MS = 200;
 
 export type LockedYouTubePlayerHandle = {
   currentTime: number;
@@ -140,41 +141,12 @@ export const LockedYouTubePlayer = forwardRef<
   // already uncovered and just shows its paused frame.
   const [coverVisible, setCoverVisible] = useState(Boolean(autoPlay));
   const hasPlayedOnceRef = useRef(false);
-  // Bumped on every manual cover (a corrective seek or an unmute) so an
-  // older call's poll (below) can't reveal the cover after a newer call
-  // has already re-covered the player -- without this, two of these
-  // close together could have the first one's poll reveal the cover
-  // while the second's rebuffer is still genuinely in progress.
-  const revealTokenRef = useRef(0);
-
-  // Reveals the cover only once the player actually confirms it's
-  // PLAYING again (polling getPlayerState directly, not just waiting on
-  // onStateChange -- some triggers, like unmuting, don't reliably fire a
-  // state-change event even when they do cause a brief real rebuffer).
-  // maxWaitMs is a bounded safety net for the case where the state
-  // never departs from PLAYING at all (so there's nothing to poll for)
-  // -- without it the cover could get stuck forever.
-  function revealOnceConfirmedPlaying(maxWaitMs: number) {
-    const token = ++revealTokenRef.current;
-    const start = Date.now();
-    const check = () => {
-      if (revealTokenRef.current !== token) return;
-      const playing = playerRef.current?.getPlayerState() === 1;
-      if (!playing && Date.now() - start < maxWaitMs) {
-        window.setTimeout(check, 150);
-      } else {
-        setCoverVisible(false);
-      }
-    };
-    // The very first check can NOT run synchronously/immediately: the
-    // action that triggered this (a seek, an unmute) can cause the
-    // player to start buffering, but that transition happens
-    // asynchronously -- checking in the same tick would still see the
-    // stale "still PLAYING" state from *before* the action, revealing
-    // the cover right as the real rebuffer is about to start. Giving it
-    // one poll interval first lets that transition actually happen.
-    window.setTimeout(check, 150);
-  }
+  // Set once the "stuck" escape hatch below gives up on autoplay ever
+  // starting at all and deliberately reveals whatever's there. Without
+  // this, the state-poll effect would just force the cover back on 200ms
+  // later (state is still not-PLAYING, same reason the escape hatch had
+  // to fire in the first place), undoing the one thing it exists to do.
+  const gaveUpRef = useRef(false);
 
   useImperativeHandle(
     ref,
@@ -189,13 +161,10 @@ export const LockedYouTubePlayer = forwardRef<
         // fires -- same class of glitch unmuteSmoothly guards against below.
         // This is what causes the room's periodic drift-correction re-seek
         // (see handleTimeUpdate in live-room-client) to flash YouTube's own
-        // pause icon through mid-video, uncovered. A corrective seek can
-        // trigger a real, variable-length rebuffer, so the reveal below
-        // only fires once playback is actually confirmed resumed.
-        if (autoPlay) {
-          setCoverVisible(true);
-          revealOnceConfirmedPlaying(2000);
-        }
+        // pause icon through mid-video, uncovered. Cover proactively right
+        // away; the state-poll effect below is what reveals it again, once
+        // it confirms the player is actually PLAYING once more.
+        if (autoPlay) setCoverVisible(true);
       },
       get muted() {
         return playerRef.current?.isMuted() ?? true;
@@ -212,25 +181,44 @@ export const LockedYouTubePlayer = forwardRef<
       },
       play: () => playerRef.current?.playVideo(),
       unmuteSmoothly: () => {
-        // Muting/unmuting doesn't reliably fire onStateChange, so the
-        // automatic state-driven cover above won't necessarily catch this
-        // on its own -- cover manually for a moment around the call. It
-        // can also genuinely trigger a brief rebuffer on some browsers
-        // (audio-enabled playback isn't always the same stream/bitrate as
-        // muted), which a short fixed reveal timer would race and lose --
-        // same class of glitch as the corrective seek above, so this uses
-        // the same confirmed-state reveal instead of a blind timeout.
+        // Muting/unmuting doesn't reliably fire onStateChange, and can
+        // genuinely trigger a brief rebuffer on some browsers (audio-
+        // enabled playback isn't always the same stream/bitrate as
+        // muted) -- cover proactively right away, same as the corrective
+        // seek above; the state-poll effect below reveals it again once
+        // confirmed.
         playerRef.current?.unMute();
         setCoverVisible(true);
-        revealOnceConfirmedPlaying(2000);
       },
     }),
     [autoPlay]
   );
 
+  // Backstop for the cover: keeps it in sync with the player's real,
+  // polled state, independent of whether YouTube ever actually fires an
+  // onStateChange event. A spontaneous rebuffer (a network stall, not
+  // triggered by anything we did) can leave the player reporting
+  // BUFFERING or PAUSED internally without ever emitting that event --
+  // the onStateChange-driven cover above simply never sees it, so
+  // YouTube's own paused/buffering UI flashes through uncovered. This
+  // runs for the whole autoplay session (not just around our own seeks/
+  // unmutes) and catches that case the same way, plus doubles as the
+  // reveal for the proactive covers above once the state actually
+  // confirms PLAYING again -- no event required either way.
+  useEffect(() => {
+    if (!autoPlay) return;
+    const poll = window.setInterval(() => {
+      const playing = playerRef.current?.getPlayerState() === 1;
+      if (!playing && gaveUpRef.current) return;
+      setCoverVisible(!playing);
+    }, STATE_POLL_INTERVAL_MS);
+    return () => window.clearInterval(poll);
+  }, [autoPlay]);
+
   useEffect(() => {
     let cancelled = false;
     hasPlayedOnceRef.current = false;
+    gaveUpRef.current = false;
 
     // Last-resort escape hatch: if PLAYING never fires at all (autoplay
     // fully blocked, video unavailable), don't leave the viewer stuck on
@@ -239,7 +227,10 @@ export const LockedYouTubePlayer = forwardRef<
     // state-driven cover above takes over completely and this is moot.
     const stuckTimer = autoPlay
       ? window.setTimeout(() => {
-          if (!hasPlayedOnceRef.current) setCoverVisible(false);
+          if (!hasPlayedOnceRef.current) {
+            gaveUpRef.current = true;
+            setCoverVisible(false);
+          }
         }, 8000)
       : null;
 
@@ -290,6 +281,7 @@ export const LockedYouTubePlayer = forwardRef<
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
               hasPlayedOnceRef.current = true;
+              gaveUpRef.current = false;
               if (autoPlay) setCoverVisible(false);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = setInterval(() => callbacksRef.current.onTimeUpdate?.(), TIME_UPDATE_INTERVAL_MS);
