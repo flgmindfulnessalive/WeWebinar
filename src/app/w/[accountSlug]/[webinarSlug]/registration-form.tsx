@@ -88,7 +88,7 @@ export function RegistrationForm({
         <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
           <p className="text-lg font-medium">Todos los horarios disponibles están completos</p>
           <p className="text-sm text-muted-foreground">
-            Volvé a intentarlo más tarde para ver nuevas fechas.
+            Vuelve a intentarlo más tarde para ver nuevas fechas.
           </p>
         </CardContent>
       </Card>
@@ -99,7 +99,7 @@ export function RegistrationForm({
     return (
       <Card>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          Este webinar todavía no tiene horarios disponibles. Volvé a intentarlo más tarde.
+          Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde.
         </CardContent>
       </Card>
     );
@@ -110,7 +110,7 @@ export function RegistrationForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reservá tu lugar</CardTitle>
+        <CardTitle>Reserva tu lugar</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-4">
@@ -147,7 +147,7 @@ export function RegistrationForm({
             <div className="grid gap-2">
               <input type="hidden" name="schedule_id" value={selectedScheduleId ?? ""} />
               <input type="hidden" name="session_starts_at" value={selectedStartsAt ?? ""} />
-              <Label>Elegí un horario ({visitorTimezone})</Label>
+              <Label>Elige un horario ({visitorTimezone})</Label>
               <div className="flex flex-col gap-2">
                 {occurrences.map((occ) => {
                   const key = occurrenceKey(occ);
@@ -179,7 +179,7 @@ export function RegistrationForm({
           ) : (
             <div className="grid gap-2">
               <input type="hidden" name="offset_minutes" value={selectedOffset} />
-              <Label>¿Cuándo querés empezar?</Label>
+              <Label>¿Cuándo quieres empezar?</Label>
               <div className="flex flex-wrap gap-2">
                 {offsets.map((minutes) => (
                   <button

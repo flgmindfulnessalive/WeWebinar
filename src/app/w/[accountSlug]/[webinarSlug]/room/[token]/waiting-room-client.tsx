@@ -165,7 +165,7 @@ export function WaitingRoomClient({
                 title: webinarTitle,
                 startsAt: startDate,
                 url: roomUrl,
-                description: `Accedé al webinar acá: ${roomUrl}`,
+                description: `Accede al webinar acá: ${roomUrl}`,
               })}
               download={`${webinarTitle}.ics`}
             >
@@ -177,7 +177,7 @@ export function WaitingRoomClient({
               href={googleCalendarUrl({
                 title: webinarTitle,
                 startsAt: startDate,
-                details: `Accedé al webinar acá: ${roomUrl}`,
+                details: `Accede al webinar acá: ${roomUrl}`,
               })}
               target="_blank"
               rel="noreferrer"

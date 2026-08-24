@@ -20,7 +20,7 @@ export default function GlobalError({
       <p className="text-sm font-medium text-muted-foreground">Error inesperado</p>
       <h1 className="text-2xl font-semibold tracking-tight">Algo salió mal</h1>
       <p className="text-sm text-muted-foreground">
-        Ya quedó registrado. Podés intentar de nuevo.
+        Ya quedó registrado. Puedes intentar de nuevo.
       </p>
       <Button onClick={reset}>Reintentar</Button>
     </div>

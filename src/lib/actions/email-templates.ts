@@ -87,7 +87,7 @@ export async function upsertSingletonTemplate(
       details: error.details,
       hint: error.hint,
     });
-    return { error: "No pudimos guardar la plantilla. Probá de nuevo." };
+    return { error: "No pudimos guardar la plantilla. Prueba de nuevo." };
   }
   return null;
 }

@@ -30,7 +30,7 @@ export function WebinarRowActions({
       if (result?.error) {
         setError(
           result.error.startsWith("plan_limit_exceeded")
-            ? "Llegaste al límite de webinars activos de tu plan. Pasate a un plan superior o archivá otro webinar."
+            ? "Llegaste al límite de webinars activos de tu plan. Pásate a un plan superior o archiva otro webinar."
             : result.error
         );
         return;

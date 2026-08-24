@@ -27,9 +27,9 @@ export function OnboardingForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Creá tu cuenta de host</CardTitle>
+        <CardTitle>Crea tu cuenta de host</CardTitle>
         <CardDescription>
-          Elegí un nombre para tu cuenta y un plan para empezar. Podés cambiar
+          Elige un nombre para tu cuenta y un plan para empezar. Puedes cambiar
           de plan después desde Configuración.
         </CardDescription>
       </CardHeader>

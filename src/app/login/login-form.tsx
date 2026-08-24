@@ -25,9 +25,9 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ingresá a tu cuenta</CardTitle>
+        <CardTitle>Ingresa a tu cuenta</CardTitle>
         <CardDescription>
-          Gestioná tus webinars evergreen desde el dashboard.
+          Gestiona tus webinars evergreen desde el dashboard.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -75,9 +75,9 @@ export function LoginForm({ next }: { next: string }) {
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          ¿No tenés cuenta?{" "}
+          ¿No tienes cuenta?{" "}
           <Link href="/signup" className="underline underline-offset-4">
-            Registrate
+            Regístrate
           </Link>
         </p>
       </CardContent>

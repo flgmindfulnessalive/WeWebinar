@@ -70,7 +70,7 @@ export default async function PricingPage() {
       <div className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Planes y precios</h1>
         <p className="mt-2 text-muted-foreground">
-          Suscripción anual fija. Creá webinars evergreen ilimitados para
+          Suscripción anual fija. Crea webinars evergreen ilimitados para
           promocionar tus propios productos.
         </p>
       </div>

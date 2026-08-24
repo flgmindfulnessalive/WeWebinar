@@ -36,7 +36,7 @@ export function VideoSection({
   function handleLoad() {
     const id = extractYouTubeVideoId(urlInput);
     if (!id) {
-      setError("No pude reconocer ese link de YouTube. Probá pegando la URL completa.");
+      setError("No pude reconocer ese link de YouTube. Prueba pegando la URL completa.");
       return;
     }
     setError(null);

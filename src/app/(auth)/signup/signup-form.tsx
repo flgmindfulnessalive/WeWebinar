@@ -25,9 +25,9 @@ export function SignupForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Creá tu cuenta</CardTitle>
+        <CardTitle>Crea tu cuenta</CardTitle>
         <CardDescription>
-          Empezá a crear webinars evergreen en minutos.
+          Empieza a crear webinars evergreen en minutos.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -71,9 +71,9 @@ export function SignupForm() {
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          ¿Ya tenés cuenta?{" "}
+          ¿Ya tienes cuenta?{" "}
           <Link href="/login" className="underline underline-offset-4">
-            Ingresá
+            Ingresa
           </Link>
         </p>
       </CardContent>

@@ -20,7 +20,7 @@ export function ResetPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Elegí una contraseña nueva</CardTitle>
+        <CardTitle>Elige una contraseña nueva</CardTitle>
         <CardDescription>Al menos 8 caracteres.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

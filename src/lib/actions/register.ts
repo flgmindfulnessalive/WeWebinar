@@ -118,17 +118,17 @@ export async function registerForWebinar(
 
   if (error) {
     if (error.message.includes("plan_limit_exceeded")) {
-      return { error: "Ese horario alcanzó el cupo máximo de esta sesión. Elegí otro horario." };
+      return { error: "Ese horario alcanzó el cupo máximo de esta sesión. Elige otro horario." };
     }
     if (error.message.includes("already started") || error.message.includes("does not match")) {
-      return { error: "Ese horario ya no está disponible. Elegí otro." };
+      return { error: "Ese horario ya no está disponible. Elige otro." };
     }
-    return { error: "No pudimos completar tu registro. Probá de nuevo." };
+    return { error: "No pudimos completar tu registro. Prueba de nuevo." };
   }
 
   const result = data?.[0];
   if (!result) {
-    return { error: "No pudimos completar tu registro. Probá de nuevo." };
+    return { error: "No pudimos completar tu registro. Prueba de nuevo." };
   }
 
   const accessLink = `${process.env.NEXT_PUBLIC_APP_URL}${returnTo}/room/${result.access_token}`;
