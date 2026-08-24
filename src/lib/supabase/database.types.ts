@@ -43,6 +43,7 @@ export interface Database {
           key: "core" | "pro" | "business" | "enterprise";
           name: string;
           price_annual_usd: number | null;
+          price_monthly_usd: number | null;
           max_active_webinars: number | null;
           max_users: number | null;
           max_attendees_per_webinar: number | null;
