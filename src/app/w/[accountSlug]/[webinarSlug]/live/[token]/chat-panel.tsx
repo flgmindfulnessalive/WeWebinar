@@ -29,13 +29,11 @@ export function ChatPanel({
   visitorName,
   simulatedMessages,
   getElapsedSeconds,
-  onClose,
 }: {
   accessToken: string;
   visitorName: string;
   simulatedMessages: SimulatedMessage[];
   getElapsedSeconds: () => number;
-  onClose?: () => void;
 }) {
   const [visibleSimulated, setVisibleSimulated] = useState<DisplayMessage[]>([]);
   const [ownMessages, setOwnMessages] = useState<DisplayMessage[]>([]);
@@ -110,15 +108,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full flex-col border-t bg-background md:border-t-0 md:border-l">
-      <div className="flex items-center justify-between border-b px-3 py-2">
-        <p className="text-sm font-medium">Chat en vivo</p>
-        {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            Ocultar
-          </Button>
-        )}
-      </div>
+    <div className="flex h-full flex-col bg-background">
       <div ref={listRef} className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
         {combined.map((m) => (
           <div key={m.id} className="text-sm">
