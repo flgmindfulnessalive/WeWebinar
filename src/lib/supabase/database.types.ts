@@ -602,6 +602,7 @@ export interface Database {
           email: string;
           computed_session_start: string;
           server_now: string;
+          session_id: string | null;
         }[];
       };
       register_for_webinar: {
