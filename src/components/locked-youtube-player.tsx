@@ -92,6 +92,14 @@ const STATE_POLL_INTERVAL_MS = 200;
 // instant the API says PLAYING let that chrome flash through uncovered
 // for a couple more seconds. Waiting this long first absorbs that gap.
 const REVEAL_HOLD_MS = 3000;
+// How long the cover can stay up, continuously, after playback has already
+// started successfully once, before we stop waiting on it to recover by
+// itself and offer a manual tap instead. Needed because mobile browsers
+// suspend background-tab video and then often refuse to resume it from a
+// plain JS call (playVideo()) without a fresh user gesture -- with no
+// escape hatch here, the viewer was stuck on the cover forever and had to
+// reload the page. A real click always satisfies that gesture requirement.
+const STUCK_RESUME_MS = 8000;
 
 export type LockedYouTubePlayerHandle = {
   currentTime: number;
@@ -161,6 +169,12 @@ export const LockedYouTubePlayer = forwardRef<
   // playback is no longer confirmed, so any interruption restarts the
   // hold from zero.
   const playingSinceRef = useRef<number | null>(null);
+  // When the cover comes on after playback has already started at least
+  // once, this marks when that streak of "not playing" started -- once it
+  // holds for STUCK_RESUME_MS straight, showResumePrompt flips on. Reset to
+  // null the instant playback is confirmed again.
+  const stuckSinceRef = useRef<number | null>(null);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
 
   useImperativeHandle(
     ref,
@@ -227,12 +241,33 @@ export const LockedYouTubePlayer = forwardRef<
       if (!playing) {
         playingSinceRef.current = null;
         if (!gaveUpRef.current) setCoverVisible(true);
+        if (hasPlayedOnceRef.current) {
+          if (stuckSinceRef.current === null) stuckSinceRef.current = Date.now();
+          else if (Date.now() - stuckSinceRef.current >= STUCK_RESUME_MS) setShowResumePrompt(true);
+        }
         return;
       }
+      stuckSinceRef.current = null;
+      setShowResumePrompt(false);
       if (playingSinceRef.current === null) playingSinceRef.current = Date.now();
       if (Date.now() - playingSinceRef.current >= REVEAL_HOLD_MS) setCoverVisible(false);
     }, STATE_POLL_INTERVAL_MS);
     return () => window.clearInterval(poll);
+  }, [autoPlay]);
+
+  // Best-effort automatic recovery when the tab regains visibility (e.g.
+  // after being backgrounded on mobile) -- some browsers happily resume a
+  // previously-playing video from a plain call like this, so it's worth
+  // trying before falling back to the manual tap-to-resume prompt above.
+  useEffect(() => {
+    if (!autoPlay) return;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && playerRef.current?.getPlayerState() !== 1) {
+        playerRef.current?.playVideo();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [autoPlay]);
 
   useEffect(() => {
@@ -240,6 +275,8 @@ export const LockedYouTubePlayer = forwardRef<
     hasPlayedOnceRef.current = false;
     gaveUpRef.current = false;
     playingSinceRef.current = null;
+    stuckSinceRef.current = null;
+    setShowResumePrompt(false);
 
     // Last-resort escape hatch: if PLAYING never fires at all (autoplay
     // fully blocked, video unavailable), don't leave the viewer stuck on
@@ -342,7 +379,7 @@ export const LockedYouTubePlayer = forwardRef<
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
       {autoPlay && (
         <div
-          aria-hidden
+          aria-hidden={!showResumePrompt}
           style={{
             position: "absolute",
             inset: 0,
@@ -380,6 +417,27 @@ export const LockedYouTubePlayer = forwardRef<
           >
             W
           </div>
+          {showResumePrompt && (
+            <button
+              type="button"
+              onClick={() => playerRef.current?.playVideo()}
+              style={{
+                position: "absolute",
+                bottom: 24,
+                left: "50%",
+                transform: "translateX(-50%)",
+                borderRadius: 9999,
+                background: "rgba(0, 0, 0, 0.8)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                color: "white",
+                padding: "10px 18px",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              ▶️ Toca para reanudar el video
+            </button>
+          )}
         </div>
       )}
       {/* Blocks every click/right-click from reaching the YouTube iframe
