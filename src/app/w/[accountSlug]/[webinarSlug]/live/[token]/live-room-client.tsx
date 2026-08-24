@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { fakeViewerCount } from "@/lib/fake-viewers";
+import { fakeConnectedNames } from "@/lib/fake-names";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -362,6 +363,7 @@ export function LiveRoomClient({
                   visitorName={visitorName}
                   presenterName={presenter?.display_name ?? null}
                   chatMessages={chatMessages}
+                  seed={`${webinarId}:${sessionStart}`}
                 />
               )}
               {activeTab === "presenter" && presenter && <PresenterTab presenter={presenter} />}
@@ -428,26 +430,43 @@ function PanelTabButton({
   );
 }
 
+// Cap how many names the Conectados list ever renders -- viewerCount can
+// run into the hundreds, and listing that many DOM rows (all obviously
+// fake once you scroll past a couple dozen) is slow and not convincing.
+// A short, plausible list plus a "y N más..." tail reads better and costs
+// nothing to render.
+const CONNECTED_LIST_CAP = 30;
+
 function ConnectedTab({
   viewerCount,
   visitorName,
   presenterName,
   chatMessages,
+  seed,
 }: {
   viewerCount: number;
   visitorName: string;
   presenterName: string | null;
   chatMessages: ChatMessage[];
+  seed: string;
 }) {
   const seen = new Set<string>([visitorName]);
   if (presenterName) seen.add(presenterName);
-  const names: string[] = [];
+  const chatNames: string[] = [];
   for (const m of chatMessages) {
     if (!seen.has(m.fake_name)) {
       seen.add(m.fake_name);
-      names.push(m.fake_name);
+      chatNames.push(m.fake_name);
     }
   }
+
+  const pinnedCount = (presenterName ? 1 : 0) + 1; // presenter (if any) + the visitor
+  const targetListSize = Math.min(CONNECTED_LIST_CAP, viewerCount);
+  const fillerSlots = Math.max(0, targetListSize - pinnedCount - chatNames.length);
+  const fillerNames = fakeConnectedNames({ seed, count: fillerSlots, exclude: seen });
+
+  const shownCount = pinnedCount + chatNames.length + fillerNames.length;
+  const moreCount = Math.max(0, viewerCount - shownCount);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto p-4">
@@ -466,13 +485,22 @@ function ConnectedTab({
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
           <span className="truncate font-medium text-primary">{visitorName} (tú)</span>
         </div>
-        {names.map((name) => (
+        {chatNames.map((name) => (
+          <div key={name} className="flex items-center gap-2 text-sm">
+            <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+            <span className="truncate text-muted-foreground">{name}</span>
+          </div>
+        ))}
+        {fillerNames.map((name) => (
           <div key={name} className="flex items-center gap-2 text-sm">
             <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
             <span className="truncate text-muted-foreground">{name}</span>
           </div>
         ))}
       </div>
+      {moreCount > 0 && (
+        <p className="mt-3 text-center text-xs text-muted-foreground">y {moreCount} más...</p>
+      )}
     </div>
   );
 }
