@@ -84,6 +84,14 @@ function loadYouTubeIframeApi(): Promise<YTNamespace> {
 
 const TIME_UPDATE_INTERVAL_MS = 250;
 const STATE_POLL_INTERVAL_MS = 200;
+// How long PLAYING has to be held, continuously, before the cover is
+// allowed to reveal after a rebuffer. getPlayerState() reporting PLAYING
+// again doesn't mean YouTube's own chrome (its pause/buffering "toast",
+// quality-change badge, etc.) has finished settling -- that's on its own
+// timer we have no visibility into (cross-origin iframe). Revealing the
+// instant the API says PLAYING let that chrome flash through uncovered
+// for a couple more seconds. Waiting this long first absorbs that gap.
+const REVEAL_HOLD_MS = 3000;
 
 export type LockedYouTubePlayerHandle = {
   currentTime: number;
@@ -147,6 +155,12 @@ export const LockedYouTubePlayer = forwardRef<
   // later (state is still not-PLAYING, same reason the escape hatch had
   // to fire in the first place), undoing the one thing it exists to do.
   const gaveUpRef = useRef(false);
+  // When the poll first sees PLAYING again after a rebuffer, this marks
+  // when that streak started -- the poll only reveals once the streak
+  // has held for REVEAL_HOLD_MS straight. Reset to null the instant
+  // playback is no longer confirmed, so any interruption restarts the
+  // hold from zero.
+  const playingSinceRef = useRef<number | null>(null);
 
   useImperativeHandle(
     ref,
@@ -202,15 +216,21 @@ export const LockedYouTubePlayer = forwardRef<
   // the onStateChange-driven cover above simply never sees it, so
   // YouTube's own paused/buffering UI flashes through uncovered. This
   // runs for the whole autoplay session (not just around our own seeks/
-  // unmutes) and catches that case the same way, plus doubles as the
-  // reveal for the proactive covers above once the state actually
-  // confirms PLAYING again -- no event required either way.
+  // unmutes) and catches that case the same way. Revealing is gated on
+  // REVEAL_HOLD_MS of continuously-confirmed PLAYING (see its comment
+  // above) -- every reveal after the very first one goes through this
+  // hold, never an instant flip, no matter what triggered the cover.
   useEffect(() => {
     if (!autoPlay) return;
     const poll = window.setInterval(() => {
       const playing = playerRef.current?.getPlayerState() === 1;
-      if (!playing && gaveUpRef.current) return;
-      setCoverVisible(!playing);
+      if (!playing) {
+        playingSinceRef.current = null;
+        if (!gaveUpRef.current) setCoverVisible(true);
+        return;
+      }
+      if (playingSinceRef.current === null) playingSinceRef.current = Date.now();
+      if (Date.now() - playingSinceRef.current >= REVEAL_HOLD_MS) setCoverVisible(false);
     }, STATE_POLL_INTERVAL_MS);
     return () => window.clearInterval(poll);
   }, [autoPlay]);
@@ -219,6 +239,7 @@ export const LockedYouTubePlayer = forwardRef<
     let cancelled = false;
     hasPlayedOnceRef.current = false;
     gaveUpRef.current = false;
+    playingSinceRef.current = null;
 
     // Last-resort escape hatch: if PLAYING never fires at all (autoplay
     // fully blocked, video unavailable), don't leave the viewer stuck on
@@ -280,12 +301,20 @@ export const LockedYouTubePlayer = forwardRef<
           },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
+              // Instant reveal only for the very first playback start --
+              // that one has no prior rebuffer to mask, so there's no
+              // reason to hold it back. Every later reveal (a corrective
+              // seek, an unmute, a spontaneous stall) goes through the
+              // state-poll effect's REVEAL_HOLD_MS instead, so it's
+              // consistent no matter whether YouTube happens to fire this
+              // event or not.
+              if (autoPlay && !hasPlayedOnceRef.current) setCoverVisible(false);
               hasPlayedOnceRef.current = true;
               gaveUpRef.current = false;
-              if (autoPlay) setCoverVisible(false);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = setInterval(() => callbacksRef.current.onTimeUpdate?.(), TIME_UPDATE_INTERVAL_MS);
             } else {
+              playingSinceRef.current = null;
               if (autoPlay) setCoverVisible(true);
               if (tickRef.current) clearInterval(tickRef.current);
               tickRef.current = null;
