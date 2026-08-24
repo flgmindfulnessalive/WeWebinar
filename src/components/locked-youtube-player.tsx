@@ -148,6 +148,16 @@ export const LockedYouTubePlayer = forwardRef<
       },
       set currentTime(seconds: number) {
         playerRef.current?.seekTo(seconds, true);
+        // seekTo() makes YouTube flash its native seek/pause "toast" as UI
+        // feedback for the jump, independent of whether onStateChange even
+        // fires -- same class of glitch unmuteSmoothly guards against below.
+        // This is what causes the room's periodic drift-correction re-seek
+        // (see handleTimeUpdate in live-room-client) to flash YouTube's own
+        // pause icon through mid-video, uncovered.
+        if (autoPlay) {
+          setCoverVisible(true);
+          window.setTimeout(() => setCoverVisible(false), 400);
+        }
       },
       get muted() {
         return playerRef.current?.isMuted() ?? true;
@@ -172,7 +182,7 @@ export const LockedYouTubePlayer = forwardRef<
         window.setTimeout(() => setCoverVisible(false), 400);
       },
     }),
-    []
+    [autoPlay]
   );
 
   useEffect(() => {
