@@ -33,6 +33,7 @@ function featureList(plan: {
     `${plan.max_attendees_per_webinar ?? "Asistentes a medida"}${
       plan.max_attendees_per_webinar ? " asistentes por webinar" : ""
     }`,
+    "Analíticas",
     "Commercial Rights (Unlimited)",
   ];
   if (features.remove_branding) items.push('Sin "Powered by"');

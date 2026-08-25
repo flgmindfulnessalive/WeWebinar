@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, ExternalLink } from "lucide-react";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -96,6 +96,14 @@ export default async function WebinarDetailPage({
           <StatusBadge status={webinar.status} />
         </div>
         <div className="flex items-center gap-2">
+          {webinar.status === "published" && (
+            <Button asChild variant="outline">
+              <Link href={publicPath} target="_blank" rel="noreferrer">
+                <ExternalLink className="size-4" />
+                Abrir página pública
+              </Link>
+            </Button>
+          )}
           <Button asChild variant="outline">
             <Link href={`/dashboard/webinars/${webinar.id}/analytics`}>
               <BarChart3 className="size-4" />
@@ -112,21 +120,7 @@ export default async function WebinarDetailPage({
         </div>
       </div>
 
-      {webinar.status === "published" ? (
-        <Card>
-          <CardContent className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="truncate text-sm">
-              <span className="text-muted-foreground">Link público:</span>{" "}
-              <span className="font-mono">{publicPath}</span>
-            </p>
-            <Button asChild size="sm" variant="outline">
-              <Link href={publicPath} target="_blank" rel="noreferrer">
-                Abrir página pública
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
+      {webinar.status !== "published" && (
         <p className="text-sm text-muted-foreground">
           El link público (<span className="font-mono">{publicPath}</span>) se
           activa cuando publiques el webinar.
