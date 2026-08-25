@@ -48,7 +48,9 @@ export async function GET(
   const [{ data: registrants, error }, { data: watchPositionRows }] = await Promise.all([
     supabase
       .from("registrants")
-      .select("id, name, email, custom_fields, computed_session_start, visitor_timezone, created_at")
+      .select(
+        "id, name, email, phone, custom_fields, computed_session_start, visitor_timezone, created_at"
+      )
       .eq("webinar_id", webinarId)
       .order("created_at", { ascending: true }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
@@ -65,6 +67,7 @@ export async function GET(
   let csv = toCsvRow([
     "Nombre",
     "Email",
+    "Teléfono",
     "Horario asignado",
     "Timezone del visitante",
     "Campos personalizados",
@@ -77,6 +80,7 @@ export async function GET(
     csv += toCsvRow([
       r.name,
       r.email,
+      r.phone ?? "",
       r.computed_session_start,
       r.visitor_timezone ?? "",
       r.custom_fields && Object.keys(r.custom_fields as object).length > 0

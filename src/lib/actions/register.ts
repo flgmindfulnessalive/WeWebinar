@@ -92,14 +92,21 @@ export async function registerForWebinar(
       : "";
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim() || null;
   const visitorTimezone = String(formData.get("visitor_timezone") ?? "") || null;
   const scheduleId = String(formData.get("schedule_id") ?? "") || null;
   const sessionStartsAt = String(formData.get("session_starts_at") ?? "") || null;
   const offsetRaw = formData.get("offset_minutes");
   const offsetMinutes = offsetRaw ? Number(offsetRaw) : null;
 
-  if (!name || !email) {
+  if (!name || name.length < 2) {
     return { error: "Nombre y email son obligatorios." };
+  }
+  // Simple, dependency-free format check -- not exhaustive RFC 5322, but
+  // enough to reject obvious typos/garbage without a new library.
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !EMAIL_RE.test(email)) {
+    return { error: "Ingresa un email válido." };
   }
   if (!webinarId) {
     return { error: "Webinar inválido." };
@@ -114,6 +121,7 @@ export async function registerForWebinar(
     p_schedule_id: scheduleId,
     p_session_starts_at: sessionStartsAt,
     p_offset_minutes: offsetMinutes,
+    p_phone: phone,
   });
 
   if (error) {

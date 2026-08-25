@@ -297,6 +297,7 @@ export interface Database {
           session_id: string | null;
           email: string;
           name: string;
+          phone: string | null;
           custom_fields: Json;
           computed_session_start: string;
           access_token: string;
@@ -615,6 +616,7 @@ export interface Database {
           p_schedule_id?: string | null;
           p_session_starts_at?: string | null;
           p_offset_minutes?: number | null;
+          p_phone?: string | null;
         };
         Returns: {
           access_token: string;
