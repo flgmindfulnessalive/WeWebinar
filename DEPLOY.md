@@ -65,15 +65,13 @@ Orden recomendado (cada paso depende del anterior):
    **Nota sobre el cron en el plan gratuito (Hobby):** Vercel Hobby solo
    permite crons que corran una vez al día, así que `vercel.json` quedó
    configurado a `0 8 * * *` (una vez por día, 8am UTC) para poder
-   deployar gratis. Esto alcanza para probar la app, pero en producción
-   real los recordatorios/"te lo perdiste" van a salir con hasta 24hs de
-   demora en vez de cada 5 minutos. Para tener la cadencia real de 5
-   minutos sin pagar el plan Pro de Vercel, usá un servicio externo
-   gratuito (ej. [cron-job.org](https://cron-job.org)) que haga un
-   `GET` cada 5 minutos a `https://tudominio.com/api/cron/send-reminders`
-   con el header `Authorization: Bearer <tu CRON_SECRET>` — el endpoint
-   ya valida ese secret, así que funciona igual sin depender del cron
-   nativo de Vercel.
+   deployar gratis. El email de "te lo perdiste" no se pierde con esto
+   (busca en una ventana de 24hs hacia atrás, solo llega con hasta 24hs
+   de demora), pero los recordatorios *antes* de que empiece el webinar
+   (ej. "15 min antes") casi nunca van a coincidir con esa única corrida
+   diaria — para esos sí hace falta la cadencia de 5 minutos. Ver
+   "4ter. Cron externo" más abajo para la solución gratuita sin el plan
+   Pro de Vercel.
    - `NEXT_PUBLIC_APP_URL` = tu dominio final (ej. `https://tudominio.com`).
 3. Deploy.
 4. Dominio propio — ver sección siguiente.
@@ -111,6 +109,34 @@ Orden recomendado (cada paso depende del anterior):
 8. (Opcional) en Vercel, renombrar el proyecto de `we-webinar` a algo
    como `wewebinars` en Settings → General — es solo cosmético, no afecta
    el dominio ya conectado.
+
+## 4ter. Cron externo para recordatorios cada 5 minutos (gratis, sin plan Pro)
+
+Necesario solo si estás en el plan Hobby de Vercel (ver nota en el paso 4)
+y querés que los recordatorios previos al webinar lleguen a tiempo.
+
+1. Crear una cuenta gratuita en [cron-job.org](https://cron-job.org).
+2. **Create cronjob**:
+   - Title: `WeWebinars - recordatorios`
+   - Address (URL): `https://tudominio.com/api/cron/send-reminders`
+     (o el dominio `*.vercel.app` que te dio Vercel, si todavía no
+     conectaste tu dominio propio).
+   - Schedule: cada 5 minutos (`*/5 * * * *`, o elegí "Every 5 minutes"
+     en el selector).
+   - Request method: `GET`.
+3. En **Advanced → Headers**, agregar un header:
+   - Name: `Authorization`
+   - Value: `Bearer <tu CRON_SECRET>` — el mismo valor que ya cargaste
+     como variable de entorno en Vercel en el paso 4 (Settings →
+     Environment Variables → `CRON_SECRET`). No lo repitas en texto
+     plano en ningún lado más — copialo directo desde Vercel.
+4. Guardar y activar el cronjob. cron-job.org muestra el historial de
+   ejecuciones — confirmá que cada corrida devuelve `200` (podés hacer
+   clic en "Run now" para probarlo al toque en vez de esperar 5 min).
+5. Dejar el cron nativo de `vercel.json` como está — no hace falta
+   sacarlo. Corre una vez al día además del externo, pero el endpoint ya
+   evita mandar el mismo email dos veces (usa `email_sends` como
+   candado), así que no hay riesgo de duplicados.
 
 ## 5. Primer Super Admin
 
