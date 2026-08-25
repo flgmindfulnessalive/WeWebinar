@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// Brand mark used next to the "WeWebinar" wordmark in the dashboard/admin
+// Brand mark used next to the "WeWebinars" wordmark in the dashboard/admin
 // nav. Same gradient as the branded loading cover in
 // locked-youtube-player.tsx, kept as one small reusable piece instead of
 // duplicating the style in every nav.

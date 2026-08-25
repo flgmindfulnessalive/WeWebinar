@@ -17,7 +17,7 @@ export default async function AdminLayout({
       <aside className="hidden flex-col gap-6 border-r bg-muted/20 p-4 md:flex">
         <Link href="/admin" className="flex items-center gap-2 px-2 text-lg font-semibold tracking-tight">
           <Logo />
-          WeWebinar <span className="text-muted-foreground">/ Admin</span>
+          WeWebinars <span className="text-muted-foreground">/ Admin</span>
         </Link>
         <AdminNav />
       </aside>

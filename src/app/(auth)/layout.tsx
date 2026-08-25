@@ -8,7 +8,7 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-8 bg-muted/30 p-6">
       <Link href="/" className="text-lg font-semibold tracking-tight">
-        WeWebinar
+        WeWebinars
       </Link>
       <div className="w-full max-w-sm">{children}</div>
     </div>

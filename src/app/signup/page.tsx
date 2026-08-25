@@ -20,7 +20,7 @@ export default function SignupPage() {
             className="pointer-events-auto flex flex-col items-center gap-4 transition-opacity hover:opacity-80"
           >
             <Logo className="size-16 rounded-2xl text-2xl shadow-2xl shadow-indigo-500/30" />
-            <span className="text-2xl font-semibold tracking-tight text-white">WeWebinar</span>
+            <span className="text-2xl font-semibold tracking-tight text-white">WeWebinars</span>
           </Link>
           <p className="max-w-xs text-sm text-white/60">
             Webinars evergreen que se sienten en vivo.
@@ -35,7 +35,7 @@ export default function SignupPage() {
             className="flex items-center gap-2 self-center text-lg font-semibold tracking-tight md:hidden"
           >
             <Logo />
-            WeWebinar
+            WeWebinars
           </Link>
           <SignupForm />
         </div>

@@ -27,7 +27,7 @@ export function buildIcsDataUri({
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//WeWebinar//ES",
+    "PRODID:-//WeWebinars//ES",
     "BEGIN:VEVENT",
     `UID:${crypto.randomUUID()}`,
     `DTSTAMP:${formatIcsDate(new Date())}`,
