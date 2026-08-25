@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../status-badge";
 import { WebinarRowActions } from "../webinar-row-actions";
+import { WizardShell, type WizardStep } from "./wizard-shell";
 import { DetailSection } from "./detail-section";
 import { VideoSection } from "./video-section";
 import { ScheduleSection } from "./schedule-section";
@@ -132,16 +133,7 @@ export default async function WebinarDetailPage({
         </p>
       )}
 
-      {canManage ? (
-        <DetailSection
-          webinarId={webinar.id}
-          initial={{
-            title: webinar.title,
-            category: webinar.category,
-            description: webinar.description,
-          }}
-        />
-      ) : (
+      {!canManage && (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -161,15 +153,7 @@ export default async function WebinarDetailPage({
         </Card>
       )}
 
-      {canManage ? (
-        <VideoSection
-          webinarId={webinar.id}
-          initial={{
-            youtube_video_id: webinar.youtube_video_id,
-            duration_seconds: webinar.duration_seconds,
-          }}
-        />
-      ) : webinar.youtube_video_id ? (
+      {!canManage && webinar.youtube_video_id && (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -182,23 +166,125 @@ export default async function WebinarDetailPage({
             </p>
           </CardContent>
         </Card>
-      ) : null}
-
-      {canManage && (
-        <>
-          <ScheduleSection
-            webinarId={webinar.id}
-            scheduleMode={webinar.schedule_mode}
-            offsets={webinar.just_in_time_offsets_minutes}
-            schedules={schedules ?? []}
-            accountTimezone={current.account.timezone_default}
-          />
-          <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />
-          <ChatSection webinarId={webinar.id} messages={chatMessages ?? []} />
-          <CtasSection webinarId={webinar.id} ctas={ctas ?? []} />
-          <EmailTemplatesSection webinarId={webinar.id} templates={emailTemplates} />
-        </>
       )}
+
+      {canManage && (() => {
+        const hasFixedSlots =
+          webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both";
+        const scheduleSummary =
+          webinar.schedule_mode === "just_in_time"
+            ? "Arranque inmediato"
+            : schedules.length === 0
+              ? "Sin horarios configurados"
+              : webinar.schedule_mode === "both"
+                ? `${schedules.length} horario(s) + arranque inmediato`
+                : `${schedules.length} horario(s) fijo(s)`;
+        const scheduleCompleted = hasFixedSlots ? schedules.length > 0 : true;
+
+        const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
+
+        const steps: WizardStep[] = [
+          {
+            id: "detail",
+            icon: "file-text",
+            title: "Detalle",
+            description: "Título, categoría y descripción pública del webinar.",
+            summary: webinar.category || "Sin categoría",
+            completed: true,
+            content: (
+              <DetailSection
+                webinarId={webinar.id}
+                initial={{
+                  title: webinar.title,
+                  category: webinar.category,
+                  description: webinar.description,
+                }}
+              />
+            ),
+          },
+          {
+            id: "video",
+            icon: "play-circle",
+            title: "Video",
+            description: "El video que ven tus visitantes al entrar a la sala.",
+            summary: webinar.youtube_video_id
+              ? `${Math.round((webinar.duration_seconds ?? 0) / 60)} min · cargado`
+              : "Sin video cargado",
+            completed: Boolean(webinar.youtube_video_id),
+            content: (
+              <VideoSection
+                webinarId={webinar.id}
+                initial={{
+                  youtube_video_id: webinar.youtube_video_id,
+                  duration_seconds: webinar.duration_seconds,
+                }}
+              />
+            ),
+          },
+          {
+            id: "schedule",
+            icon: "calendar",
+            title: "Programación",
+            description: "Cómo y cuándo pueden entrar tus visitantes.",
+            summary: scheduleSummary,
+            completed: scheduleCompleted,
+            content: (
+              <ScheduleSection
+                webinarId={webinar.id}
+                scheduleMode={webinar.schedule_mode}
+                offsets={webinar.just_in_time_offsets_minutes}
+                schedules={schedules ?? []}
+                accountTimezone={current.account.timezone_default}
+              />
+            ),
+          },
+          {
+            id: "waiting-room",
+            icon: "users",
+            title: "Sala de espera",
+            description: "Lo que ve el registrado mientras espera que empiece.",
+            summary: waitingRoom ? `${bullets.length} bullets configurados` : "Config pendiente",
+            completed: waitingRoom !== null,
+            content: <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />,
+          },
+          {
+            id: "chat",
+            icon: "message-square",
+            title: "Chat simulado",
+            description: "Mensajes cronometrados que aparecen durante la reproducción.",
+            summary:
+              (chatMessages?.length ?? 0) > 0
+                ? `${chatMessages.length} mensajes programados`
+                : "Sin mensajes todavía",
+            completed: (chatMessages?.length ?? 0) > 0,
+            content: <ChatSection webinarId={webinar.id} messages={chatMessages ?? []} />,
+          },
+          {
+            id: "ctas",
+            icon: "mouse-pointer-click",
+            title: "CTAs",
+            description: "Links, banners y encuestas que aparecen en momentos exactos del video.",
+            summary:
+              (ctas?.length ?? 0) > 0 ? `${ctas.length} CTAs programados` : "Sin CTAs todavía",
+            completed: (ctas?.length ?? 0) > 0,
+            content: <CtasSection webinarId={webinar.id} ctas={ctas ?? []} />,
+          },
+          {
+            id: "emails",
+            icon: "mail",
+            title: "Plantillas de email",
+            description: 'Confirmación, recordatorios y el aviso de "te lo perdiste".',
+            summary:
+              emailTemplates.length > 0
+                ? `${emailTemplates.length} plantillas personalizadas`
+                : "Usando plantillas por defecto",
+            completed: emailTemplates.length > 0,
+            content: <EmailTemplatesSection webinarId={webinar.id} templates={emailTemplates} />,
+          },
+        ];
+
+        return <WizardShell steps={steps} />;
+      })()}
     </div>
   );
 }
