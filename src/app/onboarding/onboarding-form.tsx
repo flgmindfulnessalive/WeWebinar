@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo } from "react";
 
 import { createAccount } from "@/lib/actions/account";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useTimezones } from "@/hooks/use-timezones";
 
 const PLANS = [
   { key: "core", name: "Core", price: "$60/año", detail: "1 webinar activo · 1 usuario" },
@@ -23,6 +24,14 @@ const PLANS = [
 
 export function OnboardingForm() {
   const [state, formAction, isPending] = useActionState(createAccount, null);
+  const timezones = useTimezones();
+  const detectedTimezone = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      return "UTC";
+    }
+  }, []);
 
   return (
     <Card>
@@ -38,6 +47,23 @@ export function OnboardingForm() {
           <div className="grid gap-2">
             <Label htmlFor="name">Nombre de la cuenta / empresa</Label>
             <Input id="name" name="name" type="text" required placeholder="Acme Webinars" />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="timezone">Zona horaria</Label>
+            <select
+              id="timezone"
+              name="timezone"
+              defaultValue={detectedTimezone}
+              required
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              {timezones.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
           </div>
 
           <fieldset className="grid gap-3">
