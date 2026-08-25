@@ -687,6 +687,13 @@ export interface Database {
           click_count: number;
         }[];
       };
+      get_webinar_watch_positions: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          registrant_id: string;
+          last_position_seconds: number | null;
+        }[];
+      };
       get_due_reminder_recipients: {
         Args: { p_tolerance_minutes?: number };
         Returns: {
