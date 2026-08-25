@@ -6,6 +6,7 @@ import { registerForWebinar } from "@/lib/actions/register";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/phone-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ScheduleMode } from "@/lib/supabase/database.types";
@@ -205,6 +206,10 @@ export function RegistrationForm({
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" required autoComplete="email" />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="phone">Teléfono (opcional)</Label>
+            <PhoneInput id="phone" name="phone" />
           </div>
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
