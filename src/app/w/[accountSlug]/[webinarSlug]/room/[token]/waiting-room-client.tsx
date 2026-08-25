@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Calendar, Users } from "lucide-react";
 
 import { fakeViewerCount } from "@/lib/fake-viewers";
 import { buildIcsDataUri, googleCalendarUrl } from "@/lib/ics";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { DEFAULT_BRAND_COLOR_A, DEFAULT_BRAND_COLOR_B } from "@/lib/brand-colors";
 import type { Database } from "@/lib/supabase/database.types";
 
 type WaitingRoomConfig = Database["public"]["Tables"]["waiting_room_config"]["Row"] | null;
@@ -32,6 +32,10 @@ export function WaitingRoomClient({
   config,
   presenter,
   isFixedSchedule,
+  accountName,
+  accountLogoUrl,
+  brandColorA = DEFAULT_BRAND_COLOR_A,
+  brandColorB = DEFAULT_BRAND_COLOR_B,
 }: {
   webinarId: string;
   webinarTitle: string;
@@ -45,6 +49,10 @@ export function WaitingRoomClient({
   // ticking for that whole window reads as obviously fake, so it's
   // suppressed for fixed schedules regardless of the host's own toggle.
   isFixedSchedule: boolean;
+  accountName?: string | null;
+  accountLogoUrl?: string | null;
+  brandColorA?: string;
+  brandColorB?: string;
 }) {
   const router = useRouter();
 
@@ -99,8 +107,131 @@ export function WaitingRoomClient({
     [sessionStart]
   );
 
+  const showCounter = config?.show_fake_counter !== false && !isFixedSchedule;
+  const showCalendar = config?.show_calendar_button !== false;
+  const headline = config?.headline ?? "Tu webinar está por comenzar";
+
+  const glowRing = `radial-gradient(circle, ${brandColorA}59, ${brandColorB}1f 60%, transparent 75%)`;
+  const gradientBadge = `linear-gradient(135deg, ${brandColorA}, ${brandColorB})`;
+
+  const calendarButtons = showCalendar && (
+    <div className="flex flex-wrap justify-center gap-2.5">
+      <a
+        href={buildIcsDataUri({
+          title: webinarTitle,
+          startsAt: startDate,
+          url: roomUrl,
+          description: `Accede al webinar acá: ${roomUrl}`,
+        })}
+        download={`${webinarTitle}.ics`}
+        className="flex items-center gap-2 rounded-lg border border-white/15 bg-white/6 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+      >
+        <Calendar className="size-3.5" />
+        Agregar a mi calendario
+      </a>
+      <a
+        href={googleCalendarUrl({
+          title: webinarTitle,
+          startsAt: startDate,
+          details: `Accede al webinar acá: ${roomUrl}`,
+        })}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-2 rounded-lg border border-white/15 bg-white/6 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+      >
+        Google Calendar
+      </a>
+    </div>
+  );
+
+  const accountBadge = (
+    <div className="flex items-center gap-2">
+      {accountLogoUrl ? (
+        <Image
+          src={accountLogoUrl}
+          alt={accountName ?? ""}
+          width={24}
+          height={24}
+          className="size-6 rounded-md object-contain"
+          unoptimized
+        />
+      ) : (
+        <span
+          className="flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
+          style={{ background: gradientBadge }}
+        >
+          {(accountName ?? "W").slice(0, 2).toUpperCase()}
+        </span>
+      )}
+      {accountName && <span className="text-xs text-white/55">{accountName}</span>}
+    </div>
+  );
+
+  const presenterRow = presenter && (presenter.display_name || presenter.avatar_url) && (
+    <div className="flex items-center gap-3">
+      {presenter.avatar_url ? (
+        <Image
+          src={presenter.avatar_url}
+          alt={presenter.display_name ?? ""}
+          width={40}
+          height={40}
+          className="size-10 rounded-full object-cover"
+          unoptimized
+        />
+      ) : (
+        <span
+          className="flex size-10 items-center justify-center rounded-full text-xs font-semibold"
+          style={{ background: gradientBadge }}
+        >
+          {(presenter.display_name ?? "?").slice(0, 2).toUpperCase()}
+        </span>
+      )}
+      {presenter.display_name && <span className="text-sm font-medium">{presenter.display_name}</span>}
+    </div>
+  );
+
+  const bulletsList = bullets.length > 0 && (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/55">Lo que vas a aprender</p>
+      {bullets.map((bullet, i) => (
+        <div key={i} className="flex items-start gap-2.5">
+          <svg
+            className="mt-0.5 size-4 shrink-0 text-indigo-200"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+          <span className="text-sm leading-relaxed text-white/75">{bullet}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  const viewerPill = showCounter && (
+    <div className="flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3.5 py-1.5">
+      <Users className="size-3.5 text-indigo-200" />
+      <span className="text-xs text-white/75">{viewerCount} personas ya están esperando</span>
+    </div>
+  );
+
+  const testimonialsBlock = testimonials.length > 0 && (
+    <div className="flex w-full max-w-md flex-col gap-2">
+      {testimonials.map((t, i) => (
+        <p key={i} className="text-sm italic text-white/55">
+          &quot;{t.text}&quot; {t.name && `— ${t.name}`}
+        </p>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center gap-8 overflow-hidden px-6 py-16 text-center">
+    <div className="relative min-h-svh overflow-hidden bg-[#0b0f19] text-white">
       {config?.background_url && (
         <div className="absolute inset-0 -z-10">
           {config.background_type === "video" ? (
@@ -124,95 +255,106 @@ export function WaitingRoomClient({
         </div>
       )}
 
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        {config?.headline ?? "Tu webinar está por comenzar"}
-      </p>
-      <h1 className="text-2xl font-semibold">{webinarTitle}</h1>
-      {config?.subheadline && (
-        <p className="max-w-md text-muted-foreground">{config.subheadline}</p>
-      )}
+      {/* Desktop: split panel, countdown as dominant left element (dashboard
+          wizard note continuation of registration Option A's brand panel). */}
+      <div className="hidden min-h-svh md:grid md:grid-cols-[1.1fr_1fr]">
+        <div className="relative flex flex-col items-center justify-center gap-7 overflow-hidden px-12 py-16 text-center">
+          <div
+            aria-hidden
+            className="absolute -top-24 left-1/2 size-[26rem] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
+            style={{ background: brandColorA }}
+          />
+          <div
+            aria-hidden
+            className="absolute -bottom-28 -left-24 size-[20rem] rounded-full opacity-20 blur-3xl"
+            style={{ background: brandColorB }}
+          />
 
-      <p className="text-sm text-muted-foreground">
-        {formattedStart} <span className="text-xs">(hora local)</span>
-      </p>
+          <div className="relative z-10 flex flex-col items-center gap-7">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/50">{headline}</p>
 
-      <div className="text-6xl font-bold tabular-nums tracking-tight">
-        {formatCountdown(remainingMs)}
+            <div className="relative flex size-[17.5rem] items-center justify-center">
+              <div
+                aria-hidden
+                className="absolute inset-0 rounded-full blur-sm"
+                style={{ background: glowRing }}
+              />
+              <div aria-hidden className="absolute inset-4 rounded-full border border-white/12" />
+              <div className="relative text-6xl font-extrabold tracking-tight tabular-nums">
+                {formatCountdown(remainingMs)}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-white/65">
+              <Calendar className="size-4" />
+              {formattedStart} <span className="text-xs">(hora local)</span>
+            </div>
+
+            {viewerPill}
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-center gap-7 bg-[#12172a] px-12 py-16">
+          {accountBadge}
+          <h1 className="max-w-md text-2xl font-bold leading-snug">{webinarTitle}</h1>
+          {config?.subheadline && <p className="max-w-md text-sm text-white/60">{config.subheadline}</p>}
+          {presenterRow}
+          {bulletsList && <div className="border-t border-white/10 pt-6">{bulletsList}</div>}
+          {calendarButtons}
+          {testimonialsBlock}
+        </div>
       </div>
 
-      {config?.show_fake_counter !== false && !isFixedSchedule && (
-        <p className="text-sm text-muted-foreground">{viewerCount} personas ya están esperando</p>
-      )}
+      {/* Mobile: stacked, glow-centered around the countdown. */}
+      <div className="relative flex flex-col items-center gap-7 px-6 py-14 text-center md:hidden">
+        <div
+          aria-hidden
+          className="absolute -top-24 left-1/2 size-[26rem] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
+          style={{ background: brandColorA }}
+        />
+        <div
+          aria-hidden
+          className="absolute -bottom-32 -right-24 size-[21rem] rounded-full opacity-20 blur-3xl"
+          style={{ background: brandColorB }}
+        />
 
-      {presenter && (presenter.display_name || presenter.avatar_url) && (
-        <div className="flex items-center gap-2">
-          {presenter.avatar_url && (
-            <Image
-              src={presenter.avatar_url}
-              alt={presenter.display_name ?? ""}
-              width={40}
-              height={40}
-              className="size-10 rounded-full object-cover"
-              unoptimized
-            />
+        <div className="relative z-10 flex flex-col items-center gap-7">
+          {accountBadge}
+
+          <div>
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-white/50">{headline}</p>
+            <h1 className="max-w-xs text-xl font-bold leading-snug">{webinarTitle}</h1>
+            {config?.subheadline && (
+              <p className="mt-2 max-w-xs text-sm text-white/60">{config.subheadline}</p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-white/65">
+            <Calendar className="size-4" />
+            {formattedStart} <span className="text-xs">(hora local)</span>
+          </div>
+
+          <div className="relative flex size-[16rem] items-center justify-center">
+            <div aria-hidden className="absolute inset-0 rounded-full blur-sm" style={{ background: glowRing }} />
+            <div aria-hidden className="absolute inset-4 rounded-full border border-white/12" />
+            <div className="relative text-5xl font-extrabold tracking-tight tabular-nums">
+              {formatCountdown(remainingMs)}
+            </div>
+          </div>
+
+          {viewerPill}
+          {presenterRow}
+
+          {bulletsList && (
+            <div className="w-full max-w-sm rounded-xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left">
+              {bulletsList}
+            </div>
           )}
-          {presenter.display_name && <span className="text-sm">{presenter.display_name}</span>}
-        </div>
-      )}
 
-      {bullets.length > 0 && (
-        <Card className="w-full max-w-md text-left">
-          <CardContent className="flex flex-col gap-2 py-4">
-            <p className="text-sm font-medium">Lo que vas a aprender:</p>
-            <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-              {bullets.map((bullet, i) => (
-                <li key={i}>• {bullet}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {config?.show_calendar_button !== false && (
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a
-              href={buildIcsDataUri({
-                title: webinarTitle,
-                startsAt: startDate,
-                url: roomUrl,
-                description: `Accede al webinar acá: ${roomUrl}`,
-              })}
-              download={`${webinarTitle}.ics`}
-            >
-              Agregar a mi calendario (.ics)
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <a
-              href={googleCalendarUrl({
-                title: webinarTitle,
-                startsAt: startDate,
-                details: `Accede al webinar acá: ${roomUrl}`,
-              })}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Google Calendar
-            </a>
-          </Button>
+          {calendarButtons}
+          {testimonialsBlock}
         </div>
-      )}
-
-      {testimonials.length > 0 && (
-        <div className="flex w-full max-w-md flex-col gap-2">
-          {testimonials.map((t, i) => (
-            <p key={i} className="text-sm italic text-muted-foreground">
-              &quot;{t.text}&quot; {t.name && `— ${t.name}`}
-            </p>
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

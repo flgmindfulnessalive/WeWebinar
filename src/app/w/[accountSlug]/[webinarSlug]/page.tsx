@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { Sparkles } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { computeUpcomingOccurrences } from "@/lib/scheduling";
+import { resolveBrandColors } from "@/lib/brand-colors";
+import { ParticleNetwork } from "@/components/particle-network";
+import { GradientBlobs } from "@/components/gradient-blobs";
 import { RegistrationForm } from "./registration-form";
 
 export default async function RegisterPage({
@@ -31,31 +35,38 @@ export default async function RegisterPage({
 
   const hasFixedSlots = webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both";
 
-  const [{ data: presenter }, { data: schedules }, { data: plan }, { data: sessions }, { data: sessionRegistrants }] =
-    await Promise.all([
-      webinar.presenter_user_id
-        ? supabase
-            .from("presenter_public_profile")
-            .select("*")
-            .eq("id", webinar.presenter_user_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      hasFixedSlots
-        ? supabase
-            .from("webinar_schedules")
-            .select("id, day_of_week, time_of_day, timezone, exclude_weekends")
-            .eq("webinar_id", webinar.id)
-        : Promise.resolve({ data: [] }),
-      account.plan_id
-        ? supabase.from("plans").select("max_attendees_per_webinar").eq("id", account.plan_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-      hasFixedSlots
-        ? supabase.from("webinar_sessions").select("id, schedule_id, starts_at").eq("webinar_id", webinar.id)
-        : Promise.resolve({ data: [] }),
-      hasFixedSlots
-        ? supabase.from("registrants").select("session_id").eq("webinar_id", webinar.id).not("session_id", "is", null)
-        : Promise.resolve({ data: [] }),
-    ]);
+  const [
+    { data: presenter },
+    { data: schedules },
+    { data: plan },
+    { data: sessions },
+    { data: sessionRegistrants },
+    { data: waitingRoom },
+  ] = await Promise.all([
+    webinar.presenter_user_id
+      ? supabase
+          .from("presenter_public_profile")
+          .select("*")
+          .eq("id", webinar.presenter_user_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    hasFixedSlots
+      ? supabase
+          .from("webinar_schedules")
+          .select("id, day_of_week, time_of_day, timezone, exclude_weekends")
+          .eq("webinar_id", webinar.id)
+      : Promise.resolve({ data: [] }),
+    account.plan_id
+      ? supabase.from("plans").select("max_attendees_per_webinar").eq("id", account.plan_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    hasFixedSlots
+      ? supabase.from("webinar_sessions").select("id, schedule_id, starts_at").eq("webinar_id", webinar.id)
+      : Promise.resolve({ data: [] }),
+    hasFixedSlots
+      ? supabase.from("registrants").select("session_id").eq("webinar_id", webinar.id).not("session_id", "is", null)
+      : Promise.resolve({ data: [] }),
+    supabase.from("waiting_room_config").select("bullets").eq("webinar_id", webinar.id).maybeSingle(),
+  ]);
 
   // The attendee cap is per live session (how many people can overlap in
   // the same playback window), not a lifetime total for the webinar -- the
@@ -94,58 +105,154 @@ export default async function RegisterPage({
     webinar.schedule_mode === "fixed" && occurrences.length > 0 && occurrences.every((o) => o.spotsLeft === 0);
 
   const branding = (account.branding as Record<string, string | null>) ?? {};
+  const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);
+  const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
+  const badgeLabel = webinar.category?.toUpperCase() || "WEBINAR GRATUITO";
+
+  const registrationForm = (
+    <RegistrationForm
+      webinarId={webinar.id}
+      returnTo={`/w/${accountSlug}/${webinarSlug}`}
+      scheduleMode={webinar.schedule_mode}
+      offsets={webinar.just_in_time_offsets_minutes}
+      occurrences={occurrences}
+      allFixedSlotsFull={allFixedSlotsFull}
+      brandColorA={brandColorA}
+      brandColorB={brandColorB}
+    />
+  );
+
+  const accountBadge = branding.logo_url ? (
+    <Image
+      src={branding.logo_url}
+      alt={account.name}
+      width={28}
+      height={28}
+      className="size-7 rounded-md object-contain"
+      unoptimized
+    />
+  ) : (
+    <span
+      className="flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white"
+      style={{ background: `linear-gradient(135deg, ${brandColorA}, ${brandColorB})` }}
+    >
+      {account.name.slice(0, 2).toUpperCase()}
+    </span>
+  );
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-8 px-6 py-16">
-      <header className="flex flex-col items-center gap-3 text-center">
-        {branding.logo_url && (
-          <Image
-            src={branding.logo_url}
-            alt={account.name}
-            width={140}
-            height={40}
-            className="h-10 w-auto object-contain"
-            unoptimized
-          />
-        )}
-        {webinar.category && (
-          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            {webinar.category}
-          </p>
-        )}
-        <h1 className="text-3xl font-semibold tracking-tight">{webinar.title}</h1>
-        {webinar.description && (
-          <p className="max-w-xl text-muted-foreground">{webinar.description}</p>
-        )}
-        {presenter && (presenter.display_name || presenter.avatar_url) && (
-          <div className="mt-2 flex items-center gap-2">
-            {presenter.avatar_url && (
-              <Image
-                src={presenter.avatar_url}
-                alt={presenter.display_name ?? ""}
-                width={32}
-                height={32}
-                className="size-8 rounded-full object-cover"
-                unoptimized
-              />
+    <div className="min-h-svh bg-[#fafafa]">
+      {/* Desktop: brand panel + form, same split-panel language as /login. */}
+      <div className="hidden min-h-svh md:grid md:grid-cols-2">
+        <div className="relative flex flex-col justify-center gap-8 overflow-hidden bg-[#0b0f19] px-14 py-16 text-white">
+          <GradientBlobs colorA={brandColorA} colorB={brandColorB} />
+          <ParticleNetwork color="148, 163, 255" particleCount={28} opacity={0.4} />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-transparent to-transparent" />
+
+          <div className="relative z-10 flex flex-col gap-7">
+            <div className="flex items-center gap-2.5">
+              {accountBadge}
+              <span className="text-sm text-white/70">{account.name} presenta</span>
+            </div>
+
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5">
+              <Sparkles className="size-3.5 text-indigo-200" />
+              <span className="text-xs font-semibold tracking-wide text-indigo-200">{badgeLabel}</span>
+            </div>
+
+            <h1 className="max-w-md text-4xl font-bold leading-tight tracking-tight">{webinar.title}</h1>
+
+            {webinar.description && (
+              <p className="max-w-md text-sm text-white/60">{webinar.description}</p>
             )}
-            {presenter.display_name && (
-              <span className="text-sm text-muted-foreground">
-                Presenta {presenter.display_name}
-              </span>
+
+            {presenter && (presenter.display_name || presenter.avatar_url) && (
+              <div className="flex items-center gap-3">
+                {presenter.avatar_url ? (
+                  <Image
+                    src={presenter.avatar_url}
+                    alt={presenter.display_name ?? ""}
+                    width={44}
+                    height={44}
+                    className="size-11 rounded-full object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <span
+                    className="flex size-11 items-center justify-center rounded-full text-sm font-semibold text-white"
+                    style={{ background: `linear-gradient(135deg, ${brandColorA}, ${brandColorB})` }}
+                  >
+                    {(presenter.display_name ?? "?").slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                {presenter.display_name && (
+                  <span className="text-sm font-medium">{presenter.display_name}</span>
+                )}
+              </div>
+            )}
+
+            {bullets.length > 0 && (
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-6">
+                {bullets.map((bullet, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <svg
+                      className="mt-0.5 size-[18px] shrink-0 text-indigo-200"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    <span className="text-sm leading-relaxed text-white/75">{bullet}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-        )}
-      </header>
+        </div>
 
-      <RegistrationForm
-        webinarId={webinar.id}
-        returnTo={`/w/${accountSlug}/${webinarSlug}`}
-        scheduleMode={webinar.schedule_mode}
-        offsets={webinar.just_in_time_offsets_minutes}
-        occurrences={occurrences}
-        allFixedSlotsFull={allFixedSlotsFull}
-      />
+        <div className="flex items-center justify-center px-10 py-16">
+          <div className="flex w-full max-w-md flex-col gap-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Reserva tu lugar</h2>
+              <p className="text-sm text-gray-500">Elige un horario y guarda tu cupo gratis.</p>
+            </div>
+            {registrationForm}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: minimal card, gradient accent strip, same brand colors. */}
+      <div className="flex flex-col items-center px-5 py-10 md:hidden">
+        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+          <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${brandColorA}, ${brandColorB})` }} />
+          <div className="flex flex-col gap-6 p-7">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                {accountBadge}
+                <span className="text-xs text-gray-500">{account.name}</span>
+              </div>
+              {webinar.category && (
+                <span
+                  className="w-fit text-xs font-semibold tracking-wide"
+                  style={{ color: brandColorA }}
+                >
+                  {badgeLabel}
+                </span>
+              )}
+              <h1 className="text-xl font-bold leading-snug text-gray-900">{webinar.title}</h1>
+              {presenter?.display_name && (
+                <p className="text-xs text-gray-500">Presenta {presenter.display_name}</p>
+              )}
+            </div>
+            {registrationForm}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
