@@ -17,6 +17,7 @@ export async function createAccount(
 ): Promise<CreateAccountState> {
   const name = String(formData.get("name") ?? "").trim();
   const planKey = String(formData.get("plan_key") ?? "core");
+  const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
 
   if (!name) {
     return { error: "El nombre de la cuenta es obligatorio." };
@@ -52,6 +53,7 @@ export async function createAccount(
           p_name: name,
           p_slug: slug,
           p_plan_key: planKey,
+          p_timezone_default: timezone,
         });
 
         if (!error) {
@@ -79,12 +81,12 @@ export async function createAccount(
   return result;
 }
 
-export type UpdateAccountNameState = { error: string } | { success: true } | null;
+export type UpdateAccountGeneralState = { error: string } | { success: true } | null;
 
-export async function updateAccountName(
-  _prevState: UpdateAccountNameState,
+export async function updateAccountGeneral(
+  _prevState: UpdateAccountGeneralState,
   formData: FormData
-): Promise<UpdateAccountNameState> {
+): Promise<UpdateAccountGeneralState> {
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
     return { error: "No tienes permisos para editar la cuenta." };
@@ -94,11 +96,12 @@ export async function updateAccountName(
   if (!name) {
     return { error: "El nombre de la cuenta es obligatorio." };
   }
+  const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("accounts")
-    .update({ name })
+    .update({ name, timezone_default: timezone })
     .eq("id", current.account.id);
 
   if (error) {

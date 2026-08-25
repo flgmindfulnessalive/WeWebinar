@@ -191,6 +191,7 @@ export default async function WebinarDetailPage({
             scheduleMode={webinar.schedule_mode}
             offsets={webinar.just_in_time_offsets_minutes}
             schedules={schedules ?? []}
+            accountTimezone={current.account.timezone_default}
           />
           <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />
           <ChatSection webinarId={webinar.id} messages={chatMessages ?? []} />

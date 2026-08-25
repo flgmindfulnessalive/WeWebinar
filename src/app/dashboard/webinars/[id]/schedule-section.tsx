@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useState, useTransition } from "react";
 
 import {
   updateSchedulingMode,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTimezones } from "@/hooks/use-timezones";
 import type { ScheduleMode } from "@/lib/supabase/database.types";
 
 const DAY_LABELS = [
@@ -31,25 +32,18 @@ type ScheduleRow = {
   exclude_weekends: boolean;
 };
 
-function useTimezones() {
-  return useMemo(() => {
-    if (typeof Intl.supportedValuesOf === "function") {
-      return Intl.supportedValuesOf("timeZone");
-    }
-    return ["UTC", "America/Argentina/Buenos_Aires", "America/Mexico_City", "America/New_York"];
-  }, []);
-}
-
 export function ScheduleSection({
   webinarId,
   scheduleMode: initialMode,
   offsets: initialOffsets,
   schedules,
+  accountTimezone,
 }: {
   webinarId: string;
   scheduleMode: ScheduleMode;
   offsets: number[];
   schedules: ScheduleRow[];
+  accountTimezone: string;
 }) {
   const [mode, setMode] = useState<ScheduleMode>(initialMode);
   const [modeState, modeAction, modePending] = useActionState(
@@ -167,7 +161,7 @@ export function ScheduleSection({
                 <select
                   id="timezone"
                   name="timezone"
-                  defaultValue="UTC"
+                  defaultValue={accountTimezone}
                   required
                   className="flex h-9 w-56 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
                 >

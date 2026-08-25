@@ -566,7 +566,12 @@ export interface Database {
     };
     Functions: {
       create_account_with_owner: {
-        Args: { p_name: string; p_slug: string; p_plan_key?: string };
+        Args: {
+          p_name: string;
+          p_slug: string;
+          p_plan_key?: string;
+          p_timezone_default?: string;
+        };
         Returns: Database["public"]["Tables"]["accounts"]["Row"];
       };
       record_viewer_event: {
