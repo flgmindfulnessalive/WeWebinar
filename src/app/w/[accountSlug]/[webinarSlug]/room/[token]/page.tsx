@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { resolveBrandColors } from "@/lib/brand-colors";
 import { WaitingRoomClient } from "./waiting-room-client";
 
 export default async function WaitingRoomPage({
@@ -28,7 +29,7 @@ export default async function WaitingRoomPage({
     redirect(liveRoomPath);
   }
 
-  const [{ data: webinar }, { data: waitingRoom }] = await Promise.all([
+  const [{ data: webinar }, { data: waitingRoom }, { data: account }] = await Promise.all([
     supabase
       .from("webinars")
       .select("id, title, description, presenter_user_id, duration_seconds")
@@ -36,6 +37,7 @@ export default async function WaitingRoomPage({
       .eq("status", "published")
       .maybeSingle(),
     supabase.from("waiting_room_config").select("*").eq("webinar_id", session.webinar_id).maybeSingle(),
+    supabase.from("account_public_profile").select("name, branding").eq("slug", accountSlug).maybeSingle(),
   ]);
   if (!webinar) notFound();
 
@@ -47,6 +49,9 @@ export default async function WaitingRoomPage({
         .maybeSingle()
     : { data: null };
 
+  const branding = (account?.branding as Record<string, string | null>) ?? {};
+  const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);
+
   return (
     <WaitingRoomClient
       webinarId={webinar.id}
@@ -57,6 +62,10 @@ export default async function WaitingRoomPage({
       config={waitingRoom}
       presenter={presenter}
       isFixedSchedule={session.session_id !== null}
+      accountName={account?.name ?? null}
+      accountLogoUrl={branding.logo_url ?? null}
+      brandColorA={brandColorA}
+      brandColorB={brandColorB}
     />
   );
 }

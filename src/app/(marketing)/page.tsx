@@ -10,7 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ParticleNetwork } from "@/components/particle-network";
-import { GradientBlobs } from "./_components/gradient-blobs";
+import { GradientBlobs } from "@/components/gradient-blobs";
 import { MouseSpotlight } from "./_components/mouse-spotlight";
 import { ProductPreview } from "./_components/product-preview";
 

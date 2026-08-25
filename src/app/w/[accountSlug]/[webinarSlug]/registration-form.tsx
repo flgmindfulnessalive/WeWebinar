@@ -1,14 +1,13 @@
 "use client";
 
-import { useActionState, useMemo, useState, useSyncExternalStore } from "react";
+import { useActionState, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { ArrowRight, Calendar, Lock, Mail, User, Zap } from "lucide-react";
 
 import { registerForWebinar } from "@/lib/actions/register";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/phone-input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { DEFAULT_BRAND_COLOR_A, DEFAULT_BRAND_COLOR_B } from "@/lib/brand-colors";
 import type { ScheduleMode } from "@/lib/supabase/database.types";
 
 type Occurrence = { scheduleId: string; startsAt: string; spotsLeft: number | null };
@@ -34,6 +33,8 @@ export function RegistrationForm({
   offsets,
   occurrences,
   allFixedSlotsFull,
+  brandColorA = DEFAULT_BRAND_COLOR_A,
+  brandColorB = DEFAULT_BRAND_COLOR_B,
 }: {
   webinarId: string;
   returnTo: string;
@@ -41,6 +42,8 @@ export function RegistrationForm({
   offsets: number[];
   occurrences: Occurrence[];
   allFixedSlotsFull: boolean;
+  brandColorA?: string;
+  brandColorB?: string;
 }) {
   const [state, formAction, isPending] = useActionState(registerForWebinar, null);
   const [selectedOccurrence, setSelectedOccurrence] = useState(() => {
@@ -83,142 +86,205 @@ export function RegistrationForm({
     []
   );
 
+  const gradient = `linear-gradient(135deg, ${brandColorA}, ${brandColorB})`;
+
   if (allFixedSlotsFull) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
-          <p className="text-lg font-medium">Todos los horarios disponibles están completos</p>
-          <p className="text-sm text-muted-foreground">
-            Vuelve a intentarlo más tarde para ver nuevas fechas.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center gap-2 rounded-xl border border-gray-100 bg-white py-10 text-center shadow-sm">
+        <p className="text-lg font-medium text-gray-900">
+          Todos los horarios disponibles están completos
+        </p>
+        <p className="text-sm text-gray-500">Vuelve a intentarlo más tarde para ver nuevas fechas.</p>
+      </div>
     );
   }
 
   if (scheduleMode === "fixed" && occurrences.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde.
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-gray-100 bg-white py-10 text-center text-sm text-gray-500 shadow-sm">
+        Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde.
+      </div>
     );
   }
 
   const [selectedStartsAt, selectedScheduleId] = selectedOccurrence.split("|");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reserva tu lugar</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="flex flex-col gap-4">
-          <input type="hidden" name="webinar_id" value={webinarId} />
-          <input type="hidden" name="return_to" value={returnTo} />
-          <input type="hidden" name="visitor_timezone" value={visitorTimezone} />
+    <form action={formAction} className="flex flex-col gap-5">
+      <input type="hidden" name="webinar_id" value={webinarId} />
+      <input type="hidden" name="return_to" value={returnTo} />
+      <input type="hidden" name="visitor_timezone" value={visitorTimezone} />
 
-          {showBothTabs && (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab("fixed")}
-                className={cn(
-                  "rounded-md border px-3 py-1.5 text-sm font-medium",
-                  activeTab === "fixed" ? "border-primary bg-accent" : "text-muted-foreground"
-                )}
-              >
-                Elegir horario
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("jit")}
-                className={cn(
-                  "rounded-md border px-3 py-1.5 text-sm font-medium",
-                  activeTab === "jit" ? "border-primary bg-accent" : "text-muted-foreground"
-                )}
-              >
-                Empezar ahora
-              </button>
-            </div>
-          )}
+      {showBothTabs && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("fixed")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              activeTab === "fixed"
+                ? "border-transparent text-white"
+                : "border-gray-200 text-gray-500 hover:text-gray-700"
+            )}
+            style={activeTab === "fixed" ? { background: gradient } : undefined}
+          >
+            <Calendar className="size-3.5" />
+            Elegir horario
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("jit")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              activeTab === "jit"
+                ? "border-transparent text-white"
+                : "border-gray-200 text-gray-500 hover:text-gray-700"
+            )}
+            style={activeTab === "jit" ? { background: gradient } : undefined}
+          >
+            <Zap className="size-3.5" />
+            Empezar ahora
+          </button>
+        </div>
+      )}
 
-          {activeTab === "fixed" ? (
-            <div className="grid gap-2">
-              <input type="hidden" name="schedule_id" value={selectedScheduleId ?? ""} />
-              <input type="hidden" name="session_starts_at" value={selectedStartsAt ?? ""} />
-              <Label>Elige un horario ({visitorTimezone})</Label>
-              <div className="flex flex-col gap-2">
-                {occurrences.map((occ) => {
-                  const key = occurrenceKey(occ);
-                  const full = occ.spotsLeft === 0;
-                  return (
-                    <label
-                      key={key}
-                      className={cn(
-                        "flex items-center rounded-md border px-3 py-2 text-sm",
-                        full
-                          ? "cursor-not-allowed opacity-50"
-                          : "cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-accent"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        className="mr-3 size-4"
-                        checked={selectedOccurrence === key}
-                        disabled={full}
-                        onChange={() => setSelectedOccurrence(key)}
-                      />
-                      <span className="flex-1">{formatter.format(new Date(occ.startsAt))}</span>
-                      {full && <span className="text-xs text-muted-foreground">Cupo lleno</span>}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              <input type="hidden" name="offset_minutes" value={selectedOffset} />
-              <Label>¿Cuándo quieres empezar?</Label>
-              <div className="flex flex-wrap gap-2">
-                {offsets.map((minutes) => (
-                  <button
-                    key={minutes}
-                    type="button"
-                    onClick={() => setSelectedOffset(minutes)}
+      {activeTab === "fixed" ? (
+        <div className="grid gap-2">
+          <input type="hidden" name="schedule_id" value={selectedScheduleId ?? ""} />
+          <input type="hidden" name="session_starts_at" value={selectedStartsAt ?? ""} />
+          <Label className="text-gray-700">Elige un horario ({visitorTimezone})</Label>
+          <div className="flex flex-col gap-2">
+            {occurrences.map((occ) => {
+              const key = occurrenceKey(occ);
+              const full = occ.spotsLeft === 0;
+              const selected = selectedOccurrence === key;
+              return (
+                <label
+                  key={key}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition-colors",
+                    full
+                      ? "cursor-not-allowed border-gray-100 opacity-50"
+                      : selected
+                        ? "cursor-pointer border-[1.5px]"
+                        : "cursor-pointer border-gray-200 hover:border-gray-300"
+                  )}
+                  style={
+                    selected && !full
+                      ? { borderColor: brandColorA, background: `${brandColorA}0d` }
+                      : undefined
+                  }
+                >
+                  <Calendar
+                    className="size-4 shrink-0"
+                    style={{ color: selected && !full ? brandColorA : "#9ca3af" }}
+                  />
+                  <input
+                    type="radio"
+                    className="sr-only"
+                    checked={selected}
+                    disabled={full}
+                    onChange={() => setSelectedOccurrence(key)}
+                  />
+                  <span
                     className={cn(
-                      "rounded-md border px-4 py-2 text-sm",
-                      selectedOffset === minutes && "border-primary bg-accent"
+                      "flex-1",
+                      selected && !full ? "font-semibold text-gray-900" : "text-gray-700"
                     )}
                   >
-                    En {minutes} min
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="grid gap-2">
-            <Label htmlFor="name">Nombre</Label>
-            <Input id="name" name="name" required autoComplete="name" />
+                    {formatter.format(new Date(occ.startsAt))}
+                  </span>
+                  {full ? (
+                    <span className="text-xs text-gray-400">Cupo lleno</span>
+                  ) : (
+                    occ.spotsLeft !== null && (
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: selected ? brandColorA : "#9ca3af" }}
+                      >
+                        {occ.spotsLeft} cupos
+                      </span>
+                    )
+                  )}
+                </label>
+              );
+            })}
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required autoComplete="email" />
+        </div>
+      ) : (
+        <div className="grid gap-2">
+          <input type="hidden" name="offset_minutes" value={selectedOffset} />
+          <Label className="text-gray-700">¿Cuándo quieres empezar?</Label>
+          <div className="flex flex-wrap gap-2">
+            {offsets.map((minutes) => {
+              const selected = selectedOffset === minutes;
+              return (
+                <button
+                  key={minutes}
+                  type="button"
+                  onClick={() => setSelectedOffset(minutes)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm transition-colors",
+                    selected
+                      ? "border-transparent font-semibold text-white"
+                      : "border-gray-200 text-gray-700 hover:border-gray-300"
+                  )}
+                  style={selected ? { background: gradient } : undefined}
+                >
+                  <Zap className="size-3.5" />
+                  En {minutes} min
+                </button>
+              );
+            })}
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="phone">Teléfono (opcional)</Label>
-            <PhoneInput id="phone" name="phone" />
-          </div>
+        </div>
+      )}
 
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+      <div className="flex flex-col gap-3">
+        <div className="relative">
+          <User className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <input
+            id="name"
+            name="name"
+            required
+            autoComplete="name"
+            placeholder="Nombre completo"
+            className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2"
+            style={{ "--tw-ring-color": brandColorA } as CSSProperties}
+          />
+        </div>
+        <div className="relative">
+          <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="Email"
+            className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2"
+            style={{ "--tw-ring-color": brandColorA } as CSSProperties}
+          />
+        </div>
+        <PhoneInput id="phone" name="phone" />
+      </div>
 
-          <Button type="submit" size="lg" disabled={isPending}>
-            {isPending ? "Reservando..." : "Reservar mi lugar"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 disabled:opacity-60"
+        style={{ background: gradient }}
+      >
+        {isPending ? "Reservando..." : "Reservar mi lugar"}
+        {!isPending && <ArrowRight className="size-4" />}
+      </button>
+
+      <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
+        <Lock className="size-3" />
+        Tus datos están protegidos. Sin spam.
+      </div>
+    </form>
   );
 }
