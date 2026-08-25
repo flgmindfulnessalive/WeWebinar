@@ -11,6 +11,7 @@ import { StatTile } from "./stat-tile";
 import { RetentionChart } from "./retention-chart";
 import { HorizontalBarChart } from "./bar-chart";
 import { CtaClickersToggle } from "./cta-clickers";
+import { RegistrantsTable } from "./registrants-table";
 
 function ctaLabel(config: unknown, type: string): string {
   const c = (config ?? {}) as Record<string, unknown>;
@@ -45,6 +46,7 @@ export default async function WebinarAnalyticsPage({
     { data: pollRows },
     { data: registrants },
     { data: clickerRows },
+    { data: watchPositionRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
@@ -56,7 +58,12 @@ export default async function WebinarAnalyticsPage({
       .eq("webinar_id", webinarId)
       .order("created_at", { ascending: false }),
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
   ]);
+
+  const watchPositionByRegistrant = new Map(
+    (watchPositionRows ?? []).map((row) => [row.registrant_id, row.last_position_seconds])
+  );
 
   const summary = summaryRows?.[0];
   const registrantCount = summary?.registrant_count ?? 0;
@@ -152,30 +159,17 @@ export default async function WebinarAnalyticsPage({
           {!registrants || registrants.length === 0 ? (
             <p className="text-sm text-muted-foreground">Todavía no hay nadie registrado.</p>
           ) : (
-            <div className="max-h-96 overflow-y-auto rounded-md border">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-muted/50">
-                  <tr>
-                    <th className="p-2 text-left font-medium">Nombre</th>
-                    <th className="p-2 text-left font-medium">Email</th>
-                    <th className="p-2 text-left font-medium">Horario asignado</th>
-                    <th className="p-2 text-left font-medium">Registrado el</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrants.map((r) => (
-                    <tr key={r.id} className="border-t">
-                      <td className="p-2">{r.name}</td>
-                      <td className="p-2">{r.email}</td>
-                      <td className="p-2">
-                        {new Date(r.computed_session_start).toLocaleString("es")}
-                      </td>
-                      <td className="p-2">{new Date(r.created_at).toLocaleString("es")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RegistrantsTable
+              durationSeconds={durationSeconds}
+              registrants={registrants.map((r) => ({
+                id: r.id,
+                name: r.name,
+                email: r.email,
+                computedSessionStart: r.computed_session_start,
+                createdAt: r.created_at,
+                lastPositionSeconds: watchPositionByRegistrant.get(r.id) ?? null,
+              }))}
+            />
           )}
         </CardContent>
       </Card>

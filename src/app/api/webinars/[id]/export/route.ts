@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
+import { secondsToClock } from "@/lib/time";
 
 function csvEscape(value: string): string {
   // Registrant-controlled fields (name, custom_fields) land straight in a
@@ -44,15 +45,22 @@ export async function GET(
     return NextResponse.json({ error: "webinar not found" }, { status: 404 });
   }
 
-  const { data: registrants, error } = await supabase
-    .from("registrants")
-    .select("name, email, custom_fields, computed_session_start, visitor_timezone, created_at")
-    .eq("webinar_id", webinarId)
-    .order("created_at", { ascending: true });
+  const [{ data: registrants, error }, { data: watchPositionRows }] = await Promise.all([
+    supabase
+      .from("registrants")
+      .select("id, name, email, custom_fields, computed_session_start, visitor_timezone, created_at")
+      .eq("webinar_id", webinarId)
+      .order("created_at", { ascending: true }),
+    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
+  ]);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  const watchPositionByRegistrant = new Map(
+    (watchPositionRows ?? []).map((row) => [row.registrant_id, row.last_position_seconds])
+  );
 
   let csv = toCsvRow([
     "Nombre",
@@ -61,9 +69,11 @@ export async function GET(
     "Timezone del visitante",
     "Campos personalizados",
     "Registrado el",
+    "Último minuto visto",
   ]);
 
   for (const r of registrants ?? []) {
+    const lastPositionSeconds = watchPositionByRegistrant.get(r.id) ?? null;
     csv += toCsvRow([
       r.name,
       r.email,
@@ -73,6 +83,7 @@ export async function GET(
         ? JSON.stringify(r.custom_fields)
         : "",
       r.created_at,
+      lastPositionSeconds === null ? "No asistió" : secondsToClock(lastPositionSeconds),
     ]);
   }
 
