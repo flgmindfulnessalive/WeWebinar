@@ -11,7 +11,7 @@ function BrandMark() {
       >
         W
       </span>
-      <span className="text-lg font-semibold tracking-tight">WeWebinar</span>
+      <span className="text-lg font-semibold tracking-tight">WeWebinars</span>
     </Link>
   );
 }
@@ -54,7 +54,7 @@ export default function MarketingLayout({
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
           <BrandMark />
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} WeWebinar. Todos los derechos reservados.
+            © {new Date().getFullYear()} WeWebinars. Todos los derechos reservados.
           </p>
         </div>
       </footer>

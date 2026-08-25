@@ -76,7 +76,41 @@ Orden recomendado (cada paso depende del anterior):
    nativo de Vercel.
    - `NEXT_PUBLIC_APP_URL` = tu dominio final (ej. `https://tudominio.com`).
 3. Deploy.
-4. (Opcional) conectar tu dominio propio en Vercel → Settings → Domains.
+4. Dominio propio — ver sección siguiente.
+
+## 4bis. Conectar tu dominio propio (ej. wewebinars.com)
+
+1. En Vercel → tu proyecto → **Settings → Domains**, agregar
+   `wewebinars.com` (y opcionalmente `www.wewebinars.com`, redirigiendo
+   uno al otro). Vercel te muestra los registros DNS exactos a crear.
+2. En el panel de tu proveedor de dominio (donde lo compraste), cargar
+   esos registros:
+   - Dominio raíz (`wewebinars.com`): un registro `A` apuntando a la IP
+     que indica Vercel (`76.76.21.21` normalmente).
+   - `www`: un registro `CNAME` apuntando a `cname.vercel-dns.com`.
+   Propagación: de minutos a unas horas. Vercel emite el certificado
+   HTTPS automáticamente apenas verifica el dominio.
+3. Actualizar `NEXT_PUBLIC_APP_URL` en Vercel → Settings → Environment
+   Variables a `https://wewebinars.com` y volver a deployar (Deployments
+   → Redeploy) — todos los links generados por la app (emails de
+   confirmación/recordatorio, links mágicos de login, checkout de Stripe,
+   acceso a la sala) se arman con esta variable.
+4. Supabase → Authentication → URL Configuration: cambiar **Site URL** a
+   `https://wewebinars.com` y agregar `https://wewebinars.com/**` a
+   **Redirect URLs** (si no se hace esto, los emails de login
+   mágico/reset de contraseña van a redirigir al dominio viejo o Supabase
+   va a rechazar el redirect).
+5. Stripe → Developers → Webhooks: editar el endpoint existente (o crear
+   uno nuevo) para que apunte a `https://wewebinars.com/api/stripe/webhook`.
+6. Resend → Domains: verificar `wewebinars.com` (agrega los registros
+   SPF/DKIM que te da Resend) y actualizar `RESEND_FROM_EMAIL` a una
+   dirección de ese dominio (ej. `noreply@wewebinars.com`).
+7. Si estás usando el cron externo por el límite del plan Hobby (ver nota
+   más arriba), actualizar la URL que llama cada 5 minutos a
+   `https://wewebinars.com/api/cron/send-reminders`.
+8. (Opcional) en Vercel, renombrar el proyecto de `we-webinar` a algo
+   como `wewebinars` en Settings → General — es solo cosmético, no afecta
+   el dominio ya conectado.
 
 ## 5. Primer Super Admin
 

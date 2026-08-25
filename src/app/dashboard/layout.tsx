@@ -23,7 +23,7 @@ export default async function DashboardLayout({
       <aside className="hidden flex-col gap-6 border-r bg-muted/20 p-4 md:flex">
         <Link href="/dashboard" className="flex items-center gap-2 px-2 text-lg font-semibold tracking-tight">
           <Logo />
-          WeWebinar
+          WeWebinars
         </Link>
         <DashboardNav role={current.user.role} />
       </aside>
@@ -37,7 +37,7 @@ export default async function DashboardLayout({
               className="flex items-center gap-2 text-lg font-semibold tracking-tight md:hidden"
             >
               <Logo />
-              WeWebinar
+              WeWebinars
             </Link>
             <div className="hidden text-sm text-muted-foreground md:block">
               {current.account.name} ·{" "}

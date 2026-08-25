@@ -1,4 +1,4 @@
-# WeWebinar
+# WeWebinars
 
 Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan como transmisiones en vivo).
 

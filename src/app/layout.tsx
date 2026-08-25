@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WeWebinar",
+  title: "WeWebinars",
   description: "Plataforma de webinars evergreen para vender tus productos.",
 };
 

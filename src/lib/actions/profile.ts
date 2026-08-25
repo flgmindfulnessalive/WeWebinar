@@ -69,8 +69,8 @@ export async function sendTestEmail(
   try {
     await sendEmail({
       to: current.user.email,
-      subject: "Email de prueba de WeWebinar",
-      html: "<p>Si estás viendo esto, el envío de emails desde WeWebinar está funcionando correctamente.</p>",
+      subject: "Email de prueba de WeWebinars",
+      html: "<p>Si estás viendo esto, el envío de emails desde WeWebinars está funcionando correctamente.</p>",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
