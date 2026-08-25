@@ -25,7 +25,10 @@ export default async function GeneralSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <GeneralForm name={current.account.name} />
+          <GeneralForm
+            name={current.account.name}
+            timezone={current.account.timezone_default}
+          />
         </CardContent>
       </Card>
     </div>
