@@ -11,7 +11,6 @@ import { DEFAULT_TEMPLATES } from "@/lib/email-templates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Template = {
   id: string;
@@ -116,84 +115,77 @@ export function EmailTemplatesSection({
   const reminderFallback = DEFAULT_TEMPLATES.reminder;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          Emails automáticos
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <SingletonTemplateForm
-          webinarId={webinarId}
-          type="registration_confirmation"
-          title="Confirmación de registro"
-          existing={confirmation}
-        />
+    <div className="flex flex-col gap-4">
+      <SingletonTemplateForm
+        webinarId={webinarId}
+        type="registration_confirmation"
+        title="Confirmación de registro"
+        existing={confirmation}
+      />
 
-        <div className="flex flex-col gap-3 rounded-md border p-4">
-          <p className="text-sm font-medium">Recordatorios</p>
+      <div className="flex flex-col gap-3 rounded-md border p-4">
+        <p className="text-sm font-medium">Recordatorios</p>
 
-          {reminders.length > 0 && (
-            <div className="flex flex-col gap-2">
-              {reminders.map((r) => (
-                <ReminderRow key={r.id} template={r} webinarId={webinarId} />
-              ))}
-            </div>
-          )}
+        {reminders.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {reminders.map((r) => (
+              <ReminderRow key={r.id} template={r} webinarId={webinarId} />
+            ))}
+          </div>
+        )}
 
-          <form action={reminderAction} className="flex flex-col gap-3">
-            <input type="hidden" name="webinar_id" value={webinarId} />
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="grid gap-1.5">
-                <Label htmlFor="offset_minutes">Minutos antes</Label>
-                <Input
-                  id="offset_minutes"
-                  name="offset_minutes"
-                  type="number"
-                  min={1}
-                  placeholder="60"
-                  required
-                  className="w-24"
-                />
-              </div>
-              <div className="grid flex-1 gap-1.5">
-                <Label htmlFor="reminder-subject">Asunto</Label>
-                <Input
-                  id="reminder-subject"
-                  name="subject"
-                  defaultValue={reminderFallback.subject}
-                  required
-                />
-              </div>
-            </div>
+        <form action={reminderAction} className="flex flex-col gap-3">
+          <input type="hidden" name="webinar_id" value={webinarId} />
+          <div className="flex flex-wrap items-end gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="reminder-body">Cuerpo (HTML)</Label>
-              <textarea
-                id="reminder-body"
-                name="body"
-                rows={4}
-                defaultValue={reminderFallback.body}
+              <Label htmlFor="offset_minutes">Minutos antes</Label>
+              <Input
+                id="offset_minutes"
+                name="offset_minutes"
+                type="number"
+                min={1}
+                placeholder="60"
                 required
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+                className="w-24"
               />
-              <p className="text-xs text-muted-foreground">{VARIABLE_HINT}</p>
             </div>
-            {reminderState?.error && (
-              <p className="text-sm text-destructive">{reminderState.error}</p>
-            )}
-            <Button type="submit" size="sm" disabled={reminderPending} className="w-fit">
-              {reminderPending ? "Agregando..." : "Agregar recordatorio"}
-            </Button>
-          </form>
-        </div>
+            <div className="grid flex-1 gap-1.5">
+              <Label htmlFor="reminder-subject">Asunto</Label>
+              <Input
+                id="reminder-subject"
+                name="subject"
+                defaultValue={reminderFallback.subject}
+                required
+              />
+            </div>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="reminder-body">Cuerpo (HTML)</Label>
+            <textarea
+              id="reminder-body"
+              name="body"
+              rows={4}
+              defaultValue={reminderFallback.body}
+              required
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+            />
+            <p className="text-xs text-muted-foreground">{VARIABLE_HINT}</p>
+          </div>
+          {reminderState?.error && (
+            <p className="text-sm text-destructive">{reminderState.error}</p>
+          )}
+          <Button type="submit" size="sm" disabled={reminderPending} className="w-fit">
+            {reminderPending ? "Agregando..." : "Agregar recordatorio"}
+          </Button>
+        </form>
+      </div>
 
-        <SingletonTemplateForm
-          webinarId={webinarId}
-          type="replay_missed"
-          title='Email de "te lo perdiste" (a quien no asistió)'
-          existing={replayMissed}
-        />
-      </CardContent>
-    </Card>
+      <SingletonTemplateForm
+        webinarId={webinarId}
+        type="replay_missed"
+        title='Email de "te lo perdiste" (a quien no asistió)'
+        existing={replayMissed}
+      />
+    </div>
   );
 }

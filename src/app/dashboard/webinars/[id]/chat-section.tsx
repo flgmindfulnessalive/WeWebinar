@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ChatMessageType } from "@/lib/supabase/database.types";
 
@@ -62,103 +61,96 @@ export function ChatSection({
   }, [visibleCount]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          Chat simulado
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6 lg:flex-row">
-        <div className="flex flex-1 flex-col gap-4">
-          <form action={formAction} className="flex flex-wrap items-end gap-3">
-            <input type="hidden" name="webinar_id" value={webinarId} />
-            <div className="grid gap-1.5">
-              <Label htmlFor="timestamp">Minuto (mm:ss)</Label>
-              <Input
-                id="timestamp"
-                name="timestamp"
-                placeholder="2:30"
-                required
-                className="w-24"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="fake_name">Nombre</Label>
-              <Input id="fake_name" name="fake_name" required className="w-32" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="message_type">Tipo</Label>
-              <select
-                id="message_type"
-                name="message_type"
-                defaultValue="message"
-                className="flex h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
-              >
-                <option value="message">Mensaje</option>
-                <option value="question">Pregunta</option>
-                <option value="host_reply">Respuesta del host</option>
-              </select>
-            </div>
-            <div className="grid flex-1 gap-1.5">
-              <Label htmlFor="message_text">Texto</Label>
-              <Input id="message_text" name="message_text" required />
-            </div>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Agregando..." : "Agregar"}
-            </Button>
-          </form>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-
-          <div className="flex flex-col divide-y rounded-md border">
-            {messages.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">
-                Todavía no agregaste mensajes.
-              </p>
-            )}
-            {messages.map((message) => (
-              <ChatMessageRow key={message.id} message={message} webinarId={webinarId} />
-            ))}
+    <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="flex flex-1 flex-col gap-4">
+        <form action={formAction} className="flex flex-wrap items-end gap-3">
+          <input type="hidden" name="webinar_id" value={webinarId} />
+          <div className="grid gap-1.5">
+            <Label htmlFor="timestamp">Minuto (mm:ss)</Label>
+            <Input
+              id="timestamp"
+              name="timestamp"
+              placeholder="2:30"
+              required
+              className="w-24"
+            />
           </div>
-        </div>
-
-        <div className="flex w-full flex-col gap-3 lg:w-80">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Vista previa</p>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={messages.length === 0}
-              onClick={() => {
-                setVisibleCount(0);
-                setIsPlaying(true);
-              }}
+          <div className="grid gap-1.5">
+            <Label htmlFor="fake_name">Nombre</Label>
+            <Input id="fake_name" name="fake_name" required className="w-32" />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="message_type">Tipo</Label>
+            <select
+              id="message_type"
+              name="message_type"
+              defaultValue="message"
+              className="flex h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
             >
-              {isPlaying ? "Reproduciendo..." : "Reproducir (12x)"}
-            </Button>
+              <option value="message">Mensaje</option>
+              <option value="question">Pregunta</option>
+              <option value="host_reply">Respuesta del host</option>
+            </select>
           </div>
-          <div
-            ref={listRef}
-            className="flex h-72 flex-col gap-2 overflow-y-auto rounded-md border bg-muted/20 p-3"
-          >
-            {messages.slice(0, visibleCount).map((message) => (
-              <div key={message.id} className="text-xs">
-                <span className="font-medium">{message.fake_name}</span>{" "}
-                <span className="text-muted-foreground">
-                  {secondsToClock(message.timestamp_seconds)}
-                </span>
-                <p
-                  className={cn(
-                    message.message_type === "host_reply" && "font-medium text-primary"
-                  )}
-                >
-                  {message.message_text}
-                </p>
-              </div>
-            ))}
+          <div className="grid flex-1 gap-1.5">
+            <Label htmlFor="message_text">Texto</Label>
+            <Input id="message_text" name="message_text" required />
           </div>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Agregando..." : "Agregar"}
+          </Button>
+        </form>
+        {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+
+        <div className="flex flex-col divide-y rounded-md border">
+          {messages.length === 0 && (
+            <p className="p-4 text-sm text-muted-foreground">
+              Todavía no agregaste mensajes.
+            </p>
+          )}
+          {messages.map((message) => (
+            <ChatMessageRow key={message.id} message={message} webinarId={webinarId} />
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex w-full flex-col gap-3 lg:w-80">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">Vista previa</p>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={messages.length === 0}
+            onClick={() => {
+              setVisibleCount(0);
+              setIsPlaying(true);
+            }}
+          >
+            {isPlaying ? "Reproduciendo..." : "Reproducir (12x)"}
+          </Button>
+        </div>
+        <div
+          ref={listRef}
+          className="flex h-72 flex-col gap-2 overflow-y-auto rounded-md border bg-muted/20 p-3"
+        >
+          {messages.slice(0, visibleCount).map((message) => (
+            <div key={message.id} className="text-xs">
+              <span className="font-medium">{message.fake_name}</span>{" "}
+              <span className="text-muted-foreground">
+                {secondsToClock(message.timestamp_seconds)}
+              </span>
+              <p
+                className={cn(
+                  message.message_type === "host_reply" && "font-medium text-primary"
+                )}
+              >
+                {message.message_text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
