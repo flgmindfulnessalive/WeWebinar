@@ -87,6 +87,18 @@ export function WaitingRoomClient({
   const roomUrl =
     typeof window !== "undefined" ? `${window.location.origin}${liveRoomPath}` : liveRoomPath;
 
+  // No explicit timeZone: the visitor's timezone doesn't travel as a prop
+  // to this component, so we lean on the browser's own local zone (the
+  // correct one to show here) by simply omitting the option.
+  const formattedStart = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es", {
+        dateStyle: "long",
+        timeStyle: "short",
+      }).format(new Date(sessionStart)),
+    [sessionStart]
+  );
+
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-8 overflow-hidden px-6 py-16 text-center">
       {config?.background_url && (
@@ -119,6 +131,10 @@ export function WaitingRoomClient({
       {config?.subheadline && (
         <p className="max-w-md text-muted-foreground">{config.subheadline}</p>
       )}
+
+      <p className="text-sm text-muted-foreground">
+        {formattedStart} <span className="text-xs">(hora local)</span>
+      </p>
 
       <div className="text-6xl font-bold tabular-nums tracking-tight">
         {formatCountdown(remainingMs)}
