@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // A basic abuse/cost guard: past this many AI-answered messages in one
 // session, stop calling the model for that registrant. Chat spam otherwise
 // has no ceiling on LLM spend.
-const MAX_AI_REPLIES_PER_REGISTRANT = 15;
+const MAX_AI_REPLIES_PER_REGISTRANT = 5;
 
 // The model's own signal that a message didn't need a reply (a greeting, a
 // "thanks", a reaction) -- keeps this a real yes/no decision instead of
@@ -23,11 +23,17 @@ function buildSystemPrompt(webinar: {
   title: string;
   description: string | null;
   category: string | null;
+  ai_agent_training_info: string | null;
 }, accountName: string): string {
   return `Eres el asistente de chat del webinar "${webinar.title}"${
     webinar.category ? ` (categoría: ${webinar.category})` : ""
   }, presentado por ${accountName}.
 ${webinar.description ? `Descripción del webinar: ${webinar.description}` : ""}
+${
+  webinar.ai_agent_training_info
+    ? `\nInformación adicional provista por el organizador (FAQ, precios, detalles del producto/servicio) -- usala como fuente principal para responder:\n${webinar.ai_agent_training_info}`
+    : ""
+}
 
 Un asistente real está viendo este webinar y escribió un mensaje en el chat en vivo. Tu trabajo:
 - Si el mensaje es una pregunta genuina que necesita respuesta, respóndela de forma breve (2-4 frases), cálida y natural, como lo haría un miembro del equipo organizador.
@@ -64,7 +70,7 @@ export async function POST(request: Request) {
 
   const { data: webinar } = await admin
     .from("webinars")
-    .select("title, description, category, ai_chat_enabled, account_id")
+    .select("title, description, category, ai_chat_enabled, ai_agent_training_info, account_id")
     .eq("id", registrant.webinar_id)
     .maybeSingle();
   if (!webinar || !webinar.ai_chat_enabled) {

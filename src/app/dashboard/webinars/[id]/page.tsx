@@ -256,6 +256,7 @@ export default async function WebinarDetailPage({
                 webinarId={webinar.id}
                 messages={chatMessages ?? []}
                 aiChatEnabled={webinar.ai_chat_enabled}
+                aiTrainingInfo={webinar.ai_agent_training_info}
               />
             ),
           },
