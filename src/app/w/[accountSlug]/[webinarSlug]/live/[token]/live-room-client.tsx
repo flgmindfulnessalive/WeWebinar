@@ -374,14 +374,18 @@ export function LiveRoomClient({
               )}
             </div>
             <div className="min-h-0 flex-1">
-              {activeTab === "chat" && (
+              {/* Kept mounted (just hidden) instead of conditionally rendered --
+                  unmounting on every tab switch discarded in-flight AI replies
+                  and forced a DB round trip to restore messages that were
+                  already sitting in local state. */}
+              <div className={cn("h-full", activeTab !== "chat" && "hidden")}>
                 <ChatPanel
                   accessToken={accessToken}
                   visitorName={visitorName}
                   simulatedMessages={chatMessages}
                   getElapsedSeconds={getElapsedSeconds}
                 />
-              )}
+              </div>
               {activeTab === "connected" && (
                 <ConnectedTab
                   viewerCount={viewerCount}
