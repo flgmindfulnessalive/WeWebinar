@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
-import { accountSuspendedEmail, trialExpiringEmail } from "@/lib/platform-email";
+import { accountSuspendedEmail, monthlyDigestEmail, trialExpiringEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -238,5 +238,85 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ remindersSent, replaysSent, trialWarningsSent, trialsSuspended, errors });
+  // --- Monthly digest: once per calendar month, send each active/trialing
+  // account a summary of the previous month. Reuses the same claim-before-
+  // send pattern (last_digest_sent_at set BEFORE building/sending), so only
+  // the first cron tick after the month rolls over does any work -- every
+  // other tick that month sees last_digest_sent_at already inside the
+  // current month and skips the account.
+  let digestsSent = 0;
+
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const prevMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const periodLabel = new Intl.DateTimeFormat("es", { month: "long", year: "numeric" }).format(
+    prevMonthStart
+  );
+
+  const { data: digestCandidates } = await admin
+    .from("accounts")
+    .select("id, name")
+    .in("subscription_status", ["trialing", "active", "past_due"])
+    .or(`last_digest_sent_at.is.null,last_digest_sent_at.lt.${monthStart.toISOString()}`);
+
+  for (const account of digestCandidates ?? []) {
+    const { data: claimed, error: claimError } = await admin
+      .from("accounts")
+      .update({ last_digest_sent_at: now.toISOString() })
+      .eq("id", account.id)
+      .or(`last_digest_sent_at.is.null,last_digest_sent_at.lt.${monthStart.toISOString()}`)
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`digest ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { count: webinarCount } = await admin
+        .from("webinars")
+        .select("id", { count: "exact", head: true })
+        .eq("account_id", account.id);
+      // Accounts that never created a webinar have nothing to summarize --
+      // skip the send but keep the claim, so we don't re-check them every
+      // 5 minutes for the rest of the month.
+      if (!webinarCount) continue;
+
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const { data: summary } = await admin.rpc("get_account_period_summary", {
+          p_account_id: account.id,
+          p_period_start: prevMonthStart.toISOString(),
+          p_period_end: monthStart.toISOString(),
+        });
+        const row = summary?.[0];
+        const { subject, html } = monthlyDigestEmail(account.name, periodLabel, {
+          registrantCount: row?.registrant_count ?? 0,
+          attendeeCount: row?.attendee_count ?? 0,
+          avgWatchPct: row?.avg_watch_pct ?? 0,
+          topWebinarTitle: row?.top_webinar_title ?? null,
+          topWebinarRegistrants: row?.top_webinar_registrants ?? 0,
+        });
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      digestsSent++;
+    } catch (err) {
+      errors.push(`digest ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  return NextResponse.json({
+    remindersSent,
+    replaysSent,
+    trialWarningsSent,
+    trialsSuspended,
+    digestsSent,
+    errors,
+  });
 }

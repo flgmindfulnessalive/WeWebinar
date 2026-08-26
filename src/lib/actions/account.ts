@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
+import { welcomeEmail } from "@/lib/platform-email";
+import { sendEmail } from "@/lib/resend";
 
 export type CreateAccountState = { error: string } | null;
 
@@ -59,6 +61,19 @@ export async function createAccount(
         if (!error) {
           redirectTo = "/dashboard";
           resolved = true;
+          // Best-effort: a failed welcome email should never block the
+          // account from being created, so it's logged and swallowed
+          // rather than surfaced as a signup error.
+          try {
+            const fullName =
+              typeof user.user_metadata?.full_name === "string"
+                ? user.user_metadata.full_name
+                : null;
+            const { subject, html } = welcomeEmail(name, fullName);
+            await sendEmail({ to: user.email!, subject, html });
+          } catch (err) {
+            console.error("[account] welcome email failed:", err);
+          }
         } else if (error.code === "23505") {
           attempt += 1;
           slug = `${baseSlug}-${attempt + 1}`;
