@@ -28,7 +28,7 @@ const FONT_STACK =
 // <input type="color">, so it's always already a clean #rrggbb, but is
 // escaped the same way for defense in depth (it lands inside a double-
 // quoted style="..." attribute below).
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

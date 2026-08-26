@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
+import { accountSuspendedEmail, trialExpiringEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import type { Database } from "@/lib/supabase/database.types";
+
+const TRIAL_WARNING_WINDOW_DAYS = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -140,5 +144,99 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ remindersSent, replaysSent, errors });
+  // --- Trial lifecycle: suspend accounts whose 15-day trial expired, and
+  // warn accounts about to expire. Lives in this same handler instead of a
+  // separate cron route so it needs no extra entry in vercel.json or a
+  // second URL in the external 5-minute cron -- both checks below are
+  // cheap and fully idempotent, so running them on every tick is harmless.
+  let trialWarningsSent = 0;
+  let trialsSuspended = 0;
+
+  const { data: expiringSoon } = await admin
+    .from("accounts")
+    .select("id, name, trial_ends_at")
+    .eq("subscription_status", "trialing")
+    .is("trial_warning_sent_at", null)
+    .lte("trial_ends_at", new Date(Date.now() + TRIAL_WARNING_WINDOW_DAYS * DAY_MS).toISOString());
+
+  for (const account of expiringSoon ?? []) {
+    // Claim by setting trial_warning_sent_at BEFORE sending, same
+    // insert-before-send pattern as the reminders above -- guards against
+    // two overlapping runs both sending the warning.
+    const { data: claimed, error: claimError } = await admin
+      .from("accounts")
+      .update({ trial_warning_sent_at: new Date().toISOString() })
+      .eq("id", account.id)
+      .is("trial_warning_sent_at", null)
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`trial warning ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const daysLeft = Math.max(
+          0,
+          Math.ceil((new Date(account.trial_ends_at).getTime() - Date.now()) / DAY_MS)
+        );
+        const { subject, html } = trialExpiringEmail(account.name, daysLeft);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      trialWarningsSent++;
+    } catch (err) {
+      await admin
+        .from("accounts")
+        .update({ trial_warning_sent_at: null })
+        .eq("id", account.id);
+      errors.push(`trial warning ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  const { data: expiredTrials } = await admin
+    .from("accounts")
+    .select("id, name")
+    .eq("subscription_status", "trialing")
+    .lte("trial_ends_at", new Date().toISOString());
+
+  for (const account of expiredTrials ?? []) {
+    const { data: claimed, error: claimError } = await admin
+      .from("accounts")
+      .update({ subscription_status: "suspended", suspended_at: new Date().toISOString() })
+      .eq("id", account.id)
+      .eq("subscription_status", "trialing")
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`trial suspend ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const { subject, html } = accountSuspendedEmail(account.name);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      trialsSuspended++;
+    } catch (err) {
+      errors.push(`trial suspend ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  return NextResponse.json({ remindersSent, replaysSent, trialWarningsSent, trialsSuspended, errors });
 }

@@ -70,6 +70,8 @@ export interface Database {
           timezone_default: string;
           grace_period_days: number;
           suspended_at: string | null;
+          trial_ends_at: string;
+          trial_warning_sent_at: string | null;
           created_at: string;
           updated_at: string;
         };
