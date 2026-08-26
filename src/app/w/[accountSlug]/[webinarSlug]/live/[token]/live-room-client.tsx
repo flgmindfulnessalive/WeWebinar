@@ -44,7 +44,17 @@ type PanelTab = "chat" | "connected" | "presenter" | "notifications";
 
 const RESYNC_INTERVAL_MS = 20_000;
 const HEARTBEAT_INTERVAL_MS = 15_000;
-const DRIFT_TOLERANCE_SECONDS = 1.5;
+const DRIFT_TOLERANCE_SECONDS = 2.5;
+// Minimum time between corrective seeks. onTimeUpdate fires 4x/second, and
+// a seekTo() forces the player to rebuffer -- without a cooldown, any
+// sustained stall (slow network, a throttled background tab) turns into a
+// seek storm: correct, still behind next tick because the seek itself
+// triggered a rebuffer, correct again, every 250ms, forever. That hammers
+// the player's media pipeline hard enough to crash the tab (observed as a
+// real renderer OOM, not a JS memory leak) instead of just letting
+// playback catch up naturally, which it does within a few seconds once
+// left alone.
+const CORRECTION_COOLDOWN_MS = 5000;
 
 export function LiveRoomClient({
   accessToken,
@@ -84,6 +94,7 @@ export function LiveRoomClient({
   // event handlers, where accessing refs and calling Date.now() is fine.
   const mountedAtRef = useRef<number | null>(null);
   const elapsedAnchorRef = useRef(initialElapsedSeconds);
+  const lastCorrectionAtRef = useRef(0);
   const [durationSeconds, setDurationSeconds] = useState(initialDurationSeconds);
   const [isEnded, setIsEnded] = useState(
     durationSeconds > 0 && initialElapsedSeconds >= durationSeconds
@@ -184,7 +195,14 @@ export function LiveRoomClient({
     if (!player) return;
     const expected = getElapsedSeconds();
     if (Math.abs(player.currentTime - expected) > DRIFT_TOLERANCE_SECONDS) {
-      player.currentTime = expected;
+      const now = Date.now();
+      // Only re-seek if the last correction had time to actually take --
+      // see CORRECTION_COOLDOWN_MS above. Still drifting after the cooldown
+      // is exactly what this is for (a real stall, not a rebuffer blip).
+      if (now - lastCorrectionAtRef.current >= CORRECTION_COOLDOWN_MS) {
+        player.currentTime = expected;
+        lastCorrectionAtRef.current = now;
+      }
     }
     if (durationSeconds > 0 && expected >= durationSeconds) setIsEnded(true);
   };
