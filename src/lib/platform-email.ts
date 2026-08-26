@@ -110,6 +110,65 @@ export function paymentFailedEmail(accountName: string): { subject: string; html
   };
 }
 
+export function webinarPublishedEmail(
+  webinarTitle: string,
+  registrationLink: string
+): { subject: string; html: string } {
+  const safeTitle = escapeHtml(webinarTitle);
+  const safeLink = escapeHtml(registrationLink);
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Webinar publicado</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeTitle} ya está en vivo</h1>
+<p style="margin:0 0 20px;">Tu webinar quedó publicado y listo para recibir registros. Compartí este link con tu audiencia:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;"><tr><td style="background:#f4f4f5;border-radius:8px;padding:12px 14px;font-size:13px;word-break:break-all;color:${BRAND};">${safeLink}</td></tr></table>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${registrationLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ver página de registro</a>
+</td></tr></table>`;
+  return {
+    subject: `Tu webinar "${webinarTitle}" ya está publicado`,
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
+export function activationNudgeEmail(accountName: string): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">¿Necesitás una mano?</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Todavía no publicaste tu primer webinar</h1>
+<p style="margin:0 0 20px;">Notamos que <strong style="color:#18181b;">${safeName}</strong> todavía no publicó ningún webinar. Si te trabaste con algún paso (video, programación, sala de espera) escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> y te ayudamos a armarlo.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/webinars/new" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Crear mi primer webinar</a>
+</td></tr></table>`;
+  return {
+    subject: "¿Te ayudamos a armar tu primer webinar?",
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
+export function newEnterpriseLeadEmail(lead: {
+  name: string;
+  email: string;
+  company: string | null;
+  message: string | null;
+}): { subject: string; html: string } {
+  const safeName = escapeHtml(lead.name);
+  const safeEmail = escapeHtml(lead.email);
+  const rows = [statRow("Nombre", safeName), statRow("Email", safeEmail)];
+  if (lead.company) rows.push(statRow("Empresa", escapeHtml(lead.company)));
+  const messageBlock = lead.message
+    ? `<p style="margin:16px 0 0;padding:12px 14px;background:#f4f4f5;border-radius:8px;white-space:pre-wrap;">${escapeHtml(lead.message)}</p>`
+    : "";
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Lead Enterprise</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Nuevo lead desde la landing</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px;">${rows.join("")}</table>
+${messageBlock}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/leads" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ver en /admin/leads</a>
+</td></tr></table>`;
+  return {
+    subject: `Nuevo lead Enterprise: ${lead.name}`,
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
 function statRow(label: string, value: string): string {
   return `<tr>
     <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:13px;color:#71717a;">${label}</td>

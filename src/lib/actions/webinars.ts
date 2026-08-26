@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { slugify } from "@/lib/slug";
+import { webinarPublishedEmail } from "@/lib/platform-email";
+import { sendEmail } from "@/lib/resend";
 
 export type WebinarActionState = { error: string } | null;
 
@@ -85,10 +87,12 @@ export async function updateWebinarDetails(
 // enforce_webinar_publish_limit trigger — this can legitimately fail.
 export async function publishWebinar(webinarId: string): Promise<WebinarActionState> {
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: webinar, error } = await supabase
     .from("webinars")
     .update({ status: "published", published_at: new Date().toISOString() })
-    .eq("id", webinarId);
+    .eq("id", webinarId)
+    .select("title, slug, account_id")
+    .maybeSingle();
 
   revalidatePath("/dashboard/webinars");
   revalidatePath("/dashboard");
@@ -96,6 +100,30 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
   if (error) {
     return { error: error.message };
   }
+
+  if (webinar) {
+    // Best-effort: the webinar is already published above, so a failed
+    // notification email shouldn't surface as a publish error.
+    try {
+      const [{ data: account }, { data: owner }] = await Promise.all([
+        supabase.from("accounts").select("slug").eq("id", webinar.account_id).maybeSingle(),
+        supabase
+          .from("users")
+          .select("email")
+          .eq("account_id", webinar.account_id)
+          .eq("role", "owner")
+          .maybeSingle(),
+      ]);
+      if (account && owner?.email) {
+        const registrationLink = `${process.env.NEXT_PUBLIC_APP_URL}/w/${account.slug}/${webinar.slug}`;
+        const { subject, html } = webinarPublishedEmail(webinar.title, registrationLink);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+    } catch (err) {
+      console.error("[webinars] webinar published email failed:", err);
+    }
+  }
+
   return null;
 }
 
