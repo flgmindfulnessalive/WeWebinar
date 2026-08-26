@@ -604,6 +604,17 @@ export interface Database {
           is_ended: boolean;
         }[];
       };
+      get_registrant_messages: {
+        Args: { p_access_token: string };
+        Returns: {
+          id: string;
+          message_text: string;
+          video_timestamp_seconds: number;
+          ai_reply_text: string | null;
+          ai_replied_at: string | null;
+          created_at: string;
+        }[];
+      };
       get_registrant_session: {
         Args: { p_access_token: string };
         Returns: {
