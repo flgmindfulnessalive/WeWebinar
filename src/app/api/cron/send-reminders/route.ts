@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { renderTemplate, resolveTemplate } from "@/lib/email-templates";
+import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/resend";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -70,16 +70,18 @@ export async function GET(request: Request) {
         type: "reminder",
         offsetMinutes: r.offset_minutes,
       });
+      const branding = resolveEmailBranding({ name: r.account_name, branding: r.account_branding });
       const vars = {
         nombre: r.name,
         webinar_titulo: r.webinar_title,
         hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone),
         link_acceso: accessLinkFor(r),
+        marca_color: branding.brandColor,
       };
       await sendEmail({
         to: r.email,
         subject: renderTemplate(template.subject, vars),
-        html: renderTemplate(template.body, vars),
+        html: wrapEmailShell(renderTemplate(template.body, vars), branding),
       });
       remindersSent++;
     } catch (err) {
@@ -114,16 +116,18 @@ export async function GET(request: Request) {
         webinarId: r.webinar_id,
         type: "replay_missed",
       });
+      const branding = resolveEmailBranding({ name: r.account_name, branding: r.account_branding });
       const vars = {
         nombre: r.name,
         webinar_titulo: r.webinar_title,
         hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone),
         link_acceso: accessLinkFor(r),
+        marca_color: branding.brandColor,
       };
       await sendEmail({
         to: r.email,
         subject: renderTemplate(template.subject, vars),
-        html: renderTemplate(template.body, vars),
+        html: wrapEmailShell(renderTemplate(template.body, vars), branding),
       });
       replaysSent++;
     } catch (err) {

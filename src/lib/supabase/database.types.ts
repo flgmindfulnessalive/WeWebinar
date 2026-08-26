@@ -716,6 +716,8 @@ export interface Database {
           webinar_title: string;
           webinar_slug: string;
           account_slug: string;
+          account_name: string;
+          account_branding: Json;
         }[];
       };
       get_due_replay_recipients: {
@@ -732,6 +734,8 @@ export interface Database {
           webinar_title: string;
           webinar_slug: string;
           account_slug: string;
+          account_name: string;
+          account_branding: Json;
         }[];
       };
       is_platform_admin: {
