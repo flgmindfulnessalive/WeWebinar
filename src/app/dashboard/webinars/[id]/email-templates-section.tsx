@@ -21,7 +21,8 @@ type Template = {
 };
 
 const VARIABLE_HINT =
-  "Variables disponibles: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}";
+  "Variables disponibles: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}, {{marca_color}}. " +
+  "El logo y el color de tu marca (Settings → Marca) ya se agregan automáticamente arriba y abajo del email — acá solo va el mensaje.";
 
 function SingletonTemplateForm({
   webinarId,

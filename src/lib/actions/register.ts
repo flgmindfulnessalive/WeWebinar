@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { renderTemplate, resolveTemplate } from "@/lib/email-templates";
+import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/resend";
 
 export type RegisterActionState = { error: string } | null;
@@ -32,11 +32,10 @@ async function sendConfirmationEmail({
 }) {
   const admin = createAdminClient();
 
-  const { data: registrant } = await admin
-    .from("registrants")
-    .select("id")
-    .eq("access_token", accessToken)
-    .single();
+  const [{ data: registrant }, { data: account }] = await Promise.all([
+    admin.from("registrants").select("id").eq("access_token", accessToken).single(),
+    admin.from("account_public_profile").select("name, branding").eq("id", accountId).maybeSingle(),
+  ]);
 
   const horaWebinar = new Intl.DateTimeFormat("es", {
     dateStyle: "full",
@@ -50,17 +49,19 @@ async function sendConfirmationEmail({
     type: "registration_confirmation",
   });
 
+  const branding = resolveEmailBranding(account);
   const vars = {
     nombre: name,
     webinar_titulo: webinarTitle,
     hora_webinar: horaWebinar,
     link_acceso: accessLink,
+    marca_color: branding.brandColor,
   };
 
   await sendEmail({
     to: email,
     subject: renderTemplate(template.subject, vars),
-    html: renderTemplate(template.body, vars),
+    html: wrapEmailShell(renderTemplate(template.body, vars), branding),
   });
 
   if (registrant) {
