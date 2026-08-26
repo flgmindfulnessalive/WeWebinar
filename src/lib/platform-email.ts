@@ -48,7 +48,7 @@ export function trialExpiringEmail(
   const dayWord = daysLeft === 1 ? "día" : "días";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Período de prueba</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu prueba vence en ${daysLeft} ${dayWord}</h1>
-<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> en WeWebinars todavía está en período de prueba. Para seguir usándola sin interrupciones, escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
+<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> en WeWebinars todavía está en período de prueba. Para seguir usándola sin interrupciones, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
   return {
     subject: `Tu prueba en WeWebinars vence en ${daysLeft} ${dayWord}`,
     html: wrapPlatformEmailShell(inner),
@@ -59,7 +59,7 @@ export function accountSuspendedEmail(accountName: string): { subject: string; h
   const safeName = escapeHtml(accountName);
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta suspendida</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu período de prueba terminó</h1>
-<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> quedó suspendida porque el período de prueba de 15 días terminó sin activarse. Escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
+<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> quedó suspendida porque el período de prueba de 15 días terminó sin activarse. Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
   return {
     subject: "Tu cuenta en WeWebinars fue suspendida",
     html: wrapPlatformEmailShell(inner),
@@ -75,7 +75,7 @@ export function welcomeEmail(
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Bienvenido</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu cuenta en WeWebinars está lista</h1>
 <p style="margin:0 0 16px;">${greeting} creamos <strong style="color:#18181b;">${safeName}</strong> con un período de prueba de 15 días para que la pruebes sin apuro.</p>
-<p style="margin:0 0 20px;">Entrá a tu panel para crear tu primer webinar evergreen. Cualquier duda, escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
+<p style="margin:0 0 20px;">Entra a tu panel para crear tu primer webinar evergreen. Cualquier duda, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
   <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ir a mi panel</a>
 </td></tr></table>`;
@@ -89,7 +89,7 @@ export function accountActivatedEmail(accountName: string): { subject: string; h
   const safeName = escapeHtml(accountName);
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta activada</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeName} ya está activa</h1>
-<p style="margin:0 0 20px;">Tu cuenta en WeWebinars quedó activada. Ya podés publicar y correr tus webinars sin límite de prueba. Cualquier duda, escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
+<p style="margin:0 0 20px;">Tu cuenta en WeWebinars quedó activada. Ya puedes publicar y correr tus webinars sin límite de prueba. Cualquier duda, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
   return {
     subject: "Tu cuenta en WeWebinars fue activada",
     html: wrapPlatformEmailShell(inner),
@@ -100,7 +100,7 @@ export function paymentFailedEmail(accountName: string): { subject: string; html
   const safeName = escapeHtml(accountName);
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Pago rechazado</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">No pudimos cobrar tu suscripción</h1>
-<p style="margin:0 0 20px;">El último intento de cobro de la cuenta <strong style="color:#18181b;">${safeName}</strong> falló. Actualizá tu método de pago para evitar que la cuenta quede suspendida. Si necesitás ayuda, escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
+<p style="margin:0 0 20px;">El último intento de cobro de la cuenta <strong style="color:#18181b;">${safeName}</strong> falló. Actualiza tu método de pago para evitar que la cuenta quede suspendida. Si necesitas ayuda, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
   <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Actualizar método de pago</a>
 </td></tr></table>`;
@@ -118,7 +118,7 @@ export function webinarPublishedEmail(
   const safeLink = escapeHtml(registrationLink);
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Webinar publicado</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeTitle} ya está en vivo</h1>
-<p style="margin:0 0 20px;">Tu webinar quedó publicado y listo para recibir registros. Compartí este link con tu audiencia:</p>
+<p style="margin:0 0 20px;">Tu webinar quedó publicado y listo para recibir registros. Comparte este link con tu audiencia:</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;"><tr><td style="background:#f4f4f5;border-radius:8px;padding:12px 14px;font-size:13px;word-break:break-all;color:${BRAND};">${safeLink}</td></tr></table>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
   <a href="${registrationLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ver página de registro</a>
@@ -131,9 +131,9 @@ export function webinarPublishedEmail(
 
 export function activationNudgeEmail(accountName: string): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
-  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">¿Necesitás una mano?</p>
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">¿Necesitas una mano?</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Todavía no publicaste tu primer webinar</h1>
-<p style="margin:0 0 20px;">Notamos que <strong style="color:#18181b;">${safeName}</strong> todavía no publicó ningún webinar. Si te trabaste con algún paso (video, programación, sala de espera) escribinos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> y te ayudamos a armarlo.</p>
+<p style="margin:0 0 20px;">Notamos que <strong style="color:#18181b;">${safeName}</strong> todavía no publicó ningún webinar. Si te trabaste con algún paso (video, programación, sala de espera) escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> y te ayudamos a armarlo.</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
   <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/webinars/new" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Crear mi primer webinar</a>
 </td></tr></table>`;

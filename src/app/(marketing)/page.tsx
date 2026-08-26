@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BarChart3,
   CalendarClock,
+  Check,
   Clapperboard,
   MessageSquare,
   MousePointerClick,
@@ -131,6 +132,14 @@ export default function HomePage() {
             </Button>
           </div>
 
+          <p
+            className="animate-fade-up flex items-center gap-1.5 text-sm text-muted-foreground"
+            style={{ animationDelay: "0.18s" }}
+          >
+            <Check className="size-4" style={{ color: "var(--brand)" }} />
+            15 días de prueba gratis — sin tarjeta de crédito
+          </p>
+
           <div className="animate-fade-up w-full pt-10" style={{ animationDelay: "0.2s" }}>
             <ProductPreview />
           </div>
@@ -139,7 +148,7 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight">Todo lo que necesitás para vender</h2>
+          <h2 className="text-3xl font-semibold tracking-tight">Todo lo que necesitas para vender</h2>
           <p className="mt-2 text-muted-foreground">
             Una plataforma, sin depender de transmitir en vivo cada vez.
           </p>

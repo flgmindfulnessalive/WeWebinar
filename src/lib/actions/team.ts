@@ -43,7 +43,7 @@ export async function inviteMember(
     }
     return {
       error: error.message.startsWith("plan_limit_exceeded")
-        ? "Llegaste al límite de usuarios de tu plan. Pasate a un plan superior para invitar a más gente."
+        ? "Llegaste al límite de usuarios de tu plan. Pasa a un plan superior para invitar a más gente."
         : error.message,
     };
   }
