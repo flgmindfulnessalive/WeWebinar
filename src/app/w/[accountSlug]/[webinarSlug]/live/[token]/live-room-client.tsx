@@ -378,7 +378,6 @@ export function LiveRoomClient({
                 <ChatPanel
                   accessToken={accessToken}
                   visitorName={visitorName}
-                  replyDisplayName={presenter?.display_name ?? accountName}
                   simulatedMessages={chatMessages}
                   getElapsedSeconds={getElapsedSeconds}
                 />

@@ -24,18 +24,24 @@ type DisplayMessage = {
   kind: "simulated-message" | "simulated-question" | "simulated-host" | "own" | "ai-reply";
 };
 
+// Shown as the sender of every AI-generated reply, instead of a real
+// person's name -- the reply isn't from any specific staff member.
+const AI_REPLY_NAME = "Equipo moderador";
+
+// A reply that lands the instant a message is sent doesn't read as a real
+// person answering -- pad the round trip out to a human-plausible delay
+// regardless of how fast the API responds.
+const MIN_AI_REPLY_DELAY_MS = 4000;
+const MAX_AI_REPLY_DELAY_MS = 9000;
+
 export function ChatPanel({
   accessToken,
   visitorName,
-  replyDisplayName,
   simulatedMessages,
   getElapsedSeconds,
 }: {
   accessToken: string;
   visitorName: string;
-  /** Name shown on an AI-generated reply -- the presenter's name if set,
-   * else the account's. */
-  replyDisplayName: string;
   simulatedMessages: SimulatedMessage[];
   getElapsedSeconds: () => number;
 }) {
@@ -84,6 +90,7 @@ export function ChatPanel({
   }, [combined.length]);
 
   async function requestAiReply(messageId: string, messageText: string) {
+    const startedAt = Date.now();
     setAiPending(true);
     try {
       const res = await fetch("/api/chat/ai-reply", {
@@ -98,11 +105,17 @@ export function ChatPanel({
       const json = await res.json().catch(() => null);
       const reply = typeof json?.reply === "string" ? json.reply : null;
       if (reply) {
+        const targetDelayMs =
+          MIN_AI_REPLY_DELAY_MS + Math.random() * (MAX_AI_REPLY_DELAY_MS - MIN_AI_REPLY_DELAY_MS);
+        const remainingMs = targetDelayMs - (Date.now() - startedAt);
+        if (remainingMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remainingMs));
+        }
         setOwnMessages((prev) => [
           ...prev,
           {
             id: `${messageId}-ai-reply`,
-            name: replyDisplayName,
+            name: AI_REPLY_NAME,
             text: reply,
             timestampSeconds: Math.round(getElapsedSeconds()),
             kind: "ai-reply",
@@ -168,7 +181,7 @@ export function ChatPanel({
         ))}
         {aiPending && (
           <div className="text-sm text-muted-foreground italic">
-            {replyDisplayName} está escribiendo...
+            {AI_REPLY_NAME} está escribiendo...
           </div>
         )}
       </div>
