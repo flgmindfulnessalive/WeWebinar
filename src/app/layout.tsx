@@ -12,9 +12,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteDescription = "Plataforma de webinars evergreen para vender tus productos.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://wewebinars.com"),
   title: "WeWebinars",
-  description: "Plataforma de webinars evergreen para vender tus productos.",
+  description: siteDescription,
+  openGraph: {
+    title: "WeWebinars",
+    description: siteDescription,
+    siteName: "WeWebinars",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WeWebinars",
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
