@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import type { Database } from "./database.types";
+import { getSupabaseCookieDomain } from "./cookie-domain";
 
 // Use in Server Components, Server Actions, and Route Handlers.
 // Anon key + RLS — this is the "user-scoped" client, never a privilege
@@ -29,6 +30,7 @@ export async function createClient() {
           }
         },
       },
+      cookieOptions: { domain: getSupabaseCookieDomain() },
     }
   );
 }
