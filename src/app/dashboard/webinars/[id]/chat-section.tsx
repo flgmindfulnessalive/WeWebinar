@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 
-import { addChatMessage, removeChatMessage } from "@/lib/actions/chat";
+import { addChatMessage, removeChatMessage, updateAiChatEnabled } from "@/lib/actions/chat";
 import { secondsToClock } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,13 +30,17 @@ const PREVIEW_SPEED = 12; // 12x: a 10-minute timeline previews in ~50s
 export function ChatSection({
   webinarId,
   messages,
+  aiChatEnabled,
 }: {
   webinarId: string;
   messages: ChatMessage[];
+  aiChatEnabled: boolean;
 }) {
   const [state, formAction, isPending] = useActionState(addChatMessage, null);
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(aiChatEnabled);
+  const [aiPending, startAiTransition] = useTransition();
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,6 +67,31 @@ export function ChatSection({
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
       <div className="flex flex-1 flex-col gap-4">
+        <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+          <div>
+            <p className="text-sm font-medium">Agente AI de respuestas</p>
+            <p className="text-xs text-muted-foreground">
+              Cuando un asistente real escribe una pregunta en el chat en vivo, un agente AI le
+              responde automáticamente.
+            </p>
+          </div>
+          <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4"
+              checked={aiEnabled}
+              disabled={aiPending}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setAiEnabled(next);
+                startAiTransition(async () => {
+                  await updateAiChatEnabled(webinarId, next);
+                });
+              }}
+            />
+            {aiEnabled ? "Activado" : "Desactivado"}
+          </label>
+        </div>
         <form action={formAction} className="flex flex-wrap items-end gap-3">
           <input type="hidden" name="webinar_id" value={webinarId} />
           <div className="grid gap-1.5">

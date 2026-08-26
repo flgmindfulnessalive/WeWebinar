@@ -21,17 +21,21 @@ type DisplayMessage = {
   name: string;
   text: string;
   timestampSeconds: number;
-  kind: "simulated-message" | "simulated-question" | "simulated-host" | "own";
+  kind: "simulated-message" | "simulated-question" | "simulated-host" | "own" | "ai-reply";
 };
 
 export function ChatPanel({
   accessToken,
   visitorName,
+  replyDisplayName,
   simulatedMessages,
   getElapsedSeconds,
 }: {
   accessToken: string;
   visitorName: string;
+  /** Name shown on an AI-generated reply -- the presenter's name if set,
+   * else the account's. */
+  replyDisplayName: string;
   simulatedMessages: SimulatedMessage[];
   getElapsedSeconds: () => number;
 }) {
@@ -39,6 +43,7 @@ export function ChatPanel({
   const [ownMessages, setOwnMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [aiPending, setAiPending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const shownIdsRef = useRef(new Set<string>());
 
@@ -78,6 +83,39 @@ export function ChatPanel({
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [combined.length]);
 
+  async function requestAiReply(messageId: string, messageText: string) {
+    setAiPending(true);
+    try {
+      const res = await fetch("/api/chat/ai-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_token: accessToken,
+          message_id: messageId,
+          message_text: messageText,
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      const reply = typeof json?.reply === "string" ? json.reply : null;
+      if (reply) {
+        setOwnMessages((prev) => [
+          ...prev,
+          {
+            id: `${messageId}-ai-reply`,
+            name: replyDisplayName,
+            text: reply,
+            timestampSeconds: Math.round(getElapsedSeconds()),
+            kind: "ai-reply",
+          },
+        ]);
+      }
+    } catch {
+      // Best-effort -- a failed AI reply should never disrupt the chat.
+    } finally {
+      setAiPending(false);
+    }
+  }
+
   async function handleSend() {
     const text = draft.trim();
     if (!text || sending) return;
@@ -103,6 +141,9 @@ export function ChatPanel({
           kind: "own",
         },
       ]);
+      setSending(false);
+      requestAiReply(data.id, data.message_text);
+      return;
     }
     setSending(false);
   }
@@ -115,7 +156,7 @@ export function ChatPanel({
             <span
               className={cn(
                 "font-medium",
-                m.kind === "simulated-host" && "text-primary",
+                (m.kind === "simulated-host" || m.kind === "ai-reply") && "text-primary",
                 m.kind === "own" && "text-primary"
               )}
             >
@@ -125,6 +166,11 @@ export function ChatPanel({
             <span className="text-muted-foreground">{m.text}</span>
           </div>
         ))}
+        {aiPending && (
+          <div className="text-sm text-muted-foreground italic">
+            {replyDisplayName} está escribiendo...
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-2 border-t p-3">
         <Input
