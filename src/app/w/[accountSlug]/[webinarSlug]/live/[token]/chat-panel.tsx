@@ -28,11 +28,23 @@ type DisplayMessage = {
 // person's name -- the reply isn't from any specific staff member.
 const AI_REPLY_NAME = "Equipo moderador";
 
-// A reply that lands the instant a message is sent doesn't read as a real
-// person answering -- pad the round trip out to a human-plausible delay
-// regardless of how fast the API responds.
-const MIN_AI_REPLY_DELAY_MS = 4000;
-const MAX_AI_REPLY_DELAY_MS = 9000;
+// A reply -- or even the "está escribiendo" indicator -- appearing the
+// instant a message is sent doesn't read as a real person answering. Split
+// the round trip into a silent "noticed the message" pause, then a visible
+// "typing" pause before the reply lands, both randomized and independent
+// of how fast the API actually responds.
+const THINKING_DELAY_MIN_MS = 2000;
+const THINKING_DELAY_MAX_MS = 5000;
+const TYPING_DELAY_MIN_MS = 3000;
+const TYPING_DELAY_MAX_MS = 6000;
+
+function randomDelay(minMs: number, maxMs: number) {
+  return minMs + Math.random() * (maxMs - minMs);
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function ChatPanel({
   accessToken,
@@ -52,6 +64,50 @@ export function ChatPanel({
   const [aiPending, setAiPending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const shownIdsRef = useRef(new Set<string>());
+
+  // Real messages only ever lived in this component's state, so a page
+  // refresh during the live webinar silently dropped them (and any AI
+  // reply already recorded). Restore them from the DB on mount.
+  useEffect(() => {
+    let cancelled = false;
+    async function loadOwnMessages() {
+      const supabase = createClient();
+      const { data } = await supabase.rpc("get_registrant_messages", {
+        p_access_token: accessToken,
+      });
+      if (cancelled || !data) return;
+
+      const restored: DisplayMessage[] = [];
+      for (const row of data) {
+        restored.push({
+          id: row.id,
+          name: visitorName,
+          text: row.message_text,
+          timestampSeconds: row.video_timestamp_seconds,
+          kind: "own",
+        });
+        if (row.ai_reply_text) {
+          restored.push({
+            id: `${row.id}-ai-reply`,
+            name: AI_REPLY_NAME,
+            text: row.ai_reply_text,
+            timestampSeconds: row.video_timestamp_seconds,
+            kind: "ai-reply",
+          });
+        }
+      }
+      // Merge rather than overwrite -- if the visitor sent a new message
+      // before this fetch resolved, it's already in state and must survive.
+      setOwnMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        return [...prev, ...restored.filter((m) => !existingIds.has(m.id))];
+      });
+    }
+    loadOwnMessages();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, visitorName]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -90,43 +146,40 @@ export function ChatPanel({
   }, [combined.length]);
 
   async function requestAiReply(messageId: string, messageText: string) {
-    const startedAt = Date.now();
+    const fetchPromise = fetch("/api/chat/ai-reply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_token: accessToken,
+        message_id: messageId,
+        message_text: messageText,
+      }),
+    })
+      .then((res) => res.json())
+      .catch(() => null);
+
+    // Silent pause before anything shows -- as if the reply hasn't been
+    // noticed yet. The actual API call runs in the background meanwhile.
+    await wait(randomDelay(THINKING_DELAY_MIN_MS, THINKING_DELAY_MAX_MS));
+
+    const json = await fetchPromise;
+    const reply = typeof json?.reply === "string" ? json.reply : null;
+    if (!reply) return;
+
     setAiPending(true);
-    try {
-      const res = await fetch("/api/chat/ai-reply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          access_token: accessToken,
-          message_id: messageId,
-          message_text: messageText,
-        }),
-      });
-      const json = await res.json().catch(() => null);
-      const reply = typeof json?.reply === "string" ? json.reply : null;
-      if (reply) {
-        const targetDelayMs =
-          MIN_AI_REPLY_DELAY_MS + Math.random() * (MAX_AI_REPLY_DELAY_MS - MIN_AI_REPLY_DELAY_MS);
-        const remainingMs = targetDelayMs - (Date.now() - startedAt);
-        if (remainingMs > 0) {
-          await new Promise((resolve) => setTimeout(resolve, remainingMs));
-        }
-        setOwnMessages((prev) => [
-          ...prev,
-          {
-            id: `${messageId}-ai-reply`,
-            name: AI_REPLY_NAME,
-            text: reply,
-            timestampSeconds: Math.round(getElapsedSeconds()),
-            kind: "ai-reply",
-          },
-        ]);
-      }
-    } catch {
-      // Best-effort -- a failed AI reply should never disrupt the chat.
-    } finally {
-      setAiPending(false);
-    }
+    await wait(randomDelay(TYPING_DELAY_MIN_MS, TYPING_DELAY_MAX_MS));
+    setAiPending(false);
+
+    setOwnMessages((prev) => [
+      ...prev,
+      {
+        id: `${messageId}-ai-reply`,
+        name: AI_REPLY_NAME,
+        text: reply,
+        timestampSeconds: Math.round(getElapsedSeconds()),
+        kind: "ai-reply",
+      },
+    ]);
   }
 
   async function handleSend() {
