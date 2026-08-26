@@ -1,10 +1,14 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import {
+  ArrowRight,
   BarChart3,
   CalendarClock,
+  Clapperboard,
   MessageSquare,
   MousePointerClick,
   Palette,
+  Rocket,
   Video,
 } from "lucide-react";
 
@@ -56,16 +60,19 @@ const FEATURES = [
 const STEPS = [
   {
     n: "01",
+    icon: Clapperboard,
     title: "Graba tu presentación",
     description: "Sube tu video a YouTube (como no listado) y carga el link en el wizard.",
   },
   {
     n: "02",
+    icon: CalendarClock,
     title: "Programa tus horarios",
     description: "Elige días y horas fijas, arranque inmediato, o las dos opciones juntas.",
   },
   {
     n: "03",
+    icon: Rocket,
     title: "Comparte tu link y vende",
     description: "Los CTAs y el chat simulado hacen el trabajo mientras tú generas tráfico.",
   },
@@ -157,22 +164,53 @@ export default function HomePage() {
       </section>
 
       <section className="border-y bg-muted/30">
-        <div className="mx-auto max-w-5xl px-6 py-20">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+        <div className="mx-auto max-w-4xl px-6 py-20">
+          <div className="mx-auto mb-14 max-w-md text-center">
             <h2 className="text-3xl font-semibold tracking-tight">Cómo funciona</h2>
+            <p className="mt-2 text-muted-foreground">
+              De la grabación a la primera venta, en tres pasos.
+            </p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-3">
-            {STEPS.map((step) => (
-              <div key={step.n} className="flex flex-col gap-2">
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: "var(--brand)" }}
-                >
-                  {step.n}
-                </span>
-                <h3 className="font-medium">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
-              </div>
+          <div className="flex flex-col gap-9 sm:flex-row sm:items-start sm:gap-0">
+            {STEPS.map((step, i) => (
+              <Fragment key={step.n}>
+                <div className="relative flex flex-1 flex-col items-start pr-0 sm:pr-6">
+                  <div
+                    className="animate-marketing-blob absolute -top-4 -left-4 size-28 rounded-full opacity-30 blur-2xl"
+                    style={{
+                      background:
+                        "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 55%, transparent 72%)",
+                      animationDelay: `${i * -5}s`,
+                    }}
+                  />
+                  <div className="relative z-10">
+                    <div
+                      className="flex size-[68px] items-center justify-center rounded-[20px] border border-white shadow-[0_1px_2px_rgba(24,24,39,.04),0_12px_24px_-12px_rgba(79,70,229,.35)]"
+                      style={{ background: "var(--brand-light)" }}
+                    >
+                      <step.icon className="size-8" style={{ color: "var(--brand)" }} strokeWidth={1.75} />
+                    </div>
+                    <span
+                      className="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full border bg-background font-mono text-[10.5px] font-semibold shadow-sm"
+                      style={{ color: "var(--brand)" }}
+                    >
+                      {step.n}
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-[17px] font-semibold tracking-tight">{step.title}</h3>
+                  <p className="mt-1.5 max-w-[27ch] text-sm leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div
+                    aria-hidden
+                    className="ml-8 flex items-center text-border sm:ml-0 sm:w-16 sm:justify-center sm:pt-9"
+                  >
+                    <ArrowRight className="size-4 rotate-90 sm:rotate-0" />
+                  </div>
+                )}
+              </Fragment>
             ))}
           </div>
         </div>
