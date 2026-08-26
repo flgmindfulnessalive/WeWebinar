@@ -72,6 +72,7 @@ export interface Database {
           suspended_at: string | null;
           trial_ends_at: string;
           trial_warning_sent_at: string | null;
+          last_digest_sent_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -670,6 +671,16 @@ export interface Database {
           email: string;
           webinar_title: string;
           created_at: string;
+        }[];
+      };
+      get_account_period_summary: {
+        Args: { p_account_id: string; p_period_start: string; p_period_end: string };
+        Returns: {
+          registrant_count: number;
+          attendee_count: number;
+          avg_watch_pct: number;
+          top_webinar_title: string | null;
+          top_webinar_registrants: number;
         }[];
       };
       get_webinar_retention_curve: {

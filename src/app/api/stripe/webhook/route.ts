@@ -3,7 +3,33 @@ import type Stripe from "stripe";
 
 import { stripe, planKeyForPriceId } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { accountActivatedEmail, paymentFailedEmail } from "@/lib/platform-email";
+import { sendEmail } from "@/lib/resend";
 import type { Database, SubscriptionStatus } from "@/lib/supabase/database.types";
+
+async function notifyOwner(
+  supabase: ReturnType<typeof createAdminClient>,
+  accountId: string,
+  accountName: string,
+  build: (name: string) => { subject: string; html: string }
+) {
+  // Best-effort: the status change already landed, so a failed
+  // notification email is logged and swallowed rather than retried.
+  try {
+    const { data: owner } = await supabase
+      .from("users")
+      .select("email")
+      .eq("account_id", accountId)
+      .eq("role", "owner")
+      .maybeSingle();
+    if (owner?.email) {
+      const { subject, html } = build(accountName);
+      await sendEmail({ to: owner.email, subject, html });
+    }
+  } catch (err) {
+    console.error(`[stripe webhook] notify owner failed for account ${accountId}:`, err);
+  }
+}
 
 function mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
   switch (status) {
@@ -28,11 +54,18 @@ async function syncSubscription(subscription: Stripe.Subscription) {
 
   const priceId = subscription.items.data[0]?.price.id;
   const planKey = priceId ? planKeyForPriceId(priceId) : undefined;
+  const newStatus = mapStripeStatus(subscription.status);
 
   const supabase = createAdminClient();
+  const { data: before } = await supabase
+    .from("accounts")
+    .select("name, subscription_status")
+    .eq("id", accountId)
+    .maybeSingle();
+
   const update: Database["public"]["Tables"]["accounts"]["Update"] = {
     stripe_subscription_id: subscription.id,
-    subscription_status: mapStripeStatus(subscription.status),
+    subscription_status: newStatus,
   };
 
   if (planKey) {
@@ -59,6 +92,11 @@ async function syncSubscription(subscription: Stripe.Subscription) {
       `[stripe webhook] failed to sync account ${accountId} to plan ${planKey}:`,
       error.message
     );
+    return;
+  }
+
+  if (before && before.subscription_status !== "active" && newStatus === "active") {
+    await notifyOwner(supabase, accountId, before.name, accountActivatedEmail);
   }
 }
 
@@ -125,10 +163,21 @@ export async function POST(request: Request) {
         const accountId = subscription.metadata.account_id;
         if (accountId) {
           const supabase = createAdminClient();
-          await supabase
+          const { data: before } = await supabase
+            .from("accounts")
+            .select("name, subscription_status")
+            .eq("id", accountId)
+            .maybeSingle();
+          const { error } = await supabase
             .from("accounts")
             .update({ subscription_status: "past_due" })
             .eq("id", accountId);
+          // Only notify on the transition into past_due, not on every
+          // Stripe retry -- otherwise a single unpaid invoice could send
+          // several near-identical warnings a few days apart.
+          if (!error && before && before.subscription_status !== "past_due") {
+            await notifyOwner(supabase, accountId, before.name, paymentFailedEmail);
+          }
         }
       }
       break;
