@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "./database.types";
+import { getSupabaseCookieDomain } from "./cookie-domain";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/admin"];
 const AUTH_PAGES = ["/login", "/signup"];
@@ -29,6 +30,7 @@ export async function updateSession(request: NextRequest) {
             }
           },
         },
+        cookieOptions: { domain: getSupabaseCookieDomain() },
       }
     );
 

@@ -28,17 +28,20 @@ export async function signInWithPassword(
   redirect(redirectTo);
 }
 
+export type SignUpActionState = { error: string } | { checkEmail: true } | null;
+
 export async function signUpWithPassword(
-  _prevState: AuthActionState,
+  _prevState: SignUpActionState,
   formData: FormData
-): Promise<AuthActionState> {
+): Promise<SignUpActionState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
 
+  let hasSession: boolean;
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -47,11 +50,17 @@ export async function signUpWithPassword(
       },
     });
     if (error) return { error: error.message };
+    // Email confirmation is required, so signUp doesn't return an active
+    // session -- redirecting to /onboarding (a protected route) here would
+    // just bounce them straight to /login with no explanation, since
+    // there's nothing yet for the middleware to authenticate.
+    hasSession = data.session !== null;
   } catch (err) {
     console.error("[auth] signUpWithPassword failed:", err);
     return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
   }
 
+  if (!hasSession) return { checkEmail: true };
   redirect("/onboarding");
 }
 
