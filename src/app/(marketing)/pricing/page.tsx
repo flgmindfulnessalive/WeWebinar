@@ -43,9 +43,15 @@ export default async function PricingPage() {
       <div className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Planes y precios</h1>
         <p className="mt-2 text-muted-foreground">
-          Elegí anual o mensual. Crea webinars evergreen ilimitados para
+          Elige anual o mensual. Crea webinars evergreen ilimitados para
           promocionar tus propios productos.
         </p>
+        <div
+          className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium"
+          style={{ borderColor: "var(--brand)", color: "var(--brand)" }}
+        >
+          15 días de prueba gratis — sin tarjeta de crédito
+        </div>
       </div>
 
       <PlanCards plans={selfServe} />

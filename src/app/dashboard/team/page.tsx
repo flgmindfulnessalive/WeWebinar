@@ -20,7 +20,7 @@ export default async function TeamPage() {
       <div className="flex max-w-lg flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Equipo</h1>
         <p className="text-sm text-muted-foreground">
-          El plan {current.plan.name} incluye un único usuario. Pasate a Pro o
+          El plan {current.plan.name} incluye un único usuario. Pasa a Pro o
           Business para invitar Editores y Viewers.
         </p>
       </div>

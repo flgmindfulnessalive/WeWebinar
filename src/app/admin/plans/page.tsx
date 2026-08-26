@@ -13,7 +13,7 @@ export default async function AdminPlansPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Planes</h1>
         <p className="text-sm text-muted-foreground">
-          Dejá el precio o un límite vacío para &quot;a medida&quot; / sin límite —
+          Deja el precio o un límite vacío para &quot;a medida&quot; / sin límite —
           así es como se configura Enterprise.
         </p>
       </div>

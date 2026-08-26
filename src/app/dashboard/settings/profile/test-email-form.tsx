@@ -21,7 +21,7 @@ export function TestEmailForm({ email }: { email: string }) {
       )}
       {state && "success" in state && (
         <p className="text-sm text-primary">
-          Enviado. Revisá tu bandeja de entrada (y spam) en {email}.
+          Enviado. Revisa tu bandeja de entrada (y spam) en {email}.
         </p>
       )}
 

@@ -41,7 +41,7 @@ export default async function ProfilePage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium">Diagnóstico de emails</CardTitle>
           <CardDescription>
-            Probá el envío de emails (confirmación, recordatorios) sin tener que
+            Prueba el envío de emails (confirmación, recordatorios) sin tener que
             registrarte a un webinar.
           </CardDescription>
         </CardHeader>

@@ -39,7 +39,7 @@ export function EnterpriseLeadForm() {
         <Input id="lead-company" name="company" />
       </div>
       <div className="grid gap-1.5">
-        <Label htmlFor="lead-message">Contanos qué necesitás</Label>
+        <Label htmlFor="lead-message">Cuéntanos qué necesitas</Label>
         <textarea
           id="lead-message"
           name="message"
