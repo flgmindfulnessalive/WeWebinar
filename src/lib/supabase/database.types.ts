@@ -171,6 +171,7 @@ export interface Database {
           fake_viewer_min: number;
           fake_viewer_max: number;
           ai_chat_enabled: boolean;
+          ai_agent_training_info: string | null;
           published_at: string | null;
           archived_at: string | null;
           created_at: string;

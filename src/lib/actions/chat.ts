@@ -71,3 +71,22 @@ export async function updateAiChatEnabled(
   if (error) return { error: error.message };
   return null;
 }
+
+export async function updateAiTrainingInfo(
+  _prevState: ChatActionState,
+  formData: FormData
+): Promise<ChatActionState> {
+  const webinarId = String(formData.get("webinar_id") ?? "");
+  const trainingInfo = String(formData.get("ai_agent_training_info") ?? "").trim();
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ ai_agent_training_info: trainingInfo || null })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+
+  if (error) return { error: error.message };
+  return null;
+}

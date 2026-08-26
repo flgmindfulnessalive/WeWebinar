@@ -2,7 +2,12 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 
-import { addChatMessage, removeChatMessage, updateAiChatEnabled } from "@/lib/actions/chat";
+import {
+  addChatMessage,
+  removeChatMessage,
+  updateAiChatEnabled,
+  updateAiTrainingInfo,
+} from "@/lib/actions/chat";
 import { secondsToClock } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,12 +36,18 @@ export function ChatSection({
   webinarId,
   messages,
   aiChatEnabled,
+  aiTrainingInfo,
 }: {
   webinarId: string;
   messages: ChatMessage[];
   aiChatEnabled: boolean;
+  aiTrainingInfo: string | null;
 }) {
   const [state, formAction, isPending] = useActionState(addChatMessage, null);
+  const [trainingState, trainingFormAction, isTrainingPending] = useActionState(
+    updateAiTrainingInfo,
+    null
+  );
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(aiChatEnabled);
@@ -92,6 +103,36 @@ export function ChatSection({
             {aiEnabled ? "Activado" : "Desactivado"}
           </label>
         </div>
+
+        {aiEnabled && (
+          <form action={trainingFormAction} className="flex flex-col gap-1.5 rounded-md border p-3">
+            <input type="hidden" name="webinar_id" value={webinarId} />
+            <Label htmlFor="ai_agent_training_info">Entrena a tu agente AI</Label>
+            <p className="text-xs text-muted-foreground">
+              Información adicional para que el agente responda mejor: preguntas frecuentes,
+              precios, detalles del producto o servicio, políticas, etc.
+            </p>
+            <textarea
+              id="ai_agent_training_info"
+              name="ai_agent_training_info"
+              rows={5}
+              defaultValue={aiTrainingInfo ?? ""}
+              placeholder={
+                'Ej: "El plan Pro cuesta $49/mes. Incluye soporte prioritario. La garantía es de 30 días..."'
+              }
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+            />
+            <div className="flex items-center gap-3">
+              <Button type="submit" size="sm" disabled={isTrainingPending}>
+                {isTrainingPending ? "Guardando..." : "Guardar"}
+              </Button>
+              {trainingState?.error && (
+                <p className="text-sm text-destructive">{trainingState.error}</p>
+              )}
+            </div>
+          </form>
+        )}
+
         <form action={formAction} className="flex flex-wrap items-end gap-3">
           <input type="hidden" name="webinar_id" value={webinarId} />
           <div className="grid gap-1.5">
