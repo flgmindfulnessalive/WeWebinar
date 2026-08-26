@@ -50,6 +50,16 @@ Orden recomendado (cada paso depende del anterior):
 4. `RESEND_FROM_EMAIL` = una dirección de ese dominio verificado
    (ej. `noreply@tudominio.com`).
 
+## 3bis. Anthropic (agente AI de respuestas en el chat, opcional)
+
+Cada host puede activar, por webinar, que un agente AI responda preguntas
+reales del chat en vivo (se ve en el wizard, sección "Chat simulado"). Está
+desactivado por defecto — si no configurás esta variable, el resto de la
+plataforma funciona igual.
+
+1. Crear cuenta en [console.anthropic.com](https://console.anthropic.com).
+2. API Keys → crear una → `ANTHROPIC_API_KEY`.
+
 ## 4. Vercel (deploy)
 
 1. Importar el repo `flgmindfulnessalive/WeWebinar` en Vercel, rama `main`.

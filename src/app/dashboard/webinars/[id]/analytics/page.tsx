@@ -12,6 +12,7 @@ import { RetentionChart } from "./retention-chart";
 import { HorizontalBarChart } from "./bar-chart";
 import { CtaClickersToggle } from "./cta-clickers";
 import { RegistrantsTable } from "./registrants-table";
+import { MessagesTable } from "./messages-table";
 
 function ctaLabel(config: unknown, type: string): string {
   const c = (config ?? {}) as Record<string, unknown>;
@@ -47,6 +48,7 @@ export default async function WebinarAnalyticsPage({
     { data: registrants },
     { data: clickerRows },
     { data: watchPositionRows },
+    { data: messageRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
@@ -59,6 +61,7 @@ export default async function WebinarAnalyticsPage({
       .order("created_at", { ascending: false }),
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
   ]);
 
   const watchPositionByRegistrant = new Map(
@@ -174,6 +177,32 @@ export default async function WebinarAnalyticsPage({
           )}
         </CardContent>
       </Card>
+
+      {(messageRows?.length ?? 0) > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Mensajes del chat ({messageRows!.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MessagesTable
+              messages={messageRows!.map((m) => ({
+                id: m.id,
+                registrantId: m.registrant_id,
+                name: m.name,
+                email: m.email,
+                messageText: m.message_text,
+                videoTimestampSeconds: m.video_timestamp_seconds,
+                aiReplyText: m.ai_reply_text,
+                aiRepliedAt: m.ai_replied_at,
+                hostReplied: m.host_replied,
+                createdAt: m.created_at,
+              }))}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

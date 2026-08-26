@@ -170,6 +170,7 @@ export interface Database {
           attendee_count: number;
           fake_viewer_min: number;
           fake_viewer_max: number;
+          ai_chat_enabled: boolean;
           published_at: string | null;
           archived_at: string | null;
           created_at: string;
@@ -329,6 +330,8 @@ export interface Database {
           message_text: string;
           video_timestamp_seconds: number;
           host_replied: boolean;
+          ai_reply_text: string | null;
+          ai_replied_at: string | null;
           created_at: string;
         };
         Insert: Partial<
@@ -700,6 +703,25 @@ export interface Database {
           registrant_id: string;
           last_position_seconds: number | null;
         }[];
+      };
+      get_webinar_registrant_messages: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          id: string;
+          registrant_id: string;
+          name: string;
+          email: string;
+          message_text: string;
+          video_timestamp_seconds: number;
+          ai_reply_text: string | null;
+          ai_replied_at: string | null;
+          host_replied: boolean;
+          created_at: string;
+        }[];
+      };
+      count_registrant_ai_replies: {
+        Args: { p_registrant_id: string };
+        Returns: number;
       };
       get_due_reminder_recipients: {
         Args: { p_tolerance_minutes?: number };

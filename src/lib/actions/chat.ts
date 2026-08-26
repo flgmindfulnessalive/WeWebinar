@@ -53,3 +53,21 @@ export async function removeChatMessage(
   if (error) return { error: error.message };
   return null;
 }
+
+// webinars already has an UPDATE RLS policy for account owners/editors, so
+// this needs no dedicated RPC -- same pattern as updateSchedulingMode.
+export async function updateAiChatEnabled(
+  webinarId: string,
+  enabled: boolean
+): Promise<ChatActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ ai_chat_enabled: enabled })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+
+  if (error) return { error: error.message };
+  return null;
+}

@@ -251,7 +251,13 @@ export default async function WebinarDetailPage({
                 ? `${chatMessages.length} mensajes programados`
                 : "Sin mensajes todavía",
             completed: (chatMessages?.length ?? 0) > 0,
-            content: <ChatSection webinarId={webinar.id} messages={chatMessages ?? []} />,
+            content: (
+              <ChatSection
+                webinarId={webinar.id}
+                messages={chatMessages ?? []}
+                aiChatEnabled={webinar.ai_chat_enabled}
+              />
+            ),
           },
           {
             id: "ctas",
