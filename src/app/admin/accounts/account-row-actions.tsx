@@ -21,6 +21,11 @@ export function AccountRowActions({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const isSuspended = subscriptionStatus === "suspended";
+  const isActive = subscriptionStatus === "active";
+  // trialing/past_due/canceled all graduate to "active" through the same
+  // action as un-suspending -- reactivateAccount just sets the status to
+  // "active" unconditionally, so there's no separate "activate" action.
+  const activateLabel = isSuspended ? "Reactivar" : "Activar";
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -51,14 +56,14 @@ export function AccountRowActions({
           onClick={() =>
             startTransition(async () => {
               setError(null);
-              const result = isSuspended
-                ? await reactivateAccount(accountId)
-                : await suspendAccount(accountId);
+              const result = isActive
+                ? await suspendAccount(accountId)
+                : await reactivateAccount(accountId);
               if (result?.error) setError(result.error);
             })
           }
         >
-          {isSuspended ? "Reactivar" : "Suspender"}
+          {isActive ? "Suspender" : activateLabel}
         </Button>
       </div>
       {error && <span className="text-xs text-destructive">{error}</span>}
