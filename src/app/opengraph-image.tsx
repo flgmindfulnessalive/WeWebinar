@@ -5,16 +5,16 @@ import { ImageResponse } from "next/og";
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "WeWebinars — webinars evergreen para vender tus productos";
+export const alt =
+  "WeWebinars — webinars evergreen, configúralos en minutos y déjalos vendiendo las 24 horas";
 
 const BRAND = "#4f46e5";
 const BRAND_2 = "#c026d3";
 
 export default async function OpengraphImage() {
   const fontsDir = join(process.cwd(), "src/app/og-fonts");
-  const [bold, semibold, regular] = await Promise.all([
+  const [bold, regular] = await Promise.all([
     readFile(join(fontsDir, "Geist-Bold.ttf")),
-    readFile(join(fontsDir, "Geist-SemiBold.ttf")),
     readFile(join(fontsDir, "Geist-Regular.ttf")),
   ]);
 
@@ -84,11 +84,13 @@ export default async function OpengraphImage() {
           style={{
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
             position: "relative",
             width: "100%",
             height: "100%",
             padding: "0 90px",
+            textAlign: "center",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
@@ -125,22 +127,17 @@ export default async function OpengraphImage() {
             style={{
               display: "flex",
               flexDirection: "column",
-              marginTop: 40,
+              alignItems: "center",
+              marginTop: 76,
               fontSize: 34,
               fontWeight: 400,
               color: "#4b5563",
-              lineHeight: 1.4,
+              lineHeight: 1.5,
             }}
           >
-            <div style={{ display: "flex" }}>Webinars evergreen</div>
-            <div style={{ display: "flex" }}>para vender tus productos, 24/7.</div>
-          </div>
-
-          <div style={{ display: "flex", marginTop: 60, alignItems: "center", gap: 14 }}>
-            <div style={{ display: "flex", width: 10, height: 10, borderRadius: 9999, background: BRAND }} />
-            <div style={{ display: "flex", fontSize: 28, fontWeight: 600, color: "#4338ca" }}>
-              wewebinars.com
-            </div>
+            <div style={{ display: "flex" }}>Webinars evergreen,</div>
+            <div style={{ display: "flex" }}>configúralos en minutos y</div>
+            <div style={{ display: "flex" }}>déjalos vendiendo las 24 horas.</div>
           </div>
         </div>
       </div>
@@ -149,7 +146,6 @@ export default async function OpengraphImage() {
       ...size,
       fonts: [
         { name: "Geist", data: bold, weight: 700, style: "normal" },
-        { name: "Geist", data: semibold, weight: 600, style: "normal" },
         { name: "Geist", data: regular, weight: 400, style: "normal" },
       ],
     }
