@@ -149,9 +149,10 @@ y querés que los recordatorios previos al webinar lleguen a tiempo.
    candado), así que no hay riesgo de duplicados.
 6. Este mismo endpoint también revisa el período de prueba de 15 días de
    cada cuenta (avisa por email unos días antes de que venza, y la
-   suspende automáticamente si vence sin activarse) y manda un resumen
-   mensual automático a cada cuenta con sus resultados del mes anterior —
-   no requiere ningún cron aparte.
+   suspende automáticamente si vence sin activarse), manda un resumen
+   mensual automático a cada cuenta con sus resultados del mes anterior, y
+   les manda un empujón por email a las cuentas de 14+ días que todavía no
+   publicaron ningún webinar — no requiere ningún cron aparte.
 
 ## 5. Primer Super Admin
 

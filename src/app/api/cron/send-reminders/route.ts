@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
-import { accountSuspendedEmail, monthlyDigestEmail, trialExpiringEmail } from "@/lib/platform-email";
+import {
+  accountSuspendedEmail,
+  activationNudgeEmail,
+  monthlyDigestEmail,
+  trialExpiringEmail,
+} from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -311,12 +316,67 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Activation nudge: a one-time email to accounts that are 14+ days
+  // old and never published a single webinar. Same claim-before-send
+  // pattern as the other lifecycle checks above.
+  let activationNudgesSent = 0;
+  const nudgeCutoff = new Date(now.getTime() - 14 * DAY_MS).toISOString();
+
+  const { data: nudgeCandidates } = await admin
+    .from("accounts")
+    .select("id, name")
+    .in("subscription_status", ["trialing", "active"])
+    .is("activation_nudge_sent_at", null)
+    .lte("created_at", nudgeCutoff);
+
+  for (const account of nudgeCandidates ?? []) {
+    const { count: publishedCount } = await admin
+      .from("webinars")
+      .select("id", { count: "exact", head: true })
+      .eq("account_id", account.id)
+      .not("published_at", "is", null);
+    // Already published something at some point -- not a nudge candidate.
+    // Left unclaimed so a later status/webinar change doesn't need special
+    // handling here, at the cost of re-checking this account every tick.
+    if (publishedCount) continue;
+
+    const { data: claimed, error: claimError } = await admin
+      .from("accounts")
+      .update({ activation_nudge_sent_at: now.toISOString() })
+      .eq("id", account.id)
+      .is("activation_nudge_sent_at", null)
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`nudge ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const { subject, html } = activationNudgeEmail(account.name);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      activationNudgesSent++;
+    } catch (err) {
+      errors.push(`nudge ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return NextResponse.json({
     remindersSent,
     replaysSent,
     trialWarningsSent,
     trialsSuspended,
     digestsSent,
+    activationNudgesSent,
     errors,
   });
 }
