@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileForm } from "./profile-form";
+import { EmailForm } from "./email-form";
 import { PasswordForm } from "./password-form";
 import { TestEmailForm } from "./test-email-form";
 
@@ -17,13 +18,25 @@ export default async function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">Datos personales</CardTitle>
-          <CardDescription>{current.user.email}</CardDescription>
+          <CardDescription>Tu nombre y foto de perfil.</CardDescription>
         </CardHeader>
         <CardContent>
           <ProfileForm
             displayName={current.user.display_name}
             avatarUrl={current.user.avatar_url}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Email de acceso</CardTitle>
+          <CardDescription>
+            Es el email con el que iniciás sesión. Cambiarlo pide confirmación por correo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <EmailForm currentEmail={current.user.email} />
         </CardContent>
       </Card>
 

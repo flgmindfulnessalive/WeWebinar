@@ -42,8 +42,18 @@ esto es solo pegar el HTML correcto en cada plantilla.
    - Subject heading: `Restablecé tu contraseña en WeWebinars`
    - Message body: la plantilla equivalente, con `type=recovery` en vez de
      `type=signup`.
-3. Guardar ambas y probar: registrate (o pedí un reset) desde una compu y
+3. Supabase → **Authentication → Email Templates → Change Email Address**
+   (usada por "Cambiar email" en Perfil → Configuración):
+   - Subject heading: `Confirmá tu nuevo email en WeWebinars`
+   - Message body: la plantilla equivalente, con `type=email_change`.
+4. Guardar las tres y probar: registrate (o pedí un reset) desde una compu y
    abrí el link desde el celular — ya debería andar sin el error de PKCE.
+5. Opcional pero recomendado para equipos chicos: en **Authentication →
+   Settings**, desactivar **"Secure email change"**. Con esa opción prendida
+   (default), Supabase pide confirmar el cambio de email desde AMBAS
+   casillas (la vieja y la nueva) antes de aplicarlo; apagada, solo hace
+   falta confirmar desde la casilla nueva — más simple si la vieja ya no la
+   revisás.
 
 ## 2. Stripe (cobro de las suscripciones de los hosts)
 
