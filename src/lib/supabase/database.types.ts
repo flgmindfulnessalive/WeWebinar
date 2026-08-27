@@ -48,6 +48,7 @@ export interface Database {
           max_users: number | null;
           max_attendees_per_webinar: number | null;
           max_ai_replies_per_month: number | null;
+          max_registrants_per_month: number | null;
           features: Json;
           is_self_serve: boolean;
           stripe_price_id: string | null;
