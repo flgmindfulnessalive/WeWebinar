@@ -35,6 +35,11 @@ export function AccountRowActions({
           disabled={isPending}
           onChange={(e) => {
             const planId = e.target.value;
+            const planName = plans.find((p) => p.id === planId)?.name ?? planId;
+            if (!confirm(`¿Cambiar el plan de esta cuenta a "${planName}"?`)) {
+              e.target.value = currentPlanId ?? "";
+              return;
+            }
             setError(null);
             startTransition(async () => {
               const result = await changeAccountPlan(accountId, planId);
@@ -53,15 +58,18 @@ export function AccountRowActions({
           size="sm"
           variant="outline"
           disabled={isPending}
-          onClick={() =>
+          onClick={() => {
+            if (isActive && !confirm("¿Suspender esta cuenta? El host pierde acceso de inmediato.")) {
+              return;
+            }
             startTransition(async () => {
               setError(null);
               const result = isActive
                 ? await suspendAccount(accountId)
                 : await reactivateAccount(accountId);
               if (result?.error) setError(result.error);
-            })
-          }
+            });
+          }}
         >
           {isActive ? "Suspender" : activateLabel}
         </Button>
