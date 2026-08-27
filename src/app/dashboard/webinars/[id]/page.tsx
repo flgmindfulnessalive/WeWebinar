@@ -126,6 +126,7 @@ export default async function WebinarDetailPage({
           {canManage && (
             <WebinarRowActions
               webinarId={webinar.id}
+              webinarTitle={webinar.title}
               status={webinar.status}
               isOwner={current.user.role === "owner"}
             />
