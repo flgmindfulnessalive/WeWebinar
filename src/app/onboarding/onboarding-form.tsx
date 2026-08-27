@@ -32,8 +32,8 @@ export function OnboardingForm() {
         <CardTitle>Crea tu cuenta de host</CardTitle>
         <CardDescription>
           Elige un nombre para tu cuenta. Empieza con el plan Core y 15 días
-          de prueba gratis, sin tarjeta de crédito — puedes subir de plan
-          cuando quieras desde Facturación.
+          de prueba gratis, sin tarjeta de crédito — escríbenos a
+          operaciones@wewebinars.com cuando quieras subir de plan.
         </CardDescription>
       </CardHeader>
       <CardContent>
