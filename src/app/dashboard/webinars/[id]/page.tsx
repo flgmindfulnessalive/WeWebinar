@@ -18,6 +18,7 @@ import { ChatSection } from "./chat-section";
 import { CtasSection } from "./ctas-section";
 import { EmailTemplatesSection } from "./email-templates-section";
 import { MarketingSection } from "./marketing-section";
+import { resolveEmailBranding } from "@/lib/email-templates";
 import type { Database } from "@/lib/supabase/database.types";
 
 export default async function WebinarDetailPage({
@@ -318,7 +319,13 @@ export default async function WebinarDetailPage({
                 ? `${emailTemplates.length} plantillas personalizadas`
                 : "Usando plantillas por defecto",
             completed: emailTemplates.length > 0,
-            content: <EmailTemplatesSection webinarId={webinar.id} templates={emailTemplates} />,
+            content: (
+              <EmailTemplatesSection
+                webinarId={webinar.id}
+                templates={emailTemplates}
+                branding={resolveEmailBranding(current.account)}
+              />
+            ),
           },
           {
             id: "marketing",
