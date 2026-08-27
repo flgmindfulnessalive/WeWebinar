@@ -1,13 +1,14 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useActionState, useState, useTransition } from "react";
 
 import {
   upsertSingletonTemplate,
   addReminderTemplate,
   removeReminderTemplate,
 } from "@/lib/actions/email-templates";
-import { DEFAULT_TEMPLATES } from "@/lib/email-templates";
+import { DEFAULT_TEMPLATES, renderTemplate, wrapEmailShell } from "@/lib/email-templates";
+import type { EmailBranding, TemplateVars } from "@/lib/email-templates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,16 +25,113 @@ const VARIABLE_HINT =
   "Variables disponibles: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}, {{marca_color}}. " +
   "El logo y el color de tu marca (Settings → Marca) ya se agregan automáticamente arriba y abajo del email — acá solo va el mensaje.";
 
+const SAMPLE_VARS: TemplateVars = {
+  nombre: "Juana Pérez",
+  webinar_titulo: "Nombre de tu webinar",
+  hora_webinar: "Martes 2 de septiembre, 18:00",
+  link_acceso: "#",
+  marca_color: "",
+};
+
+// Default view is the rendered email, not raw markup -- a host opening this
+// for the first time shouldn't be greeted with HTML soup. "Código HTML"
+// switches to the same textarea that actually submits the form (kept
+// mounted the whole time, just visually hidden, so its value survives the
+// toggle and the preview updates live as you type).
+function TemplateBodyEditor({
+  id,
+  name,
+  defaultValue,
+  branding,
+  rows = 5,
+}: {
+  id: string;
+  name: string;
+  defaultValue: string;
+  branding: EmailBranding;
+  rows?: number;
+}) {
+  const [body, setBody] = useState(defaultValue);
+  const [mode, setMode] = useState<"preview" | "code">("preview");
+  const [copied, setCopied] = useState(false);
+
+  const previewHtml = wrapEmailShell(
+    renderTemplate(body, { ...SAMPLE_VARS, marca_color: branding.brandColor }),
+    branding
+  );
+
+  return (
+    <div className="grid gap-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Label htmlFor={id}>Cuerpo del email</Label>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            size="sm"
+            variant={mode === "preview" ? "secondary" : "ghost"}
+            onClick={() => setMode("preview")}
+          >
+            Vista previa
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={mode === "code" ? "secondary" : "ghost"}
+            onClick={() => setMode("code")}
+          >
+            Código HTML
+          </Button>
+          {mode === "code" && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                navigator.clipboard.writeText(body);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+            >
+              {copied ? "Copiado" : "Copiar"}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {mode === "preview" && (
+        <iframe
+          title="Vista previa del email"
+          srcDoc={previewHtml}
+          className="h-72 w-full rounded-md border bg-white"
+        />
+      )}
+
+      <textarea
+        id={id}
+        name={name}
+        rows={rows}
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        hidden={mode !== "code"}
+        className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+      />
+      <p className="text-xs text-muted-foreground">{VARIABLE_HINT}</p>
+    </div>
+  );
+}
+
 function SingletonTemplateForm({
   webinarId,
   type,
   title,
   existing,
+  branding,
 }: {
   webinarId: string;
   type: "registration_confirmation" | "replay_missed";
   title: string;
   existing?: Template;
+  branding: EmailBranding;
 }) {
   const [state, formAction, isPending] = useActionState(upsertSingletonTemplate, null);
   const fallback = DEFAULT_TEMPLATES[type];
@@ -52,17 +150,12 @@ function SingletonTemplateForm({
             defaultValue={existing?.subject ?? fallback.subject}
           />
         </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${type}-body`}>Cuerpo (HTML)</Label>
-          <textarea
-            id={`${type}-body`}
-            name="body"
-            rows={5}
-            defaultValue={existing?.body ?? fallback.body}
-            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
-          />
-          <p className="text-xs text-muted-foreground">{VARIABLE_HINT}</p>
-        </div>
+        <TemplateBodyEditor
+          id={`${type}-body`}
+          name="body"
+          defaultValue={existing?.body ?? fallback.body}
+          branding={branding}
+        />
         {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
         <Button type="submit" size="sm" disabled={isPending} className="w-fit">
           {isPending ? "Guardando..." : existing ? "Actualizar" : "Guardar"}
@@ -99,9 +192,11 @@ function ReminderRow({ template, webinarId }: { template: Template; webinarId: s
 export function EmailTemplatesSection({
   webinarId,
   templates,
+  branding,
 }: {
   webinarId: string;
   templates: Template[];
+  branding: EmailBranding;
 }) {
   const confirmation = templates.find((t) => t.type === "registration_confirmation");
   const replayMissed = templates.find((t) => t.type === "replay_missed");
@@ -122,6 +217,7 @@ export function EmailTemplatesSection({
         type="registration_confirmation"
         title="Confirmación de registro"
         existing={confirmation}
+        branding={branding}
       />
 
       <div className="flex flex-col gap-3 rounded-md border p-4">
@@ -160,18 +256,13 @@ export function EmailTemplatesSection({
               />
             </div>
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="reminder-body">Cuerpo (HTML)</Label>
-            <textarea
-              id="reminder-body"
-              name="body"
-              rows={4}
-              defaultValue={reminderFallback.body}
-              required
-              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
-            />
-            <p className="text-xs text-muted-foreground">{VARIABLE_HINT}</p>
-          </div>
+          <TemplateBodyEditor
+            id="reminder-body"
+            name="body"
+            defaultValue={reminderFallback.body}
+            branding={branding}
+            rows={4}
+          />
           {reminderState?.error && (
             <p className="text-sm text-destructive">{reminderState.error}</p>
           )}
@@ -186,6 +277,7 @@ export function EmailTemplatesSection({
         type="replay_missed"
         title='Email de "te lo perdiste" (a quien no asistió)'
         existing={replayMissed}
+        branding={branding}
       />
     </div>
   );
