@@ -41,6 +41,13 @@ export async function addCta(
     if (!text || !url) {
       return { error: "El texto y la URL del botón son obligatorios." };
     }
+    // The live room renders this straight into an <a href> for every
+    // attendee (live-room-client.tsx) -- without this, a "javascript:" (or
+    // similar) URL saved here would execute in each viewer's session on
+    // click.
+    if (!/^https?:\/\//i.test(url)) {
+      return { error: "La URL debe empezar con http:// o https://." };
+    }
     config = { text, url, style };
   } else if (type === "overlay") {
     const text = String(formData.get("overlay_text") ?? "").trim();
