@@ -22,6 +22,29 @@ Orden recomendado (cada paso depende del anterior):
    - `anon public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `service_role` key → `SUPABASE_SERVICE_ROLE_KEY` (secreta, nunca al cliente)
 
+## 1bis. Plantillas de email de confirmación y reset de contraseña
+
+Por defecto, Supabase arma esos links con `{{ .ConfirmationURL }}`, que solo
+funciona si se abre en el mismo navegador donde te registraste/pediste el
+reset (usa PKCE: la "llave" para validar el link queda guardada en las
+cookies de ese navegador). En la práctica, la gente revisa el correo desde
+el celular aunque se haya registrado en la compu, y ahí el link falla con
+un error de "code verifier not found". Las plantillas de abajo evitan esto
+usando `{{ .TokenHash }}` en vez de `{{ .ConfirmationURL }}` — el código ya
+soporta ambos formatos (`src/app/auth/confirm/confirm-client.tsx`), así que
+esto es solo pegar el HTML correcto en cada plantilla.
+
+1. Supabase → **Authentication → Email Templates → Confirm signup**:
+   - Subject heading: `Confirmá tu cuenta en WeWebinars`
+   - Message body: pegar el contenido de abajo (pedíselo a Claude si no lo
+     tenés a mano — el mismo que ya te compartió antes en el chat).
+2. Supabase → **Authentication → Email Templates → Reset Password**:
+   - Subject heading: `Restablecé tu contraseña en WeWebinars`
+   - Message body: la plantilla equivalente, con `type=recovery` en vez de
+     `type=signup`.
+3. Guardar ambas y probar: registrate (o pedí un reset) desde una compu y
+   abrí el link desde el celular — ya debería andar sin el error de PKCE.
+
 ## 2. Stripe (cobro de las suscripciones de los hosts)
 
 1. Crear cuenta en Stripe. Mientras no esté verificada, se puede probar
