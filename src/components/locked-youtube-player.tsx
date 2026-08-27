@@ -175,6 +175,17 @@ export const LockedYouTubePlayer = forwardRef<
   // null the instant playback is confirmed again.
   const stuckSinceRef = useRef<number | null>(null);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  // Set by the same "stuck" escape hatch that flips gaveUpRef -- autoplay
+  // never started at all within STUCK_INITIAL_MS. In practice this is most
+  // often a desktop ad blocker intercepting the embedded player (YouTube's
+  // iframe pulls in ad-related requests even for a plain video, so
+  // uBlock/AdGuard/etc. can end up replacing the whole embed with their own
+  // placeholder) rather than a real outage -- mobile browsers mostly can't
+  // run extensions at all, which is why this is a desktop-only symptom in
+  // practice. Surface that explicitly instead of silently revealing
+  // whatever broken placeholder is underneath.
+  const [showBlockedWarning, setShowBlockedWarning] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useImperativeHandle(
     ref,
@@ -277,19 +288,22 @@ export const LockedYouTubePlayer = forwardRef<
     playingSinceRef.current = null;
     stuckSinceRef.current = null;
     setShowResumePrompt(false);
+    setShowBlockedWarning(false);
 
     // Last-resort escape hatch: if PLAYING never fires at all (autoplay
     // fully blocked, video unavailable), don't leave the viewer stuck on
-    // the loading mark forever -- reveal once, whatever's actually there.
-    // Only fires if playback never started even once; once it has, the
-    // state-driven cover above takes over completely and this is moot.
+    // the loading mark forever -- reveal once, whatever's actually there,
+    // and surface the ad-blocker warning below on top of it. Only fires if
+    // playback never started even once; once it has, the state-driven
+    // cover above takes over completely and this is moot.
     const stuckTimer = autoPlay
       ? window.setTimeout(() => {
           if (!hasPlayedOnceRef.current) {
             gaveUpRef.current = true;
             setCoverVisible(false);
+            setShowBlockedWarning(true);
           }
-        }, 8000)
+        }, 10000)
       : null;
 
     loadYouTubeIframeApi().then((YT) => {
@@ -372,7 +386,12 @@ export const LockedYouTubePlayer = forwardRef<
       playerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId]);
+  }, [videoId, retryKey]);
+
+  const handleRetry = () => {
+    setShowBlockedWarning(false);
+    setRetryKey((k) => k + 1);
+  };
 
   return (
     <div className={className} style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -438,6 +457,43 @@ export const LockedYouTubePlayer = forwardRef<
               ▶️ Toca para reanudar el video
             </button>
           )}
+        </div>
+      )}
+      {showBlockedWarning && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            background: "rgba(0, 0, 0, 0.9)",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
+            Si no ves el video, revisa que no tengas un bloqueador de anuncios
+            activo para este sitio.
+          </p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            style={{
+              borderRadius: 9999,
+              background: "rgba(255, 255, 255, 0.15)",
+              border: "1px solid rgba(255, 255, 255, 0.4)",
+              color: "white",
+              padding: "10px 18px",
+              fontSize: 14,
+              cursor: "pointer",
+            }}
+          >
+            🔄 Reintentar
+          </button>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the YouTube iframe
