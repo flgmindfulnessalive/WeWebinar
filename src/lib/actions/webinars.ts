@@ -260,6 +260,10 @@ export async function setWebinarVideo(
   return null;
 }
 
+// Called "Pausar" in the UI (webinar-row-actions.tsx) -- status/column
+// names stay "archived" internally, no schema change, just the label a
+// published webinar sees when taken offline. Fully reversible via
+// publishWebinar above; nothing here touches registrants/analytics/etc.
 export async function archiveWebinar(webinarId: string): Promise<WebinarActionState> {
   const supabase = await createClient();
   const { error } = await supabase

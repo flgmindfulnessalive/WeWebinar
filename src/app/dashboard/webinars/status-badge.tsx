@@ -4,7 +4,7 @@ import type { WebinarStatus } from "@/lib/supabase/database.types";
 const LABELS: Record<WebinarStatus, string> = {
   draft: "Borrador",
   published: "Activo",
-  archived: "Archivado",
+  archived: "Pausado",
 };
 
 const VARIANTS: Record<WebinarStatus, "default" | "secondary" | "outline"> = {

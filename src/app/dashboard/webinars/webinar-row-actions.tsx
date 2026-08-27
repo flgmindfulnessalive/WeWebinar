@@ -66,14 +66,14 @@ export function WebinarRowActions({
           Publicar
         </Button>
       )}
-      {status !== "archived" && (
+      {status === "published" && (
         <Button
           size="sm"
           variant="ghost"
           disabled={isPending}
           onClick={() => runAction(archiveWebinar)}
         >
-          Archivar
+          Pausar
         </Button>
       )}
       {isOwner && (
