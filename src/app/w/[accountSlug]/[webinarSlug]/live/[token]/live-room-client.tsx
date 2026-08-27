@@ -292,7 +292,12 @@ export function LiveRoomClient({
           <span className="hidden text-xs text-muted-foreground sm:inline">
             {viewerCount} conectados
           </span>
-          <Button size="sm" variant="outline" onClick={() => setShowPanel((s) => !s)}>
+          <Button
+            size="sm"
+            variant="outline"
+            aria-label={showPanel ? "Ocultar panel" : "Mostrar panel"}
+            onClick={() => setShowPanel((s) => !s)}
+          >
             <MessageSquare className="size-4 sm:hidden" />
             <span className="hidden sm:inline">{showPanel ? "Ocultar panel" : "Mostrar panel"}</span>
           </Button>

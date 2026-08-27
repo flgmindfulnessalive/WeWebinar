@@ -30,7 +30,7 @@ export default async function DashboardLayout({
         <CircleAlert className="size-10 text-destructive" />
         <h1 className="text-xl font-semibold">Tu cuenta está suspendida</h1>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Escribinos a{" "}
+          Escríbenos a{" "}
           <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
             {SUPPORT_EMAIL}
           </a>{" "}
@@ -86,7 +86,7 @@ export default async function DashboardLayout({
             <CircleAlert className="size-4 shrink-0" />
             <span>
               Período de prueba: vence en {trialDaysLeft}{" "}
-              {trialDaysLeft === 1 ? "día" : "días"}. Contactanos a{" "}
+              {trialDaysLeft === 1 ? "día" : "días"}. Contáctanos a{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
                 {SUPPORT_EMAIL}
               </a>{" "}
