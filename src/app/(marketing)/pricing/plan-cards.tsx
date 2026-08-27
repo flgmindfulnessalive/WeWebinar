@@ -31,7 +31,7 @@ function featureList(plan: {
     }`,
     `${plan.max_users ?? "Usuarios a medida"}${plan.max_users ? " usuario(s)" : ""}`,
     `${plan.max_attendees_per_webinar ?? "Asistentes a medida"}${
-      plan.max_attendees_per_webinar ? " asistentes por webinar" : ""
+      plan.max_attendees_per_webinar ? " asistentes por sesión" : ""
     }`,
     "Analíticas",
   ];

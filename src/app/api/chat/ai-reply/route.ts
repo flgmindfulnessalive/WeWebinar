@@ -84,6 +84,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ reply: null });
   }
 
+  // Account-wide monthly ceiling, on top of the per-registrant one above --
+  // that one alone doesn't bound total spend, since nothing caps how many
+  // registrants a webinar can get in a month (attendee limits are per
+  // concurrent session, not per month). null max_ai_replies_per_month means
+  // no ceiling (Enterprise, or a plan without one configured).
+  const { data: accountPlan } = await admin
+    .from("accounts")
+    .select("plan:plans(max_ai_replies_per_month)")
+    .eq("id", webinar.account_id)
+    .maybeSingle();
+  const monthlyCap = accountPlan?.plan?.max_ai_replies_per_month ?? null;
+  if (monthlyCap !== null) {
+    const { data: repliesThisMonth } = await admin.rpc("count_account_ai_replies_this_month", {
+      p_account_id: webinar.account_id,
+    });
+    if ((repliesThisMonth ?? 0) >= monthlyCap) {
+      return NextResponse.json({ reply: null });
+    }
+  }
+
   const { data: account } = await admin
     .from("account_public_profile")
     .select("name")

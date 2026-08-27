@@ -34,6 +34,7 @@ export async function updatePlan(
       max_active_webinars: parseNullableInt(formData.get("max_active_webinars")),
       max_users: parseNullableInt(formData.get("max_users")),
       max_attendees_per_webinar: parseNullableInt(formData.get("max_attendees_per_webinar")),
+      max_ai_replies_per_month: parseNullableInt(formData.get("max_ai_replies_per_month")),
       features: {
         remove_branding: removeBranding,
         custom_domain: customDomain,
