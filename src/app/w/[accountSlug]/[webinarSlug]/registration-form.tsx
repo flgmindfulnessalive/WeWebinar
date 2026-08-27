@@ -42,6 +42,7 @@ export function RegistrationForm({
   hasFacebookPixel = false,
   brandColorA = DEFAULT_BRAND_COLOR_A,
   brandColorB = DEFAULT_BRAND_COLOR_B,
+  previewMode = false,
 }: {
   webinarId: string;
   returnTo: string;
@@ -52,8 +53,10 @@ export function RegistrationForm({
   hasFacebookPixel?: boolean;
   brandColorA?: string;
   brandColorB?: string;
+  previewMode?: boolean;
 }) {
   const [state, formAction, isPending] = useActionState(registerForWebinar, null);
+  const [previewSubmitAttempted, setPreviewSubmitAttempted] = useState(false);
   const [selectedOccurrence, setSelectedOccurrence] = useState(() => {
     const firstAvailable = occurrences.find((o) => o.spotsLeft !== 0) ?? occurrences[0];
     return firstAvailable ? occurrenceKey(firstAvailable) : "";
@@ -120,7 +123,16 @@ export function RegistrationForm({
   return (
     <form
       action={formAction}
-      onSubmit={() => {
+      onSubmit={(e) => {
+        // Preview mode: register_for_webinar itself rejects anything not
+        // status='published', so submitting here would just hit that RPC
+        // error -- block it client-side instead and say why, rather than
+        // showing a confusing server error on a page that's just a preview.
+        if (previewMode) {
+          e.preventDefault();
+          setPreviewSubmitAttempted(true);
+          return;
+        }
         // Fired on submit, not after a confirmed server-side success --
         // the action redirect()s on success, unmounting this component
         // before it could ever observe a "success" state to react to.
@@ -278,6 +290,12 @@ export function RegistrationForm({
       </div>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+      {previewMode && previewSubmitAttempted && (
+        <p className="text-sm text-amber-600">
+          Esto es una vista previa — los registros están desactivados hasta que publiques el
+          webinar.
+        </p>
+      )}
 
       <button
         type="submit"
