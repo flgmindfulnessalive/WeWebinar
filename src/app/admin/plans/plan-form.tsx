@@ -19,6 +19,7 @@ type Plan = {
   max_users: number | null;
   max_attendees_per_webinar: number | null;
   max_ai_replies_per_month: number | null;
+  max_registrants_per_month: number | null;
   features: Json;
 };
 
@@ -104,6 +105,17 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 type="number"
                 min={0}
                 defaultValue={plan.max_ai_replies_per_month ?? ""}
+                placeholder="Sin límite"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor={`${plan.id}-registrants`}>Registros / mes</Label>
+              <Input
+                id={`${plan.id}-registrants`}
+                name="max_registrants_per_month"
+                type="number"
+                min={0}
+                defaultValue={plan.max_registrants_per_month ?? ""}
                 placeholder="Sin límite"
               />
             </div>

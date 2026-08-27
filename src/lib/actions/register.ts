@@ -128,6 +128,12 @@ export async function registerForWebinar(
   });
 
   if (error) {
+    if (error.message.includes("registrant_monthly_limit_exceeded")) {
+      return {
+        error:
+          "Este webinar alcanzó el cupo de registros de su cuenta para este mes. Escríbenos si necesitas ayuda.",
+      };
+    }
     if (error.message.includes("plan_limit_exceeded")) {
       return { error: "Ese horario alcanzó el cupo máximo de esta sesión. Elige otro horario." };
     }
