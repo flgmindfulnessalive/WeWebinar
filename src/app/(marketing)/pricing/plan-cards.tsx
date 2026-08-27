@@ -34,12 +34,13 @@ function featureList(plan: {
       plan.max_attendees_per_webinar ? " asistentes por webinar" : ""
     }`,
     "Analíticas",
-    "Commercial Rights (Unlimited)",
   ];
   if (features.ai_chat_replies) items.push("Agente AI de respuestas en chat");
-  if (features.integrations) items.push("Webhooks, pixel de Meta y Brevo");
+  if (features.integrations) items.push("Integraciones");
   if (features.remove_branding) items.push('Sin "Powered by"');
   if (features.custom_domain) items.push("Dominio propio (CNAME)");
+  // Always last, in every plan, so the three cards line up bullet-for-bullet.
+  items.push("Commercial Rights (Unlimited)");
   return items;
 }
 
