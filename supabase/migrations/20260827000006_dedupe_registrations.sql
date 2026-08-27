@@ -5,6 +5,21 @@
 -- email, and opened another 5-reply AI chat quota (per-registrant, so more
 -- registrants means more spend with no ceiling).
 
+-- Some session/email combinations already accumulated multiple registrant
+-- rows in production before this constraint existed (double-clicks,
+-- retries) -- collapse each duplicate group down to its earliest row
+-- first, or the index creation below fails on the pre-existing
+-- duplicates. Every FK to registrants is ON DELETE CASCADE, so this also
+-- cleans up whatever email_sends/chat/CTA rows hung off the discarded
+-- duplicates.
+delete from public.registrants r
+using public.registrants r2
+where r.session_id is not null
+  and r.webinar_id = r2.webinar_id
+  and r.session_id = r2.session_id
+  and lower(r.email) = lower(r2.email)
+  and (r.created_at, r.id) > (r2.created_at, r2.id);
+
 -- Hard backstop for fixed schedules: the same email can't hold two
 -- registrant rows for the exact same session. Partial (session_id is not
 -- null) because just_in_time registrations always have session_id null --
