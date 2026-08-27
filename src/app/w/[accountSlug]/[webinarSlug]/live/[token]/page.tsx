@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { resolvePresenter } from "@/lib/presenter";
+import { dispatchWebhookEvent } from "@/lib/webhooks";
 import { LiveRoomClient } from "./live-room-client";
 
 export default async function LiveRoomPage({
@@ -47,6 +49,22 @@ export default async function LiveRoomPage({
   const initialElapsedSeconds = Math.max(
     0,
     (new Date(session.server_now).getTime() - new Date(session.computed_session_start).getTime()) / 1000
+  );
+
+  // Best-effort -- reaching this page at all means the registrant actually
+  // showed up (as opposed to just registering and never coming back),
+  // which is exactly the "attended" signal a CRM/email tool wants.
+  // Scheduled via after() rather than awaited or fire-and-forget: it runs
+  // once the response is already sent (no added latency to the room
+  // loading), but -- unlike a bare unawaited call -- the platform won't
+  // tear down the function before this fetch actually completes.
+  after(() =>
+    dispatchWebhookEvent(webinar.account_id, "attendance", {
+      webinar_id: webinar.id,
+      webinar_title: webinar.title,
+      name: session.name,
+      email: session.email,
+    })
   );
 
   return (

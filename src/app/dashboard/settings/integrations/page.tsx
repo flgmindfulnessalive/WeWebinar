@@ -1,0 +1,62 @@
+import { redirect } from "next/navigation";
+
+import { getCurrentAccount } from "@/lib/data/account";
+import { createClient } from "@/lib/supabase/server";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { WebhookForm } from "./webhook-form";
+import { WebhookRow } from "./webhook-row";
+
+export default async function IntegrationsSettingsPage() {
+  const current = await getCurrentAccount();
+  if (!current) return null;
+
+  if (current.user.role !== "owner") {
+    redirect("/dashboard");
+  }
+
+  const supabase = await createClient();
+  const { data: webhooks } = await supabase
+    .from("webhook_endpoints")
+    .select("id, url, secret, event_types, is_active")
+    .eq("account_id", current.account.id)
+    .order("created_at", { ascending: false });
+
+  return (
+    <div className="flex max-w-2xl flex-col gap-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Integraciones</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Webhooks salientes</CardTitle>
+          <CardDescription>
+            Conectá WeWebinars a Zapier, Make, n8n o cualquier herramienta que
+            reciba webhooks. Cada evento se envía como POST con el body en JSON,
+            firmado con HMAC-SHA256 en el header{" "}
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
+              X-WeWebinars-Signature
+            </code>{" "}
+            (podés ignorarlo si tu herramienta no verifica firmas, como suele
+            pasar con Zapier).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          <WebhookForm />
+          {webhooks && webhooks.length > 0 && (
+            <div className="rounded-md border">
+              {webhooks.map((w) => (
+                <WebhookRow
+                  key={w.id}
+                  id={w.id}
+                  url={w.url}
+                  secret={w.secret}
+                  eventTypes={w.event_types}
+                  isActive={w.is_active}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

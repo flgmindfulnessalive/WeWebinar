@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/resend";
+import { dispatchWebhookEvent } from "@/lib/webhooks";
 
 export type RegisterActionState = { error: string } | null;
 
@@ -166,6 +167,15 @@ export async function registerForWebinar(
     } catch (err) {
       console.error("[register] failed to send confirmation email:", err);
     }
+
+    await dispatchWebhookEvent(webinar.account_id, "registration", {
+      webinar_id: webinarId,
+      webinar_title: webinar.title,
+      name,
+      email,
+      phone,
+      computed_session_start: result.computed_session_start,
+    });
   }
 
   redirect(`${returnTo}/room/${result.access_token}`);
