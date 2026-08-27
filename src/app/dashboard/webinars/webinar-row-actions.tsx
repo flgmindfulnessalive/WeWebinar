@@ -62,6 +62,11 @@ export function WebinarRowActions({
           variant="outline"
           disabled={isPending}
           onClick={() => runAction(publishWebinar)}
+          title={
+            status === "archived"
+              ? "Vuelve a estar disponible para registro y acceso a la sala, tal como estaba."
+              : "Queda disponible públicamente para que la gente se registre."
+          }
         >
           Publicar
         </Button>
@@ -72,6 +77,7 @@ export function WebinarRowActions({
           variant="ghost"
           disabled={isPending}
           onClick={() => runAction(archiveWebinar)}
+          title="Corta el registro y el acceso a la sala. No borra nada — podés publicarlo de nuevo cuando quieras."
         >
           Pausar
         </Button>
