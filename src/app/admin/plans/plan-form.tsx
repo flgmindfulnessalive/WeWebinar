@@ -125,6 +125,15 @@ export function PlanForm({ plan }: { plan: Plan }) {
               />
               Dominio propio
             </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="integrations"
+                defaultChecked={Boolean(features.integrations)}
+                className="size-4"
+              />
+              Webhooks, pixel de Meta y Brevo
+            </label>
           </div>
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}

@@ -7,12 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckoutButton, BillingPortalButton } from "./billing-buttons";
 
-const SELF_SERVE_PLANS = [
-  { key: "core", label: "Cambiar a Core ($60/año)" },
-  { key: "pro", label: "Cambiar a Pro ($100/año)" },
-  { key: "business", label: "Cambiar a Business ($500/año)" },
-];
-
 const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 
 export default async function BillingPage() {
@@ -30,11 +24,25 @@ export default async function BillingPage() {
   const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 
   const supabase = await createClient();
-  const { count: publishedCount } = await supabase
-    .from("webinars")
-    .select("id", { count: "exact", head: true })
-    .eq("account_id", current.account.id)
-    .eq("status", "published");
+  const [{ count: publishedCount }, { data: selfServePlans }] = await Promise.all([
+    supabase
+      .from("webinars")
+      .select("id", { count: "exact", head: true })
+      .eq("account_id", current.account.id)
+      .eq("status", "published"),
+    supabase
+      .from("plans")
+      .select("key, name, price_annual_usd")
+      .eq("is_self_serve", true)
+      .order("price_annual_usd", { ascending: true, nullsFirst: false }),
+  ]);
+  const changeablePlans = (selfServePlans ?? []).map((p) => ({
+    key: p.key,
+    label:
+      p.price_annual_usd === null
+        ? `Cambiar a ${p.name}`
+        : `Cambiar a ${p.name} ($${p.price_annual_usd}/año)`,
+  }));
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -68,7 +76,7 @@ export default async function BillingPage() {
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           {stripeConfigured ? (
-            SELF_SERVE_PLANS.filter((p) => p.key !== current.plan.key).map((p) => (
+            changeablePlans.filter((p) => p.key !== current.plan.key).map((p) => (
               <CheckoutButton key={p.key} planKey={p.key} label={p.label} />
             ))
           ) : (

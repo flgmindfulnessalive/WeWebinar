@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WebhookForm } from "./webhook-form";
 import { WebhookRow } from "./webhook-row";
@@ -13,6 +14,35 @@ export default async function IntegrationsSettingsPage() {
 
   if (current.user.role !== "owner") {
     redirect("/dashboard");
+  }
+
+  const planFeatures = (current.plan.features as Record<string, boolean> | null) ?? {};
+  const integrationsAllowed = Boolean(planFeatures.integrations);
+
+  if (!integrationsAllowed) {
+    return (
+      <div className="flex max-w-2xl flex-col gap-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Integraciones</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              Webhooks, pixel de Meta y Brevo
+            </CardTitle>
+            <CardDescription>
+              Estas integraciones están disponibles en los planes Pro,
+              Business y Enterprise. Actualiza tu plan para conectar
+              WeWebinars con Zapier/Make/n8n, cargar el pixel de Meta por
+              webinar y sincronizar tus registrados con Brevo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-fit">
+              <a href="/dashboard/settings/billing">Ver planes</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const supabase = await createClient();

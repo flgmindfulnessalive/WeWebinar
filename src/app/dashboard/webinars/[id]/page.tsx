@@ -41,6 +41,7 @@ export default async function WebinarDetailPage({
   const canManage = current.user.role === "owner" || current.user.role === "editor";
   const planFeatures = (current.plan.features as Record<string, boolean> | null) ?? {};
   const aiChatAllowed = Boolean(planFeatures.ai_chat_replies);
+  const marketingAllowed = Boolean(planFeatures.integrations);
 
   let schedules: Pick<
     Database["public"]["Tables"]["webinar_schedules"]["Row"],
@@ -329,6 +330,7 @@ export default async function WebinarDetailPage({
             content: (
               <MarketingSection
                 webinarId={webinar.id}
+                marketingAllowed={marketingAllowed}
                 brevoConnected={Boolean(current.account.brevo_api_key)}
                 initial={{
                   facebookPixelId: webinar.facebook_pixel_id,

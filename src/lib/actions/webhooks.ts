@@ -42,7 +42,15 @@ export async function createWebhookEndpoint(
   } satisfies Database["public"]["Tables"]["webhook_endpoints"]["Insert"]);
 
   revalidatePath("/dashboard/settings/integrations");
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.includes("plan_feature_blocked")) {
+      return {
+        error:
+          "Los webhooks salientes están disponibles en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlos.",
+      };
+    }
+    return { error: error.message };
+  }
   return null;
 }
 
