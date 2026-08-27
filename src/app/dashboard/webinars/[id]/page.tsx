@@ -10,6 +10,7 @@ import { StatusBadge } from "../status-badge";
 import { WebinarRowActions } from "../webinar-row-actions";
 import { WizardShell, type WizardStep } from "./wizard-shell";
 import { DetailSection } from "./detail-section";
+import { PresenterSection } from "./presenter-section";
 import { VideoSection } from "./video-section";
 import { ScheduleSection } from "./schedule-section";
 import { WaitingRoomSection } from "./waiting-room-section";
@@ -57,9 +58,10 @@ export default async function WebinarDetailPage({
     Database["public"]["Tables"]["email_templates"]["Row"],
     "id" | "type" | "reminder_offset_minutes" | "subject" | "body"
   >[] = [];
+  let members: Pick<Database["public"]["Tables"]["users"]["Row"], "id" | "display_name" | "email">[] = [];
 
   if (canManage) {
-    const [schedulesRes, waitingRoomRes, chatRes, ctasRes, emailTemplatesRes] = await Promise.all([
+    const [schedulesRes, waitingRoomRes, chatRes, ctasRes, emailTemplatesRes, membersRes] = await Promise.all([
       supabase
         .from("webinar_schedules")
         .select("id, day_of_week, time_of_day, timezone, exclude_weekends")
@@ -80,12 +82,18 @@ export default async function WebinarDetailPage({
         .from("email_templates")
         .select("id, type, reminder_offset_minutes, subject, body")
         .eq("webinar_id", id),
+      supabase
+        .from("users")
+        .select("id, display_name, email")
+        .eq("account_id", current.account.id)
+        .order("display_name", { ascending: true, nullsFirst: false }),
     ]);
     schedules = schedulesRes.data ?? [];
     waitingRoom = waitingRoomRes.data;
     chatMessages = chatRes.data ?? [];
     ctas = ctasRes.data ?? [];
     emailTemplates = emailTemplatesRes.data ?? [];
+    members = membersRes.data ?? [];
   }
 
   const publicPath = `/w/${current.account.slug}/${webinar.slug}`;
@@ -194,6 +202,31 @@ export default async function WebinarDetailPage({
                   title: webinar.title,
                   category: webinar.category,
                   description: webinar.description,
+                }}
+              />
+            ),
+          },
+          {
+            id: "presenter",
+            icon: "user",
+            title: "Presentador",
+            description: "Quién aparece como presentador en la sala de espera y el link público.",
+            summary: webinar.presenter_name
+              ? webinar.presenter_name
+              : webinar.presenter_user_id
+                ? (members.find((m) => m.id === webinar.presenter_user_id)?.display_name ??
+                  "Miembro del equipo")
+                : "Sin presentador",
+            completed: Boolean(webinar.presenter_name || webinar.presenter_user_id),
+            content: (
+              <PresenterSection
+                webinarId={webinar.id}
+                members={members}
+                initial={{
+                  presenterUserId: webinar.presenter_user_id,
+                  presenterName: webinar.presenter_name,
+                  presenterAvatarUrl: webinar.presenter_avatar_url,
+                  presenterBio: webinar.presenter_bio,
                 }}
               />
             ),

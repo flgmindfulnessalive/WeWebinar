@@ -162,6 +162,9 @@ export interface Database {
           id: string;
           account_id: string;
           presenter_user_id: string | null;
+          presenter_name: string | null;
+          presenter_avatar_url: string | null;
+          presenter_bio: string | null;
           title: string;
           slug: string;
           description: string | null;

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { resolvePresenter } from "@/lib/presenter";
 import { LiveRoomClient } from "./live-room-client";
 
 export default async function LiveRoomPage({
@@ -20,23 +21,17 @@ export default async function LiveRoomPage({
   const { data: webinar } = await supabase
     .from("webinars")
     .select(
-      "id, title, presenter_user_id, youtube_video_id, duration_seconds, fake_viewer_min, fake_viewer_max, account_id"
+      "id, title, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio, youtube_video_id, duration_seconds, fake_viewer_min, fake_viewer_max, account_id"
     )
     .eq("id", session.webinar_id)
     .eq("status", "published")
     .maybeSingle();
   if (!webinar || !webinar.youtube_video_id) notFound();
 
-  const [{ data: account }, { data: presenter }, { data: chatMessages }, { data: ctas }] =
+  const [{ data: account }, presenter, { data: chatMessages }, { data: ctas }] =
     await Promise.all([
       supabase.from("account_public_profile").select("*").eq("id", webinar.account_id).maybeSingle(),
-      webinar.presenter_user_id
-        ? supabase
-            .from("presenter_public_profile")
-            .select("*")
-            .eq("id", webinar.presenter_user_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
+      resolvePresenter(supabase, webinar),
       supabase
         .from("chat_messages")
         .select("id, timestamp_seconds, fake_name, message_text, message_type")

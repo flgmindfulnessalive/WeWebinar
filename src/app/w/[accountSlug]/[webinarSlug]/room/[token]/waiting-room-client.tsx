@@ -9,9 +9,9 @@ import { fakeViewerCount } from "@/lib/fake-viewers";
 import { buildIcsDataUri, googleCalendarUrl } from "@/lib/ics";
 import { DEFAULT_BRAND_COLOR_A, DEFAULT_BRAND_COLOR_B } from "@/lib/brand-colors";
 import type { Database } from "@/lib/supabase/database.types";
+import type { Presenter } from "@/lib/presenter";
 
 type WaitingRoomConfig = Database["public"]["Tables"]["waiting_room_config"]["Row"] | null;
-type Presenter = Database["public"]["Views"]["presenter_public_profile"]["Row"] | null;
 
 function formatCountdown(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
