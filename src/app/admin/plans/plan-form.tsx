@@ -18,6 +18,7 @@ type Plan = {
   max_active_webinars: number | null;
   max_users: number | null;
   max_attendees_per_webinar: number | null;
+  max_ai_replies_per_month: number | null;
   features: Json;
 };
 
@@ -85,13 +86,24 @@ export function PlanForm({ plan }: { plan: Plan }) {
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-attendees`}>Asistentes / webinar</Label>
+              <Label htmlFor={`${plan.id}-attendees`}>Asistentes / sesión</Label>
               <Input
                 id={`${plan.id}-attendees`}
                 name="max_attendees_per_webinar"
                 type="number"
                 min={0}
                 defaultValue={plan.max_attendees_per_webinar ?? ""}
+                placeholder="Sin límite"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor={`${plan.id}-ai-replies`}>Respuestas AI / mes</Label>
+              <Input
+                id={`${plan.id}-ai-replies`}
+                name="max_ai_replies_per_month"
+                type="number"
+                min={0}
+                defaultValue={plan.max_ai_replies_per_month ?? ""}
                 placeholder="Sin límite"
               />
             </div>

@@ -47,6 +47,7 @@ export interface Database {
           max_active_webinars: number | null;
           max_users: number | null;
           max_attendees_per_webinar: number | null;
+          max_ai_replies_per_month: number | null;
           features: Json;
           is_self_serve: boolean;
           stripe_price_id: string | null;
@@ -753,6 +754,10 @@ export interface Database {
       };
       count_registrant_ai_replies: {
         Args: { p_registrant_id: string };
+        Returns: number;
+      };
+      count_account_ai_replies_this_month: {
+        Args: { p_account_id: string };
         Returns: number;
       };
       get_due_reminder_recipients: {
