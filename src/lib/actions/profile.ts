@@ -52,11 +52,14 @@ export async function changePassword(
   return { success: true };
 }
 
+const DIAGNOSTIC_EMAIL = "operaciones@wewebinars.com";
+
 // Self-diagnostic for the "no me llega el email de confirmación" report --
 // sends a real email through the same Resend client the registration flow
-// uses, straight to the caller's own inbox, and surfaces the exact
-// send error (missing RESEND_API_KEY/RESEND_FROM_EMAIL, unverified sender
-// domain, etc.) right in the UI instead of requiring a trip to Vercel logs.
+// uses, to the platform's own operations inbox (not the caller's personal
+// address), and surfaces the exact send error (missing
+// RESEND_API_KEY/RESEND_FROM_EMAIL, unverified sender domain, etc.) right
+// in the UI instead of requiring a trip to Vercel logs.
 /* eslint-disable @typescript-eslint/no-unused-vars -- useActionState requires this exact (state, formData) signature */
 export async function sendTestEmail(
   _prevState: ProfileActionState,
@@ -68,7 +71,7 @@ export async function sendTestEmail(
 
   try {
     await sendEmail({
-      to: current.user.email,
+      to: DIAGNOSTIC_EMAIL,
       subject: "Email de prueba de WeWebinars",
       html: "<p>Si estás viendo esto, el envío de emails desde WeWebinars está funcionando correctamente.</p>",
     });
