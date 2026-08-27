@@ -68,7 +68,15 @@ export async function updateAiChatEnabled(
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
 
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.includes("plan_feature_blocked")) {
+      return {
+        error:
+          "El agente AI de respuestas está disponible en los planes Pro y Business. Actualiza tu plan desde Facturación para activarlo.",
+      };
+    }
+    return { error: error.message };
+  }
   return null;
 }
 

@@ -37,6 +37,8 @@ export default async function WebinarDetailPage({
   if (!webinar || webinar.account_id !== current.account.id) notFound();
 
   const canManage = current.user.role === "owner" || current.user.role === "editor";
+  const planFeatures = (current.plan.features as Record<string, boolean> | null) ?? {};
+  const aiChatAllowed = Boolean(planFeatures.ai_chat_replies);
 
   let schedules: Pick<
     Database["public"]["Tables"]["webinar_schedules"]["Row"],
@@ -256,6 +258,7 @@ export default async function WebinarDetailPage({
                 webinarId={webinar.id}
                 messages={chatMessages ?? []}
                 aiChatEnabled={webinar.ai_chat_enabled}
+                aiChatAllowed={aiChatAllowed}
                 aiTrainingInfo={webinar.ai_agent_training_info}
               />
             ),

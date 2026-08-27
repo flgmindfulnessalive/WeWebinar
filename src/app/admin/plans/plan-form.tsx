@@ -101,6 +101,15 @@ export function PlanForm({ plan }: { plan: Plan }) {
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
+                name="ai_chat_replies"
+                defaultChecked={Boolean(features.ai_chat_replies)}
+                className="size-4"
+              />
+              Agente AI de respuestas en chat
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
                 name="remove_branding"
                 defaultChecked={Boolean(features.remove_branding)}
                 className="size-4"

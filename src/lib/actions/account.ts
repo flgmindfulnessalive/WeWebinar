@@ -11,21 +11,22 @@ import { sendEmail } from "@/lib/resend";
 
 export type CreateAccountState = { error: string } | null;
 
-const SELF_SERVE_PLAN_KEYS = new Set(["core", "pro", "business"]);
+// The 15-day trial is only available on Core -- Pro and Business are paid
+// upgrades a host does later from Facturación (Stripe checkout), never a
+// starting point for a new, unbilled account. Hardcoded rather than read
+// from form input so a tampered request can't create a trial on a paid tier.
+const TRIAL_PLAN_KEY = "core";
 
 export async function createAccount(
   _prevState: CreateAccountState,
   formData: FormData
 ): Promise<CreateAccountState> {
   const name = String(formData.get("name") ?? "").trim();
-  const planKey = String(formData.get("plan_key") ?? "core");
+  const planKey = TRIAL_PLAN_KEY;
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
 
   if (!name) {
     return { error: "El nombre de la cuenta es obligatorio." };
-  }
-  if (!SELF_SERVE_PLAN_KEYS.has(planKey)) {
-    return { error: "Plan inválido." };
   }
 
   // redirect() throws internally to navigate, so it can never be called

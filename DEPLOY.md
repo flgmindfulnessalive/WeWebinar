@@ -52,13 +52,34 @@ Orden recomendado (cada paso depende del anterior):
 
 ## 3bis. Anthropic (agente AI de respuestas en el chat, opcional)
 
-Cada host puede activar, por webinar, que un agente AI responda preguntas
-reales del chat en vivo (se ve en el wizard, sección "Chat simulado"). Está
-desactivado por defecto — si no configurás esta variable, el resto de la
-plataforma funciona igual.
+Los hosts en plan Pro, Business o Enterprise pueden activar, por webinar,
+que un agente AI responda preguntas reales del chat en vivo (se ve en el
+wizard, sección "Chat simulado") — en Core el toggle aparece bloqueado con
+un aviso para subir de plan. Sin esta variable configurada, la plataforma
+funciona igual pero el agente nunca responde (falla en silencio).
 
 1. Crear cuenta en [console.anthropic.com](https://console.anthropic.com).
 2. API Keys → crear una → `ANTHROPIC_API_KEY`.
+
+## 3ter. Google (login social, opcional)
+
+El código ya está listo (botón "Continuar con Google" en login y signup,
+acción de servidor, callback de OAuth) — solo falta habilitar el proveedor
+en Supabase con credenciales de Google Cloud. Sin esto, el botón lleva a un
+error de OAuth; el login con email/contraseña sigue funcionando igual.
+
+1. En [console.cloud.google.com](https://console.cloud.google.com), crear
+   (o reusar) un proyecto → **APIs & Services → Credentials → Create
+   Credentials → OAuth client ID** → tipo "Web application".
+2. **Authorized redirect URIs**: agregar
+   `https://<tu-project-ref>.supabase.co/auth/v1/callback` (lo muestra
+   Supabase en el paso siguiente). En local/preview también podés agregar
+   la URL de esa instancia si querés probar antes de tener dominio propio.
+3. Copiar el **Client ID** y el **Client secret** que genera Google.
+4. En Supabase → **Authentication → Providers → Google**: activarlo y
+   pegar el Client ID y Client secret del paso anterior. Guardar.
+5. No hace falta ninguna variable de entorno nueva en Vercel — Supabase
+   maneja el flujo completo con lo configurado en su propio panel.
 
 ## 4. Vercel (deploy)
 

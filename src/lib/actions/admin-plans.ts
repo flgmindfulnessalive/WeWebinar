@@ -22,6 +22,7 @@ export async function updatePlan(
   const priceMonthlyRaw = String(formData.get("price_monthly_usd") ?? "").trim();
   const removeBranding = formData.get("remove_branding") === "on";
   const customDomain = formData.get("custom_domain") === "on";
+  const aiChatReplies = formData.get("ai_chat_replies") === "on";
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -32,7 +33,11 @@ export async function updatePlan(
       max_active_webinars: parseNullableInt(formData.get("max_active_webinars")),
       max_users: parseNullableInt(formData.get("max_users")),
       max_attendees_per_webinar: parseNullableInt(formData.get("max_attendees_per_webinar")),
-      features: { remove_branding: removeBranding, custom_domain: customDomain },
+      features: {
+        remove_branding: removeBranding,
+        custom_domain: customDomain,
+        ai_chat_replies: aiChatReplies,
+      },
     })
     .eq("id", planId);
 
