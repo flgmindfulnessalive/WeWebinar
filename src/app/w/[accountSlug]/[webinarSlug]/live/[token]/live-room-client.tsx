@@ -135,6 +135,28 @@ export function LiveRoomClient({
     [supabase, accessToken]
   );
 
+  // Separate from recordViewerEvent above (that's internal analytics,
+  // always recorded) -- this only fires the two account-configured
+  // webhook events that can happen client-side (Settings -> Integraciones
+  // -> Webhooks). Best-effort: a failed delivery here must never affect
+  // playback or the chat.
+  const fireWebhookTrigger = useCallback(
+    (eventType: "cta_click" | "completion", metadata?: Record<string, unknown>) => {
+      fetch("/api/webhooks/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: accessToken, event_type: eventType, metadata }),
+      }).catch((err) => console.error(`[live-room] webhook trigger(${eventType}) failed:`, err));
+    },
+    [accessToken]
+  );
+  const completionFiredRef = useRef(false);
+  const fireCompletionOnce = useCallback(() => {
+    if (completionFiredRef.current) return;
+    completionFiredRef.current = true;
+    fireWebhookTrigger("completion");
+  }, [fireWebhookTrigger]);
+
   useEffect(() => {
     mountedAtRef.current = Date.now();
     const interval = setInterval(() => setElapsedSeconds(getElapsedSeconds()), 1000);
@@ -198,7 +220,10 @@ export function LiveRoomClient({
         lastCorrectionAtRef.current = now;
       }
     }
-    if (durationSeconds > 0 && expected >= durationSeconds) setIsEnded(true);
+    if (durationSeconds > 0 && expected >= durationSeconds) {
+      setIsEnded(true);
+      fireCompletionOnce();
+    }
   };
 
   const handlePause = () => {
@@ -242,6 +267,7 @@ export function LiveRoomClient({
       videoTimestampSeconds: Math.round(getElapsedSeconds()),
       metadata: { cta_id: ctaId },
     });
+    fireWebhookTrigger("cta_click", { cta_id: ctaId });
   }
 
   function recordPollResponse(ctaId: string, option: string) {
@@ -315,7 +341,10 @@ export function LiveRoomClient({
                 onTimeUpdate={handleTimeUpdate}
                 onPause={handlePause}
                 onRateChange={handleRateChange}
-                onEnded={() => setIsEnded(true)}
+                onEnded={() => {
+                  setIsEnded(true);
+                  fireCompletionOnce();
+                }}
               />
               {isMuted && (
                 <button

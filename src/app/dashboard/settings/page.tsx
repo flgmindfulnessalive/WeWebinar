@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, CreditCard, Palette, User, Users } from "lucide-react";
+import { Building2, CreditCard, Palette, Plug, User, Users } from "lucide-react";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +28,11 @@ export default async function SettingsPage() {
             href: "/dashboard/settings/branding",
             label: "Marca (logo, colores)",
             icon: Palette,
+          },
+          {
+            href: "/dashboard/settings/integrations",
+            label: "Integraciones",
+            icon: Plug,
           },
         ]
       : []),
