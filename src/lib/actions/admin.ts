@@ -89,11 +89,21 @@ export async function updateOwnerEmail(
   return { success: true };
 }
 
-// All of these rely on RLS: `accounts_update_owner` already includes
-// `or is_platform_admin()`, so a platform admin can update any account
-// through the normal (non-service-role) client — no extra plumbing needed.
+// These rely on RLS for the actual row access (`accounts_update_owner`
+// includes `or is_platform_admin()`, so an admin can update any account
+// through the normal, non-service-role client) plus an explicit
+// assertPlatformAdmin() check here as defense in depth -- RLS is per-row,
+// not per-column, so on its own it can't stop an account's own owner from
+// writing these same billing columns directly (a raw supabase-js call
+// bypassing this file entirely). The real backstop for that is the
+// guard_account_billing_columns DB trigger (see migration
+// 20260827000005); the checks below just turn that into a clean
+// "No autorizado." here instead of a raw Postgres exception.
 
 export async function suspendAccount(accountId: string): Promise<AdminActionState> {
+  const unauthorized = await assertPlatformAdmin();
+  if (unauthorized) return unauthorized;
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("accounts")
@@ -106,6 +116,9 @@ export async function suspendAccount(accountId: string): Promise<AdminActionStat
 }
 
 export async function reactivateAccount(accountId: string): Promise<AdminActionState> {
+  const unauthorized = await assertPlatformAdmin();
+  if (unauthorized) return unauthorized;
+
   const supabase = await createClient();
   const { data: before } = await supabase
     .from("accounts")
@@ -147,6 +160,9 @@ export async function changeAccountPlan(
   accountId: string,
   planId: string
 ): Promise<AdminActionState> {
+  const unauthorized = await assertPlatformAdmin();
+  if (unauthorized) return unauthorized;
+
   const supabase = await createClient();
   const { error } = await supabase.from("accounts").update({ plan_id: planId }).eq("id", accountId);
 

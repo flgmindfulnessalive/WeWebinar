@@ -116,10 +116,15 @@ export async function POST(request: Request) {
   }
 
   if (replyText) {
+    // Scoped to registrant.id (derived from the access_token, not the
+    // client-supplied message_id) -- otherwise any valid token could target
+    // an arbitrary registrant_messages.id from another attendee/account and
+    // overwrite its ai_reply_text using this admin (service-role) client.
     const { error } = await admin
       .from("registrant_messages")
       .update({ ai_reply_text: replyText, ai_replied_at: new Date().toISOString() })
-      .eq("id", messageId);
+      .eq("id", messageId)
+      .eq("registrant_id", registrant.id);
     if (error) console.error("[ai-reply] failed to persist reply:", error);
   }
 
