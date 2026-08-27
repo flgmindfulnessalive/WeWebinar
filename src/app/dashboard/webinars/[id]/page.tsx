@@ -109,11 +109,18 @@ export default async function WebinarDetailPage({
           <StatusBadge status={webinar.status} />
         </div>
         <div className="flex items-center gap-2">
-          {webinar.status === "published" && (
+          {webinar.status === "published" ? (
             <Button asChild variant="outline">
               <Link href={publicPath} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-4" />
                 Abrir página pública
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="outline">
+              <Link href={`${publicPath}?preview=1`} target="_blank" rel="noreferrer">
+                <ExternalLink className="size-4" />
+                Vista previa
               </Link>
             </Button>
           )}
@@ -137,7 +144,7 @@ export default async function WebinarDetailPage({
       {webinar.status !== "published" && (
         <p className="text-sm text-muted-foreground">
           El link público (<span className="font-mono">{publicPath}</span>) se
-          activa cuando publiques el webinar.
+          activa cuando publiques el webinar — usa &quot;Vista previa&quot; para verlo antes.
         </p>
       )}
 

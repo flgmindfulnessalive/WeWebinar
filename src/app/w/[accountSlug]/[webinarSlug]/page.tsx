@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAccount } from "@/lib/data/account";
 import { computeUpcomingOccurrences } from "@/lib/scheduling";
 import { resolveBrandColors } from "@/lib/brand-colors";
 import { resolvePresenter } from "@/lib/presenter";
@@ -57,10 +58,13 @@ export async function generateMetadata({
 
 export default async function RegisterPage({
   params,
+  searchParams,
 }: {
   params: Promise<RouteParams>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { accountSlug, webinarSlug } = await params;
+  const { preview } = await searchParams;
   const supabase = await createClient();
 
   const { data: account } = await supabase
@@ -70,14 +74,28 @@ export default async function RegisterPage({
     .maybeSingle();
   if (!account) notFound();
 
+  // Unpublished webinars are normally invisible here (no status filter
+  // below would 404 them) -- draft/paused hosts had no way to see their
+  // own registration page before going live. ?preview=1 lifts that, but
+  // only for someone who actually manages this account: never make an
+  // unpublished page reachable by a stranger who guesses the URL.
   const { data: webinar } = await supabase
     .from("webinars")
     .select("*")
     .eq("account_id", account.id)
     .eq("slug", webinarSlug)
-    .eq("status", "published")
     .maybeSingle();
   if (!webinar) notFound();
+
+  const isPreview = webinar.status !== "published";
+  if (isPreview) {
+    if (preview !== "1") notFound();
+    const current = await getCurrentAccount();
+    const canPreview =
+      current?.account.id === account.id &&
+      (current.user.role === "owner" || current.user.role === "editor");
+    if (!canPreview) notFound();
+  }
 
   const hasFixedSlots = webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both";
 
@@ -196,6 +214,7 @@ export default async function RegisterPage({
       hasFacebookPixel={Boolean(webinar.facebook_pixel_id)}
       brandColorA={brandColorA}
       brandColorB={brandColorB}
+      previewMode={isPreview}
     />
   );
 
@@ -219,6 +238,11 @@ export default async function RegisterPage({
 
   return (
     <div className="min-h-svh bg-[#fafafa]">
+      {isPreview && (
+        <div className="sticky top-0 z-20 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-amber-950">
+          Vista previa — este webinar todavía no está publicado. Solo vos podés ver esta página.
+        </div>
+      )}
       {webinar.facebook_pixel_id && <FacebookPixel pixelId={webinar.facebook_pixel_id} />}
       {/* Desktop: brand panel + form, same split-panel language as /login. */}
       <div className="hidden min-h-svh md:grid md:grid-cols-2">
