@@ -36,11 +36,13 @@ export function ChatSection({
   webinarId,
   messages,
   aiChatEnabled,
+  aiChatAllowed,
   aiTrainingInfo,
 }: {
   webinarId: string;
   messages: ChatMessage[];
   aiChatEnabled: boolean;
+  aiChatAllowed: boolean;
   aiTrainingInfo: string | null;
 }) {
   const [state, formAction, isPending] = useActionState(addChatMessage, null);
@@ -51,6 +53,7 @@ export function ChatSection({
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(aiChatEnabled);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [aiPending, startAiTransition] = useTransition();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -85,26 +88,47 @@ export function ChatSection({
               Cuando un asistente real escribe una pregunta en el chat en vivo, un agente AI le
               responde automáticamente.
             </p>
+            {!aiChatAllowed && (
+              <p className="mt-1 text-xs font-medium text-amber-600">
+                Disponible en los planes Pro y Business —{" "}
+                <a href="/dashboard/settings/billing" className="underline underline-offset-2">
+                  actualizar plan
+                </a>
+                .
+              </p>
+            )}
           </div>
-          <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 text-sm">
+          <label
+            className={cn(
+              "inline-flex shrink-0 items-center gap-2 text-sm",
+              aiChatAllowed ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+            )}
+          >
             <input
               type="checkbox"
               className="h-4 w-4"
               checked={aiEnabled}
-              disabled={aiPending}
+              disabled={aiPending || !aiChatAllowed}
               onChange={(e) => {
+                if (!aiChatAllowed) return;
                 const next = e.target.checked;
                 setAiEnabled(next);
+                setAiError(null);
                 startAiTransition(async () => {
-                  await updateAiChatEnabled(webinarId, next);
+                  const result = await updateAiChatEnabled(webinarId, next);
+                  if (result?.error) {
+                    setAiEnabled(!next);
+                    setAiError(result.error);
+                  }
                 });
               }}
             />
             {aiEnabled ? "Activado" : "Desactivado"}
           </label>
         </div>
+        {aiError && <p className="text-sm text-destructive">{aiError}</p>}
 
-        {aiEnabled && (
+        {aiEnabled && aiChatAllowed && (
           <form action={trainingFormAction} className="flex flex-col gap-1.5 rounded-md border p-3">
             <input type="hidden" name="webinar_id" value={webinarId} />
             <Label htmlFor="ai_agent_training_info">Entrena a tu agente AI</Label>
