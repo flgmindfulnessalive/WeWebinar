@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WebhookForm } from "./webhook-form";
 import { WebhookRow } from "./webhook-row";
+import { BrevoForm } from "./brevo-form";
 
 export default async function IntegrationsSettingsPage() {
   const current = await getCurrentAccount();
@@ -55,6 +56,21 @@ export default async function IntegrationsSettingsPage() {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Brevo</CardTitle>
+          <CardDescription>
+            Cada persona que se registra a un webinar se agrega automáticamente
+            a la lista de Brevo que elijas para ese webinar (paso
+            &quot;Marketing&quot; del wizard) — desde ahí podés usar tus
+            automatizaciones y triggers existentes para nutrir esos leads.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BrevoForm isConnected={Boolean(current.account.brevo_api_key)} />
         </CardContent>
       </Card>
     </div>

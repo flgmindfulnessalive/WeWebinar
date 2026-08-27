@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/resend";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
+import { syncBrevoContact } from "@/lib/brevo";
 
 export type RegisterActionState = { error: string } | null;
 
@@ -145,7 +146,7 @@ export async function registerForWebinar(
 
   const { data: webinar } = await supabase
     .from("webinars")
-    .select("title, account_id")
+    .select("title, account_id, brevo_list_id")
     .eq("id", webinarId)
     .single();
 
@@ -176,6 +177,31 @@ export async function registerForWebinar(
       phone,
       computed_session_start: result.computed_session_start,
     });
+
+    if (webinar.brevo_list_id) {
+      // Best-effort, same rationale as the confirmation email above -- and
+      // brevo_api_key lives on `accounts`, which this (anonymous-visitor)
+      // client can't read directly, so it's fetched via the admin client.
+      try {
+        const admin = createAdminClient();
+        const { data: account } = await admin
+          .from("accounts")
+          .select("brevo_api_key")
+          .eq("id", webinar.account_id)
+          .maybeSingle();
+        if (account?.brevo_api_key) {
+          await syncBrevoContact({
+            apiKey: account.brevo_api_key,
+            listId: webinar.brevo_list_id,
+            email,
+            name,
+            phone,
+          });
+        }
+      } catch (err) {
+        console.error("[register] failed to sync Brevo contact:", err);
+      }
+    }
   }
 
   redirect(`${returnTo}/room/${result.access_token}`);

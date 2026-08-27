@@ -86,18 +86,28 @@ export async function updateWebinarDetails(
 // Meta Pixel ID is loose free text (Meta's own IDs are ~15-16 digits, but
 // rejecting anything that doesn't match that shape risks blocking a valid
 // future format) -- only strip whitespace and cap length as a basic sanity
-// check, no strict format validation.
+// check, no strict format validation. brevo_list_id, unlike the pixel, is
+// a real foreign reference to a list in the host's own Brevo account, so
+// it's validated as a positive integer rather than left as free text.
 export async function updateMarketing(
   _prevState: WebinarActionState,
   formData: FormData
 ): Promise<WebinarActionState> {
   const webinarId = String(formData.get("webinar_id") ?? "");
   const facebookPixelId = String(formData.get("facebook_pixel_id") ?? "").trim().slice(0, 64) || null;
+  const brevoListIdRaw = String(formData.get("brevo_list_id") ?? "").trim();
+  let brevoListId: number | null = null;
+  if (brevoListIdRaw) {
+    brevoListId = Number(brevoListIdRaw);
+    if (!Number.isInteger(brevoListId) || brevoListId <= 0) {
+      return { error: "El List ID de Brevo debe ser un número entero." };
+    }
+  }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("webinars")
-    .update({ facebook_pixel_id: facebookPixelId })
+    .update({ facebook_pixel_id: facebookPixelId, brevo_list_id: brevoListId })
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);

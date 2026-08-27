@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label";
 
 export function MarketingSection({
   webinarId,
+  brevoConnected,
   initial,
 }: {
   webinarId: string;
-  initial: { facebookPixelId: string | null };
+  brevoConnected: boolean;
+  initial: { facebookPixelId: string | null; brevoListId: number | null };
 }) {
   const [state, formAction, isPending] = useActionState(updateMarketing, null);
 
@@ -33,6 +35,36 @@ export function MarketingSection({
           eventos estándar <code className="font-mono">PageView</code> y{" "}
           <code className="font-mono">Lead</code> — sirve para armar públicos
           y optimizar campañas de anuncios en Meta Ads Manager.
+        </p>
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="brevo-list-id">Lista de Brevo</Label>
+        <Input
+          id="brevo-list-id"
+          name="brevo_list_id"
+          type="number"
+          min={1}
+          disabled={!brevoConnected}
+          defaultValue={initial.brevoListId ?? ""}
+          placeholder="ID numérico de la lista"
+        />
+        <p className="text-xs text-muted-foreground">
+          {brevoConnected ? (
+            <>
+              Cada registrado de este webinar se agrega automáticamente a esa
+              lista en tu cuenta de Brevo — encontrás el ID en Brevo →
+              Contactos → Listas, al abrir la lista.
+            </>
+          ) : (
+            <>
+              Necesitás conectar tu API key de Brevo primero, en{" "}
+              <a href="/dashboard/settings/integrations" className="underline underline-offset-4">
+                Configuración → Integraciones
+              </a>
+              .
+            </>
+          )}
         </p>
       </div>
 
