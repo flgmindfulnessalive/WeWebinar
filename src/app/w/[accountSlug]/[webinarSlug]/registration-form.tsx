@@ -194,18 +194,7 @@ export function RegistrationForm({
                   >
                     {formatter.format(new Date(occ.startsAt))}
                   </span>
-                  {full ? (
-                    <span className="text-xs text-gray-400">Cupo lleno</span>
-                  ) : (
-                    occ.spotsLeft !== null && (
-                      <span
-                        className="text-xs font-semibold"
-                        style={{ color: selected ? brandColorA : "#9ca3af" }}
-                      >
-                        {occ.spotsLeft} cupos
-                      </span>
-                    )
-                  )}
+                  {full && <span className="text-xs text-gray-400">Cupo lleno</span>}
                 </label>
               );
             })}
