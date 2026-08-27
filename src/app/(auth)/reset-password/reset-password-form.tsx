@@ -4,7 +4,7 @@ import { useActionState } from "react";
 
 import { updatePassword } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -27,10 +27,9 @@ export function ResetPasswordForm() {
         <form action={formAction} className="flex flex-col gap-4">
           <div className="grid gap-2">
             <Label htmlFor="password">Contraseña nueva</Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               required
               minLength={8}
               autoComplete="new-password"
