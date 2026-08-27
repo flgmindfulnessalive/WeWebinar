@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // A basic abuse/cost guard: past this many AI-answered messages in one
 // session, stop calling the model for that registrant. Chat spam otherwise
 // has no ceiling on LLM spend.
-const MAX_AI_REPLIES_PER_REGISTRANT = 5;
+const MAX_AI_REPLIES_PER_REGISTRANT = 2;
 
 // The model's own signal that a message didn't need a reply (a greeting, a
 // "thanks", a reaction) -- keeps this a real yes/no decision instead of
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
   let replyText: string | null = null;
   try {
     const response = await getAnthropicClient().messages.create({
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       max_tokens: 1024,
       system: buildSystemPrompt(webinar, account?.name ?? "el equipo organizador"),
       output_config: { effort: "low" },

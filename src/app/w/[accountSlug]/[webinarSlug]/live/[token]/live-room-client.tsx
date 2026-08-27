@@ -174,17 +174,25 @@ export function LiveRoomClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Heartbeat.
+  // Heartbeat. Stops once the webinar has ended -- otherwise a tab left open
+  // on the "gracias por asistir" screen keeps recording heartbeats forever,
+  // against an elapsed time that's deliberately unclamped (see
+  // getElapsedSeconds above), which is what produced attendees showing
+  // absurd watch times (20+ hours) in analytics.
   useEffect(() => {
+    if (isEnded) return;
     const interval = setInterval(() => {
       recordViewerEvent("heartbeat", { videoTimestampSeconds: Math.round(getElapsedSeconds()) });
     }, HEARTBEAT_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [recordViewerEvent, getElapsedSeconds]);
+  }, [isEnded, recordViewerEvent, getElapsedSeconds]);
 
   // Periodic server resync — corrects drift from sleep/backgrounding and
-  // catches the ended state even if this tab never fires 'ended'.
+  // catches the ended state even if this tab never fires 'ended'. Same
+  // stop-on-end guard as the heartbeat above: once isEnded is true there's
+  // nothing left to resync.
   useEffect(() => {
+    if (isEnded) return;
     const interval = setInterval(async () => {
       const { data } = await supabase.rpc("get_registrant_playback_state", {
         p_access_token: accessToken,
@@ -197,7 +205,7 @@ export function LiveRoomClient({
       if (state.is_ended) setIsEnded(true);
     }, RESYNC_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [supabase, accessToken]);
+  }, [isEnded, supabase, accessToken]);
 
   const handleLoadedMetadata = (playerDurationSeconds: number) => {
     if (playerRef.current) playerRef.current.currentTime = getElapsedSeconds();
