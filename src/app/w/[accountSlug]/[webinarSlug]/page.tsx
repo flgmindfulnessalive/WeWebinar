@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
+import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { computeUpcomingOccurrences } from "@/lib/scheduling";
@@ -10,10 +11,53 @@ import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
 import { RegistrationForm } from "./registration-form";
 
+type RouteParams = { accountSlug: string; webinarSlug: string };
+
+// Without this, every webinar link shared on WhatsApp/social showed the
+// same generic "WeWebinars" title/description/thumbnail (the root
+// opengraph-image.tsx) instead of the actual webinar being shared — the
+// nested opengraph-image.tsx in this same route segment (below) is what
+// supplies the image; this supplies the title/description text.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<RouteParams>;
+}): Promise<Metadata> {
+  const { accountSlug, webinarSlug } = await params;
+  const supabase = await createClient();
+
+  const { data: account } = await supabase
+    .from("account_public_profile")
+    .select("id, name")
+    .eq("slug", accountSlug)
+    .maybeSingle();
+  if (!account) return {};
+
+  const { data: webinar } = await supabase
+    .from("webinars")
+    .select("title, description")
+    .eq("account_id", account.id)
+    .eq("slug", webinarSlug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (!webinar) return {};
+
+  const title = `${webinar.title} · ${account.name}`;
+  const description =
+    webinar.description || `Webinar gratuito presentado por ${account.name}. Reserva tu lugar.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
+
 export default async function RegisterPage({
   params,
 }: {
-  params: Promise<{ accountSlug: string; webinarSlug: string }>;
+  params: Promise<RouteParams>;
 }) {
   const { accountSlug, webinarSlug } = await params;
   const supabase = await createClient();
