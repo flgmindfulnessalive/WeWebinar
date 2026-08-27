@@ -12,6 +12,7 @@ type Registrant = {
   phone: string | null;
   computedSessionStart: string;
   createdAt: string;
+  unsubscribedAt: string | null;
   lastPositionSeconds: number | null;
 };
 
@@ -53,6 +54,7 @@ export function RegistrantsTable({
             <th className="p-2 text-left font-medium">Nombre</th>
             <th className="p-2 text-left font-medium">Email</th>
             <th className="p-2 text-left font-medium">Teléfono</th>
+            <th className="p-2 text-left font-medium">Emails</th>
             <th className="p-2 text-left font-medium">Horario asignado</th>
             <th className="p-2 text-left font-medium">Registrado el</th>
             <th className="p-2 text-left font-medium">
@@ -73,6 +75,18 @@ export function RegistrantsTable({
               <td className="p-2">{r.name}</td>
               <td className="p-2">{r.email}</td>
               <td className="p-2">{r.phone ?? "—"}</td>
+              <td className="p-2">
+                {r.unsubscribedAt ? (
+                  <span
+                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                    title={`Se dio de baja el ${new Date(r.unsubscribedAt).toLocaleString("es")}`}
+                  >
+                    Dado de baja
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Activo</span>
+                )}
+              </td>
               <td className="p-2">{new Date(r.computedSessionStart).toLocaleString("es")}</td>
               <td className="p-2">{new Date(r.createdAt).toLocaleString("es")}</td>
               <td className="p-2">
