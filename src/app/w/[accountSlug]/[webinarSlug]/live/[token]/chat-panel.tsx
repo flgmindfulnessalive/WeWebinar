@@ -61,6 +61,7 @@ export function ChatPanel({
   const [ownMessages, setOwnMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [aiPending, setAiPending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const shownIdsRef = useRef(new Set<string>());
@@ -186,6 +187,7 @@ export function ChatPanel({
     const text = draft.trim();
     if (!text || sending) return;
     setSending(true);
+    setSendError(null);
     setDraft("");
 
     const elapsed = Math.round(getElapsedSeconds());
@@ -211,6 +213,15 @@ export function ChatPanel({
       requestAiReply(data.id, data.message_text);
       return;
     }
+
+    // Restore the draft instead of silently dropping it -- e.g. the RPC's
+    // per-registrant rate limit or max length check rejected it.
+    setDraft(text);
+    setSendError(
+      error?.message.includes("rate_limited")
+        ? "Estás enviando mensajes muy rápido, espera un momento."
+        : "No se pudo enviar el mensaje. Intenta de nuevo."
+    );
     setSending(false);
   }
 
@@ -238,6 +249,9 @@ export function ChatPanel({
           </div>
         )}
       </div>
+      {sendError && (
+        <p className="border-t px-3 pt-2 text-xs text-destructive">{sendError}</p>
+      )}
       <div className="flex items-center gap-2 border-t p-3">
         <Input
           value={draft}
@@ -249,6 +263,7 @@ export function ChatPanel({
             }
           }}
           placeholder="Escribe un mensaje..."
+          maxLength={2000}
           disabled={sending}
         />
         <Button size="sm" onClick={handleSend} disabled={sending || !draft.trim()}>

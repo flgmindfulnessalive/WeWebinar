@@ -27,8 +27,8 @@ export function CtaClickersToggle({ label, clickers }: { label: string; clickers
         Ver quién hizo clic en &ldquo;{label}&rdquo; ({clickers.length})
       </button>
       {open && (
-        <div className="max-h-64 overflow-y-auto rounded-md border">
-          <table className="w-full text-sm">
+        <div className="max-h-64 overflow-auto rounded-md border">
+          <table className="w-full min-w-[480px] text-sm">
             <thead className="sticky top-0 bg-muted/50">
               <tr>
                 <th className="p-2 text-left font-medium">Nombre</th>
