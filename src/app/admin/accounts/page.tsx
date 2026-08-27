@@ -1,25 +1,11 @@
+import Link from "next/link";
+
 import { createClient } from "@/lib/supabase/server";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AccountRowActions } from "./account-row-actions";
-import type { SubscriptionStatus } from "@/lib/supabase/database.types";
-
-const STATUS_LABEL: Record<SubscriptionStatus, string> = {
-  trialing: "Trial",
-  active: "Activa",
-  past_due: "Vencida",
-  suspended: "Suspendida",
-  canceled: "Cancelada",
-};
-
-const STATUS_VARIANT: Record<SubscriptionStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  trialing: "outline",
-  active: "default",
-  past_due: "destructive",
-  suspended: "destructive",
-  canceled: "secondary",
-};
+import { STATUS_LABEL, STATUS_VARIANT } from "./status-labels";
 
 export default async function AdminAccountsPage({
   searchParams,
@@ -41,6 +27,18 @@ export default async function AdminAccountsPage({
     supabase.from("plans").select("id, key, name").order("price_annual_usd", { ascending: true, nullsFirst: true }),
   ]);
 
+  const accountIds = accounts?.map((a) => a.id) ?? [];
+  const { data: owners } = accountIds.length
+    ? await supabase
+        .from("users")
+        .select("account_id, email")
+        .in("account_id", accountIds)
+        .eq("role", "owner")
+    : { data: [] as { account_id: string | null; email: string }[] };
+  const ownerEmailByAccount = new Map(
+    (owners ?? []).map((o) => [o.account_id, o.email])
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -60,10 +58,18 @@ export default async function AdminAccountsPage({
           {accounts?.map((account) => (
             <div key={account.id} className="flex items-center justify-between gap-4 p-4">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium">{account.name}</span>
+                <Link
+                  href={`/admin/accounts/${account.id}`}
+                  className="text-sm font-medium hover:underline"
+                >
+                  {account.name}
+                </Link>
                 <span className="text-xs text-muted-foreground">
                   /{account.slug} · alta{" "}
                   {new Date(account.created_at).toLocaleDateString("es")}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {ownerEmailByAccount.get(account.id) ?? "sin owner"}
                 </span>
               </div>
               <div className="flex items-center gap-3">
