@@ -329,7 +329,11 @@ export default async function WebinarDetailPage({
             content: (
               <MarketingSection
                 webinarId={webinar.id}
-                initial={{ facebookPixelId: webinar.facebook_pixel_id }}
+                brevoConnected={Boolean(current.account.brevo_api_key)}
+                initial={{
+                  facebookPixelId: webinar.facebook_pixel_id,
+                  brevoListId: webinar.brevo_list_id,
+                }}
               />
             ),
           },

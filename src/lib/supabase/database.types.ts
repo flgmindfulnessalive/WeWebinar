@@ -74,6 +74,7 @@ export interface Database {
           trial_warning_sent_at: string | null;
           last_digest_sent_at: string | null;
           activation_nudge_sent_at: string | null;
+          brevo_api_key: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -166,6 +167,7 @@ export interface Database {
           presenter_avatar_url: string | null;
           presenter_bio: string | null;
           facebook_pixel_id: string | null;
+          brevo_list_id: number | null;
           title: string;
           slug: string;
           description: string | null;
