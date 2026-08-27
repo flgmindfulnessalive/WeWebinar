@@ -133,10 +133,10 @@ export default function HomePage() {
           </div>
 
           <p
-            className="animate-fade-up flex items-center gap-1.5 text-sm text-muted-foreground"
+            className="animate-fade-up text-center text-sm text-muted-foreground"
             style={{ animationDelay: "0.18s" }}
           >
-            <Check className="size-4" style={{ color: "var(--brand)" }} />
+            <Check className="mr-1 inline-block size-4 align-[-3px]" style={{ color: "var(--brand)" }} />
             15 días de prueba gratis — sin tarjeta de crédito
           </p>
 
