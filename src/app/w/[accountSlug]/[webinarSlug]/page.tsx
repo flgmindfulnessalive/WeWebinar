@@ -9,6 +9,7 @@ import { resolveBrandColors } from "@/lib/brand-colors";
 import { resolvePresenter } from "@/lib/presenter";
 import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
+import { FacebookPixel } from "@/components/facebook-pixel";
 import { RegistrationForm } from "./registration-form";
 
 type RouteParams = { accountSlug: string; webinarSlug: string };
@@ -156,6 +157,7 @@ export default async function RegisterPage({
       offsets={webinar.just_in_time_offsets_minutes}
       occurrences={occurrences}
       allFixedSlotsFull={allFixedSlotsFull}
+      hasFacebookPixel={Boolean(webinar.facebook_pixel_id)}
       brandColorA={brandColorA}
       brandColorB={brandColorB}
     />
@@ -181,6 +183,7 @@ export default async function RegisterPage({
 
   return (
     <div className="min-h-svh bg-[#fafafa]">
+      {webinar.facebook_pixel_id && <FacebookPixel pixelId={webinar.facebook_pixel_id} />}
       {/* Desktop: brand panel + form, same split-panel language as /login. */}
       <div className="hidden min-h-svh md:grid md:grid-cols-2">
         <div className="relative flex flex-col justify-center gap-8 overflow-hidden bg-[#0b0f19] px-14 py-16 text-white">

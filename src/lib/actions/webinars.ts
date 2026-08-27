@@ -83,6 +83,28 @@ export async function updateWebinarDetails(
   return null;
 }
 
+// Meta Pixel ID is loose free text (Meta's own IDs are ~15-16 digits, but
+// rejecting anything that doesn't match that shape risks blocking a valid
+// future format) -- only strip whitespace and cap length as a basic sanity
+// check, no strict format validation.
+export async function updateMarketing(
+  _prevState: WebinarActionState,
+  formData: FormData
+): Promise<WebinarActionState> {
+  const webinarId = String(formData.get("webinar_id") ?? "");
+  const facebookPixelId = String(formData.get("facebook_pixel_id") ?? "").trim().slice(0, 64) || null;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ facebook_pixel_id: facebookPixelId })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+  if (error) return { error: error.message };
+  return null;
+}
+
 // Lets a host pick who shows as presenter, instead of it being silently
 // locked to whoever created the webinar (createWebinar above). Two
 // mutually exclusive modes: a team member (their own Perfil display_name/

@@ -26,6 +26,12 @@ function getServerTimezone() {
   return "UTC";
 }
 
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
 export function RegistrationForm({
   webinarId,
   returnTo,
@@ -33,6 +39,7 @@ export function RegistrationForm({
   offsets,
   occurrences,
   allFixedSlotsFull,
+  hasFacebookPixel = false,
   brandColorA = DEFAULT_BRAND_COLOR_A,
   brandColorB = DEFAULT_BRAND_COLOR_B,
 }: {
@@ -42,6 +49,7 @@ export function RegistrationForm({
   offsets: number[];
   occurrences: Occurrence[];
   allFixedSlotsFull: boolean;
+  hasFacebookPixel?: boolean;
   brandColorA?: string;
   brandColorB?: string;
 }) {
@@ -110,7 +118,18 @@ export function RegistrationForm({
   const [selectedStartsAt, selectedScheduleId] = selectedOccurrence.split("|");
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form
+      action={formAction}
+      onSubmit={() => {
+        // Fired on submit, not after a confirmed server-side success --
+        // the action redirect()s on success, unmounting this component
+        // before it could ever observe a "success" state to react to.
+        // Firing here (matches common Meta Pixel practice for a
+        // multi-step funnel) is the reliable point to hook into.
+        if (hasFacebookPixel) window.fbq?.("track", "Lead");
+      }}
+      className="flex flex-col gap-5"
+    >
       <input type="hidden" name="webinar_id" value={webinarId} />
       <input type="hidden" name="return_to" value={returnTo} />
       <input type="hidden" name="visitor_timezone" value={visitorTimezone} />

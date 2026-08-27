@@ -17,6 +17,7 @@ import { WaitingRoomSection } from "./waiting-room-section";
 import { ChatSection } from "./chat-section";
 import { CtasSection } from "./ctas-section";
 import { EmailTemplatesSection } from "./email-templates-section";
+import { MarketingSection } from "./marketing-section";
 import type { Database } from "@/lib/supabase/database.types";
 
 export default async function WebinarDetailPage({
@@ -317,6 +318,20 @@ export default async function WebinarDetailPage({
                 : "Usando plantillas por defecto",
             completed: emailTemplates.length > 0,
             content: <EmailTemplatesSection webinarId={webinar.id} templates={emailTemplates} />,
+          },
+          {
+            id: "marketing",
+            icon: "megaphone",
+            title: "Marketing",
+            description: "Pixel de Meta (Facebook) para esta página de registro.",
+            summary: webinar.facebook_pixel_id ? "Pixel configurado" : "Sin pixel configurado",
+            completed: Boolean(webinar.facebook_pixel_id),
+            content: (
+              <MarketingSection
+                webinarId={webinar.id}
+                initial={{ facebookPixelId: webinar.facebook_pixel_id }}
+              />
+            ),
           },
         ];
 
