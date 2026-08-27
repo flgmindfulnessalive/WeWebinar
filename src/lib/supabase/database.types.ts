@@ -76,6 +76,8 @@ export interface Database {
           trial_warning_sent_at: string | null;
           last_digest_sent_at: string | null;
           activation_nudge_sent_at: string | null;
+          digest_unsubscribed_at: string | null;
+          unsubscribe_token: string;
           brevo_api_key: string | null;
           created_at: string;
           updated_at: string;
@@ -316,6 +318,7 @@ export interface Database {
           computed_session_start: string;
           access_token: string;
           visitor_timezone: string | null;
+          unsubscribed_at: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["registrants"]["Row"]> & {

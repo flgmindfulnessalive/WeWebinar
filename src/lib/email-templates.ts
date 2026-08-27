@@ -50,12 +50,19 @@ export function renderTemplate(template: string, vars: TemplateVars): string {
 // inline styles throughout, and no CSS gradients -- email clients (Outlook
 // in particular) don't reliably support flexbox/grid or CSS gradients, so
 // this deliberately doesn't reuse the web app's component styling.
-export function wrapEmailShell(innerHtml: string, branding: EmailBranding): string {
+export function wrapEmailShell(
+  innerHtml: string,
+  branding: EmailBranding,
+  unsubscribeUrl?: string
+): string {
   const safeName = escapeHtml(branding.accountName);
   const initials = escapeHtml(branding.accountName.slice(0, 2).toUpperCase());
   const logoCell = branding.logoUrl
     ? `<img src="${escapeHtml(branding.logoUrl)}" alt="${safeName}" width="26" height="26" style="display:block;border-radius:6px;object-fit:contain;background:#ffffff;" />`
     : `<table role="presentation" width="26" height="26" cellpadding="0" cellspacing="0"><tr><td style="width:26px;height:26px;background:#ffffff;border-radius:6px;text-align:center;font-size:12px;font-weight:700;color:${branding.brandColor};line-height:26px;font-family:${FONT_STACK};">${initials}</td></tr></table>`;
+  const unsubscribeLine = unsubscribeUrl
+    ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">Darse de baja de recordatorios</a>`
+    : "";
 
   return `<!doctype html>
 <html>
@@ -74,13 +81,26 @@ export function wrapEmailShell(innerHtml: string, branding: EmailBranding): stri
 ${innerHtml}
 </td></tr>
 <tr><td style="background:#ffffff;border-radius:0 0 12px 12px;padding:0 32px 32px;text-align:center;font-size:12px;color:#a1a1aa;font-family:${FONT_STACK};">
-  Enviado por ${safeName} vía WeWebinars
+  Enviado por ${safeName} vía WeWebinars${unsubscribeLine}
 </td></tr>
 </table>
 </td></tr>
 </table>
 </body>
 </html>`;
+}
+
+// RFC 8058 one-click unsubscribe: Gmail/Yahoo require this pair on bulk
+// senders since 2024, and mail clients that support it show a native
+// "Unsubscribe" button next to the sender instead of relying on the
+// visible footer link. url must point at a route that accepts a plain,
+// bodyless POST (see /api/unsubscribe) -- List-Unsubscribe-Post tells the
+// client it's safe to fire without any user-visible confirmation page.
+export function unsubscribeHeaders(url: string): Record<string, string> {
+  return {
+    "List-Unsubscribe": `<${url}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
 }
 
 export function resolveEmailBranding(

@@ -105,7 +105,11 @@ export default async function RegisterPage({
     hasFixedSlots
       ? supabase.from("registrants").select("session_id").eq("webinar_id", webinar.id).not("session_id", "is", null)
       : Promise.resolve({ data: [] }),
-    supabase.from("waiting_room_config").select("bullets").eq("webinar_id", webinar.id).maybeSingle(),
+    supabase
+      .from("waiting_room_config")
+      .select("bullets, background_url, background_type")
+      .eq("webinar_id", webinar.id)
+      .maybeSingle(),
   ]);
 
   // The attendee cap is per live session (how many people can overlap in
@@ -149,6 +153,38 @@ export default async function RegisterPage({
   const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
   const badgeLabel = webinar.category?.toUpperCase() || "WEBINAR GRATUITO";
 
+  // Same host-uploaded background already used on the waiting room
+  // (waiting_room_config.background_url) -- replaces the default animated
+  // gradient/particles panel when set, instead of only ever showing on the
+  // waiting room reached after registering.
+  const heroBackground = waitingRoom?.background_url ? (
+    <>
+      {waitingRoom.background_type === "video" ? (
+        <video
+          src={waitingRoom.background_url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 size-full object-cover opacity-40"
+        />
+      ) : (
+        <Image
+          src={waitingRoom.background_url}
+          alt=""
+          fill
+          className="object-cover opacity-40"
+          unoptimized
+        />
+      )}
+    </>
+  ) : (
+    <>
+      <GradientBlobs colorA={brandColorA} colorB={brandColorB} />
+      <ParticleNetwork color="148, 163, 255" particleCount={28} opacity={0.4} />
+    </>
+  );
+
   const registrationForm = (
     <RegistrationForm
       webinarId={webinar.id}
@@ -187,8 +223,7 @@ export default async function RegisterPage({
       {/* Desktop: brand panel + form, same split-panel language as /login. */}
       <div className="hidden min-h-svh md:grid md:grid-cols-2">
         <div className="relative flex flex-col justify-center gap-8 overflow-hidden bg-[#0b0f19] px-14 py-16 text-white">
-          <GradientBlobs colorA={brandColorA} colorB={brandColorB} />
-          <ParticleNetwork color="148, 163, 255" particleCount={28} opacity={0.4} />
+          {heroBackground}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-transparent to-transparent" />
 
           <div className="relative z-10 flex flex-col gap-7">

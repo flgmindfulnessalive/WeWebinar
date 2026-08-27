@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
+import {
+  renderTemplate,
+  resolveEmailBranding,
+  resolveTemplate,
+  unsubscribeHeaders,
+  wrapEmailShell,
+} from "@/lib/email-templates";
 import {
   accountSuspendedEmail,
   activationNudgeEmail,
@@ -22,6 +28,14 @@ function isAuthorized(request: Request): boolean {
 
 function accessLinkFor(row: { account_slug: string; webinar_slug: string; access_token: string }) {
   return `${process.env.NEXT_PUBLIC_APP_URL}/w/${row.account_slug}/${row.webinar_slug}/room/${row.access_token}`;
+}
+
+function reminderUnsubscribeUrlFor(accessToken: string) {
+  return `${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?scope=reminders&token=${accessToken}`;
+}
+
+function digestUnsubscribeUrlFor(unsubscribeToken: string) {
+  return `${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?scope=digest&token=${unsubscribeToken}`;
 }
 
 function formatWhen(computedSessionStart: string, visitorTimezone: string | null) {
@@ -87,10 +101,12 @@ export async function GET(request: Request) {
         link_acceso: accessLinkFor(r),
         marca_color: branding.brandColor,
       };
+      const unsubscribeUrl = reminderUnsubscribeUrlFor(r.access_token);
       await sendEmail({
         to: r.email,
         subject: renderTemplate(template.subject, vars),
-        html: wrapEmailShell(renderTemplate(template.body, vars), branding),
+        html: wrapEmailShell(renderTemplate(template.body, vars), branding, unsubscribeUrl),
+        headers: unsubscribeHeaders(unsubscribeUrl),
       });
       remindersSent++;
     } catch (err) {
@@ -133,10 +149,12 @@ export async function GET(request: Request) {
         link_acceso: accessLinkFor(r),
         marca_color: branding.brandColor,
       };
+      const unsubscribeUrl = reminderUnsubscribeUrlFor(r.access_token);
       await sendEmail({
         to: r.email,
         subject: renderTemplate(template.subject, vars),
-        html: wrapEmailShell(renderTemplate(template.body, vars), branding),
+        html: wrapEmailShell(renderTemplate(template.body, vars), branding, unsubscribeUrl),
+        headers: unsubscribeHeaders(unsubscribeUrl),
       });
       replaysSent++;
     } catch (err) {
@@ -260,8 +278,9 @@ export async function GET(request: Request) {
 
   const { data: digestCandidates } = await admin
     .from("accounts")
-    .select("id, name")
+    .select("id, name, unsubscribe_token")
     .in("subscription_status", ["trialing", "active", "past_due"])
+    .is("digest_unsubscribed_at", null)
     .or(`last_digest_sent_at.is.null,last_digest_sent_at.lt.${monthStart.toISOString()}`);
 
   for (const account of digestCandidates ?? []) {
@@ -301,14 +320,20 @@ export async function GET(request: Request) {
           p_period_end: monthStart.toISOString(),
         });
         const row = summary?.[0];
-        const { subject, html } = monthlyDigestEmail(account.name, periodLabel, {
-          registrantCount: row?.registrant_count ?? 0,
-          attendeeCount: row?.attendee_count ?? 0,
-          avgWatchPct: row?.avg_watch_pct ?? 0,
-          topWebinarTitle: row?.top_webinar_title ?? null,
-          topWebinarRegistrants: row?.top_webinar_registrants ?? 0,
-        });
-        await sendEmail({ to: owner.email, subject, html });
+        const unsubscribeUrl = digestUnsubscribeUrlFor(account.unsubscribe_token);
+        const { subject, html } = monthlyDigestEmail(
+          account.name,
+          periodLabel,
+          {
+            registrantCount: row?.registrant_count ?? 0,
+            attendeeCount: row?.attendee_count ?? 0,
+            avgWatchPct: row?.avg_watch_pct ?? 0,
+            topWebinarTitle: row?.top_webinar_title ?? null,
+            topWebinarRegistrants: row?.top_webinar_registrants ?? 0,
+          },
+          unsubscribeUrl
+        );
+        await sendEmail({ to: owner.email, subject, html, headers: unsubscribeHeaders(unsubscribeUrl) });
       }
       digestsSent++;
     } catch (err) {

@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { renderTemplate, resolveEmailBranding, resolveTemplate, wrapEmailShell } from "@/lib/email-templates";
+import {
+  renderTemplate,
+  resolveEmailBranding,
+  resolveTemplate,
+  unsubscribeHeaders,
+  wrapEmailShell,
+} from "@/lib/email-templates";
 import { sendEmail } from "@/lib/resend";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
 import { syncBrevoContact } from "@/lib/brevo";
@@ -60,10 +66,13 @@ async function sendConfirmationEmail({
     marca_color: branding.brandColor,
   };
 
+  const unsubscribeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?scope=reminders&token=${accessToken}`;
+
   await sendEmail({
     to: email,
     subject: renderTemplate(template.subject, vars),
-    html: wrapEmailShell(renderTemplate(template.body, vars), branding),
+    html: wrapEmailShell(renderTemplate(template.body, vars), branding, unsubscribeUrl),
+    headers: unsubscribeHeaders(unsubscribeUrl),
   });
 
   if (registrant) {
