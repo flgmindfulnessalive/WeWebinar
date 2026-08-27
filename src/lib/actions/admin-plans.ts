@@ -23,6 +23,7 @@ export async function updatePlan(
   const removeBranding = formData.get("remove_branding") === "on";
   const customDomain = formData.get("custom_domain") === "on";
   const aiChatReplies = formData.get("ai_chat_replies") === "on";
+  const integrations = formData.get("integrations") === "on";
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -37,6 +38,7 @@ export async function updatePlan(
         remove_branding: removeBranding,
         custom_domain: customDomain,
         ai_chat_replies: aiChatReplies,
+        integrations,
       },
     })
     .eq("id", planId);

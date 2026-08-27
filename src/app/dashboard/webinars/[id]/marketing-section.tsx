@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label";
 
 export function MarketingSection({
   webinarId,
+  marketingAllowed,
   brevoConnected,
   initial,
 }: {
   webinarId: string;
+  marketingAllowed: boolean;
   brevoConnected: boolean;
   initial: { facebookPixelId: string | null; brevoListId: number | null };
 }) {
@@ -22,11 +24,22 @@ export function MarketingSection({
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="webinar_id" value={webinarId} />
 
+      {!marketingAllowed && (
+        <p className="text-xs font-medium text-amber-600">
+          Disponible en los planes Pro, Business y Enterprise —{" "}
+          <a href="/dashboard/settings/billing" className="underline underline-offset-2">
+            actualizar plan
+          </a>
+          .
+        </p>
+      )}
+
       <div className="grid gap-2">
         <Label htmlFor="facebook-pixel-id">Meta (Facebook) Pixel ID</Label>
         <Input
           id="facebook-pixel-id"
           name="facebook_pixel_id"
+          disabled={!marketingAllowed}
           defaultValue={initial.facebookPixelId ?? ""}
           placeholder="1234567890123456"
         />
@@ -45,12 +58,14 @@ export function MarketingSection({
           name="brevo_list_id"
           type="number"
           min={1}
-          disabled={!brevoConnected}
+          disabled={!marketingAllowed || !brevoConnected}
           defaultValue={initial.brevoListId ?? ""}
           placeholder="ID numérico de la lista"
         />
         <p className="text-xs text-muted-foreground">
-          {brevoConnected ? (
+          {!marketingAllowed ? (
+            <>Requiere un plan Pro, Business o Enterprise.</>
+          ) : brevoConnected ? (
             <>
               Cada registrado de este webinar se agrega automáticamente a esa
               lista en tu cuenta de Brevo — encontrás el ID en Brevo →
@@ -70,7 +85,7 @@ export function MarketingSection({
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="self-start">
+      <Button type="submit" disabled={isPending || !marketingAllowed} className="self-start">
         {isPending ? "Guardando..." : "Guardar cambios"}
       </Button>
     </form>

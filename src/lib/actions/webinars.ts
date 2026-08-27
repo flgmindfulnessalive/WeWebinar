@@ -111,7 +111,15 @@ export async function updateMarketing(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.includes("plan_feature_blocked")) {
+      return {
+        error:
+          "El marketing (pixel de Meta y Brevo) está disponible en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlo.",
+      };
+    }
+    return { error: error.message };
+  }
   return null;
 }
 

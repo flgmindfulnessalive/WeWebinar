@@ -37,6 +37,7 @@ function featureList(plan: {
     "Commercial Rights (Unlimited)",
   ];
   if (features.ai_chat_replies) items.push("Agente AI de respuestas en chat");
+  if (features.integrations) items.push("Webhooks, pixel de Meta y Brevo");
   if (features.remove_branding) items.push('Sin "Powered by"');
   if (features.custom_domain) items.push("Dominio propio (CNAME)");
   return items;

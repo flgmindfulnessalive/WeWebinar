@@ -25,6 +25,14 @@ export async function updateBrevoApiKey(
     .eq("id", current.account.id);
 
   revalidatePath("/dashboard/settings/integrations");
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.includes("plan_feature_blocked")) {
+      return {
+        error:
+          "La integración con Brevo está disponible en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarla.",
+      };
+    }
+    return { error: error.message };
+  }
   return { success: true };
 }
