@@ -119,10 +119,12 @@ error de OAuth; el login con email/contraseña sigue funcionando igual.
 1. Importar el repo `flgmindfulnessalive/WeWebinar` en Vercel, rama `main`.
 2. Cargar todas las env vars listadas en `.env.example` con los valores
    reales de los pasos 1–3, más:
-   - `CRON_SECRET` — ya generé uno para vos, listo para pegar:
-     ```
-     5aec8c4fc868ce66b7582154004e344f5abdb0752ecff084262c81b547e8a094
-     ```
+   - `CRON_SECRET` — generá uno vos mismo (nunca lo pegues en texto plano
+     en este repo ni en ningún otro lugar público): por ejemplo corriendo
+     `openssl rand -hex 32` en una terminal, o dejando que Vercel genere
+     uno al crear la env var. Pegalo solo en Vercel → Settings →
+     Environment Variables, y después en el header del cronjob externo
+     (paso 4ter más abajo).
      (Vercel lo inyecta solo como `Authorization: Bearer $CRON_SECRET` en
      el cron de `vercel.json`.)
 
