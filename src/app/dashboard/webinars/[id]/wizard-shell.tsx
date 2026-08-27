@@ -7,6 +7,7 @@ import {
   Clock3,
   FileText,
   Mail,
+  Megaphone,
   MessageSquare,
   MousePointerClick,
   PlayCircle,
@@ -29,6 +30,7 @@ const ICONS = {
   "mouse-pointer-click": MousePointerClick,
   mail: Mail,
   user: User,
+  megaphone: Megaphone,
 } as const;
 
 export type WizardStepIcon = keyof typeof ICONS;

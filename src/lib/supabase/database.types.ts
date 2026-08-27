@@ -165,6 +165,7 @@ export interface Database {
           presenter_name: string | null;
           presenter_avatar_url: string | null;
           presenter_bio: string | null;
+          facebook_pixel_id: string | null;
           title: string;
           slug: string;
           description: string | null;
