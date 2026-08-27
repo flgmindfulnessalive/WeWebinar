@@ -52,6 +52,46 @@ export async function changePassword(
   return { success: true };
 }
 
+// Supabase requires confirming the change before it takes effect (by
+// default from both the old and new address -- "Secure email change"),
+// so this never updates public.users.email directly: it only kicks off
+// that confirmation flow. public.users.email gets synced automatically
+// once the change is confirmed, by the on_auth_user_email_updated trigger
+// (see migration 20260827000004).
+export async function changeEmail(
+  _prevState: ProfileActionState,
+  formData: FormData
+): Promise<ProfileActionState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email || !email.includes("@")) {
+    return { error: "Ingresa un email válido." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "No pudimos identificar tu sesión." };
+    if (email === user.email) {
+      return { error: "Ese ya es tu email actual." };
+    }
+
+    const { error } = await supabase.auth.updateUser(
+      { email },
+      {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=/dashboard/settings/profile`,
+      }
+    );
+    if (error) return { error: error.message };
+  } catch (err) {
+    console.error("[profile] changeEmail failed:", err);
+    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
+  }
+
+  return { success: true };
+}
+
 const DIAGNOSTIC_EMAIL = "operaciones@wewebinars.com";
 
 // Self-diagnostic for the "no me llega el email de confirmación" report --
