@@ -46,7 +46,7 @@ export default async function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TestEmailForm email={current.user.email} />
+          <TestEmailForm />
         </CardContent>
       </Card>
     </div>
