@@ -13,7 +13,10 @@ const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 // Table-based markup with inline styles, no CSS gradients -- same
 // reasoning as wrapEmailShell() in email-templates.ts: Outlook and other
 // clients don't reliably support either.
-function wrapPlatformEmailShell(innerHtml: string): string {
+function wrapPlatformEmailShell(innerHtml: string, unsubscribeUrl?: string): string {
+  const unsubscribeLine = unsubscribeUrl
+    ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">Darse de baja del resumen mensual</a>`
+    : "";
   return `<!doctype html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
@@ -31,7 +34,7 @@ function wrapPlatformEmailShell(innerHtml: string): string {
 ${innerHtml}
 </td></tr>
 <tr><td style="background:#ffffff;border-radius:0 0 12px 12px;padding:0 32px 32px;text-align:center;font-size:12px;color:#a1a1aa;font-family:${FONT_STACK};">
-  WeWebinars — plataforma de webinars evergreen
+  WeWebinars — plataforma de webinars evergreen${unsubscribeLine}
 </td></tr>
 </table>
 </td></tr>
@@ -185,7 +188,8 @@ export function monthlyDigestEmail(
     avgWatchPct: number;
     topWebinarTitle: string | null;
     topWebinarRegistrants: number;
-  }
+  },
+  unsubscribeUrl: string
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
   const safePeriod = escapeHtml(periodLabel);
@@ -210,6 +214,6 @@ export function monthlyDigestEmail(
 </td></tr></table>`;
   return {
     subject: `Tu resumen de ${safePeriod} en WeWebinars`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, unsubscribeUrl),
   };
 }

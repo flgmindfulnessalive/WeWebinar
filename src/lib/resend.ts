@@ -16,10 +16,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  headers,
 }: {
   to: string;
   subject: string;
   html: string;
+  headers?: Record<string, string>;
 }) {
   const from = process.env.RESEND_FROM_EMAIL;
   if (!from) {
@@ -30,7 +32,7 @@ export async function sendEmail({
   // etc.) -- without this check a rejected send looks identical to a
   // successful one to every caller, so nothing gets logged and no email
   // arrives, with no trace anywhere.
-  const result = await getResendClient().emails.send({ from, to, subject, html });
+  const result = await getResendClient().emails.send({ from, to, subject, html, headers });
   if (result.error) {
     throw new Error(`Resend: ${result.error.name} - ${result.error.message}`);
   }
