@@ -10,6 +10,7 @@ import {
   MessageSquare,
   MousePointerClick,
   PlayCircle,
+  User,
   Users,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ const ICONS = {
   "message-square": MessageSquare,
   "mouse-pointer-click": MousePointerClick,
   mail: Mail,
+  user: User,
 } as const;
 
 export type WizardStepIcon = keyof typeof ICONS;

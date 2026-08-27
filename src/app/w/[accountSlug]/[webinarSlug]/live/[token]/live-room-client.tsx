@@ -15,12 +15,8 @@ import {
   type LockedYouTubePlayerHandle,
 } from "@/components/locked-youtube-player";
 import { ChatPanel } from "./chat-panel";
-import type {
-  ChatMessageType,
-  CtaType,
-  Database,
-  Json,
-} from "@/lib/supabase/database.types";
+import type { ChatMessageType, CtaType, Json } from "@/lib/supabase/database.types";
+import type { Presenter } from "@/lib/presenter";
 
 type ChatMessage = {
   id: string;
@@ -37,8 +33,6 @@ type Cta = {
   timestamp_end_seconds: number | null;
   config: Json;
 };
-
-type Presenter = Database["public"]["Views"]["presenter_public_profile"]["Row"] | null;
 
 type PanelTab = "chat" | "connected" | "presenter" | "notifications";
 

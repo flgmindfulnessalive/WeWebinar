@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { computeUpcomingOccurrences } from "@/lib/scheduling";
 import { resolveBrandColors } from "@/lib/brand-colors";
+import { resolvePresenter } from "@/lib/presenter";
 import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
 import { RegistrationForm } from "./registration-form";
@@ -36,20 +37,14 @@ export default async function RegisterPage({
   const hasFixedSlots = webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both";
 
   const [
-    { data: presenter },
+    presenter,
     { data: schedules },
     { data: plan },
     { data: sessions },
     { data: sessionRegistrants },
     { data: waitingRoom },
   ] = await Promise.all([
-    webinar.presenter_user_id
-      ? supabase
-          .from("presenter_public_profile")
-          .select("*")
-          .eq("id", webinar.presenter_user_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
+    resolvePresenter(supabase, webinar),
     hasFixedSlots
       ? supabase
           .from("webinar_schedules")

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { resolveBrandColors } from "@/lib/brand-colors";
+import { resolvePresenter } from "@/lib/presenter";
 import { WaitingRoomClient } from "./waiting-room-client";
 
 export default async function WaitingRoomPage({
@@ -32,7 +33,9 @@ export default async function WaitingRoomPage({
   const [{ data: webinar }, { data: waitingRoom }, { data: account }] = await Promise.all([
     supabase
       .from("webinars")
-      .select("id, title, description, presenter_user_id, duration_seconds")
+      .select(
+        "id, title, description, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio, duration_seconds"
+      )
       .eq("id", session.webinar_id)
       .eq("status", "published")
       .maybeSingle(),
@@ -41,13 +44,7 @@ export default async function WaitingRoomPage({
   ]);
   if (!webinar) notFound();
 
-  const { data: presenter } = webinar.presenter_user_id
-    ? await supabase
-        .from("presenter_public_profile")
-        .select("*")
-        .eq("id", webinar.presenter_user_id)
-        .maybeSingle()
-    : { data: null };
+  const presenter = await resolvePresenter(supabase, webinar);
 
   const branding = (account?.branding as Record<string, string | null>) ?? {};
   const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);

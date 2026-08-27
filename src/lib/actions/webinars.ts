@@ -83,6 +83,80 @@ export async function updateWebinarDetails(
   return null;
 }
 
+// Lets a host pick who shows as presenter, instead of it being silently
+// locked to whoever created the webinar (createWebinar above). Two
+// mutually exclusive modes: a team member (their own Perfil display_name/
+// avatar_url/bio, from presenter_public_profile) or free-form custom
+// details (for a speaker with no login on the platform).
+export async function updatePresenter(
+  _prevState: WebinarActionState,
+  formData: FormData
+): Promise<WebinarActionState> {
+  const webinarId = String(formData.get("webinar_id") ?? "");
+  const mode = String(formData.get("presenter_mode") ?? "member");
+
+  const supabase = await createClient();
+
+  if (mode === "custom") {
+    const name = String(formData.get("presenter_name") ?? "").trim();
+    if (!name) {
+      return { error: "El nombre del presentador es obligatorio." };
+    }
+    const avatarUrl = String(formData.get("presenter_avatar_url") ?? "").trim() || null;
+    const bio = String(formData.get("presenter_bio") ?? "").trim() || null;
+
+    const { error } = await supabase
+      .from("webinars")
+      .update({
+        presenter_user_id: null,
+        presenter_name: name,
+        presenter_avatar_url: avatarUrl,
+        presenter_bio: bio,
+      })
+      .eq("id", webinarId);
+
+    revalidatePath(`/dashboard/webinars/${webinarId}`);
+    if (error) return { error: error.message };
+    return null;
+  }
+
+  const presenterUserId = String(formData.get("presenter_user_id") ?? "").trim() || null;
+
+  if (presenterUserId) {
+    // Defense in depth: presenter_public_profile has no account scoping
+    // (it's a public view, keyed only by user id), so the only thing that
+    // keeps a webinar from showing someone else's account's user as its
+    // presenter is validating the id here, server-side, before saving --
+    // never trust it straight from form data.
+    const current = await getCurrentAccount();
+    if (!current) return { error: "No pudimos identificar tu sesión." };
+
+    const { data: member } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", presenterUserId)
+      .eq("account_id", current.account.id)
+      .maybeSingle();
+    if (!member) {
+      return { error: "Ese usuario no pertenece a tu cuenta." };
+    }
+  }
+
+  const { error } = await supabase
+    .from("webinars")
+    .update({
+      presenter_user_id: presenterUserId,
+      presenter_name: null,
+      presenter_avatar_url: null,
+      presenter_bio: null,
+    })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+  if (error) return { error: error.message };
+  return null;
+}
+
 // Plan limit (max_active_webinars) is enforced by the
 // enforce_webinar_publish_limit trigger — this can legitimately fail.
 export async function publishWebinar(webinarId: string): Promise<WebinarActionState> {
