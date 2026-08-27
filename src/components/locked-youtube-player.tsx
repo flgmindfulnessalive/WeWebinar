@@ -260,6 +260,16 @@ export const LockedYouTubePlayer = forwardRef<
       }
       stuckSinceRef.current = null;
       setShowResumePrompt(false);
+      // Confirmed playing here too, not just in onStateChange below -- that
+      // event can go missing (YouTube's postMessage-based event bus is not
+      // fully reliable; e.g. "Failed to execute 'postMessage'... target
+      // origin does not match" in the console is a known www-widgetapi.js
+      // quirk that can drop it). Without this, a video that's actually
+      // playing -- reached only through this poll, never through
+      // onStateChange -- left hasPlayedOnceRef false forever, so the "give
+      // up" timer below fired the ad-blocker warning over a video that was
+      // never actually stuck.
+      hasPlayedOnceRef.current = true;
       if (playingSinceRef.current === null) playingSinceRef.current = Date.now();
       if (Date.now() - playingSinceRef.current >= REVEAL_HOLD_MS) setCoverVisible(false);
     }, STATE_POLL_INTERVAL_MS);
