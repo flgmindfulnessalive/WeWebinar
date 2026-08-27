@@ -183,9 +183,9 @@ export default function HomePage() {
           <div className="flex flex-col gap-9 sm:flex-row sm:items-start sm:gap-0">
             {STEPS.map((step, i) => (
               <Fragment key={step.n}>
-                <div className="relative flex flex-1 flex-col items-start pr-0 sm:pr-6">
+                <div className="relative flex flex-1 flex-col items-center px-2 text-center sm:px-4">
                   <div
-                    className="animate-marketing-blob absolute -top-4 -left-4 size-28 rounded-full opacity-30 blur-2xl"
+                    className="animate-marketing-blob absolute -top-6 left-1/2 size-28 -translate-x-1/2 rounded-full opacity-30 blur-2xl"
                     style={{
                       background:
                         "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 55%, transparent 72%)",
@@ -214,7 +214,7 @@ export default function HomePage() {
                 {i < STEPS.length - 1 && (
                   <div
                     aria-hidden
-                    className="ml-8 flex items-center text-border sm:ml-0 sm:w-16 sm:justify-center sm:pt-9"
+                    className="flex items-center justify-center text-border sm:w-16 sm:pt-9"
                   >
                     <ArrowRight className="size-4 rotate-90 sm:rotate-0" />
                   </div>
