@@ -2,18 +2,41 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
+const EMAIL_OTP_TYPES: EmailOtpType[] = [
+  "signup",
+  "invite",
+  "magiclink",
+  "recovery",
+  "email_change",
+];
+
+function isEmailOtpType(value: string | null): value is EmailOtpType {
+  return EMAIL_OTP_TYPES.includes(value as EmailOtpType);
+}
+
 // Email links (signup confirmation, password recovery) route here instead
 // of through a server Route Handler. A plain server-side GET would also
 // fire for corporate email security scanners that pre-visit links to check
-// them for phishing/malware -- that consumes the one-time PKCE code before
-// the real person ever clicks, so the genuine click then fails with
-// "bad_code_verifier". Doing the exchange here, client-side in an effect,
-// means it only runs when an actual browser renders and executes this
-// page's JS -- link scanners fetch HTML but don't run it.
+// them for phishing/malware -- that consumes the one-time code before the
+// real person ever clicks, so the genuine click then fails. Doing the
+// verification here, client-side in an effect, means it only runs when an
+// actual browser renders and executes this page's JS -- link scanners
+// fetch HTML but don't run it.
+//
+// Prefers token_hash + type (Supabase's own email templates carry these as
+// {{ .TokenHash }} / a fixed type) over the older `code` (PKCE) param: a
+// PKCE exchange needs the code_verifier cookie that was set in whichever
+// browser initiated the flow, so it silently fails whenever the link is
+// opened somewhere else -- signed up on a computer, opened the email on a
+// phone, the single most common way people actually check their inbox.
+// verifyOtp has no such requirement, so the link works from any device.
+// `code` is kept as a fallback for any email template not yet updated to
+// the token_hash link (see DEPLOY.md).
 //
 // The Supabase browser client also auto-detects and exchanges a `?code=`
 // in the URL as soon as it's created (detectSessionInUrl: true, the
@@ -26,6 +49,8 @@ export function AuthConfirmClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
+  const tokenHash = searchParams.get("token_hash");
+  const otpType = searchParams.get("type");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,17 +76,23 @@ export function AuthConfirmClient() {
         goNext();
         return;
       }
-      if (!code) {
+      const verify = isEmailOtpType(otpType) && tokenHash
+        ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType })
+        : code
+          ? supabase.auth.exchangeCodeForSession(code)
+          : null;
+
+      if (!verify) {
         setError("Este link no es válido o está incompleto.");
         return;
       }
-      supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
+      verify.then(({ error: verifyError }) => {
         if (redirected) return;
-        if (exchangeError) {
+        if (verifyError) {
           setError(
-            exchangeError.code === "bad_code_verifier"
+            verifyError.code === "bad_code_verifier" || verifyError.code === "otp_expired"
               ? "Este link ya fue usado o expiró. Pedí uno nuevo."
-              : exchangeError.message
+              : verifyError.message
           );
           return;
         }
@@ -72,7 +103,7 @@ export function AuthConfirmClient() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [code, searchParams, router]);
+  }, [code, tokenHash, otpType, searchParams, router]);
 
   if (error) {
     return (
