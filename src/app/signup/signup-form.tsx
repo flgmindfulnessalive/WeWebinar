@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 
@@ -18,11 +19,21 @@ import {
 } from "@/components/ui/card";
 import { GoogleButton } from "@/components/google-button";
 
+const CHECK_EMAIL_REDIRECT_MS = 15_000;
+
 export function SignupForm() {
   const [state, formAction, isPending] = useActionState(
     signUpWithPassword,
     null
   );
+  const router = useRouter();
+  const showCheckEmail = Boolean(state && "checkEmail" in state);
+
+  useEffect(() => {
+    if (!showCheckEmail) return;
+    const timer = setTimeout(() => router.push("/login"), CHECK_EMAIL_REDIRECT_MS);
+    return () => clearTimeout(timer);
+  }, [showCheckEmail, router]);
 
   return (
     <Card>
@@ -33,12 +44,19 @@ export function SignupForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {state && "checkEmail" in state ? (
+        {showCheckEmail ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
             <Mail className="size-8 text-muted-foreground" />
             <p className="text-sm font-medium">Revisa tu correo</p>
             <p className="text-sm text-muted-foreground">
-              Te enviamos un link para confirmar tu cuenta. Hace clic ahí para continuar.
+              Te enviamos un link para confirmar tu cuenta. Haz clic ahí para continuar.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Te llevamos a Ingresar en unos segundos, o{" "}
+              <Link href="/login" className="underline underline-offset-4">
+                hazlo ahora
+              </Link>
+              .
             </p>
           </div>
         ) : (
