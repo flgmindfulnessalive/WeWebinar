@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { publishWebinar, archiveWebinar, deleteWebinar } from "@/lib/actions/webinars";
+import { publishWebinar, archiveWebinar, deleteWebinar, duplicateWebinar } from "@/lib/actions/webinars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,6 +54,18 @@ export function WebinarRowActions({
     });
   };
 
+  const handleDuplicate = () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await duplicateWebinar(webinarId);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      router.push(`/dashboard/webinars/${result.id}`);
+    });
+  };
+
   return (
     <div className="flex items-center gap-2">
       {error && <span className="text-xs text-destructive">{error}</span>}
@@ -83,6 +95,15 @@ export function WebinarRowActions({
           Pausar
         </Button>
       )}
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={isPending}
+        onClick={handleDuplicate}
+        title="Crea una copia en borrador con el mismo contenido, sala de espera, chat, CTAs y plantillas de email. No copia registrados ni analíticas."
+      >
+        Duplicar
+      </Button>
       {isOwner && (
         <Button
           size="sm"

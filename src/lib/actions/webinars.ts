@@ -280,6 +280,119 @@ export async function archiveWebinar(webinarId: string): Promise<WebinarActionSt
   return null;
 }
 
+// Builds a unique slug within the account by suffixing -2, -3, ... on
+// collision, since webinars has a (account_id, slug) unique constraint and
+// duplicating the same webinar twice would otherwise produce the same
+// "<title> (copia)" slug both times.
+async function uniqueSlugForAccount(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  accountId: string,
+  baseSlug: string
+): Promise<string> {
+  const base = baseSlug || "webinar";
+  const { data: existing } = await supabase
+    .from("webinars")
+    .select("slug")
+    .eq("account_id", accountId)
+    .like("slug", `${base}%`);
+
+  const taken = new Set((existing ?? []).map((w) => w.slug));
+  if (!taken.has(base)) return base;
+
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+export type DuplicateWebinarResult = { error: string } | { id: string };
+
+// Copies everything that makes up how a webinar is set up (details, video,
+// waiting room, CTAs, simulated chat, webinar-specific email templates)
+// into a brand-new draft webinar. Deliberately does NOT copy registrants,
+// analytics/viewer events, or fixed calendar slots (webinar_schedules) --
+// a duplicate is meant as a fresh starting point, so a host picks new
+// dates for it rather than inheriting the original's exact schedule.
+export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebinarResult> {
+  const current = await getCurrentAccount();
+  if (!current) return { error: "No pudimos identificar tu sesión." };
+
+  const supabase = await createClient();
+
+  const { data: source, error: sourceError } = await supabase
+    .from("webinars")
+    .select(
+      "title, description, category, youtube_video_id, duration_seconds, schedule_mode, just_in_time_offsets_minutes, fake_viewer_min, fake_viewer_max, ai_chat_enabled, ai_agent_training_info, facebook_pixel_id, brevo_list_id, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio"
+    )
+    .eq("id", webinarId)
+    .eq("account_id", current.account.id)
+    .maybeSingle();
+
+  if (sourceError) return { error: sourceError.message };
+  if (!source) return { error: "Webinar no encontrado." };
+
+  const newTitle = `${source.title} (copia)`;
+  const slug = await uniqueSlugForAccount(supabase, current.account.id, slugify(newTitle));
+
+  const { data: created, error: insertError } = await supabase
+    .from("webinars")
+    .insert({ ...source, account_id: current.account.id, title: newTitle, slug, status: "draft" })
+    .select("id")
+    .single();
+
+  if (insertError) return { error: insertError.message };
+
+  const newWebinarId = created.id;
+
+  const [{ data: waitingRoom }, { data: ctasData }, { data: chatData }, { data: templatesData }] =
+    await Promise.all([
+      supabase
+        .from("waiting_room_config")
+        .select(
+          "template_id, background_url, background_type, headline, subheadline, bullets, show_calendar_button, show_fake_counter, testimonials"
+        )
+        .eq("webinar_id", webinarId)
+        .maybeSingle(),
+      supabase
+        .from("ctas")
+        .select("type, timestamp_start_seconds, timestamp_end_seconds, config")
+        .eq("webinar_id", webinarId),
+      supabase
+        .from("chat_messages")
+        .select("timestamp_seconds, fake_name, message_text, message_type")
+        .eq("webinar_id", webinarId),
+      supabase
+        .from("email_templates")
+        .select("type, reminder_offset_minutes, subject, body, is_active")
+        .eq("webinar_id", webinarId),
+    ]);
+
+  await Promise.all([
+    waitingRoom
+      ? supabase.from("waiting_room_config").insert({ ...waitingRoom, webinar_id: newWebinarId })
+      : Promise.resolve(),
+    ctasData && ctasData.length > 0
+      ? supabase.from("ctas").insert(ctasData.map((c) => ({ ...c, webinar_id: newWebinarId })))
+      : Promise.resolve(),
+    chatData && chatData.length > 0
+      ? supabase
+          .from("chat_messages")
+          .insert(chatData.map((m) => ({ ...m, webinar_id: newWebinarId })))
+      : Promise.resolve(),
+    templatesData && templatesData.length > 0
+      ? supabase.from("email_templates").insert(
+          templatesData.map((t) => ({
+            ...t,
+            account_id: current.account.id,
+            webinar_id: newWebinarId,
+          }))
+        )
+      : Promise.resolve(),
+  ]);
+
+  revalidatePath("/dashboard/webinars");
+  return { id: newWebinarId };
+}
+
 // Permanently removes the webinar and everything under it (schedules,
 // registrants, chat, CTAs, analytics, email templates/sends) via ON DELETE
 // CASCADE. Restricted to account owners by the webinars_delete_owner RLS
