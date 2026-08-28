@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { clockToSeconds } from "@/lib/time";
+import { clockToSeconds, secondsToClock } from "@/lib/time";
 import type { ChatMessageType } from "@/lib/supabase/database.types";
 
 export type ChatActionState = { error: string } | null;
@@ -27,6 +27,22 @@ export async function addChatMessage(
   }
 
   const supabase = await createClient();
+
+  // Without this, a message timed past the video's own length just sits
+  // in the list looking active but never fires in the live room (it's
+  // filtered by elapsed video time) -- easy to end up with silently
+  // after replacing the video with a shorter one.
+  const { data: webinar } = await supabase
+    .from("webinars")
+    .select("duration_seconds")
+    .eq("id", webinarId)
+    .maybeSingle();
+  if (webinar?.duration_seconds && timestampSeconds > webinar.duration_seconds) {
+    return {
+      error: `El video dura ${secondsToClock(webinar.duration_seconds)} -- elige un momento dentro de ese rango.`,
+    };
+  }
+
   const { error } = await supabase.from("chat_messages").insert({
     webinar_id: webinarId,
     timestamp_seconds: timestampSeconds,

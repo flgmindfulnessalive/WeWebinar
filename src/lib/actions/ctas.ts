@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { clockToSeconds } from "@/lib/time";
+import { clockToSeconds, secondsToClock } from "@/lib/time";
 import type { CtaType, Json } from "@/lib/supabase/database.types";
 
 export type CtaActionState = { error: string } | null;
@@ -30,6 +30,26 @@ export async function addCta(
     }
     if (timestampEnd <= timestampStart) {
       return { error: "El fin debe ser posterior al inicio." };
+    }
+  }
+
+  const supabase = await createClient();
+
+  // Same reasoning as addChatMessage: a CTA timed past the video's own
+  // length never fires in the live room (filtered by elapsed video time),
+  // but sits in the list looking active -- easy to end up with silently
+  // after replacing the video with a shorter one.
+  const { data: webinar } = await supabase
+    .from("webinars")
+    .select("duration_seconds")
+    .eq("id", webinarId)
+    .maybeSingle();
+  if (webinar?.duration_seconds) {
+    const maxTimestamp = timestampEnd ?? timestampStart;
+    if (maxTimestamp > webinar.duration_seconds) {
+      return {
+        error: `El video dura ${secondsToClock(webinar.duration_seconds)} -- elige un momento dentro de ese rango.`,
+      };
     }
   }
 
@@ -70,7 +90,6 @@ export async function addCta(
     return { error: "Tipo de CTA inválido." };
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.from("ctas").insert({
     webinar_id: webinarId,
     type,
