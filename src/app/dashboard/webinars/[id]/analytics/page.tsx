@@ -46,7 +46,7 @@ export default async function WebinarAnalyticsPage({
     { data: retentionRows },
     { data: ctaRows },
     { data: pollRows },
-    { data: registrants },
+    { data: registrants, error: registrantsError },
     { data: clickerRows },
     { data: watchPositionRows },
     { data: messageRows },
@@ -64,6 +64,13 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
   ]);
+
+  if (registrantsError) {
+    // Was silently treated as "no registrants" before -- that's misleading
+    // when the list is actually just failing to load (RLS hiccup, transient
+    // network/schema-cache issue, etc.), so surface it distinctly instead.
+    console.error("[analytics] registrants query failed:", registrantsError);
+  }
 
   const watchPositionByRegistrant = new Map(
     (watchPositionRows ?? []).map((row) => [row.registrant_id, row.last_position_seconds])
@@ -199,7 +206,12 @@ export default async function WebinarAnalyticsPage({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!registrants || registrants.length === 0 ? (
+          {registrantsError ? (
+            <p className="text-sm text-destructive">
+              No pudimos cargar la lista de registrados. Actualiza la página -- si el problema
+              sigue, escríbenos.
+            </p>
+          ) : !registrants || registrants.length === 0 ? (
             <p className="text-sm text-muted-foreground">Todavía no hay nadie registrado.</p>
           ) : (
             <RegistrantsTable
