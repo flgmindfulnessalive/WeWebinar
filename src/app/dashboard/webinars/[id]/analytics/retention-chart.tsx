@@ -14,6 +14,12 @@ const PAD_RIGHT = 12;
 const PAD_TOP = 12;
 const PAD_BOTTOM = 24;
 
+// Brand indigo instead of the dashboard's grayscale --primary token --
+// this chart is the one place a host judges "is this webinar working",
+// and it read as flat gray before. No semaphore semantics here (single
+// series, single hue) -- just the same brand color used elsewhere.
+const LINE_COLOR = "#4f46e5";
+
 export function RetentionChart({ points }: { points: Point[] }) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [showTable, setShowTable] = useState(false);
@@ -69,8 +75,8 @@ export function RetentionChart({ points }: { points: Point[] }) {
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label="Curva de retención por minuto">
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
+              <stop offset="0%" stopColor={LINE_COLOR} stopOpacity="0.22" />
+              <stop offset="100%" stopColor={LINE_COLOR} stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -91,7 +97,7 @@ export function RetentionChart({ points }: { points: Point[] }) {
           ))}
 
           <path d={areaPath} fill={`url(#${gradientId})`} />
-          <path d={linePath} fill="none" stroke="var(--primary)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          <path d={linePath} fill="none" stroke={LINE_COLOR} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
 
           {hovered && (
             <>
@@ -107,7 +113,7 @@ export function RetentionChart({ points }: { points: Point[] }) {
                 cx={xFor(hovered.minute)}
                 cy={yFor(hovered.pct)}
                 r={4}
-                fill="var(--primary)"
+                fill={LINE_COLOR}
                 stroke="var(--card)"
                 strokeWidth={2}
               />

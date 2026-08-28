@@ -87,7 +87,7 @@ export default function HomePage() {
         <GradientBlobs />
         <MouseSpotlight />
         <div aria-hidden className="absolute inset-0 -z-10">
-          <ParticleNetwork color="79, 70, 229" particleCount={34} opacity={0.35} />
+          <ParticleNetwork color="79, 70, 229" particleCount={34} opacity={0.55} />
         </div>
 
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 pb-20 pt-20 text-center sm:pt-28">
