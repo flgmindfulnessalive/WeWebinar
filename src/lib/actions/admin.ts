@@ -172,7 +172,7 @@ export async function changeAccountPlan(
     if (error.message.includes("plan_downgrade_blocked")) {
       return {
         error:
-          "No se puede bajar de plan: la cuenta supera los límites del plan nuevo (webinars publicados o usuarios). Pedile al host que archive/reduzca primero.",
+          "No se puede bajar de plan: la cuenta supera los límites del plan nuevo (webinars publicados o usuarios). Pídele al host que archive/reduzca primero.",
       };
     }
     return { error: error.message };

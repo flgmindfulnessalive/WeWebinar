@@ -62,7 +62,7 @@ export function VideoSection({
     return (
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">
-          Pegá el link de un video de YouTube &ldquo;no listado&rdquo;
+          Pega el link de un video de YouTube &ldquo;no listado&rdquo;
           (Visibilidad → Oculto, en YouTube Studio). No hace falta que sea
           público.
         </p>

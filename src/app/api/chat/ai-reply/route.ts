@@ -31,7 +31,7 @@ function buildSystemPrompt(webinar: {
 ${webinar.description ? `Descripción del webinar: ${webinar.description}` : ""}
 ${
   webinar.ai_agent_training_info
-    ? `\nInformación adicional provista por el organizador (FAQ, precios, detalles del producto/servicio) -- usala como fuente principal para responder:\n${webinar.ai_agent_training_info}`
+    ? `\nInformación adicional provista por el organizador (FAQ, precios, detalles del producto/servicio) -- úsala como fuente principal para responder:\n${webinar.ai_agent_training_info}`
     : ""
 }
 

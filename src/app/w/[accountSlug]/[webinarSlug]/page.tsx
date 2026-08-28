@@ -240,7 +240,7 @@ export default async function RegisterPage({
     <div className="min-h-svh bg-[#fafafa]">
       {isPreview && (
         <div className="sticky top-0 z-20 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-amber-950">
-          Vista previa — este webinar todavía no está publicado. Solo vos podés ver esta página.
+          Vista previa — este webinar todavía no está publicado. Solo tú puedes ver esta página.
         </div>
       )}
       {webinar.facebook_pixel_id && <FacebookPixel pixelId={webinar.facebook_pixel_id} />}

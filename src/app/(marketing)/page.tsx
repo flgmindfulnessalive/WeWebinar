@@ -234,7 +234,7 @@ export default function HomePage() {
             Empieza a vender con tu primer webinar evergreen
           </h2>
           <p className="max-w-xl text-white/80">
-            Configuralo en minutos y dejalo vendiendo las 24 horas.
+            Configúralo en minutos y déjalo vendiendo las 24 horas.
           </p>
           <Button asChild size="lg" variant="secondary">
             <Link href="/signup">Empezar ahora</Link>
