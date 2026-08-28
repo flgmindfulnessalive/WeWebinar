@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InviteForm } from "./invite-form";
-import { RevokeInvitationButton, RemoveMemberButton } from "./member-row-actions";
+import { RevokeInvitationButton, RemoveMemberButton, RoleSelect } from "./member-row-actions";
 
 export default async function TeamPage() {
   const current = await getCurrentAccount();
@@ -68,9 +68,13 @@ export default async function TeamPage() {
                 <span className="text-xs text-muted-foreground">{member.email}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="capitalize">
-                  {member.role}
-                </Badge>
+                {member.role !== "owner" && member.id !== current.user.id ? (
+                  <RoleSelect userId={member.id} role={member.role} />
+                ) : (
+                  <Badge variant="secondary" className="capitalize">
+                    {member.role}
+                  </Badge>
+                )}
                 {member.role !== "owner" && member.id !== current.user.id && (
                   <RemoveMemberButton userId={member.id} />
                 )}

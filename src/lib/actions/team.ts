@@ -84,6 +84,36 @@ export async function revokeInvitation(invitationId: string): Promise<TeamAction
   return null;
 }
 
+export async function updateMemberRole(
+  userId: string,
+  role: UserRole
+): Promise<TeamActionState> {
+  if (role !== "editor" && role !== "viewer") {
+    return { error: "Rol inválido." };
+  }
+
+  const current = await getCurrentAccount();
+  if (!current || current.user.role !== "owner") {
+    return { error: "Solo el Owner puede cambiar roles." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("users").update({ role }).eq("id", userId);
+
+  revalidatePath("/dashboard/team");
+
+  if (error) {
+    return {
+      error: error.message.includes("cannot demote the last owner")
+        ? "No puedes quitarle el rol de Owner al único Owner de la cuenta."
+        : error.message.includes("cannot change your own role")
+          ? "No puedes cambiar tu propio rol."
+          : error.message,
+    };
+  }
+  return null;
+}
+
 export async function removeMember(userId: string): Promise<TeamActionState> {
   const supabase = await createClient();
   const { error } = await supabase.from("users").delete().eq("id", userId);
