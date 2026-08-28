@@ -193,7 +193,7 @@ export default async function WebinarAnalyticsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="icon">
             <Link href={`/dashboard/webinars/${webinarId}`}>
@@ -202,7 +202,7 @@ export default async function WebinarAnalyticsPage({
           </Button>
           <h1 className="text-2xl font-semibold tracking-tight">{webinar.title} · Analíticas</h1>
         </div>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="w-fit">
           <a href={`/api/webinars/${webinarId}/export`}>
             <Download className="size-4" />
             Exportar registrados (CSV)
