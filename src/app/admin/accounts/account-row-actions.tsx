@@ -20,6 +20,7 @@ export function AccountRowActions({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState(currentPlanId ?? "");
   const isSuspended = subscriptionStatus === "suspended";
   const isActive = subscriptionStatus === "active";
   // trialing/past_due/canceled all graduate to "active" through the same
@@ -31,19 +32,26 @@ export function AccountRowActions({
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-2">
         <select
-          defaultValue={currentPlanId ?? ""}
+          value={selectedPlanId}
           disabled={isPending}
           onChange={(e) => {
             const planId = e.target.value;
             const planName = plans.find((p) => p.id === planId)?.name ?? planId;
             if (!confirm(`¿Cambiar el plan de esta cuenta a "${planName}"?`)) {
-              e.target.value = currentPlanId ?? "";
               return;
             }
+            const previousPlanId = selectedPlanId;
+            setSelectedPlanId(planId);
             setError(null);
             startTransition(async () => {
               const result = await changeAccountPlan(accountId, planId);
-              if (result?.error) setError(result.error);
+              // The select is controlled precisely so a failed change
+              // doesn't leave it showing a plan the account was never
+              // actually moved to.
+              if (result?.error) {
+                setError(result.error);
+                setSelectedPlanId(previousPlanId);
+              }
             });
           }}
           className="flex h-8 rounded-md border border-input bg-transparent px-2 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
