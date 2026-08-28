@@ -68,12 +68,12 @@ export function MarketingSection({
           ) : brevoConnected ? (
             <>
               Cada registrado de este webinar se agrega automáticamente a esa
-              lista en tu cuenta de Brevo — encontrás el ID en Brevo →
+              lista en tu cuenta de Brevo — encuentras el ID en Brevo →
               Contactos → Listas, al abrir la lista.
             </>
           ) : (
             <>
-              Necesitás conectar tu API key de Brevo primero, en{" "}
+              Necesitas conectar tu API key de Brevo primero, en{" "}
               <a href="/dashboard/settings/integrations" className="underline underline-offset-4">
                 Configuración → Integraciones
               </a>

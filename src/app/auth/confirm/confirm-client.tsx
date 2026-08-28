@@ -91,7 +91,7 @@ export function AuthConfirmClient() {
         if (verifyError) {
           setError(
             verifyError.code === "bad_code_verifier" || verifyError.code === "otp_expired"
-              ? "Este link ya fue usado o expiró. Pedí uno nuevo."
+              ? "Este link ya fue usado o expiró. Pide uno nuevo."
               : verifyError.message
           );
           return;

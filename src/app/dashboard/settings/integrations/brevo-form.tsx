@@ -20,7 +20,7 @@ export function BrevoForm({ isConnected }: { isConnected: boolean }) {
           placeholder={isConnected ? "•••••••••••••••••••• (ya configurada)" : "xkeysib-..."}
         />
         <p className="text-xs text-muted-foreground">
-          La encontrás en Brevo → SMTP & API → API Keys. Una vez cargada, elegí
+          La encuentras en Brevo → SMTP & API → API Keys. Una vez cargada, elige
           en qué lista cae cada webinar desde su paso &quot;Marketing&quot;.
         </p>
       </div>

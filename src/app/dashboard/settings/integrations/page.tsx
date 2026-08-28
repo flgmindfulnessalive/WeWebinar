@@ -60,13 +60,13 @@ export default async function IntegrationsSettingsPage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium">Webhooks salientes</CardTitle>
           <CardDescription>
-            Conectá WeWebinars a Zapier, Make, n8n o cualquier herramienta que
+            Conecta WeWebinars a Zapier, Make, n8n o cualquier herramienta que
             reciba webhooks. Cada evento se envía como POST con el body en JSON,
             firmado con HMAC-SHA256 en el header{" "}
             <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
               X-WeWebinars-Signature
             </code>{" "}
-            (podés ignorarlo si tu herramienta no verifica firmas, como suele
+            (puedes ignorarlo si tu herramienta no verifica firmas, como suele
             pasar con Zapier).
           </CardDescription>
         </CardHeader>
@@ -95,7 +95,7 @@ export default async function IntegrationsSettingsPage() {
           <CardDescription>
             Cada persona que se registra a un webinar se agrega automáticamente
             a la lista de Brevo que elijas para ese webinar (paso
-            &quot;Marketing&quot; del wizard) — desde ahí podés usar tus
+            &quot;Marketing&quot; del wizard) — desde ahí puedes usar tus
             automatizaciones y triggers existentes para nutrir esos leads.
           </CardDescription>
         </CardHeader>

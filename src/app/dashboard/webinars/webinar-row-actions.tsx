@@ -90,7 +90,7 @@ export function WebinarRowActions({
           variant="ghost"
           disabled={isPending}
           onClick={() => runAction(archiveWebinar)}
-          title="Corta el registro y el acceso a la sala. No borra nada — podés publicarlo de nuevo cuando quieras."
+          title="Corta el registro y el acceso a la sala. No borra nada — puedes publicarlo de nuevo cuando quieras."
         >
           Pausar
         </Button>
@@ -137,7 +137,7 @@ export function WebinarRowActions({
 
             <div className="grid gap-1.5">
               <Label htmlFor="delete-confirm-input">
-                Escribí <span className="font-mono font-semibold">{DELETE_CONFIRM_WORD}</span>{" "}
+                Escribe <span className="font-mono font-semibold">{DELETE_CONFIRM_WORD}</span>{" "}
                 para confirmar
               </Label>
               <Input

@@ -32,7 +32,7 @@ export default async function ProfilePage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium">Email de acceso</CardTitle>
           <CardDescription>
-            Es el email con el que iniciás sesión. Cambiarlo pide confirmación por correo.
+            Es el email con el que inicias sesión. Cambiarlo pide confirmación por correo.
           </CardDescription>
         </CardHeader>
         <CardContent>
