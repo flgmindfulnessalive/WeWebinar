@@ -14,6 +14,7 @@ import { CtaClickersToggle } from "./cta-clickers";
 import { RegistrantsTable } from "./registrants-table";
 import { MessagesTable } from "./messages-table";
 import { Funnel } from "./funnel";
+import { ConcurrentViewersChart } from "./concurrent-viewers-chart";
 
 function ctaLabel(config: unknown, type: string): string {
   const c = (config ?? {}) as Record<string, unknown>;
@@ -21,6 +22,23 @@ function ctaLabel(config: unknown, type: string): string {
   if (type === "overlay") return String(c.text ?? c.image_url ?? "Overlay");
   if (type === "poll") return String(c.question ?? "Encuesta");
   return type;
+}
+
+const DAY_LABELS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+function scheduleRowLabel(row: {
+  kind: string;
+  day_of_week: number | null;
+  time_of_day: string | null;
+  timezone: string | null;
+  offset_minutes: number | null;
+}): { label: string; sublabel: string } {
+  if (row.kind === "jit") {
+    return { label: `En ${row.offset_minutes} min`, sublabel: "Bajo demanda" };
+  }
+  const day = row.day_of_week === null ? "Todos los días" : DAY_LABELS[row.day_of_week];
+  const time = row.time_of_day?.slice(0, 5) ?? "";
+  return { label: `${day} · ${time}`, sublabel: row.timezone ?? "" };
 }
 
 export default async function WebinarAnalyticsPage({
@@ -50,6 +68,8 @@ export default async function WebinarAnalyticsPage({
     { data: clickerRows },
     { data: watchPositionRows },
     { data: messageRows },
+    { data: schedulePerformanceRows },
+    { data: concurrentViewerRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
@@ -59,6 +79,8 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_concurrent_viewers", { p_webinar_id: webinarId }),
   ]);
 
   if (registrantsError) {
@@ -108,6 +130,25 @@ export default async function WebinarAnalyticsPage({
     viewersRemaining: r.viewers_remaining,
     pct: r.pct,
   }));
+
+  const scheduleBars = (schedulePerformanceRows ?? [])
+    .filter((r) => r.registrant_count > 0)
+    .map((r) => {
+      const { label, sublabel } = scheduleRowLabel(r);
+      return {
+        id: r.schedule_id ?? `jit-${r.offset_minutes}`,
+        label,
+        sublabel,
+        value: r.attendance_pct,
+        valueLabel: `${r.attendance_pct}% asistencia · ${r.registrant_count} registrados`,
+      };
+    });
+
+  const concurrentViewerPoints = (concurrentViewerRows ?? []).map((r) => ({
+    minute: r.minute,
+    concurrentViewers: r.concurrent_viewers,
+  }));
+  const concurrentViewerSession = concurrentViewerRows?.[0];
 
   const ctaBars = (ctaRows ?? []).map((c) => ({
     id: c.cta_id,
@@ -195,6 +236,19 @@ export default async function WebinarAnalyticsPage({
         </CardContent>
       </Card>
 
+      {scheduleBars.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Rendimiento por horario
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <HorizontalBarChart bars={scheduleBars} />
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -263,6 +317,25 @@ export default async function WebinarAnalyticsPage({
           <RetentionChart points={retentionPoints} />
         </CardContent>
       </Card>
+
+      {concurrentViewerPoints.length > 0 && concurrentViewerSession && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Espectadores simultáneos
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Sesión del{" "}
+              {new Date(concurrentViewerSession.session_starts_at).toLocaleString("es")} ·{" "}
+              {concurrentViewerSession.session_registrant_count} registrados (la de más
+              asistencia) · entradas y salidas reales de la sala, no posición del video
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ConcurrentViewersChart points={concurrentViewerPoints} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
