@@ -723,6 +723,18 @@ export interface Database {
           votes: number;
         }[];
       };
+      get_webinar_registrants: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          id: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          computed_session_start: string;
+          created_at: string;
+          unsubscribed_at: string | null;
+        }[];
+      };
       get_webinar_cta_clickers: {
         Args: { p_webinar_id: string };
         Returns: {

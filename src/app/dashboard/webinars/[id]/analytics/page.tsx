@@ -55,11 +55,7 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId }),
-    supabase
-      .from("registrants")
-      .select("id, name, email, phone, computed_session_start, created_at, unsubscribed_at")
-      .eq("webinar_id", webinarId)
-      .order("created_at", { ascending: false }),
+    supabase.rpc("get_webinar_registrants", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
