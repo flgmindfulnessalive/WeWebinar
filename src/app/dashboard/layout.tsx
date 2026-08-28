@@ -83,14 +83,17 @@ export default async function DashboardLayout({
               className="flex items-center gap-2 text-lg font-semibold tracking-tight md:hidden"
             >
               <Logo />
-              WeWebinars
+              {/* Full wordmark only from sm up -- below that, the hamburger +
+                  toggle + "Salir" together already crowd the row, and the
+                  sidebar (desktop) already carries the full brand. */}
+              <span className="hidden sm:inline">WeWebinars</span>
             </Link>
             <div className="hidden text-sm text-muted-foreground md:block">
               {current.account.name} ·{" "}
               <span className="capitalize">{current.plan.key}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-3">
             <ThemeToggle />
             <UserMenu
               email={current.user.email}
