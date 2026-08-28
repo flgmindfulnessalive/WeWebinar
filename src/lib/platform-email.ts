@@ -132,6 +132,27 @@ export function webinarPublishedEmail(
   };
 }
 
+export function teamInviteEmail(
+  accountName: string,
+  inviterName: string | null,
+  role: "editor" | "viewer",
+  signupLink: string
+): { subject: string; html: string } {
+  const safeAccount = escapeHtml(accountName);
+  const inviter = inviterName ? escapeHtml(inviterName) : "Un miembro del equipo";
+  const roleLabel = role === "editor" ? "Editor" : "Solo lectura";
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Invitación de equipo</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${inviter} te invitó a ${safeAccount}</h1>
+<p style="margin:0 0 20px;">Te invitaron a sumarte a <strong style="color:#18181b;">${safeAccount}</strong> en WeWebinars, con permisos de <strong style="color:#18181b;">${roleLabel}</strong>. Crea tu cuenta con este mismo email para aceptar — la invitación vence en 7 días.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${signupLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Aceptar invitación</a>
+</td></tr></table>`;
+  return {
+    subject: `${inviter} te invitó a ${accountName} en WeWebinars`,
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
 export function activationNudgeEmail(accountName: string): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">¿Necesitas una mano?</p>

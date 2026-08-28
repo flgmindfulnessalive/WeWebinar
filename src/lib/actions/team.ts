@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
+import { teamInviteEmail } from "@/lib/platform-email";
+import { sendEmail } from "@/lib/resend";
 import type { UserRole } from "@/lib/supabase/database.types";
 
 export type TeamActionState = { error: string } | null;
@@ -46,6 +48,22 @@ export async function inviteMember(
         ? "Llegaste al límite de usuarios de tu plan. Pasa a un plan superior para invitar a más gente."
         : error.message,
     };
+  }
+
+  // Best-effort: the invitation row is already created above, so a failed
+  // email shouldn't surface as an invite error -- the owner can still see
+  // the pending invitation in the team list either way.
+  try {
+    const signupLink = `${process.env.NEXT_PUBLIC_APP_URL}/signup?email=${encodeURIComponent(email)}`;
+    const { subject, html } = teamInviteEmail(
+      current.account.name,
+      current.user.display_name,
+      role,
+      signupLink
+    );
+    await sendEmail({ to: email, subject, html });
+  } catch (err) {
+    console.error("[team] invite email failed:", err);
   }
 
   return null;
