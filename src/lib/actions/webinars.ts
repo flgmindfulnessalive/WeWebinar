@@ -201,6 +201,22 @@ export async function updatePresenter(
 // enforce_webinar_publish_limit trigger — this can legitimately fail.
 export async function publishWebinar(webinarId: string): Promise<WebinarActionState> {
   const supabase = await createClient();
+
+  // Without a video, the public registration page still works but the live
+  // room 404s the moment a registrant's countdown ends -- catch it here
+  // instead of letting a host publish something that's silently broken for
+  // whoever just registered.
+  const { data: current } = await supabase
+    .from("webinars")
+    .select("youtube_video_id")
+    .eq("id", webinarId)
+    .maybeSingle();
+  if (!current?.youtube_video_id) {
+    return {
+      error: "Cargá un video antes de publicar -- sin video, la sala en vivo no funciona.",
+    };
+  }
+
   const { data: webinar, error } = await supabase
     .from("webinars")
     .update({ status: "published", published_at: new Date().toISOString() })
