@@ -24,18 +24,36 @@ export default async function BillingPage() {
   const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 
   const supabase = await createClient();
-  const [{ count: publishedCount }, { data: selfServePlans }] = await Promise.all([
-    supabase
-      .from("webinars")
-      .select("id", { count: "exact", head: true })
-      .eq("account_id", current.account.id)
-      .eq("status", "published"),
-    supabase
-      .from("plans")
-      .select("key, name, price_annual_usd")
-      .eq("is_self_serve", true)
-      .order("price_annual_usd", { ascending: true, nullsFirst: false }),
-  ]);
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+
+  const [{ count: publishedCount }, { data: selfServePlans }, { data: accountWebinars }] =
+    await Promise.all([
+      supabase
+        .from("webinars")
+        .select("id", { count: "exact", head: true })
+        .eq("account_id", current.account.id)
+        .eq("status", "published"),
+      supabase
+        .from("plans")
+        .select("key, name, price_annual_usd")
+        .eq("is_self_serve", true)
+        .order("price_annual_usd", { ascending: true, nullsFirst: false }),
+      supabase.from("webinars").select("id").eq("account_id", current.account.id),
+    ]);
+
+  // Same window as enforce_monthly_registrant_limit's trigger check
+  // (date_trunc('month', now())), computed here just to display it --
+  // the trigger is still the real enforcement point.
+  const webinarIds = (accountWebinars ?? []).map((w) => w.id);
+  const { count: monthlyRegistrantCount } =
+    webinarIds.length > 0
+      ? await supabase
+          .from("registrants")
+          .select("id", { count: "exact", head: true })
+          .in("webinar_id", webinarIds)
+          .gte("created_at", monthStart)
+      : { count: 0 };
   const changeablePlans = (selfServePlans ?? []).map((p) => ({
     key: p.key,
     label:
@@ -59,6 +77,10 @@ export default async function BillingPage() {
           <p>
             {publishedCount ?? 0} / {current.plan.max_active_webinars ?? "∞"}{" "}
             webinars activos.
+          </p>
+          <p>
+            {monthlyRegistrantCount ?? 0} / {current.plan.max_registrants_per_month ?? "∞"}{" "}
+            registrados este mes.
           </p>
           {current.account.stripe_customer_id ? (
             <BillingPortalButton />
