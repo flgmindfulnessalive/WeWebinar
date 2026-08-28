@@ -24,6 +24,10 @@ function ctaLabel(config: unknown, type: string): string {
   return type;
 }
 
+// Hidden for now -- the metric didn't land well visually, revisit later.
+// The RPC/chart stay wired so re-enabling is just flipping this back.
+const SHOW_CONCURRENT_VIEWERS = false;
+
 const DAY_LABELS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 function scheduleRowLabel(row: {
@@ -236,6 +240,17 @@ export default async function WebinarAnalyticsPage({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Curva de abandono
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RetentionChart points={retentionPoints} />
+        </CardContent>
+      </Card>
+
       {scheduleBars.length > 0 && (
         <Card>
           <CardHeader>
@@ -245,6 +260,25 @@ export default async function WebinarAnalyticsPage({
           </CardHeader>
           <CardContent>
             <HorizontalBarChart bars={scheduleBars} />
+          </CardContent>
+        </Card>
+      )}
+
+      {SHOW_CONCURRENT_VIEWERS && concurrentViewerPoints.length > 0 && concurrentViewerSession && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Espectadores simultáneos
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Sesión del{" "}
+              {new Date(concurrentViewerSession.session_starts_at).toLocaleString("es")} ·{" "}
+              {concurrentViewerSession.session_registrant_count} registrados (la de más
+              asistencia) · entradas y salidas reales de la sala, no posición del video
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ConcurrentViewersChart points={concurrentViewerPoints} />
           </CardContent>
         </Card>
       )}
@@ -281,6 +315,24 @@ export default async function WebinarAnalyticsPage({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Clics por CTA
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <HorizontalBarChart bars={ctaBars} />
+          {ctaBars.map((bar) => (
+            <CtaClickersToggle
+              key={bar.id}
+              label={bar.label}
+              clickers={clickersByCta.get(bar.id) ?? []}
+            />
+          ))}
+        </CardContent>
+      </Card>
+
       {(messageRows?.length ?? 0) > 0 && (
         <Card>
           <CardHeader>
@@ -306,54 +358,6 @@ export default async function WebinarAnalyticsPage({
           </CardContent>
         </Card>
       )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            Curva de abandono
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RetentionChart points={retentionPoints} />
-        </CardContent>
-      </Card>
-
-      {concurrentViewerPoints.length > 0 && concurrentViewerSession && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Espectadores simultáneos
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Sesión del{" "}
-              {new Date(concurrentViewerSession.session_starts_at).toLocaleString("es")} ·{" "}
-              {concurrentViewerSession.session_registrant_count} registrados (la de más
-              asistencia) · entradas y salidas reales de la sala, no posición del video
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ConcurrentViewersChart points={concurrentViewerPoints} />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            Clics por CTA
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <HorizontalBarChart bars={ctaBars} />
-          {ctaBars.map((bar) => (
-            <CtaClickersToggle
-              key={bar.id}
-              label={bar.label}
-              clickers={clickersByCta.get(bar.id) ?? []}
-            />
-          ))}
-        </CardContent>
-      </Card>
 
       {pollsByQuestion.size > 0 && (
         <Card>
