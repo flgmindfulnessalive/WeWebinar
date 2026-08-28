@@ -41,9 +41,9 @@ export default async function AdminAccountsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Cuentas</h1>
-        <form className="w-64">
+        <form className="w-full sm:w-64">
           <Input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre o slug..." />
         </form>
       </div>
