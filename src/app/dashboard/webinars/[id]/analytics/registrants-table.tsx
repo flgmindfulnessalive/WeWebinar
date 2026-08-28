@@ -78,7 +78,7 @@ export function RegistrantsTable({
               <td className="p-2">
                 {r.unsubscribedAt ? (
                   <span
-                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                     title={`Se dio de baja el ${new Date(r.unsubscribedAt).toLocaleString("es")}`}
                   >
                     Dado de baja
