@@ -4,7 +4,12 @@ import { Logo } from "@/components/logo";
 import { ParticleNetwork } from "@/components/particle-network";
 import { SignupForm } from "./signup-form";
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>;
+}) {
+  const { email } = await searchParams;
   return (
     <div className="grid min-h-svh md:grid-cols-2">
       <div className="relative hidden items-center justify-center overflow-hidden bg-[#0b0f19] md:flex">
@@ -37,7 +42,7 @@ export default function SignupPage() {
             <Logo />
             WeWebinars
           </Link>
-          <SignupForm />
+          <SignupForm initialEmail={email} />
         </div>
       </div>
     </div>

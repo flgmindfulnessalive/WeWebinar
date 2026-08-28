@@ -21,7 +21,7 @@ import { GoogleButton } from "@/components/google-button";
 
 const CHECK_EMAIL_REDIRECT_MS = 15_000;
 
-export function SignupForm() {
+export function SignupForm({ initialEmail }: { initialEmail?: string }) {
   const [state, formAction, isPending] = useActionState(
     signUpWithPassword,
     null
@@ -79,7 +79,14 @@ export function SignupForm() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required autoComplete="email" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  defaultValue={initialEmail}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Contraseña</Label>
