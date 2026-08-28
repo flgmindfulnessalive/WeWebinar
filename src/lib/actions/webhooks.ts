@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
+import { sendTestWebhookEvent } from "@/lib/webhooks";
 import type { Database } from "@/lib/supabase/database.types";
 
 export type WebhookActionState = { error: string } | null;
@@ -60,6 +61,25 @@ export async function deleteWebhookEndpoint(id: string): Promise<WebhookActionSt
 
   revalidatePath("/dashboard/settings/integrations");
   if (error) return { error: error.message };
+  return null;
+}
+
+export async function sendTestWebhook(id: string): Promise<WebhookActionState> {
+  const supabase = await createClient();
+  // Goes through the regular RLS-scoped client first -- confirms the
+  // caller can actually see this endpoint (account membership) before
+  // handing it to the admin-client delivery path.
+  const { data: endpoint, error } = await supabase
+    .from("webhook_endpoints")
+    .select("id, account_id, url, secret")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) return { error: error.message };
+  if (!endpoint) return { error: "Webhook no encontrado." };
+
+  await sendTestWebhookEvent(endpoint);
+  revalidatePath("/dashboard/settings/integrations");
   return null;
 }
 
