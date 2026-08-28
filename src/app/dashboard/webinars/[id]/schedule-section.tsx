@@ -188,7 +188,7 @@ function ScheduleRowItem({
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
       <span>
         {schedule.day_of_week === null ? "Todos los días" : DAY_LABELS[schedule.day_of_week]}
         {schedule.exclude_weekends && " (sin fines de semana)"} ·{" "}

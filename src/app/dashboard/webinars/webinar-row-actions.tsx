@@ -67,7 +67,7 @@ export function WebinarRowActions({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {error && <span className="text-xs text-destructive">{error}</span>}
       {status !== "published" && (
         <Button
