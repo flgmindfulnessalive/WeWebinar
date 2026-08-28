@@ -892,6 +892,14 @@ export interface Database {
           total_attendees: number;
         }[];
       };
+      get_platform_scorecard: {
+        Args: Record<string, never>;
+        Returns: {
+          conversion_actions_generated: number;
+          activation_rate_pct: number | null;
+          avg_hours_to_first_webinar: number | null;
+        }[];
+      };
     };
     Enums: {
       user_role: UserRole;
