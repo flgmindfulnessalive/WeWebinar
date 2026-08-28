@@ -96,6 +96,15 @@ export function LiveRoomClient({
   const [isMuted, setIsMuted] = useState(true);
   const [showPanel, setShowPanel] = useState(true);
   const [activeTab, setActiveTab] = useState<PanelTab>("chat");
+  // Which option this viewer picked per poll cta, and the live tally to
+  // show back once they have. Session-only (not persisted) -- the server
+  // already dedupes to one vote per registrant (get_cta_poll_results), so
+  // a page reload just means seeing the vote buttons again, not a second
+  // vote counted.
+  const [pollAnswers, setPollAnswers] = useState<Record<string, string>>({});
+  const [pollResults, setPollResults] = useState<Record<string, { option: string; votes: number }[]>>(
+    {}
+  );
   // Ticks once a second so the fake counter/CTAs stay current; computed
   // inside the effect (an event-handler-like context), not during render.
   const [elapsedSeconds, setElapsedSeconds] = useState(initialElapsedSeconds);
@@ -279,10 +288,23 @@ export function LiveRoomClient({
   }
 
   function recordPollResponse(ctaId: string, option: string) {
+    setPollAnswers((prev) => ({ ...prev, [ctaId]: option }));
     recordViewerEvent("poll_response", {
       videoTimestampSeconds: Math.round(getElapsedSeconds()),
       metadata: { cta_id: ctaId, option },
     });
+    supabase
+      .rpc("get_cta_poll_results", { p_access_token: accessToken, p_cta_id: ctaId })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[live-room] get_cta_poll_results failed:", error);
+          return;
+        }
+        setPollResults((prev) => ({
+          ...prev,
+          [ctaId]: (data ?? []).map((row) => ({ option: row.option ?? "", votes: row.votes })),
+        }));
+      });
   }
 
   return (
@@ -369,6 +391,8 @@ export function LiveRoomClient({
                   cta={cta}
                   onLinkClick={() => recordCtaClick(cta.id)}
                   onPollAnswer={(option) => recordPollResponse(cta.id, option)}
+                  answeredOption={pollAnswers[cta.id]}
+                  results={pollResults[cta.id]}
                 />
               ))}
             </>
@@ -437,6 +461,8 @@ export function LiveRoomClient({
                   ctas={activeCtas}
                   onLinkClick={recordCtaClick}
                   onPollAnswer={recordPollResponse}
+                  pollAnswers={pollAnswers}
+                  pollResults={pollResults}
                 />
               )}
             </div>
@@ -602,10 +628,14 @@ function NotificationsTab({
   ctas,
   onLinkClick,
   onPollAnswer,
+  pollAnswers,
+  pollResults,
 }: {
   ctas: Cta[];
   onLinkClick: (ctaId: string) => void;
   onPollAnswer: (ctaId: string, option: string) => void;
+  pollAnswers: Record<string, string>;
+  pollResults: Record<string, { option: string; votes: number }[]>;
 }) {
   if (ctas.length === 0) {
     return (
@@ -623,6 +653,8 @@ function NotificationsTab({
           cta={cta}
           onLinkClick={() => onLinkClick(cta.id)}
           onPollAnswer={(option) => onPollAnswer(cta.id, option)}
+          answeredOption={pollAnswers[cta.id]}
+          results={pollResults[cta.id]}
         />
       ))}
     </div>
@@ -633,16 +665,36 @@ function NotificationCard({
   cta,
   onLinkClick,
   onPollAnswer,
+  answeredOption,
+  results,
 }: {
   cta: Cta;
   onLinkClick: () => void;
   onPollAnswer: (option: string) => void;
+  answeredOption?: string;
+  results?: { option: string; votes: number }[];
 }) {
   const config = (cta.config ?? {}) as Record<string, unknown>;
 
   if (cta.type === "poll") {
     const question = String(config.question ?? "");
     const options = Array.isArray(config.options) ? (config.options as string[]) : [];
+
+    if (answeredOption) {
+      return (
+        <div className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
+          <p className="text-sm font-medium">📊 {question}</p>
+          <PollResultBars
+            options={options}
+            results={results}
+            chosenOption={answeredOption}
+            variant="light"
+          />
+          <VotedNote variant="light" />
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
         <p className="text-sm font-medium">📊 {question}</p>
@@ -697,14 +749,101 @@ function NotificationCard({
   );
 }
 
+// A voter's own choice always shows even with 0 other votes so far, and
+// options don't reshuffle by vote count after answering -- same order as
+// the buttons they just saw, now with a % each.
+function pollBars(
+  configOptions: string[],
+  results: { option: string; votes: number }[] | undefined
+) {
+  const byOption = new Map((results ?? []).map((r) => [r.option, r.votes]));
+  const total = Array.from(byOption.values()).reduce((sum, v) => sum + v, 0);
+  return configOptions.map((option) => {
+    const votes = byOption.get(option) ?? 0;
+    return { option, votes, pct: total > 0 ? Math.round((votes / total) * 100) : 0 };
+  });
+}
+
+function PollResultBars({
+  options,
+  results,
+  chosenOption,
+  variant,
+}: {
+  options: string[];
+  results: { option: string; votes: number }[] | undefined;
+  chosenOption: string;
+  variant: "dark" | "light";
+}) {
+  const bars = pollBars(options, results);
+  return (
+    <div className="flex flex-col gap-1.5">
+      {bars.map((bar) => (
+        <div
+          key={bar.option}
+          className={cn(
+            "relative overflow-hidden rounded-md border px-3 py-1.5 text-sm",
+            variant === "dark"
+              ? bar.option === chosenOption
+                ? "border-white/40"
+                : "border-white/15"
+              : bar.option === chosenOption
+                ? "border-primary/40"
+                : "border-border"
+          )}
+        >
+          <div
+            className={cn(
+              "absolute inset-y-0 left-0",
+              variant === "dark" ? "bg-indigo-400/40" : "bg-indigo-500/15"
+            )}
+            style={{ width: `${bar.pct}%` }}
+          />
+          <div className="relative flex items-center justify-between gap-3">
+            <span>{bar.option}</span>
+            <span
+              className={cn(
+                "font-mono text-xs",
+                variant === "dark" ? "text-white/70" : "text-muted-foreground"
+              )}
+            >
+              {bar.pct}%
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VotedNote({ variant }: { variant: "dark" | "light" }) {
+  return (
+    <p
+      className={cn(
+        "flex items-center gap-1.5 text-xs",
+        variant === "dark" ? "text-white/60" : "text-muted-foreground"
+      )}
+    >
+      <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white">
+        ✓
+      </span>
+      Ya votaste
+    </p>
+  );
+}
+
 function CtaOverlay({
   cta,
   onLinkClick,
   onPollAnswer,
+  answeredOption,
+  results,
 }: {
   cta: Cta;
   onLinkClick: () => void;
   onPollAnswer: (option: string) => void;
+  answeredOption?: string;
+  results?: { option: string; votes: number }[];
 }) {
   const config = (cta.config ?? {}) as Record<string, unknown>;
 
@@ -751,9 +890,25 @@ function CtaOverlay({
   if (cta.type === "poll") {
     const question = String(config.question ?? "");
     const options = Array.isArray(config.options) ? (config.options as string[]) : [];
+
+    if (answeredOption) {
+      return (
+        <div className="absolute bottom-16 left-1/2 z-10 flex w-80 -translate-x-1/2 flex-col gap-2 rounded-md bg-black/85 p-4 text-white shadow-lg">
+          <p className="text-sm font-medium">📊 {question}</p>
+          <PollResultBars
+            options={options}
+            results={results}
+            chosenOption={answeredOption}
+            variant="dark"
+          />
+          <VotedNote variant="dark" />
+        </div>
+      );
+    }
+
     return (
       <div className="absolute bottom-16 left-1/2 z-10 flex w-80 -translate-x-1/2 flex-col gap-2 rounded-md bg-black/85 p-4 text-white shadow-lg">
-        <p className="text-sm font-medium">{question}</p>
+        <p className="text-sm font-medium">📊 {question}</p>
         <div className="flex flex-col gap-1.5">
           {options.map((option) => (
             <button

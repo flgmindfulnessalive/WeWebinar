@@ -656,6 +656,10 @@ export interface Database {
           is_ended: boolean;
         }[];
       };
+      get_cta_poll_results: {
+        Args: { p_access_token: string; p_cta_id: string };
+        Returns: { option: string | null; votes: number }[];
+      };
       get_registrant_messages: {
         Args: { p_access_token: string };
         Returns: {
