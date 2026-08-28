@@ -10,6 +10,15 @@ import { Button } from "@/components/ui/button";
 import { DashboardNav } from "./dashboard-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserMenu } from "./user-menu";
+import { ThemeToggle } from "./theme-toggle";
+
+// Sets the "dark" class on the dashboard's own wrapper (see id below) before
+// the browser paints it, straight from localStorage -- otherwise a returning
+// user set to dark mode would see a flash of the light theme on every load.
+// Scoped to this wrapper (not <html>) on purpose: dark mode is a backoffice
+// preference only, never the marketing site or a host's public webinar
+// pages, which keep their own always-light/brand-color theming regardless.
+const THEME_INIT_SCRIPT = `(function(){try{var r=document.getElementById("dashboard-theme-root");var s=localStorage.getItem("wewebinars-dashboard-theme");var d=s==="dark"||((s==="system"||!s)&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d)r.classList.add("dark");}catch(e){}})();`;
 
 const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 
@@ -51,7 +60,12 @@ export default async function DashboardLayout({
       : null;
 
   return (
-    <div className="grid min-h-svh grid-cols-1 md:grid-cols-[240px_1fr]">
+    <div
+      id="dashboard-theme-root"
+      suppressHydrationWarning
+      className="grid min-h-svh grid-cols-1 bg-background text-foreground md:grid-cols-[240px_1fr]"
+    >
+      <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       <aside className="hidden flex-col gap-6 border-r bg-muted/20 p-4 md:flex">
         <Link href="/dashboard" className="flex items-center gap-2 px-2 text-lg font-semibold tracking-tight">
           <Logo />
@@ -76,13 +90,16 @@ export default async function DashboardLayout({
               <span className="capitalize">{current.plan.key}</span>
             </div>
           </div>
-          <UserMenu
-            email={current.user.email}
-            displayName={current.user.display_name}
-          />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserMenu
+              email={current.user.email}
+              displayName={current.user.display_name}
+            />
+          </div>
         </header>
         {trialDaysLeft !== null && (
-          <div className="flex items-center justify-center gap-2 border-b bg-amber-50 px-4 py-2 text-center text-sm text-amber-900">
+          <div className="flex items-center justify-center gap-2 border-b bg-amber-50 px-4 py-2 text-center text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
             <CircleAlert className="size-4 shrink-0" />
             <span>
               Período de prueba: vence en {trialDaysLeft}{" "}
