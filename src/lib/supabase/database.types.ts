@@ -529,6 +529,43 @@ export interface Database {
           },
         ];
       };
+      webhook_deliveries: {
+        Row: {
+          id: string;
+          endpoint_id: string;
+          account_id: string;
+          event_type: string;
+          status_code: number | null;
+          succeeded: boolean;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["webhook_deliveries"]["Row"]
+        > & {
+          endpoint_id: string;
+          account_id: string;
+          event_type: string;
+          succeeded: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["webhook_deliveries"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey";
+            columns: ["endpoint_id"];
+            isOneToOne: false;
+            referencedRelation: "webhook_endpoints";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "webhook_deliveries_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       email_sends: {
         Row: {
           id: string;

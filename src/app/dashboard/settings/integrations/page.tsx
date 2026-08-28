@@ -46,11 +46,26 @@ export default async function IntegrationsSettingsPage() {
   }
 
   const supabase = await createClient();
-  const { data: webhooks } = await supabase
-    .from("webhook_endpoints")
-    .select("id, url, secret, event_types, is_active")
-    .eq("account_id", current.account.id)
-    .order("created_at", { ascending: false });
+  const [{ data: webhooks }, { data: deliveries }] = await Promise.all([
+    supabase
+      .from("webhook_endpoints")
+      .select("id, url, secret, event_types, is_active")
+      .eq("account_id", current.account.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("webhook_deliveries")
+      .select("id, endpoint_id, event_type, status_code, succeeded, error_message, created_at")
+      .eq("account_id", current.account.id)
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+
+  const deliveriesByEndpoint = new Map<string, NonNullable<typeof deliveries>>();
+  for (const delivery of deliveries ?? []) {
+    const list = deliveriesByEndpoint.get(delivery.endpoint_id) ?? [];
+    if (list.length < 5) list.push(delivery);
+    deliveriesByEndpoint.set(delivery.endpoint_id, list);
+  }
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -82,6 +97,7 @@ export default async function IntegrationsSettingsPage() {
                   secret={w.secret}
                   eventTypes={w.event_types}
                   isActive={w.is_active}
+                  deliveries={deliveriesByEndpoint.get(w.id) ?? []}
                 />
               ))}
             </div>

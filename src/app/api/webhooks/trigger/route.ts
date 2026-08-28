@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { dispatchWebhookEvent, type WebhookEventType } from "@/lib/webhooks";
 
+type DispatchableEventType = Exclude<WebhookEventType, "test">;
+
 // Unlike "registration" (register.ts, a Server Action) and "attendance"
 // (live/[token]/page.tsx, a Server Component), cta_click and completion
 // only ever happen inside the already-mounted live room -- there's no
@@ -10,7 +12,7 @@ import { dispatchWebhookEvent, type WebhookEventType } from "@/lib/webhooks";
 // instead. Same access_token pattern as /api/chat/ai-reply: resolve the
 // registrant/webinar/account server-side from the token, never trust
 // anything else about identity from the request body.
-const CLIENT_TRIGGERABLE_EVENTS: WebhookEventType[] = ["cta_click", "completion"];
+const CLIENT_TRIGGERABLE_EVENTS: DispatchableEventType[] = ["cta_click", "completion"];
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -22,7 +24,7 @@ export async function POST(request: Request) {
   if (
     !accessToken ||
     !eventType ||
-    !CLIENT_TRIGGERABLE_EVENTS.includes(eventType as WebhookEventType)
+    !CLIENT_TRIGGERABLE_EVENTS.includes(eventType as DispatchableEventType)
   ) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  await dispatchWebhookEvent(webinar.account_id, eventType as WebhookEventType, {
+  await dispatchWebhookEvent(webinar.account_id, eventType as DispatchableEventType, {
     webinar_id: webinar.id,
     webinar_title: webinar.title,
     name: registrant.name,
