@@ -40,7 +40,7 @@ export default async function WaitingRoomPage({
       .eq("status", "published")
       .maybeSingle(),
     supabase.from("waiting_room_config").select("*").eq("webinar_id", session.webinar_id).maybeSingle(),
-    supabase.from("account_public_profile").select("name, branding").eq("slug", accountSlug).maybeSingle(),
+    supabase.from("account_public_profile").select("name, branding, plan_id").eq("slug", accountSlug).maybeSingle(),
   ]);
   if (!webinar) notFound();
 
@@ -48,6 +48,11 @@ export default async function WaitingRoomPage({
 
   const branding = (account?.branding as Record<string, string | null>) ?? {};
   const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);
+
+  const { data: plan } = account?.plan_id
+    ? await supabase.from("plans").select("features").eq("id", account.plan_id).maybeSingle()
+    : { data: null };
+  const removeBranding = Boolean((plan?.features as Record<string, boolean> | null)?.remove_branding);
 
   return (
     <WaitingRoomClient
@@ -63,6 +68,7 @@ export default async function WaitingRoomPage({
       accountLogoUrl={branding.logo_url ?? null}
       brandColorA={brandColorA}
       brandColorB={brandColorB}
+      showPoweredBy={!removeBranding}
     />
   );
 }

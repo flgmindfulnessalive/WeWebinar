@@ -11,6 +11,7 @@ import { resolvePresenter } from "@/lib/presenter";
 import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
 import { FacebookPixel } from "@/components/facebook-pixel";
+import { PoweredByBadge } from "@/components/powered-by-badge";
 import { RegistrationForm } from "./registration-form";
 
 type RouteParams = { accountSlug: string; webinarSlug: string };
@@ -115,7 +116,7 @@ export default async function RegisterPage({
           .eq("webinar_id", webinar.id)
       : Promise.resolve({ data: [] }),
     account.plan_id
-      ? supabase.from("plans").select("max_attendees_per_webinar").eq("id", account.plan_id).maybeSingle()
+      ? supabase.from("plans").select("max_attendees_per_webinar, features").eq("id", account.plan_id).maybeSingle()
       : Promise.resolve({ data: null }),
     hasFixedSlots
       ? supabase.from("webinar_sessions").select("id, schedule_id, starts_at").eq("webinar_id", webinar.id)
@@ -137,6 +138,7 @@ export default async function RegisterPage({
   // existing webinar_sessions row (if anyone already registered for it)
   // and count how many registrants share that session.
   const maxAttendees = plan?.max_attendees_per_webinar ?? null;
+  const removeBranding = Boolean((plan?.features as Record<string, boolean> | null)?.remove_branding);
   const registeredCountBySessionId = new Map<string, number>();
   for (const r of sessionRegistrants ?? []) {
     if (!r.session_id) continue;
@@ -250,6 +252,10 @@ export default async function RegisterPage({
           {heroBackground}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-transparent to-transparent" />
 
+          {!removeBranding && (
+            <PoweredByBadge className="absolute bottom-8 left-14 z-10 text-white" />
+          )}
+
           <div className="relative z-10 flex flex-col gap-7">
             <div className="flex items-center gap-2.5">
               {accountBadge}
@@ -351,6 +357,9 @@ export default async function RegisterPage({
               )}
             </div>
             {registrationForm}
+            {!removeBranding && (
+              <PoweredByBadge className="mx-auto text-gray-400" />
+            )}
           </div>
         </div>
       </div>
