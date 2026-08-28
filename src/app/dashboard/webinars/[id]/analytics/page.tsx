@@ -13,6 +13,7 @@ import { HorizontalBarChart } from "./bar-chart";
 import { CtaClickersToggle } from "./cta-clickers";
 import { RegistrantsTable } from "./registrants-table";
 import { MessagesTable } from "./messages-table";
+import { Funnel } from "./funnel";
 
 function ctaLabel(config: unknown, type: string): string {
   const c = (config ?? {}) as Record<string, unknown>;
@@ -76,6 +77,29 @@ export default async function WebinarAnalyticsPage({
   const joinRatePct = registrantCount > 0 ? Math.round((attendeeCount / registrantCount) * 100) : 0;
   const watchPct = durationSeconds > 0 ? Math.round((avgWatchSeconds / durationSeconds) * 100) : 0;
 
+  const unsubscribedCount = (registrants ?? []).filter((r) => r.unsubscribed_at).length;
+  const unsubscribeRatePct =
+    registrantCount > 0 ? Math.round((unsubscribedCount / registrantCount) * 1000) / 10 : 0;
+
+  // Distinct people who clicked *any* CTA -- clickerRows is per-CTA, so the
+  // same registrant can appear more than once if they clicked several.
+  const uniqueClickerCount = new Set((clickerRows ?? []).map((row) => row.registrant_id)).size;
+  const watchedHalfCount =
+    durationSeconds > 0
+      ? Array.from(watchPositionByRegistrant.values()).filter(
+          (pos) => (pos ?? 0) >= durationSeconds * 0.5
+        ).length
+      : 0;
+
+  const funnelSteps = [
+    { label: "Registrados", sublabel: "base", value: registrantCount },
+    { label: "Asistieron", sublabel: "entraron a la sala", value: attendeeCount },
+    ...(durationSeconds > 0
+      ? [{ label: "Vieron +50%", sublabel: "del video", value: watchedHalfCount }]
+      : []),
+    { label: "Hicieron clic", sublabel: "en algún CTA", value: uniqueClickerCount },
+  ];
+
   const retentionPoints = (retentionRows ?? []).map((r) => ({
     minute: r.minute,
     viewersRemaining: r.viewers_remaining,
@@ -138,7 +162,7 @@ export default async function WebinarAnalyticsPage({
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Registrados" value={String(registrantCount)} />
         <StatTile
           label="Asistentes reales"
@@ -150,7 +174,23 @@ export default async function WebinarAnalyticsPage({
           value={secondsToClock(avgWatchSeconds)}
           sublabel={durationSeconds > 0 ? `${watchPct}% del video` : undefined}
         />
+        <StatTile
+          label="Baja de emails"
+          value={`${unsubscribeRatePct}%`}
+          sublabel={`${unsubscribedCount} de ${registrantCount} registrados`}
+        />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Embudo del webinar
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Funnel steps={funnelSteps} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

@@ -4,6 +4,14 @@ import { useState } from "react";
 
 type Bar = { id: string; label: string; sublabel?: string; value: number; valueLabel: string };
 
+// Brand indigo, same everywhere -- but bars aren't flat: fill opacity scales
+// with the bar's own value (relative to the max in the set), so the
+// strongest-performing CTA or poll option visibly "pops" without needing a
+// second hue or a rank badge. Single-hue magnitude encoding, not identity --
+// no CVD/categorical concerns, and the number label next to every bar means
+// nothing here is color-only.
+const BAR_COLOR = "#4f46e5";
+
 export function HorizontalBarChart({ bars }: { bars: Bar[] }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const maxValue = Math.max(1, ...bars.map((b) => b.value));
@@ -33,8 +41,10 @@ export function HorizontalBarChart({ bars }: { bars: Bar[] }) {
               className="h-full rounded-full transition-[width]"
               style={{
                 width: `${Math.max(2, (bar.value / maxValue) * 100)}%`,
-                backgroundColor: "var(--primary)",
-                opacity: hoveredId === null || hoveredId === bar.id ? 1 : 0.55,
+                backgroundColor: BAR_COLOR,
+                opacity:
+                  (bar.value === 0 ? 0.3 : 0.45 + 0.55 * (bar.value / maxValue)) *
+                  (hoveredId === null || hoveredId === bar.id ? 1 : 0.55),
               }}
             />
           </div>
