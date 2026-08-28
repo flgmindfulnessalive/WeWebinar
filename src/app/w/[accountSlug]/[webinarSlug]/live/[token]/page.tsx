@@ -46,6 +46,11 @@ export default async function LiveRoomPage({
         .order("timestamp_start_seconds", { ascending: true }),
     ]);
 
+  const { data: plan } = account?.plan_id
+    ? await supabase.from("plans").select("features").eq("id", account.plan_id).maybeSingle()
+    : { data: null };
+  const removeBranding = Boolean((plan?.features as Record<string, boolean> | null)?.remove_branding);
+
   const initialElapsedSeconds = Math.max(
     0,
     (new Date(session.server_now).getTime() - new Date(session.computed_session_start).getTime()) / 1000
@@ -84,6 +89,7 @@ export default async function LiveRoomPage({
       presenter={presenter}
       chatMessages={chatMessages ?? []}
       ctas={ctas ?? []}
+      showPoweredBy={!removeBranding}
     />
   );
 }

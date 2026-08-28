@@ -8,6 +8,7 @@ import { Calendar, Users } from "lucide-react";
 import { fakeViewerCount } from "@/lib/fake-viewers";
 import { buildIcsDataUri, googleCalendarUrl } from "@/lib/ics";
 import { DEFAULT_BRAND_COLOR_A, DEFAULT_BRAND_COLOR_B } from "@/lib/brand-colors";
+import { PoweredByBadge } from "@/components/powered-by-badge";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Presenter } from "@/lib/presenter";
 
@@ -36,6 +37,7 @@ export function WaitingRoomClient({
   accountLogoUrl,
   brandColorA = DEFAULT_BRAND_COLOR_A,
   brandColorB = DEFAULT_BRAND_COLOR_B,
+  showPoweredBy = true,
 }: {
   webinarId: string;
   webinarTitle: string;
@@ -53,6 +55,7 @@ export function WaitingRoomClient({
   accountLogoUrl?: string | null;
   brandColorA?: string;
   brandColorB?: string;
+  showPoweredBy?: boolean;
 }) {
   const router = useRouter();
 
@@ -302,6 +305,7 @@ export function WaitingRoomClient({
           {bulletsList && <div className="border-t border-white/10 pt-6">{bulletsList}</div>}
           {calendarButtons}
           {testimonialsBlock}
+          {showPoweredBy && <PoweredByBadge className="text-white/60" />}
         </div>
       </div>
 
@@ -353,6 +357,7 @@ export function WaitingRoomClient({
 
           {calendarButtons}
           {testimonialsBlock}
+          {showPoweredBy && <PoweredByBadge className="text-white/60" />}
         </div>
       </div>
     </div>

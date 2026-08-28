@@ -15,6 +15,7 @@ import {
   type LockedYouTubePlayerHandle,
 } from "@/components/locked-youtube-player";
 import { ChatPanel } from "./chat-panel";
+import { PoweredByBadge } from "@/components/powered-by-badge";
 import type { ChatMessageType, CtaType, Json } from "@/lib/supabase/database.types";
 import type { Presenter } from "@/lib/presenter";
 
@@ -66,6 +67,7 @@ export function LiveRoomClient({
   presenter,
   chatMessages,
   ctas,
+  showPoweredBy = true,
 }: {
   accessToken: string;
   webinarId: string;
@@ -82,6 +84,7 @@ export function LiveRoomClient({
   presenter: Presenter;
   chatMessages: ChatMessage[];
   ctas: Cta[];
+  showPoweredBy?: boolean;
 }) {
   const playerRef = useRef<LockedYouTubePlayerHandle | null>(null);
   // Set from an effect, never read during render — only inside effects and
@@ -342,6 +345,7 @@ export function LiveRoomClient({
           <span className="hidden text-xs text-muted-foreground sm:inline">
             {viewerCount} conectados
           </span>
+          {showPoweredBy && <PoweredByBadge className="hidden text-muted-foreground md:inline-flex" />}
           <Button
             size="sm"
             variant="outline"
