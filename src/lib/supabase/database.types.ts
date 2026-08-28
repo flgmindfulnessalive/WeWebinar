@@ -723,6 +723,29 @@ export interface Database {
           votes: number;
         }[];
       };
+      get_webinar_schedule_performance: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          kind: string;
+          schedule_id: string | null;
+          day_of_week: number | null;
+          time_of_day: string | null;
+          timezone: string | null;
+          offset_minutes: number | null;
+          registrant_count: number;
+          attendee_count: number;
+          attendance_pct: number;
+        }[];
+      };
+      get_webinar_concurrent_viewers: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          session_starts_at: string;
+          session_registrant_count: number;
+          minute: number;
+          concurrent_viewers: number;
+        }[];
+      };
       get_webinar_registrants: {
         Args: { p_webinar_id: string };
         Returns: {
