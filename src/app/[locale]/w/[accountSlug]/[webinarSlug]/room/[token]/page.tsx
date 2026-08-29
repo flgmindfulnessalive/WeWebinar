@@ -3,14 +3,15 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveBrandColors } from "@/lib/brand-colors";
 import { resolvePresenter } from "@/lib/presenter";
+import { routing } from "@/i18n/routing";
 import { WaitingRoomClient } from "./waiting-room-client";
 
 export default async function WaitingRoomPage({
   params,
 }: {
-  params: Promise<{ accountSlug: string; webinarSlug: string; token: string }>;
+  params: Promise<{ locale: string; accountSlug: string; webinarSlug: string; token: string }>;
 }) {
-  const { accountSlug, webinarSlug, token } = await params;
+  const { locale, accountSlug, webinarSlug, token } = await params;
   const supabase = await createClient();
 
   const { data: sessions, error } = await supabase.rpc("get_registrant_session", {
@@ -19,7 +20,10 @@ export default async function WaitingRoomPage({
   const session = sessions?.[0];
   if (error || !session) notFound();
 
-  const liveRoomPath = `/w/${accountSlug}/${webinarSlug}/live/${token}`;
+  // Preserve the locale prefix (e.g. /en) across the countdown ->
+  // live-room transition, same as the post-registration redirect.
+  const localePrefix = locale === routing.defaultLocale ? "" : `/${locale}`;
+  const liveRoomPath = `${localePrefix}/w/${accountSlug}/${webinarSlug}/live/${token}`;
 
   const remainingMs =
     new Date(session.computed_session_start).getTime() - new Date(session.server_now).getTime();

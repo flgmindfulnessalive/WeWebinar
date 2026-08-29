@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Calendar, Users } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import { fakeViewerCount } from "@/lib/fake-viewers";
 import { buildIcsDataUri, googleCalendarUrl } from "@/lib/ics";
@@ -58,6 +59,8 @@ export function WaitingRoomClient({
   showPoweredBy?: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("WaitingRoom");
+  const locale = useLocale();
 
   // Anchor once against the server-provided (sessionStart, serverNow) pair,
   // then tick locally using only the client's *elapsed* time since mount
@@ -103,16 +106,16 @@ export function WaitingRoomClient({
   // correct one to show here) by simply omitting the option.
   const formattedStart = useMemo(
     () =>
-      new Intl.DateTimeFormat("es", {
+      new Intl.DateTimeFormat(locale, {
         dateStyle: "long",
         timeStyle: "short",
       }).format(new Date(sessionStart)),
-    [sessionStart]
+    [sessionStart, locale]
   );
 
   const showCounter = config?.show_fake_counter !== false && !isFixedSchedule;
   const showCalendar = config?.show_calendar_button !== false;
-  const headline = config?.headline ?? "Tu webinar está por comenzar";
+  const headline = config?.headline ?? t("defaultHeadline");
 
   const glowRing = `radial-gradient(circle, ${brandColorA}59, ${brandColorB}1f 60%, transparent 75%)`;
   const gradientBadge = `linear-gradient(135deg, ${brandColorA}, ${brandColorB})`;
@@ -124,25 +127,25 @@ export function WaitingRoomClient({
           title: webinarTitle,
           startsAt: startDate,
           url: roomUrl,
-          description: `Accede al webinar acá: ${roomUrl}`,
+          description: t("icsDescription", { url: roomUrl }),
         })}
         download={`${webinarTitle}.ics`}
         className="flex items-center gap-2 rounded-lg border border-white/15 bg-white/6 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10"
       >
         <Calendar className="size-3.5" />
-        Agregar a mi calendario
+        {t("addToCalendar")}
       </a>
       <a
         href={googleCalendarUrl({
           title: webinarTitle,
           startsAt: startDate,
-          details: `Accede al webinar acá: ${roomUrl}`,
+          details: t("icsDescription", { url: roomUrl }),
         })}
         target="_blank"
         rel="noreferrer"
         className="flex items-center gap-2 rounded-lg border border-white/15 bg-white/6 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10"
       >
-        Google Calendar
+        {t("googleCalendar")}
       </a>
     </div>
   );
@@ -195,7 +198,9 @@ export function WaitingRoomClient({
 
   const bulletsList = bullets.length > 0 && (
     <div className="flex flex-col gap-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/55">Lo que vas a aprender</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
+        {t("whatYouWillLearn")}
+      </p>
       {bullets.map((bullet, i) => (
         <div key={i} className="flex items-start gap-2.5">
           <svg
@@ -219,7 +224,7 @@ export function WaitingRoomClient({
   const viewerPill = showCounter && (
     <div className="flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3.5 py-1.5">
       <Users className="size-3.5 text-indigo-200" />
-      <span className="text-xs text-white/75">{viewerCount} personas ya están esperando</span>
+      <span className="text-xs text-white/75">{t("waitingCount", { count: viewerCount })}</span>
     </div>
   );
 
@@ -290,7 +295,7 @@ export function WaitingRoomClient({
 
             <div className="flex items-center gap-2 text-sm text-white/65">
               <Calendar className="size-4" />
-              {formattedStart} <span className="text-xs">(hora local)</span>
+              {formattedStart} <span className="text-xs">{t("localTime")}</span>
             </div>
 
             {viewerPill}
@@ -335,7 +340,7 @@ export function WaitingRoomClient({
 
           <div className="flex items-center gap-2 text-sm text-white/65">
             <Calendar className="size-4" />
-            {formattedStart} <span className="text-xs">(hora local)</span>
+            {formattedStart} <span className="text-xs">{t("localTime")}</span>
           </div>
 
           <div className="relative flex size-[16rem] items-center justify-center">
