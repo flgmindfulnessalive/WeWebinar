@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveBrandColors } from "@/lib/brand-colors";
 import { resolvePresenter } from "@/lib/presenter";
-import { routing } from "@/i18n/routing";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { WaitingRoomClient } from "./waiting-room-client";
 
 export default async function WaitingRoomPage({
@@ -14,16 +15,24 @@ export default async function WaitingRoomPage({
   const { locale, accountSlug, webinarSlug, token } = await params;
   const supabase = await createClient();
 
-  const { data: sessions, error } = await supabase.rpc("get_registrant_session", {
-    p_access_token: token,
-  });
+  const [{ data: sessions, error }, { data: account }] = await Promise.all([
+    supabase.rpc("get_registrant_session", { p_access_token: token }),
+    supabase.from("account_public_profile").select("id, name, branding, plan_id").eq("slug", accountSlug).maybeSingle(),
+  ]);
   const session = sessions?.[0];
   if (error || !session) notFound();
 
-  // Preserve the locale prefix (e.g. /en) across the countdown ->
-  // live-room transition, same as the post-registration redirect.
-  const localePrefix = locale === routing.defaultLocale ? "" : `/${locale}`;
-  const liveRoomPath = `${localePrefix}/w/${accountSlug}/${webinarSlug}/live/${token}`;
+  // custom_domains is locked to account members via RLS -- this visitor is
+  // anonymous, so the admin client is required here (same reasoning as the
+  // registration page's generateMetadata).
+  const customDomainHostname = account
+    ? await getActiveCustomDomainHostname(createAdminClient(), account.id)
+    : null;
+  // A relative /w/<accountSlug>/... path would resolve wrong on a custom
+  // domain (which only ever serves /<webinarSlug>/... at its root -- see
+  // proxy.ts), so this is a full URL, used both for the immediate-start
+  // redirect below and for the client-side countdown-elapsed redirect.
+  const liveRoomPath = `${webinarPublicUrl(accountSlug, webinarSlug, customDomainHostname, locale)}/live/${token}`;
 
   const remainingMs =
     new Date(session.computed_session_start).getTime() - new Date(session.server_now).getTime();
@@ -34,7 +43,7 @@ export default async function WaitingRoomPage({
     redirect(liveRoomPath);
   }
 
-  const [{ data: webinar }, { data: waitingRoom }, { data: account }] = await Promise.all([
+  const [{ data: webinar }, { data: waitingRoom }] = await Promise.all([
     supabase
       .from("webinars")
       .select(
@@ -44,7 +53,6 @@ export default async function WaitingRoomPage({
       .eq("status", "published")
       .maybeSingle(),
     supabase.from("waiting_room_config").select("*").eq("webinar_id", session.webinar_id).maybeSingle(),
-    supabase.from("account_public_profile").select("name, branding, plan_id").eq("slug", accountSlug).maybeSingle(),
   ]);
   if (!webinar) notFound();
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -15,6 +16,7 @@ import {
   trialExpiringEmail,
 } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import type { Database } from "@/lib/supabase/database.types";
 
 const TRIAL_WARNING_WINDOW_DAYS = 3;
@@ -26,8 +28,19 @@ function isAuthorized(request: Request): boolean {
   return request.headers.get("authorization") === `Bearer ${secret}`;
 }
 
-function accessLinkFor(row: { account_slug: string; webinar_slug: string; access_token: string }) {
-  return `${process.env.NEXT_PUBLIC_APP_URL}/w/${row.account_slug}/${row.webinar_slug}/room/${row.access_token}`;
+// One custom-domain lookup per account, not per recipient -- a single run
+// can have many reminder recipients on the same webinar/account.
+async function accessLinkFor(
+  admin: SupabaseClient<Database>,
+  domainCache: Map<string, string | null>,
+  row: { account_id: string; account_slug: string; webinar_slug: string; access_token: string }
+): Promise<string> {
+  let hostname = domainCache.get(row.account_id);
+  if (hostname === undefined) {
+    hostname = await getActiveCustomDomainHostname(admin, row.account_id);
+    domainCache.set(row.account_id, hostname);
+  }
+  return `${webinarPublicUrl(row.account_slug, row.webinar_slug, hostname)}/room/${row.access_token}`;
 }
 
 function reminderUnsubscribeUrlFor(accessToken: string) {
@@ -57,6 +70,7 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
+  const domainCache = new Map<string, string | null>();
   let remindersSent = 0;
   let replaysSent = 0;
   const errors: string[] = [];
@@ -98,7 +112,7 @@ export async function GET(request: Request) {
         nombre: r.name,
         webinar_titulo: r.webinar_title,
         hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone),
-        link_acceso: accessLinkFor(r),
+        link_acceso: await accessLinkFor(admin, domainCache, r),
         marca_color: branding.brandColor,
       };
       const unsubscribeUrl = reminderUnsubscribeUrlFor(r.access_token);
@@ -146,7 +160,7 @@ export async function GET(request: Request) {
         nombre: r.name,
         webinar_titulo: r.webinar_title,
         hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone),
-        link_acceso: accessLinkFor(r),
+        link_acceso: await accessLinkFor(admin, domainCache, r),
         marca_color: branding.brandColor,
       };
       const unsubscribeUrl = reminderUnsubscribeUrlFor(r.access_token);

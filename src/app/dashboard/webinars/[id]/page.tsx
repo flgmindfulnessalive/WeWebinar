@@ -20,6 +20,7 @@ import { CtasSection } from "./ctas-section";
 import { EmailTemplatesSection } from "./email-templates-section";
 import { MarketingSection } from "./marketing-section";
 import { resolveEmailBranding } from "@/lib/email-templates";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import type { Database } from "@/lib/supabase/database.types";
 
 export default async function WebinarDetailPage({
@@ -102,7 +103,10 @@ export default async function WebinarDetailPage({
     members = membersRes.data ?? [];
   }
 
-  const publicPath = `/w/${current.account.slug}/${webinar.slug}`;
+  // Account member context, so the regular (RLS-bound) client can read
+  // custom_domains directly -- no admin client needed here.
+  const customDomainHostname = await getActiveCustomDomainHostname(supabase, current.account.id);
+  const publicPath = webinarPublicUrl(current.account.slug, webinar.slug, customDomainHostname);
 
   return (
     <div className="flex flex-col gap-6">

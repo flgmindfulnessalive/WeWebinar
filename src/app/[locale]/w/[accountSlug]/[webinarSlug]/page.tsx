@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAccount } from "@/lib/data/account";
 import { computeUpcomingOccurrences } from "@/lib/scheduling";
 import { resolveBrandColors } from "@/lib/brand-colors";
@@ -14,7 +15,7 @@ import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
 import { FacebookPixel } from "@/components/facebook-pixel";
 import { PoweredByBadge } from "@/components/powered-by-badge";
-import { routing } from "@/i18n/routing";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { RegistrationForm } from "./registration-form";
 
 type RouteParams = { locale: string; accountSlug: string; webinarSlug: string };
@@ -29,7 +30,7 @@ export async function generateMetadata({
 }: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
-  const { accountSlug, webinarSlug } = await params;
+  const { locale, accountSlug, webinarSlug } = await params;
   const supabase = await createClient();
 
   const { data: account } = await supabase
@@ -51,11 +52,20 @@ export async function generateMetadata({
   const title = `${webinar.title} · ${account.name}`;
   const description =
     webinar.description || `Webinar gratuito presentado por ${account.name}. Reserva tu lugar.`;
+  // The URL shared/scraped by Slack/WhatsApp previews and search engines --
+  // without this, Next falls back to metadataBase (always the platform's
+  // own domain) even when the account has an active custom domain, so a
+  // link shared from webinars.cliente.com would preview as wewebinars.com.
+  // custom_domains is locked to account members via RLS, so this admin
+  // client is required here (the caller is an anonymous visitor).
+  const customDomainHostname = await getActiveCustomDomainHostname(createAdminClient(), account.id);
+  const url = webinarPublicUrl(accountSlug, webinarSlug, customDomainHostname, locale);
 
   return {
     title,
     description,
-    openGraph: { title, description },
+    alternates: { canonical: url },
+    openGraph: { title, description, url },
     twitter: { title, description },
   };
 }
@@ -67,7 +77,7 @@ export default async function RegisterPage({
   params: Promise<RouteParams>;
   searchParams: Promise<{ preview?: string }>;
 }) {
-  const { locale, accountSlug, webinarSlug } = await params;
+  const { accountSlug, webinarSlug } = await params;
   const { preview } = await searchParams;
   const supabase = await createClient();
   const t = await getTranslations("Register");
@@ -177,10 +187,6 @@ export default async function RegisterPage({
   const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
   const badgeLabel = webinar.category?.toUpperCase() || t("defaultBadge");
   const durationSeconds = webinar.duration_seconds;
-  // Preserve the locale prefix (e.g. /en) across the post-registration
-  // redirect to the room -- without this, registering from /en/w/... would
-  // silently drop back to the default-locale (es) room URL.
-  const localePrefix = locale === routing.defaultLocale ? "" : `/${locale}`;
 
   // Same host-uploaded background already used on the waiting room
   // (waiting_room_config.background_url) -- replaces the default animated
@@ -217,7 +223,6 @@ export default async function RegisterPage({
   const registrationForm = (
     <RegistrationForm
       webinarId={webinar.id}
-      returnTo={`${localePrefix}/w/${accountSlug}/${webinarSlug}`}
       scheduleMode={webinar.schedule_mode}
       offsets={webinar.just_in_time_offsets_minutes}
       occurrences={occurrences}

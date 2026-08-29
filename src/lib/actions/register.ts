@@ -15,6 +15,7 @@ import {
 import { sendEmail } from "@/lib/resend";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
 import { syncBrevoContact } from "@/lib/brevo";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 
 export type RegisterActionState = { error: string } | null;
 
@@ -94,17 +95,6 @@ export async function registerForWebinar(
   formData: FormData
 ): Promise<RegisterActionState> {
   const webinarId = String(formData.get("webinar_id") ?? "");
-  const returnToRaw = String(formData.get("return_to") ?? "");
-  // return_to is a client-supplied hidden field, always set by our own UI to
-  // a relative path like /w/<slug>/<slug> -- but a raw POST could put
-  // anything there. Used both in the emailed access link and as the actual
-  // redirect() target below, so an unvalidated value is an open redirect.
-  // Require a single leading slash (not "//", which browsers treat as
-  // protocol-relative to another host) and no embedded scheme.
-  const returnTo =
-    returnToRaw.startsWith("/") && !returnToRaw.startsWith("//") && !returnToRaw.includes("://")
-      ? returnToRaw
-      : "";
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim() || null;
@@ -159,15 +149,30 @@ export async function registerForWebinar(
     return { error: t("genericError") };
   }
 
-  const accessLink = `${process.env.NEXT_PUBLIC_APP_URL}${returnTo}/room/${result.access_token}`;
-
   const { data: webinar } = await supabase
     .from("webinars")
-    .select("title, account_id, brevo_list_id")
+    .select("title, slug, account_id, brevo_list_id")
     .eq("id", webinarId)
     .single();
 
+  // Fallback keeps the redirect well-formed even in the
+  // should-never-happen case the webinar vanished between the RPC above
+  // succeeding and this re-fetch.
+  let roomUrl = `${process.env.NEXT_PUBLIC_APP_URL}/room/${result.access_token}`;
+
   if (webinar) {
+    // account_public_profile (not `accounts` directly) and the admin
+    // client, same reasoning as the Brevo lookup below: this is an
+    // anonymous visitor's request, and `accounts`/`custom_domains` are
+    // locked down to account members via RLS.
+    const admin = createAdminClient();
+    const [{ data: account }, customDomainHostname] = await Promise.all([
+      admin.from("account_public_profile").select("slug").eq("id", webinar.account_id).maybeSingle(),
+      getActiveCustomDomainHostname(admin, webinar.account_id),
+    ]);
+    const publicUrl = webinarPublicUrl(account?.slug ?? "", webinar.slug, customDomainHostname, locale);
+    roomUrl = `${publicUrl}/room/${result.access_token}`;
+
     // Never let an email hiccup block a registration that already
     // succeeded — the attendee still has their access link either way.
     try {
@@ -180,7 +185,7 @@ export async function registerForWebinar(
         computedSessionStart: result.computed_session_start,
         visitorTimezone,
         accessToken: result.access_token,
-        accessLink,
+        accessLink: roomUrl,
         locale,
       });
     } catch (err) {
@@ -197,19 +202,16 @@ export async function registerForWebinar(
     });
 
     if (webinar.brevo_list_id) {
-      // Best-effort, same rationale as the confirmation email above -- and
-      // brevo_api_key lives on `accounts`, which this (anonymous-visitor)
-      // client can't read directly, so it's fetched via the admin client.
+      // Best-effort, same rationale as the confirmation email above.
       try {
-        const admin = createAdminClient();
-        const { data: account } = await admin
+        const { data: accountKeys } = await admin
           .from("accounts")
           .select("brevo_api_key")
           .eq("id", webinar.account_id)
           .maybeSingle();
-        if (account?.brevo_api_key) {
+        if (accountKeys?.brevo_api_key) {
           await syncBrevoContact({
-            apiKey: account.brevo_api_key,
+            apiKey: accountKeys.brevo_api_key,
             listId: webinar.brevo_list_id,
             email,
             name,
@@ -222,5 +224,9 @@ export async function registerForWebinar(
     }
   }
 
-  redirect(`${returnTo}/room/${result.access_token}`);
+  // Absolute URL (custom domain or not) rather than a relative path -- a
+  // relative /w/<accountSlug>/<webinarSlug>/room/... would resolve wrong
+  // on a custom domain, which only ever serves /<webinarSlug>/... at its
+  // root (see proxy.ts).
+  redirect(roomUrl);
 }
