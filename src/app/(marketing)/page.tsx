@@ -262,7 +262,13 @@ export default function HomePage() {
       <section className="mx-auto max-w-5xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Tu mejor webinar no debería depender de tu agenda
+            Tu mejor webinar no debería depender{" "}
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+            >
+              de tu agenda
+            </span>
           </h2>
           <p className="mt-2 text-muted-foreground">
             Un webinar en vivo depende de que estés ahí, a esa hora, otra vez. Uno evergreen
