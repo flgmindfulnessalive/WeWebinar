@@ -401,6 +401,35 @@
     "checkoutFailed": "No se pudo iniciar el checkout.",
     "portalFailed": "No se pudo abrir el portal."
   },
+  "TeamSettings": {
+    "title": "Equipo",
+    "singleUserPlan": "El plan {plan} incluye un único usuario. Pasa a Pro o Business para invitar Editores y Viewers.",
+    "inviteTitle": "Invitar usuario",
+    "membersTitle": "Miembros",
+    "pendingInvitationsTitle": "Invitaciones pendientes",
+    "remove": "Quitar",
+    "confirmRemove": "¿Quitar a este miembro de la cuenta? Perderá acceso de inmediato.",
+    "revoke": "Revocar",
+    "confirmRevoke": "¿Revocar esta invitación?"
+  },
+  "InviteForm": {
+    "emailLabel": "Email",
+    "roleLabel": "Rol",
+    "roleEditor": "Editor",
+    "roleViewer": "Viewer",
+    "inviting": "Invitando...",
+    "invite": "Invitar"
+  },
+  "TeamActions": {
+    "emailRequired": "El email es obligatorio.",
+    "invalidRole": "Rol inválido.",
+    "ownerOnlyInvite": "Solo el Owner puede invitar usuarios.",
+    "pendingInvitationExists": "Ya hay una invitación pendiente para ese email.",
+    "userLimitReached": "Llegaste al límite de usuarios de tu plan. Pasa a un plan superior para invitar a más gente.",
+    "ownerOnlyChangeRole": "Solo el Owner puede cambiar roles.",
+    "cannotDemoteLastOwner": "No puedes quitarle el rol de Owner al único Owner de la cuenta.",
+    "cannotChangeOwnRole": "No puedes cambiar tu propio rol."
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",

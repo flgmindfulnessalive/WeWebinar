@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -15,13 +16,14 @@ export default async function TeamPage() {
     redirect("/dashboard");
   }
 
+  const t = await getTranslations("TeamSettings");
+
   if ((current.plan.max_users ?? 2) <= 1) {
     return (
       <div className="flex max-w-lg flex-col gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Equipo</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
-          El plan {current.plan.name} incluye un único usuario. Pasa a Pro o
-          Business para invitar Editores y Viewers.
+          {t("singleUserPlan", { plan: current.plan.name })}
         </p>
       </div>
     );
@@ -43,11 +45,11 @@ export default async function TeamPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Equipo</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Invitar usuario</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("inviteTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <InviteForm />
@@ -56,7 +58,7 @@ export default async function TeamPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Miembros</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("membersTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="divide-y p-0">
           {members?.map((member) => (
@@ -88,7 +90,7 @@ export default async function TeamPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
-              Invitaciones pendientes
+              {t("pendingInvitationsTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="divide-y p-0">

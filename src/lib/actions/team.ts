@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -14,19 +15,20 @@ export async function inviteMember(
   _prevState: TeamActionState,
   formData: FormData
 ): Promise<TeamActionState> {
+  const t = await getTranslations("TeamActions");
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = String(formData.get("role") ?? "editor") as UserRole;
 
   if (!email) {
-    return { error: "El email es obligatorio." };
+    return { error: t("emailRequired") };
   }
   if (role !== "editor" && role !== "viewer") {
-    return { error: "Rol inválido." };
+    return { error: t("invalidRole") };
   }
 
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
-    return { error: "Solo el Owner puede invitar usuarios." };
+    return { error: t("ownerOnlyInvite") };
   }
 
   const supabase = await createClient();
@@ -41,11 +43,11 @@ export async function inviteMember(
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Ya hay una invitación pendiente para ese email." };
+      return { error: t("pendingInvitationExists") };
     }
     return {
       error: error.message.startsWith("plan_limit_exceeded")
-        ? "Llegaste al límite de usuarios de tu plan. Pasa a un plan superior para invitar a más gente."
+        ? t("userLimitReached")
         : error.message,
     };
   }
@@ -88,13 +90,15 @@ export async function updateMemberRole(
   userId: string,
   role: UserRole
 ): Promise<TeamActionState> {
+  const t = await getTranslations("TeamActions");
+
   if (role !== "editor" && role !== "viewer") {
-    return { error: "Rol inválido." };
+    return { error: t("invalidRole") };
   }
 
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
-    return { error: "Solo el Owner puede cambiar roles." };
+    return { error: t("ownerOnlyChangeRole") };
   }
 
   const supabase = await createClient();
@@ -105,9 +109,9 @@ export async function updateMemberRole(
   if (error) {
     return {
       error: error.message.includes("cannot demote the last owner")
-        ? "No puedes quitarle el rol de Owner al único Owner de la cuenta."
+        ? t("cannotDemoteLastOwner")
         : error.message.includes("cannot change your own role")
-          ? "No puedes cambiar tu propio rol."
+          ? t("cannotChangeOwnRole")
           : error.message,
     };
   }
