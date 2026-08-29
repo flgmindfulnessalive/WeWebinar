@@ -3,7 +3,9 @@
     "pricing": "Precios",
     "login": "Ingresar",
     "signup": "Empezar ahora",
-    "footer": "© {year} WeWebinars. Todos los derechos reservados."
+    "footer": "© {year} WeWebinars. Todos los derechos reservados.",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
   },
   "AuthLayout": {
     "tagline": "Webinars evergreen que se sienten en vivo."

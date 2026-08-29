@@ -3,7 +3,9 @@
     "pricing": "Pricing",
     "login": "Log in",
     "signup": "Get started",
-    "footer": "© {year} WeWebinars. All rights reserved."
+    "footer": "© {year} WeWebinars. All rights reserved.",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "AuthLayout": {
     "tagline": "Evergreen webinars that feel live."
