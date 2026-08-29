@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Building2, Mail, Layers } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
-  { href: "/admin", label: "Resumen", icon: LayoutDashboard },
-  { href: "/admin/accounts", label: "Cuentas", icon: Building2 },
-  { href: "/admin/leads", label: "Leads Enterprise", icon: Mail },
-  { href: "/admin/plans", label: "Planes", icon: Layers },
+const NAV_ITEMS: {
+  href: string;
+  labelKey: "summary" | "accounts" | "leads" | "plans";
+  icon: typeof LayoutDashboard;
+}[] = [
+  { href: "/admin", labelKey: "summary", icon: LayoutDashboard },
+  { href: "/admin/accounts", labelKey: "accounts", icon: Building2 },
+  { href: "/admin/leads", labelKey: "leads", icon: Mail },
+  { href: "/admin/plans", labelKey: "plans", icon: Layers },
 ];
 
 export function AdminNav() {
   const pathname = usePathname();
+  const t = useTranslations("AdminNav");
 
   return (
     <nav className="flex flex-col gap-1">
@@ -33,7 +39,7 @@ export function AdminNav() {
             )}
           >
             <Icon className="size-4" />
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         );
       })}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import { requirePlatformAdmin } from "@/lib/data/admin";
 import { Logo } from "@/components/logo";
@@ -15,6 +15,7 @@ export default async function AdminLayout({
 }) {
   const admin = await requirePlatformAdmin();
   const messages = await getMessages();
+  const t = await getTranslations("AdminLayout");
 
   return (
     <NextIntlClientProvider messages={messages}>
@@ -29,7 +30,7 @@ export default async function AdminLayout({
 
         <div className="flex flex-col">
           <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
-            <div className="text-sm text-muted-foreground">Panel de Super Admin</div>
+            <div className="text-sm text-muted-foreground">{t("panelTitle")}</div>
             <div className="flex shrink-0 items-center gap-3">
               <LanguageToggle />
               <UserMenu email={admin.email} displayName={null} />

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { signOut } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +12,7 @@ export function UserMenu({
   email: string;
   displayName: string | null;
 }) {
+  const t = useTranslations("UserMenu");
   return (
     <div className="flex items-center gap-3">
       <span className="hidden text-sm text-muted-foreground sm:inline">
@@ -17,7 +20,7 @@ export function UserMenu({
       </span>
       <form action={signOut}>
         <Button type="submit" variant="ghost" size="sm">
-          Salir
+          {t("signOut")}
         </Button>
       </form>
     </div>
