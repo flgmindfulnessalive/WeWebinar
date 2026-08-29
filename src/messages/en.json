@@ -681,10 +681,14 @@
     "cancel": "Cancel",
     "replaceVideo": "Replace video",
     "providerYoutube": "YouTube",
+    "providerVimeo": "Vimeo",
     "providerDirectUrl": "Your own video",
     "directUrlLabel": "Direct video URL (MP4)",
     "directUrlHint": "Paste the direct link to a video you host yourself (your own server, S3, Cloudflare R2, Bunny, etc.). It needs to be a public HTTPS link that resolves to the video file itself, not a page -- we don't host or stream the video, we just play it from your link.",
-    "invalidDirectUrl": "That doesn't look like a valid HTTPS URL. Try pasting the full URL of the video file."
+    "invalidDirectUrl": "That doesn't look like a valid HTTPS URL. Try pasting the full URL of the video file.",
+    "vimeoLinkLabel": "Vimeo link",
+    "vimeoHint": "Paste your Vimeo video's link. If the video is private with \"Hide from Vimeo\", paste the full link exactly as Vimeo gives it to you (it includes an access code) -- without that, the video won't be able to play here.",
+    "invalidVimeoLink": "I couldn't recognize that Vimeo link. Try pasting the full URL."
   },
   "ScheduleSection": {
     "modeLabel": "Mode",

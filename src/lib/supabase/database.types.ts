@@ -20,7 +20,7 @@ export type SubscriptionStatus =
 export type WebinarStatus = "draft" | "published" | "archived";
 export type ScheduleMode = "fixed" | "just_in_time" | "both";
 export type CtaType = "link" | "poll" | "overlay";
-export type VideoProvider = "youtube" | "direct_url";
+export type VideoProvider = "youtube" | "direct_url" | "vimeo";
 export type ChatMessageType = "message" | "question" | "host_reply";
 export type ViewerEventType =
   | "join"
