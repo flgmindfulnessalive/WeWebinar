@@ -118,6 +118,31 @@
       "commercialRights": "Commercial Rights (Unlimited)"
     }
   },
+  "Register": {
+    "preview": "Preview — this webinar isn't published yet. Only you can see this page.",
+    "presents": "{name} presents",
+    "defaultBadge": "FREE WEBINAR",
+    "reserveTitle": "Reserve your spot",
+    "reserveSubtitle": "Choose a time and save your free spot.",
+    "presentedBy": "Presented by {name}",
+    "form": {
+      "tabFixed": "Choose a time",
+      "tabJit": "Start now",
+      "chooseTime": "Choose a time ({timezone})",
+      "spotsFull": "Full",
+      "whenStart": "When do you want to start?",
+      "inMinutes": "In {minutes} min",
+      "namePlaceholder": "Full name",
+      "emailPlaceholder": "Email",
+      "previewNotice": "This is a preview — registrations are disabled until you publish the webinar.",
+      "submitting": "Reserving...",
+      "submit": "Reserve my spot",
+      "privacyNotice": "Your data is protected. No spam.",
+      "allFull": "All available times are full",
+      "tryLater": "Check back later for new dates.",
+      "noSchedulesYet": "This webinar doesn't have any available times yet. Check back later."
+    }
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",

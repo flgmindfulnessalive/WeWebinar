@@ -118,6 +118,31 @@
       "commercialRights": "Commercial Rights (Unlimited)"
     }
   },
+  "Register": {
+    "preview": "Vista previa — este webinar todavía no está publicado. Solo tú puedes ver esta página.",
+    "presents": "{name} presenta",
+    "defaultBadge": "WEBINAR GRATUITO",
+    "reserveTitle": "Reserva tu lugar",
+    "reserveSubtitle": "Elige un horario y guarda tu cupo gratis.",
+    "presentedBy": "Presenta {name}",
+    "form": {
+      "tabFixed": "Elegir horario",
+      "tabJit": "Empezar ahora",
+      "chooseTime": "Elige un horario ({timezone})",
+      "spotsFull": "Cupo lleno",
+      "whenStart": "¿Cuándo quieres empezar?",
+      "inMinutes": "En {minutes} min",
+      "namePlaceholder": "Nombre completo",
+      "emailPlaceholder": "Email",
+      "previewNotice": "Esto es una vista previa — los registros están desactivados hasta que publiques el webinar.",
+      "submitting": "Reservando...",
+      "submit": "Reservar mi lugar",
+      "privacyNotice": "Tus datos están protegidos. Sin spam.",
+      "allFull": "Todos los horarios disponibles están completos",
+      "tryLater": "Vuelve a intentarlo más tarde para ver nuevas fechas.",
+      "noSchedulesYet": "Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde."
+    }
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",

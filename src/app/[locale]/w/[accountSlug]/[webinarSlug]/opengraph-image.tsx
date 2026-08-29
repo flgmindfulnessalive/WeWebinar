@@ -20,9 +20,10 @@ const TITLE_MAX_LENGTH = 70;
 export default async function WebinarOpengraphImage({
   params,
 }: {
-  params: Promise<{ accountSlug: string; webinarSlug: string }>;
+  params: Promise<{ locale: string; accountSlug: string; webinarSlug: string }>;
 }) {
-  const { accountSlug, webinarSlug } = await params;
+  const { locale, accountSlug, webinarSlug } = await params;
+  const isEnglish = locale === "en";
   const supabase = await createClient();
 
   const { data: account } = await supabase
@@ -44,7 +45,7 @@ export default async function WebinarOpengraphImage({
   const branding = (account?.branding as Record<string, string | null>) ?? {};
   const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);
   const accountName = account?.name ?? "WeWebinars";
-  const rawTitle = webinar?.title ?? "Webinar en vivo";
+  const rawTitle = webinar?.title ?? (isEnglish ? "Live webinar" : "Webinar en vivo");
   const title =
     rawTitle.length > TITLE_MAX_LENGTH
       ? `${rawTitle.slice(0, TITLE_MAX_LENGTH - 1)}…`
@@ -99,7 +100,9 @@ export default async function WebinarOpengraphImage({
               {accountName.slice(0, 2).toUpperCase()}
             </div>
           )}
-          <div style={{ display: "flex", fontSize: 28, opacity: 0.9 }}>{accountName} presenta</div>
+          <div style={{ display: "flex", fontSize: 28, opacity: 0.9 }}>
+            {isEnglish ? `${accountName} presents` : `${accountName} presenta`}
+          </div>
         </div>
 
         <div
@@ -130,7 +133,7 @@ export default async function WebinarOpengraphImage({
               <polygon points="0,0 46,26 0,52" fill="#ffffff" />
             </svg>
           </div>
-          Webinar gratuito · WeWebinars
+          {isEnglish ? "Free webinar · WeWebinars" : "Webinar gratuito · WeWebinars"}
         </div>
       </div>
     ),
