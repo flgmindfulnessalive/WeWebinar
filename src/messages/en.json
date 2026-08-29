@@ -985,6 +985,11 @@
     "testimonialsLabel": "Testimonials (optional) — format \"Name: text\", one per line",
     "calendarButtonLabel": "\"Add to my calendar\" button",
     "fakeCounterLabel": "Connected viewers counter",
+    "fakeViewerRangeLabel": "Simulated viewer range",
+    "fakeViewerRangeHint": "How many simulated people show as connected during the Live (it varies within this range over the course of the stream).",
+    "fakeViewerMinLabel": "Minimum viewers",
+    "fakeViewerMaxLabel": "Maximum viewers",
+    "fakeViewerRangeSeparator": "to",
     "saveWaitingRoom": "Save waiting room"
   }
 }

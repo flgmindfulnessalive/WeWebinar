@@ -99,3 +99,13 @@ export function fakeViewerCount({
   const value = min + envelope * range + noise * range * 0.08;
   return Math.round(Math.max(min, Math.min(max, value)));
 }
+
+// Picked once per webinar at creation time (not part of the deterministic
+// per-session curve above) so different webinars don't all peak at the same
+// "80 conectados" -- each gets its own plausible ceiling instead. The owner
+// can still override both numbers afterward from the waiting room settings.
+export function randomFakeViewerRange(): { min: number; max: number } {
+  const max = 35 + Math.floor(Math.random() * (98 - 35 + 1)); // 35..98
+  const min = Math.max(5, Math.round(max * 0.3));
+  return { min, max };
+}

@@ -985,6 +985,11 @@
     "testimonialsLabel": "Testimonios (opcional) — formato \"Nombre: texto\", uno por línea",
     "calendarButtonLabel": "Botón \"Agregar a mi calendario\"",
     "fakeCounterLabel": "Contador de conectados",
+    "fakeViewerRangeLabel": "Rango de conectados ficticios",
+    "fakeViewerRangeHint": "Cuántas personas simuladas se muestran conectadas durante el Live (varía dentro de este rango a lo largo de la transmisión).",
+    "fakeViewerMinLabel": "Mínimo de conectados",
+    "fakeViewerMaxLabel": "Máximo de conectados",
+    "fakeViewerRangeSeparator": "a",
     "saveWaitingRoom": "Guardar sala de espera"
   }
 }

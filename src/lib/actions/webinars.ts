@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { slugify } from "@/lib/slug";
+import { randomFakeViewerRange } from "@/lib/fake-viewers";
 import { webinarPublishedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 
@@ -30,6 +31,8 @@ export async function createWebinar(
     redirect("/onboarding");
   }
 
+  const { min: fakeViewerMin, max: fakeViewerMax } = randomFakeViewerRange();
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("webinars")
@@ -41,6 +44,8 @@ export async function createWebinar(
       category: category || null,
       slug: slugify(title) || "webinar",
       status: "draft",
+      fake_viewer_min: fakeViewerMin,
+      fake_viewer_max: fakeViewerMax,
     })
     .select("id")
     .single();
