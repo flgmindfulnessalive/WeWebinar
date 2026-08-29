@@ -599,5 +599,20 @@
     "invalidMode": "Modo de programación inválido.",
     "offsetsRequired": "Define al menos una opción de minutos para empezar.",
     "timeAndTimezoneRequired": "Hora y zona horaria son obligatorias."
+  },
+  "WaitingRoomSection": {
+    "headlineLabel": "Mensaje superior",
+    "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo acá.",
+    "headlinePlaceholder": "Tu webinar está por comenzar",
+    "subheadlineLabel": "Subtítulo",
+    "backgroundUrlLabel": "Imagen o video de fondo (URL)",
+    "typeLabel": "Tipo",
+    "typeImage": "Imagen",
+    "typeVideo": "Video",
+    "bulletsLabel": "Lo que van a aprender (un ítem por línea)",
+    "testimonialsLabel": "Testimonios (opcional) — formato \"Nombre: texto\", uno por línea",
+    "calendarButtonLabel": "Botón \"Agregar a mi calendario\"",
+    "fakeCounterLabel": "Contador de conectados",
+    "saveWaitingRoom": "Guardar sala de espera"
   }
 }

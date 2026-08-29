@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { upsertWaitingRoom } from "@/lib/actions/waiting-room";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,8 @@ export function WaitingRoomSection({
   config: WaitingRoomConfig;
 }) {
   const [state, formAction, isPending] = useActionState(upsertWaitingRoom, null);
+  const t = useTranslations("WaitingRoomSection");
+  const tCommon = useTranslations("SettingsCommon");
 
   const bullets = (Array.isArray(config?.bullets) ? config.bullets : []) as string[];
   const testimonials = (
@@ -38,21 +41,18 @@ export function WaitingRoomSection({
       <input type="hidden" name="webinar_id" value={webinarId} />
 
       <div className="grid gap-2">
-        <Label htmlFor="headline">Mensaje superior</Label>
-        <p className="text-xs text-muted-foreground">
-          Aparece arriba del título del webinar (que ya se muestra
-          automáticamente) — no hace falta repetirlo acá.
-        </p>
+        <Label htmlFor="headline">{t("headlineLabel")}</Label>
+        <p className="text-xs text-muted-foreground">{t("headlineHint")}</p>
         <Input
           id="headline"
           name="headline"
           defaultValue={config?.headline ?? ""}
-          placeholder="Tu webinar está por comenzar"
+          placeholder={t("headlinePlaceholder")}
         />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="subheadline">Subtítulo</Label>
+        <Label htmlFor="subheadline">{t("subheadlineLabel")}</Label>
         <Input
           id="subheadline"
           name="subheadline"
@@ -62,7 +62,7 @@ export function WaitingRoomSection({
 
       <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
         <div className="grid gap-2">
-          <Label htmlFor="background_url">Imagen o video de fondo (URL)</Label>
+          <Label htmlFor="background_url">{t("backgroundUrlLabel")}</Label>
           <Input
             id="background_url"
             name="background_url"
@@ -70,23 +70,21 @@ export function WaitingRoomSection({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="background_type">Tipo</Label>
+          <Label htmlFor="background_type">{t("typeLabel")}</Label>
           <select
             id="background_type"
             name="background_type"
             defaultValue={config?.background_type ?? "image"}
             className="flex h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            <option value="image">Imagen</option>
-            <option value="video">Video</option>
+            <option value="image">{t("typeImage")}</option>
+            <option value="video">{t("typeVideo")}</option>
           </select>
         </div>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="bullets">
-          Lo que van a aprender (un ítem por línea)
-        </Label>
+        <Label htmlFor="bullets">{t("bulletsLabel")}</Label>
         <textarea
           id="bullets"
           name="bullets"
@@ -97,9 +95,7 @@ export function WaitingRoomSection({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="testimonials">
-          Testimonios (opcional) — formato &quot;Nombre: texto&quot;, uno por línea
-        </Label>
+        <Label htmlFor="testimonials">{t("testimonialsLabel")}</Label>
         <textarea
           id="testimonials"
           name="testimonials"
@@ -119,7 +115,7 @@ export function WaitingRoomSection({
             defaultChecked={config?.show_calendar_button ?? true}
             className="size-4"
           />
-          Botón &quot;Agregar a mi calendario&quot;
+          {t("calendarButtonLabel")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -128,14 +124,14 @@ export function WaitingRoomSection({
             defaultChecked={config?.show_fake_counter ?? true}
             className="size-4"
           />
-          Contador de conectados
+          {t("fakeCounterLabel")}
         </label>
       </div>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
       <Button type="submit" disabled={isPending} className="w-fit">
-        {isPending ? "Guardando..." : "Guardar sala de espera"}
+        {isPending ? tCommon("saving") : t("saveWaitingRoom")}
       </Button>
     </form>
   );

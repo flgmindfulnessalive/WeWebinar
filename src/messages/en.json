@@ -599,5 +599,20 @@
     "invalidMode": "Invalid scheduling mode.",
     "offsetsRequired": "Set at least one start-time option in minutes.",
     "timeAndTimezoneRequired": "Time and timezone are required."
+  },
+  "WaitingRoomSection": {
+    "headlineLabel": "Top message",
+    "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",
+    "headlinePlaceholder": "Your webinar is about to start",
+    "subheadlineLabel": "Subheadline",
+    "backgroundUrlLabel": "Background image or video (URL)",
+    "typeLabel": "Type",
+    "typeImage": "Image",
+    "typeVideo": "Video",
+    "bulletsLabel": "What they'll learn (one item per line)",
+    "testimonialsLabel": "Testimonials (optional) — format \"Name: text\", one per line",
+    "calendarButtonLabel": "\"Add to my calendar\" button",
+    "fakeCounterLabel": "Connected viewers counter",
+    "saveWaitingRoom": "Save waiting room"
   }
 }
