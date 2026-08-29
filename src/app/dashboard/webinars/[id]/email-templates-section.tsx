@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   upsertSingletonTemplate,
@@ -20,10 +21,6 @@ type Template = {
   subject: string;
   body: string;
 };
-
-const VARIABLE_HINT =
-  "Variables disponibles: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}, {{marca_color}}. " +
-  "El logo y el color de tu marca (Settings → Marca) ya se agregan automáticamente arriba y abajo del email — acá solo va el mensaje.";
 
 const SAMPLE_VARS: TemplateVars = {
   nombre: "Juana Pérez",
@@ -51,6 +48,7 @@ function TemplateBodyEditor({
   branding: EmailBranding;
   rows?: number;
 }) {
+  const t = useTranslations("EmailTemplatesSection");
   const [body, setBody] = useState(defaultValue);
   const [mode, setMode] = useState<"preview" | "code">("preview");
   const [copied, setCopied] = useState(false);
@@ -63,7 +61,7 @@ function TemplateBodyEditor({
   return (
     <div className="grid gap-1.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label htmlFor={id}>Cuerpo del email</Label>
+        <Label htmlFor={id}>{t("bodyLabel")}</Label>
         <div className="flex items-center gap-1">
           <Button
             type="button"
@@ -71,7 +69,7 @@ function TemplateBodyEditor({
             variant={mode === "preview" ? "secondary" : "ghost"}
             onClick={() => setMode("preview")}
           >
-            Vista previa
+            {t("preview")}
           </Button>
           <Button
             type="button"
@@ -79,7 +77,7 @@ function TemplateBodyEditor({
             variant={mode === "code" ? "secondary" : "ghost"}
             onClick={() => setMode("code")}
           >
-            Código HTML
+            {t("htmlCode")}
           </Button>
           {mode === "code" && (
             <Button
@@ -92,7 +90,7 @@ function TemplateBodyEditor({
                 setTimeout(() => setCopied(false), 1500);
               }}
             >
-              {copied ? "Copiado" : "Copiar"}
+              {copied ? t("copied") : t("copy")}
             </Button>
           )}
         </div>
@@ -100,7 +98,7 @@ function TemplateBodyEditor({
 
       {mode === "preview" && (
         <iframe
-          title="Vista previa del email"
+          title={t("previewTitle")}
           srcDoc={previewHtml}
           className="h-72 w-full rounded-md border bg-white"
         />
@@ -115,7 +113,7 @@ function TemplateBodyEditor({
         hidden={mode !== "code"}
         className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
       />
-      <p className="text-xs text-muted-foreground">{VARIABLE_HINT}</p>
+      <p className="text-xs text-muted-foreground">{t("variableHint")}</p>
     </div>
   );
 }
@@ -135,6 +133,8 @@ function SingletonTemplateForm({
 }) {
   const [state, formAction, isPending] = useActionState(upsertSingletonTemplate, null);
   const fallback = DEFAULT_TEMPLATES[type];
+  const t = useTranslations("EmailTemplatesSection");
+  const tCommon = useTranslations("SettingsCommon");
 
   return (
     <div className="flex flex-col gap-3 rounded-md border p-4">
@@ -143,7 +143,7 @@ function SingletonTemplateForm({
         <input type="hidden" name="webinar_id" value={webinarId} />
         <input type="hidden" name="type" value={type} />
         <div className="grid gap-1.5">
-          <Label htmlFor={`${type}-subject`}>Asunto</Label>
+          <Label htmlFor={`${type}-subject`}>{t("subjectLabel")}</Label>
           <Input
             id={`${type}-subject`}
             name="subject"
@@ -158,7 +158,7 @@ function SingletonTemplateForm({
         />
         {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
         <Button type="submit" size="sm" disabled={isPending} className="w-fit">
-          {isPending ? "Guardando..." : existing ? "Actualizar" : "Guardar"}
+          {isPending ? tCommon("saving") : existing ? t("update") : t("save")}
         </Button>
       </form>
     </div>
@@ -167,11 +167,13 @@ function SingletonTemplateForm({
 
 function ReminderRow({ template, webinarId }: { template: Template; webinarId: string }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("EmailTemplatesSection");
 
   return (
     <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
       <span>
-        {template.reminder_offset_minutes} min antes — <span className="font-medium">{template.subject}</span>
+        {t("minutesBeforeText", { minutes: template.reminder_offset_minutes ?? 0 })} —{" "}
+        <span className="font-medium">{template.subject}</span>
       </span>
       <Button
         size="sm"
@@ -183,7 +185,7 @@ function ReminderRow({ template, webinarId }: { template: Template; webinarId: s
           })
         }
       >
-        Quitar
+        {t("remove")}
       </Button>
     </div>
   );
@@ -209,19 +211,20 @@ export function EmailTemplatesSection({
     null
   );
   const reminderFallback = DEFAULT_TEMPLATES.reminder;
+  const t = useTranslations("EmailTemplatesSection");
 
   return (
     <div className="flex flex-col gap-4">
       <SingletonTemplateForm
         webinarId={webinarId}
         type="registration_confirmation"
-        title="Confirmación de registro"
+        title={t("confirmationTitle")}
         existing={confirmation}
         branding={branding}
       />
 
       <div className="flex flex-col gap-3 rounded-md border p-4">
-        <p className="text-sm font-medium">Recordatorios</p>
+        <p className="text-sm font-medium">{t("remindersTitle")}</p>
 
         {reminders.length > 0 && (
           <div className="flex flex-col gap-2">
@@ -235,7 +238,7 @@ export function EmailTemplatesSection({
           <input type="hidden" name="webinar_id" value={webinarId} />
           <div className="flex flex-wrap items-end gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="offset_minutes">Minutos antes</Label>
+              <Label htmlFor="offset_minutes">{t("minutesBeforeLabel")}</Label>
               <Input
                 id="offset_minutes"
                 name="offset_minutes"
@@ -247,7 +250,7 @@ export function EmailTemplatesSection({
               />
             </div>
             <div className="grid flex-1 gap-1.5">
-              <Label htmlFor="reminder-subject">Asunto</Label>
+              <Label htmlFor="reminder-subject">{t("subjectLabel")}</Label>
               <Input
                 id="reminder-subject"
                 name="subject"
@@ -267,7 +270,7 @@ export function EmailTemplatesSection({
             <p className="text-sm text-destructive">{reminderState.error}</p>
           )}
           <Button type="submit" size="sm" disabled={reminderPending} className="w-fit">
-            {reminderPending ? "Agregando..." : "Agregar recordatorio"}
+            {reminderPending ? t("adding") : t("addReminder")}
           </Button>
         </form>
       </div>
@@ -275,7 +278,7 @@ export function EmailTemplatesSection({
       <SingletonTemplateForm
         webinarId={webinarId}
         type="replay_missed"
-        title='Email de "te lo perdiste" (a quien no asistió)'
+        title={t("replayMissedTitle")}
         existing={replayMissed}
         branding={branding}
       />

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -11,20 +12,21 @@ export async function upsertSingletonTemplate(
   _prevState: EmailTemplateActionState,
   formData: FormData
 ): Promise<EmailTemplateActionState> {
+  const t = await getTranslations("EmailTemplateActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const type = String(formData.get("type") ?? "");
   const subject = String(formData.get("subject") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
 
   if (type !== "registration_confirmation" && type !== "replay_missed") {
-    return { error: "Tipo de plantilla inválido." };
+    return { error: t("invalidTemplateType") };
   }
   if (!subject || !body) {
-    return { error: "Asunto y cuerpo son obligatorios." };
+    return { error: t("subjectAndBodyRequired") };
   }
 
   const current = await getCurrentAccount();
-  if (!current) return { error: "No autenticado." };
+  if (!current) return { error: t("notAuthenticated") };
 
   const supabase = await createClient();
 
@@ -87,7 +89,7 @@ export async function upsertSingletonTemplate(
       details: error.details,
       hint: error.hint,
     });
-    return { error: "No pudimos guardar la plantilla. Prueba de nuevo." };
+    return { error: t("saveFailedRetry") };
   }
   return null;
 }
@@ -96,20 +98,21 @@ export async function addReminderTemplate(
   _prevState: EmailTemplateActionState,
   formData: FormData
 ): Promise<EmailTemplateActionState> {
+  const t = await getTranslations("EmailTemplateActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const offsetMinutes = Number(formData.get("offset_minutes"));
   const subject = String(formData.get("subject") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
 
   if (!Number.isInteger(offsetMinutes) || offsetMinutes <= 0) {
-    return { error: "Los minutos de anticipación deben ser un número positivo." };
+    return { error: t("offsetMustBePositive") };
   }
   if (!subject || !body) {
-    return { error: "Asunto y cuerpo son obligatorios." };
+    return { error: t("subjectAndBodyRequired") };
   }
 
   const current = await getCurrentAccount();
-  if (!current) return { error: "No autenticado." };
+  if (!current) return { error: t("notAuthenticated") };
 
   const supabase = await createClient();
   const { error } = await supabase.from("email_templates").insert({
@@ -126,7 +129,7 @@ export async function addReminderTemplate(
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Ya existe un recordatorio con esa anticipación." };
+      return { error: t("reminderOffsetExists") };
     }
     return { error: error.message };
   }
