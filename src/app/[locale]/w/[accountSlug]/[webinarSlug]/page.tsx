@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { Sparkles } from "lucide-react";
+import { Clock, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { computeUpcomingOccurrences } from "@/lib/scheduling";
 import { resolveBrandColors } from "@/lib/brand-colors";
+import { formatDurationLabel } from "@/lib/time";
 import { resolvePresenter } from "@/lib/presenter";
 import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
@@ -175,6 +176,7 @@ export default async function RegisterPage({
   const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);
   const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
   const badgeLabel = webinar.category?.toUpperCase() || t("defaultBadge");
+  const durationSeconds = webinar.duration_seconds;
   // Preserve the locale prefix (e.g. /en) across the post-registration
   // redirect to the room -- without this, registering from /en/w/... would
   // silently drop back to the default-locale (es) room URL.
@@ -269,9 +271,17 @@ export default async function RegisterPage({
               <span className="text-sm text-white/70">{t("presents", { name: account.name })}</span>
             </div>
 
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5">
-              <Sparkles className="size-3.5 text-indigo-200" />
-              <span className="text-xs font-semibold tracking-wide text-indigo-200">{badgeLabel}</span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5">
+                <Sparkles className="size-3.5 text-indigo-200" />
+                <span className="text-xs font-semibold tracking-wide text-indigo-200">{badgeLabel}</span>
+              </div>
+              {durationSeconds && durationSeconds > 0 && (
+                <div className="inline-flex w-fit items-center gap-1.5 text-xs text-white/60">
+                  <Clock className="size-3.5" />
+                  {formatDurationLabel(durationSeconds)}
+                </div>
+              )}
             </div>
 
             <h1 className="max-w-md text-4xl font-bold leading-tight tracking-tight">{webinar.title}</h1>
@@ -350,14 +360,22 @@ export default async function RegisterPage({
                 {accountBadge}
                 <span className="text-xs text-gray-500">{account.name}</span>
               </div>
-              {webinar.category && (
-                <span
-                  className="w-fit text-xs font-semibold tracking-wide"
-                  style={{ color: brandColorA }}
-                >
-                  {badgeLabel}
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                {webinar.category && (
+                  <span
+                    className="w-fit text-xs font-semibold tracking-wide"
+                    style={{ color: brandColorA }}
+                  >
+                    {badgeLabel}
+                  </span>
+                )}
+                {durationSeconds && durationSeconds > 0 && (
+                  <span className="inline-flex w-fit items-center gap-1 text-xs text-gray-500">
+                    <Clock className="size-3.5" />
+                    {formatDurationLabel(durationSeconds)}
+                  </span>
+                )}
+              </div>
               <h1 className="text-xl font-bold leading-snug text-gray-900">{webinar.title}</h1>
               {presenter?.display_name && (
                 <p className="text-xs text-gray-500">

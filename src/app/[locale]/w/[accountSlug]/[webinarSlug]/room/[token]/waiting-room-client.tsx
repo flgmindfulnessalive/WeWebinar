@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Calendar, Users } from "lucide-react";
+import { Calendar, Clock, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { fakeViewerCount } from "@/lib/fake-viewers";
 import { buildIcsDataUri, googleCalendarUrl } from "@/lib/ics";
+import { formatDurationLabel } from "@/lib/time";
 import { DEFAULT_BRAND_COLOR_A, DEFAULT_BRAND_COLOR_B } from "@/lib/brand-colors";
 import { PoweredByBadge } from "@/components/powered-by-badge";
 import type { Database } from "@/lib/supabase/database.types";
@@ -39,6 +40,7 @@ export function WaitingRoomClient({
   brandColorA = DEFAULT_BRAND_COLOR_A,
   brandColorB = DEFAULT_BRAND_COLOR_B,
   showPoweredBy = true,
+  durationSeconds,
 }: {
   webinarId: string;
   webinarTitle: string;
@@ -57,6 +59,7 @@ export function WaitingRoomClient({
   brandColorA?: string;
   brandColorB?: string;
   showPoweredBy?: boolean;
+  durationSeconds: number | null;
 }) {
   const router = useRouter();
   const t = useTranslations("WaitingRoom");
@@ -111,6 +114,13 @@ export function WaitingRoomClient({
         timeStyle: "short",
       }).format(new Date(sessionStart)),
     [sessionStart, locale]
+  );
+
+  const durationPill = durationSeconds && durationSeconds > 0 && (
+    <div className="flex items-center gap-2 text-sm text-white/65">
+      <Clock className="size-4" />
+      {formatDurationLabel(durationSeconds)}
+    </div>
   );
 
   const showCounter = config?.show_fake_counter !== false && !isFixedSchedule;
@@ -293,9 +303,12 @@ export function WaitingRoomClient({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-white/65">
-              <Calendar className="size-4" />
-              {formattedStart} <span className="text-xs">{t("localTime")}</span>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+              <div className="flex items-center gap-2 text-sm text-white/65">
+                <Calendar className="size-4" />
+                {formattedStart} <span className="text-xs">{t("localTime")}</span>
+              </div>
+              {durationPill}
             </div>
 
             {viewerPill}
@@ -338,9 +351,12 @@ export function WaitingRoomClient({
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-white/65">
-            <Calendar className="size-4" />
-            {formattedStart} <span className="text-xs">{t("localTime")}</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2 text-sm text-white/65">
+              <Calendar className="size-4" />
+              {formattedStart} <span className="text-xs">{t("localTime")}</span>
+            </div>
+            {durationPill}
           </div>
 
           <div className="relative flex size-[16rem] items-center justify-center">
