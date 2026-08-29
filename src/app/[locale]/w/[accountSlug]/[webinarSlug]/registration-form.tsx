@@ -35,7 +35,6 @@ declare global {
 
 export function RegistrationForm({
   webinarId,
-  returnTo,
   scheduleMode,
   offsets,
   occurrences,
@@ -46,7 +45,6 @@ export function RegistrationForm({
   previewMode = false,
 }: {
   webinarId: string;
-  returnTo: string;
   scheduleMode: ScheduleMode;
   offsets: number[];
   occurrences: Occurrence[];
@@ -143,7 +141,6 @@ export function RegistrationForm({
       className="flex flex-col gap-5"
     >
       <input type="hidden" name="webinar_id" value={webinarId} />
-      <input type="hidden" name="return_to" value={returnTo} />
       <input type="hidden" name="visitor_timezone" value={visitorTimezone} />
 
       {showBothTabs && (
