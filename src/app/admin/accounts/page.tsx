@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AccountRowActions } from "./account-row-actions";
-import { STATUS_LABEL, STATUS_VARIANT } from "./status-labels";
+import { STATUS_VARIANT } from "./status-labels";
 
 export default async function AdminAccountsPage({
   searchParams,
@@ -13,6 +14,9 @@ export default async function AdminAccountsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const t = await getTranslations("AdminAccounts");
+  const tStatus = await getTranslations("SubscriptionStatus");
+  const locale = await getLocale();
   const supabase = await createClient();
 
   const [{ data: accounts }, { data: plans }] = await Promise.all([
@@ -42,9 +46,9 @@ export default async function AdminAccountsPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Cuentas</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <form className="w-full sm:w-64">
-          <Input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre o slug..." />
+          <Input name="q" defaultValue={q ?? ""} placeholder={t("searchPlaceholder")} />
         </form>
       </div>
 
@@ -52,7 +56,7 @@ export default async function AdminAccountsPage({
         <CardContent className="divide-y p-0">
           {(!accounts || accounts.length === 0) && (
             <p className="p-6 text-center text-sm text-muted-foreground">
-              No se encontraron cuentas.
+              {t("noAccountsFound")}
             </p>
           )}
           {accounts?.map((account) => (
@@ -65,16 +69,18 @@ export default async function AdminAccountsPage({
                   {account.name}
                 </Link>
                 <span className="text-xs text-muted-foreground">
-                  /{account.slug} · alta{" "}
-                  {new Date(account.created_at).toLocaleDateString("es")}
+                  {t("listSignupMeta", {
+                    slug: account.slug,
+                    date: new Date(account.created_at).toLocaleDateString(locale),
+                  })}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {ownerEmailByAccount.get(account.id) ?? "sin owner"}
+                  {ownerEmailByAccount.get(account.id) ?? t("noOwner")}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant={STATUS_VARIANT[account.subscription_status]}>
-                  {STATUS_LABEL[account.subscription_status]}
+                  {tStatus(account.subscription_status)}
                 </Badge>
                 <AccountRowActions
                   accountId={account.id}

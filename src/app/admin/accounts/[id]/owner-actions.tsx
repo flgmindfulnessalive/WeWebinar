@@ -1,12 +1,15 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { resendOwnerPasswordReset, updateOwnerEmail } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function OwnerActions({ userId, email }: { userId: string; email: string }) {
+  const t = useTranslations("OwnerActions");
+  const tCommon = useTranslations("SettingsCommon");
   const [editing, setEditing] = useState(false);
   const [resetState, resetAction, resetPending] = useActionState(
     resendOwnerPasswordReset.bind(null, email),
@@ -21,11 +24,11 @@ export function OwnerActions({ userId, email }: { userId: string; email: string 
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-2">
         <Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>
-          Editar email
+          {t("editEmail")}
         </Button>
         <form action={resetAction}>
           <Button size="sm" variant="outline" type="submit" disabled={resetPending}>
-            {resetPending ? "Enviando..." : "Reenviar reset de contraseña"}
+            {resetPending ? t("sending") : t("resendPasswordReset")}
           </Button>
         </form>
       </div>
@@ -34,7 +37,7 @@ export function OwnerActions({ userId, email }: { userId: string; email: string 
         <span className="text-xs text-destructive">{resetState.error}</span>
       )}
       {resetState && "success" in resetState && (
-        <span className="text-xs text-primary">Email de reset enviado.</span>
+        <span className="text-xs text-primary">{t("resetEmailSent")}</span>
       )}
 
       {editing && (
@@ -47,7 +50,7 @@ export function OwnerActions({ userId, email }: { userId: string; email: string 
             className="h-8 w-56 text-xs"
           />
           <Button size="sm" type="submit" disabled={emailPending}>
-            {emailPending ? "Guardando..." : "Guardar"}
+            {emailPending ? tCommon("saving") : t("save")}
           </Button>
         </form>
       )}
@@ -55,7 +58,7 @@ export function OwnerActions({ userId, email }: { userId: string; email: string 
         <span className="text-xs text-destructive">{emailState.error}</span>
       )}
       {emailState && "success" in emailState && (
-        <span className="text-xs text-primary">Email actualizado.</span>
+        <span className="text-xs text-primary">{t("emailUpdated")}</span>
       )}
     </div>
   );
