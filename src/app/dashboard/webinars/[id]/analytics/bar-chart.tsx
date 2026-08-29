@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Bar = { id: string; label: string; sublabel?: string; value: number; valueLabel: string };
 
@@ -13,11 +14,12 @@ type Bar = { id: string; label: string; sublabel?: string; value: number; valueL
 const BAR_COLOR = "#4f46e5";
 
 export function HorizontalBarChart({ bars }: { bars: Bar[] }) {
+  const t = useTranslations("AnalyticsCharts");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const maxValue = Math.max(1, ...bars.map((b) => b.value));
 
   if (bars.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sin datos todavía.</p>;
+    return <p className="text-sm text-muted-foreground">{t("noDataYet")}</p>;
   }
 
   return (

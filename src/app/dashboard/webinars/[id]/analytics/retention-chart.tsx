@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { secondsToClock } from "@/lib/time";
@@ -21,6 +22,7 @@ const PAD_BOTTOM = 24;
 const LINE_COLOR = "#4f46e5";
 
 export function RetentionChart({ points }: { points: Point[] }) {
+  const t = useTranslations("AnalyticsCharts");
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [showTable, setShowTable] = useState(false);
   const gradientId = useId();
@@ -66,13 +68,13 @@ export function RetentionChart({ points }: { points: Point[] }) {
   }
 
   if (points.length === 0) {
-    return <p className="text-sm text-muted-foreground">Todavía no hay datos de visualización.</p>;
+    return <p className="text-sm text-muted-foreground">{t("noWatchData")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-3">
       <div className="relative">
-        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label="Curva de retención por minuto">
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label={t("retentionAriaLabel")}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={LINE_COLOR} stopOpacity="0.22" />
@@ -139,20 +141,18 @@ export function RetentionChart({ points }: { points: Point[] }) {
               transform: "translateX(-50%)",
             }}
           >
-            <p className="font-medium">Minuto {hovered.minute}</p>
+            <p className="font-medium">{t("minuteTooltip", { minute: hovered.minute })}</p>
             <p className="text-muted-foreground">
-              {hovered.viewersRemaining} espectadores ({hovered.pct}%)
+              {t("viewersTooltip", { count: hovered.viewersRemaining, pct: hovered.pct })}
             </p>
           </div>
         )}
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
-          % de audiencia que seguía viendo en cada minuto del video.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("retentionCaption")}</p>
         <Button size="sm" variant="ghost" onClick={() => setShowTable((s) => !s)}>
-          {showTable ? "Ocultar tabla" : "Ver tabla"}
+          {showTable ? t("hideTable") : t("showTable")}
         </Button>
       </div>
 
@@ -161,9 +161,9 @@ export function RetentionChart({ points }: { points: Point[] }) {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-muted/50">
               <tr>
-                <th className="p-2 text-left font-medium">Minuto</th>
-                <th className="p-2 text-left font-medium">Espectadores</th>
-                <th className="p-2 text-left font-medium">%</th>
+                <th className="p-2 text-left font-medium">{t("tableMinuteHeader")}</th>
+                <th className="p-2 text-left font-medium">{t("tableViewersHeader")}</th>
+                <th className="p-2 text-left font-medium">{t("tablePercentHeader")}</th>
               </tr>
             </thead>
             <tbody>
