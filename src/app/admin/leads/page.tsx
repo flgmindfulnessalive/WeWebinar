@@ -1,8 +1,12 @@
+import { getTranslations, getLocale } from "next-intl/server";
+
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { LeadStatusSelect } from "./lead-status-select";
 
 export default async function AdminLeadsPage() {
+  const t = await getTranslations("AdminLeads");
+  const locale = await getLocale();
   const supabase = await createClient();
   const { data: leads } = await supabase
     .from("enterprise_leads")
@@ -11,13 +15,13 @@ export default async function AdminLeadsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Leads Enterprise</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
       <Card>
         <CardContent className="divide-y p-0">
           {(!leads || leads.length === 0) && (
             <p className="p-6 text-center text-sm text-muted-foreground">
-              Todavía no hay leads del formulario de contacto de Enterprise.
+              {t("noLeadsYet")}
             </p>
           )}
           {leads?.map((lead) => (
@@ -29,7 +33,7 @@ export default async function AdminLeadsPage() {
                 <span className="text-xs text-muted-foreground">{lead.email}</span>
                 {lead.message && <p className="max-w-xl text-sm text-muted-foreground">{lead.message}</p>}
                 <span className="text-xs text-muted-foreground">
-                  {new Date(lead.created_at).toLocaleString("es")}
+                  {new Date(lead.created_at).toLocaleString(locale)}
                 </span>
               </div>
               <LeadStatusSelect leadId={lead.id} status={lead.status} />
