@@ -3,7 +3,7 @@ import createIntlMiddleware from "next-intl/middleware";
 
 import { updateSession } from "@/lib/supabase/middleware";
 import { routing } from "@/i18n/routing";
-import { lookupAccountSlugByHostname } from "@/lib/domains/lookup";
+import { lookupAccountSlugByHostname, lookupPendingDomainStatus } from "@/lib/domains/lookup";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -71,9 +71,24 @@ export async function proxy(request: NextRequest) {
       }
       return rewriteResponse;
     }
-    // Foreign host with no matching (or not-yet-active) custom domain --
-    // fall through to normal handling, which 404s. That's the right
-    // outcome for a stray domain pointed here without being configured.
+    // Not active yet -- but is it a domain someone actually added (still
+    // verifying DNS, or verification failed)? From the visitor's side that
+    // could well be a link already shared before DNS finished propagating,
+    // so show a "still configuring" page instead of a bare 404.
+    const pendingStatus = await lookupPendingDomainStatus(hostname);
+    if (pendingStatus) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/domain-pending";
+      url.search = "";
+      const rewriteResponse = NextResponse.rewrite(url);
+      for (const cookie of sessionResponse.cookies.getAll()) {
+        rewriteResponse.cookies.set(cookie);
+      }
+      return rewriteResponse;
+    }
+    // Foreign host with no matching custom domain at all -- fall through
+    // to normal handling, which 404s. That's the right outcome for a
+    // stray domain pointed here without being configured.
   }
 
   if (isLocaleRoutedPath(request.nextUrl.pathname)) {

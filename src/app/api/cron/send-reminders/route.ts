@@ -12,11 +12,13 @@ import {
 import {
   accountSuspendedEmail,
   activationNudgeEmail,
+  domainVerificationFailedEmail,
   monthlyDigestEmail,
   trialExpiringEmail,
 } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
+import { checkVercelDomainStatus } from "@/lib/domains/vercel";
 import type { Database } from "@/lib/supabase/database.types";
 
 const TRIAL_WARNING_WINDOW_DAYS = 3;
@@ -409,6 +411,56 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Custom domain health: unlike the initial setup (which the owner
+  // manually re-checks from "Verificar" until it goes active), nothing
+  // else re-checks an already-active domain -- so a DNS record changed or
+  // removed after the fact would silently break the account's own
+  // hostname with no one noticing. Flip it to 'failed' and alert the
+  // owner, same claim-by-eq(status,'active') pattern as the other
+  // lifecycle checks above: once flipped, this same
+  // .eq("status","active") select stops returning the row, so the alert
+  // fires exactly once per lapse (recovery, like initial setup, is
+  // manual -- the owner re-verifies from the domain settings page).
+  let domainAlertsSent = 0;
+
+  const { data: activeDomains } = await admin.from("custom_domains").select("id, account_id, hostname").eq("status", "active");
+
+  for (const d of activeDomains ?? []) {
+    try {
+      const result = await checkVercelDomainStatus(d.hostname);
+      if (result.verified) continue;
+      // Vercel API not configured on this deployment -- can't actually
+      // tell whether DNS is still fine, so don't guess and flip every
+      // active domain to failed.
+      if (result.reason === "not_configured") continue;
+
+      const { data: claimed, error: claimError } = await admin
+        .from("custom_domains")
+        .update({ status: "failed", last_error: result.reason, last_checked_at: new Date().toISOString() })
+        .eq("id", d.id)
+        .eq("status", "active")
+        .select("id")
+        .maybeSingle();
+      if (claimError) {
+        errors.push(`domain ${d.hostname}: ${claimError.message}`);
+        continue;
+      }
+      if (!claimed) continue;
+
+      const [{ data: owner }, { data: account }] = await Promise.all([
+        admin.from("users").select("email").eq("account_id", d.account_id).eq("role", "owner").maybeSingle(),
+        admin.from("accounts").select("name").eq("id", d.account_id).maybeSingle(),
+      ]);
+      if (owner?.email) {
+        const { subject, html } = domainVerificationFailedEmail(account?.name ?? d.hostname, d.hostname);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      domainAlertsSent++;
+    } catch (err) {
+      errors.push(`domain ${d.hostname}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return NextResponse.json({
     remindersSent,
     replaysSent,
@@ -416,6 +468,7 @@ export async function GET(request: Request) {
     trialsSuspended,
     digestsSent,
     activationNudgesSent,
+    domainAlertsSent,
     errors,
   });
 }

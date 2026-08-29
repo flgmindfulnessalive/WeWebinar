@@ -633,6 +633,13 @@ export interface Database {
         };
         Relationships: [];
       };
+      custom_domain_pending_lookup: {
+        Row: {
+          hostname: string;
+          status: string;
+        };
+        Relationships: [];
+      };
       account_public_profile: {
         Row: {
           id: string;
