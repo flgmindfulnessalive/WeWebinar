@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import {
   addChatMessage,
@@ -24,10 +26,10 @@ type ChatMessage = {
   message_type: ChatMessageType;
 };
 
-const TYPE_LABEL: Record<ChatMessageType, string> = {
-  message: "Mensaje",
-  question: "Pregunta",
-  host_reply: "Respuesta del host",
+const TYPE_KEY: Record<ChatMessageType, "typeMessage" | "typeQuestion" | "typeHostReply"> = {
+  message: "typeMessage",
+  question: "typeQuestion",
+  host_reply: "typeHostReply",
 };
 
 const PREVIEW_SPEED = 12; // 12x: a 10-minute timeline previews in ~50s
@@ -45,6 +47,8 @@ export function ChatSection({
   aiChatAllowed: boolean;
   aiTrainingInfo: string | null;
 }) {
+  const t = useTranslations("ChatSection");
+  const tCommon = useTranslations("SettingsCommon");
   const [state, formAction, isPending] = useActionState(addChatMessage, null);
   const [trainingState, trainingFormAction, isTrainingPending] = useActionState(
     updateAiTrainingInfo,
@@ -83,18 +87,17 @@ export function ChatSection({
       <div className="flex flex-1 flex-col gap-4">
         <div className="flex items-center justify-between gap-3 rounded-md border p-3">
           <div>
-            <p className="text-sm font-medium">Agente AI de respuestas</p>
-            <p className="text-xs text-muted-foreground">
-              Cuando un asistente real escribe una pregunta en el chat en vivo, un agente AI le
-              responde automáticamente.
-            </p>
+            <p className="text-sm font-medium">{t("aiAgentTitle")}</p>
+            <p className="text-xs text-muted-foreground">{t("aiAgentDescription")}</p>
             {!aiChatAllowed && (
               <p className="mt-1 text-xs font-medium text-amber-600">
-                Disponible en los planes Pro y Business —{" "}
-                <a href="/dashboard/settings/billing" className="underline underline-offset-2">
-                  actualizar plan
-                </a>
-                .
+                {t.rich("aiAgentPlanHint", {
+                  a: (chunks) => (
+                    <Link href="/dashboard/settings/billing" className="underline underline-offset-2">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
               </p>
             )}
           </div>
@@ -123,7 +126,7 @@ export function ChatSection({
                 });
               }}
             />
-            {aiEnabled ? "Activado" : "Desactivado"}
+            {aiEnabled ? t("enabled") : t("disabled")}
           </label>
         </div>
         {aiError && <p className="text-sm text-destructive">{aiError}</p>}
@@ -131,24 +134,19 @@ export function ChatSection({
         {aiEnabled && aiChatAllowed && (
           <form action={trainingFormAction} className="flex flex-col gap-1.5 rounded-md border p-3">
             <input type="hidden" name="webinar_id" value={webinarId} />
-            <Label htmlFor="ai_agent_training_info">Entrena a tu agente AI</Label>
-            <p className="text-xs text-muted-foreground">
-              Información adicional para que el agente responda mejor: preguntas frecuentes,
-              precios, detalles del producto o servicio, políticas, etc.
-            </p>
+            <Label htmlFor="ai_agent_training_info">{t("trainAgentLabel")}</Label>
+            <p className="text-xs text-muted-foreground">{t("trainAgentHint")}</p>
             <textarea
               id="ai_agent_training_info"
               name="ai_agent_training_info"
               rows={5}
               defaultValue={aiTrainingInfo ?? ""}
-              placeholder={
-                'Ej: "El plan Pro cuesta $49/mes. Incluye soporte prioritario. La garantía es de 30 días..."'
-              }
+              placeholder={t("trainAgentPlaceholder")}
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
             />
             <div className="flex items-center gap-3">
               <Button type="submit" size="sm" disabled={isTrainingPending}>
-                {isTrainingPending ? "Guardando..." : "Guardar"}
+                {isTrainingPending ? tCommon("saving") : t("save")}
               </Button>
               {trainingState?.error && (
                 <p className="text-sm text-destructive">{trainingState.error}</p>
@@ -160,7 +158,7 @@ export function ChatSection({
         <form action={formAction} className="flex flex-wrap items-end gap-3">
           <input type="hidden" name="webinar_id" value={webinarId} />
           <div className="grid gap-1.5">
-            <Label htmlFor="timestamp">Minuto (mm:ss)</Label>
+            <Label htmlFor="timestamp">{t("timestampLabel")}</Label>
             <Input
               id="timestamp"
               name="timestamp"
@@ -170,37 +168,35 @@ export function ChatSection({
             />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="fake_name">Nombre</Label>
+            <Label htmlFor="fake_name">{t("nameLabel")}</Label>
             <Input id="fake_name" name="fake_name" required className="w-32" />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="message_type">Tipo</Label>
+            <Label htmlFor="message_type">{t("typeLabel")}</Label>
             <select
               id="message_type"
               name="message_type"
               defaultValue="message"
               className="flex h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
             >
-              <option value="message">Mensaje</option>
-              <option value="question">Pregunta</option>
-              <option value="host_reply">Respuesta del host</option>
+              <option value="message">{t("typeMessage")}</option>
+              <option value="question">{t("typeQuestion")}</option>
+              <option value="host_reply">{t("typeHostReply")}</option>
             </select>
           </div>
           <div className="grid flex-1 gap-1.5">
-            <Label htmlFor="message_text">Texto</Label>
+            <Label htmlFor="message_text">{t("textLabel")}</Label>
             <Input id="message_text" name="message_text" required />
           </div>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Agregando..." : "Agregar"}
+            {isPending ? t("adding") : t("add")}
           </Button>
         </form>
         {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
         <div className="flex flex-col divide-y rounded-md border">
           {messages.length === 0 && (
-            <p className="p-4 text-sm text-muted-foreground">
-              Todavía no agregaste mensajes.
-            </p>
+            <p className="p-4 text-sm text-muted-foreground">{t("noMessages")}</p>
           )}
           {messages.map((message) => (
             <ChatMessageRow key={message.id} message={message} webinarId={webinarId} />
@@ -210,7 +206,7 @@ export function ChatSection({
 
       <div className="flex w-full flex-col gap-3 lg:w-80">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Vista previa</p>
+          <p className="text-sm font-medium">{t("previewLabel")}</p>
           <Button
             size="sm"
             variant="outline"
@@ -220,7 +216,7 @@ export function ChatSection({
               setIsPlaying(true);
             }}
           >
-            {isPlaying ? "Reproduciendo..." : "Reproducir (12x)"}
+            {isPlaying ? t("playing") : t("play")}
           </Button>
         </div>
         <div
@@ -256,6 +252,7 @@ function ChatMessageRow({
   webinarId: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("ChatSection");
 
   return (
     <div className="flex items-center justify-between gap-3 p-3 text-sm">
@@ -263,7 +260,7 @@ function ChatMessageRow({
         <span className="w-12 shrink-0 text-xs text-muted-foreground">
           {secondsToClock(message.timestamp_seconds)}
         </span>
-        <Badge variant="secondary">{TYPE_LABEL[message.message_type]}</Badge>
+        <Badge variant="secondary">{t(TYPE_KEY[message.message_type])}</Badge>
         <span className="font-medium">{message.fake_name}:</span>
         <span className="truncate text-muted-foreground">{message.message_text}</span>
       </div>
@@ -277,7 +274,7 @@ function ChatMessageRow({
           })
         }
       >
-        Quitar
+        {t("remove")}
       </Button>
     </div>
   );

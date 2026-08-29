@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { clockToSeconds, secondsToClock } from "@/lib/time";
@@ -12,6 +13,7 @@ export async function addChatMessage(
   _prevState: ChatActionState,
   formData: FormData
 ): Promise<ChatActionState> {
+  const t = await getTranslations("ChatActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const clock = String(formData.get("timestamp") ?? "");
   const fakeName = String(formData.get("fake_name") ?? "").trim();
@@ -20,10 +22,10 @@ export async function addChatMessage(
 
   const timestampSeconds = clockToSeconds(clock);
   if (timestampSeconds === null) {
-    return { error: "El timestamp debe tener formato mm:ss." };
+    return { error: t("invalidTimestamp") };
   }
   if (!fakeName || !messageText) {
-    return { error: "Nombre y mensaje son obligatorios." };
+    return { error: t("nameAndMessageRequired") };
   }
 
   const supabase = await createClient();
@@ -39,7 +41,7 @@ export async function addChatMessage(
     .maybeSingle();
   if (webinar?.duration_seconds && timestampSeconds > webinar.duration_seconds) {
     return {
-      error: `El video dura ${secondsToClock(webinar.duration_seconds)} -- elige un momento dentro de ese rango.`,
+      error: t("timestampBeyondVideo", { duration: secondsToClock(webinar.duration_seconds) }),
     };
   }
 
@@ -76,6 +78,7 @@ export async function updateAiChatEnabled(
   webinarId: string,
   enabled: boolean
 ): Promise<ChatActionState> {
+  const t = await getTranslations("ChatActions");
   const supabase = await createClient();
   const { error } = await supabase
     .from("webinars")
@@ -86,10 +89,7 @@ export async function updateAiChatEnabled(
 
   if (error) {
     if (error.message.includes("plan_feature_blocked")) {
-      return {
-        error:
-          "El agente AI de respuestas está disponible en los planes Pro y Business. Actualiza tu plan desde Facturación para activarlo.",
-      };
+      return { error: t("aiAgentPlanBlocked") };
     }
     return { error: error.message };
   }
