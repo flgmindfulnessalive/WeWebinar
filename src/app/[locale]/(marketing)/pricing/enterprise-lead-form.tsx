@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { submitEnterpriseLead } from "@/lib/actions/leads";
 import { Button } from "@/components/ui/button";
@@ -8,38 +9,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function EnterpriseLeadForm() {
+  const t = useTranslations("EnterpriseLeadForm");
   const [state, formAction, isPending] = useActionState(
     submitEnterpriseLead,
     null
   );
 
   if (state && "success" in state) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        ¡Gracias! Te vamos a contactar a la brevedad para armar tu plan
-        Enterprise.
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">{t("successMessage")}</p>;
   }
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="lead-name">Nombre</Label>
+          <Label htmlFor="lead-name">{t("name")}</Label>
           <Input id="lead-name" name="name" required />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="lead-email">Email</Label>
+          <Label htmlFor="lead-email">{t("email")}</Label>
           <Input id="lead-email" name="email" type="email" required />
         </div>
       </div>
       <div className="grid gap-1.5">
-        <Label htmlFor="lead-company">Empresa</Label>
+        <Label htmlFor="lead-company">{t("company")}</Label>
         <Input id="lead-company" name="company" />
       </div>
       <div className="grid gap-1.5">
-        <Label htmlFor="lead-message">Cuéntanos qué necesitas</Label>
+        <Label htmlFor="lead-message">{t("message")}</Label>
         <textarea
           id="lead-message"
           name="message"
@@ -51,7 +48,7 @@ export function EnterpriseLeadForm() {
         <p className="text-sm text-destructive">{state.error}</p>
       )}
       <Button type="submit" disabled={isPending}>
-        {isPending ? "Enviando..." : "Hablar con ventas"}
+        {isPending ? t("submitting") : t("submit")}
       </Button>
     </form>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, UserCheck, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, UserCheck, Eye, ChevronLeft, ChevronRight, Video, Package, Activity } from "lucide-react";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -69,46 +69,20 @@ export default async function DashboardPage({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Webinars activos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">
-              {publishedCount ?? 0}
-              <span className="text-base font-normal text-muted-foreground">
-                {" "}
-                / {maxActiveWebinars ?? "∞"}
-              </span>
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Plan actual
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold capitalize">{current.plan.key}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Estado de suscripción
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold capitalize">
-              {current.account.subscription_status}
-            </p>
-          </CardContent>
-        </Card>
+        <StatTile
+          label="Webinars activos"
+          value={`${publishedCount ?? 0} / ${maxActiveWebinars ?? "∞"}`}
+          icon={Video}
+        />
+        <StatTile label="Plan actual" value={current.plan.name} icon={Package} />
+        <StatTile
+          label="Estado de suscripción"
+          value={
+            current.account.subscription_status.charAt(0).toUpperCase() +
+            current.account.subscription_status.slice(1)
+          }
+          icon={Activity}
+        />
       </div>
 
       {metricsFailed && (

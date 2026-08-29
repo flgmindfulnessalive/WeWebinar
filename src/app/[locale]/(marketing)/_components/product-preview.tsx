@@ -1,18 +1,24 @@
 import { MessageCircle, Play, Users } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 // A stylized illustration of the live webinar room -- not a real
 // screenshot (none exists to show), just an abstract mockup that
 // communicates "video + live chat + a timed CTA" at a glance.
-export function ProductPreview() {
+export async function ProductPreview() {
+  const t = await getTranslations("ProductPreview");
+  const chatMessages = [
+    ["Vale M.", t("chat.message1")],
+    ["Diego R.", t("chat.message2")],
+    ["Sofía L.", t("chat.message3")],
+  ];
+
   return (
     <div className="relative mx-auto w-full max-w-3xl rounded-xl border bg-card shadow-2xl shadow-[var(--brand)]/10">
       <div className="flex items-center gap-1.5 border-b px-4 py-3">
         <span className="size-2.5 rounded-full bg-red-400" />
         <span className="size-2.5 rounded-full bg-yellow-400" />
         <span className="size-2.5 rounded-full bg-green-400" />
-        <span className="ml-3 truncate text-xs text-muted-foreground">
-          tuempresa.com/webinar/lanzamiento-2026
-        </span>
+        <span className="ml-3 truncate text-xs text-muted-foreground">{t("urlBar")}</span>
       </div>
 
       <div className="flex flex-col sm:flex-row">
@@ -26,7 +32,7 @@ export function ProductPreview() {
 
           <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-xs text-white backdrop-blur">
             <span className="size-1.5 animate-pulse rounded-full bg-red-500" />
-            EN VIVO
+            {t("live")}
           </div>
           <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-xs text-white backdrop-blur">
             <Users className="size-3" />
@@ -41,13 +47,9 @@ export function ProductPreview() {
         <div className="flex w-full flex-col gap-3 border-t p-4 sm:w-56 sm:border-t-0 sm:border-l">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <MessageCircle className="size-3.5" />
-            Chat en vivo
+            {t("chatLabel")}
           </div>
-          {[
-            ["Vale M.", "Justo lo que necesitaba 🙌"],
-            ["Diego R.", "¿Queda grabado?"],
-            ["Sofía L.", "Excelente explicación"],
-          ].map(([name, text]) => (
+          {chatMessages.map(([name, text]) => (
             <div key={name} className="text-xs">
               <span className="font-medium" style={{ color: "var(--brand)" }}>
                 {name}
@@ -62,7 +64,7 @@ export function ProductPreview() {
         className="absolute -bottom-4 left-6 rounded-full px-4 py-2 text-xs font-medium text-white shadow-lg sm:left-8"
         style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
       >
-        🎁 Oferta especial — últimos minutos
+        {t("offer")}
       </div>
     </div>
   );

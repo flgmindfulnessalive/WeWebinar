@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { createClient } from "@/lib/supabase/server";
 import {
   Card,
@@ -13,6 +15,8 @@ import type { Database } from "@/lib/supabase/database.types";
 type Plan = Database["public"]["Tables"]["plans"]["Row"];
 
 export default async function PricingPage() {
+  const t = await getTranslations("Pricing");
+
   let plans: Plan[] | null = null;
   try {
     const supabase = await createClient();
@@ -41,16 +45,13 @@ export default async function PricingPage() {
   return (
     <div className="marketing-theme mx-auto flex max-w-5xl flex-col gap-12 px-6 py-16 sm:py-24">
       <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Planes y precios</h1>
-        <p className="mt-2 text-muted-foreground">
-          Elige anual o mensual. Crea webinars evergreen ilimitados para
-          promocionar tus propios productos.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
         <div
           className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium"
           style={{ borderColor: "var(--brand)", color: "var(--brand)" }}
         >
-          15 días de prueba gratis — sin tarjeta de crédito
+          {t("trial")}
         </div>
       </div>
 
@@ -59,11 +60,8 @@ export default async function PricingPage() {
       {enterprise && (
         <Card className="mx-auto w-full max-w-2xl">
           <CardHeader>
-            <CardTitle>Enterprise</CardTitle>
-            <CardDescription>
-              Límites y condiciones a medida. Sin autoservicio — un asesor te
-              contacta para armar tu plan.
-            </CardDescription>
+            <CardTitle>{t("enterpriseTitle")}</CardTitle>
+            <CardDescription>{t("enterpriseDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <EnterpriseLeadForm />
