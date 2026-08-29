@@ -59,7 +59,7 @@
     "ctaBannerTitle": "Start selling with your first evergreen webinar",
     "ctaBannerSubtitle": "Set it up in minutes and let it sell around the clock.",
     "comparisonTitle": "Your best webinar shouldn't depend <highlight>on your calendar</highlight>",
-    "comparisonSubtitle": "A live webinar depends on you being there, at that time, again. An evergreen one is recorded once — and keeps selling while you do anything else.",
+    "comparisonSubtitle": "A live webinar depends on you being there, at that time, again. An evergreen is recorded once — and keeps selling while you do anything else. Isn't that lovely?",
     "liveCardTitle": "Live webinar",
     "liveCardSubtitle": "Zoom, Meet, a real broadcast",
     "livePoints": [
@@ -443,7 +443,8 @@
     "createWebinar": "Create webinar",
     "emptyState": "You haven't created any webinars yet.",
     "createFirstWebinar": "Create your first webinar",
-    "registrantsCount": "{count, plural, one {# registrant} other {# registrants}}"
+    "registrantsCount": "{count, plural, one {# registrant} other {# registrants}}",
+    "view": "View"
   },
   "WebinarStatusLabel": {
     "draft": "Draft",
@@ -778,7 +779,9 @@
     "noReply": "No reply",
     "viewClickers": "See who clicked \"{label}\" ({count})",
     "firstClickHeader": "First click",
-    "clicksHeader": "Clicks"
+    "clicksHeader": "Clicks",
+    "hideAiReplies": "Hide AI replies",
+    "aiReplyHidden": "AI reply hidden"
   },
   "AdminOverview": {
     "title": "Platform overview",

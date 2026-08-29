@@ -443,7 +443,8 @@
     "createWebinar": "Crear webinar",
     "emptyState": "Todavía no creaste ningún webinar.",
     "createFirstWebinar": "Crear tu primer webinar",
-    "registrantsCount": "{count, plural, one {# registrado} other {# registrados}}"
+    "registrantsCount": "{count, plural, one {# registrado} other {# registrados}}",
+    "view": "Ver"
   },
   "WebinarStatusLabel": {
     "draft": "Borrador",
@@ -778,7 +779,9 @@
     "noReply": "Sin respuesta",
     "viewClickers": "Ver quién hizo clic en \"{label}\" ({count})",
     "firstClickHeader": "Primer clic",
-    "clicksHeader": "Clics"
+    "clicksHeader": "Clics",
+    "hideAiReplies": "Ocultar respuestas de la AI",
+    "aiReplyHidden": "Respuesta de la AI oculta"
   },
   "AdminOverview": {
     "title": "Resumen de la plataforma",
