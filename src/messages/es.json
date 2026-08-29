@@ -322,7 +322,8 @@
     "billing": "Facturación y plan",
     "team": "Equipo",
     "branding": "Marca (logo, colores)",
-    "integrations": "Integraciones"
+    "integrations": "Integraciones",
+    "domain": "Dominio propio"
   },
   "SettingsCommon": {
     "saved": "Guardado.",
@@ -395,6 +396,37 @@
     "webhooksDescription": "Conecta WeWebinars a Zapier, Make, n8n o cualquier herramienta que reciba webhooks. Cada evento se envía como POST con el body en JSON, firmado con HMAC-SHA256 en el header <code>X-WeWebinars-Signature</code> (puedes ignorarlo si tu herramienta no verifica firmas, como suele pasar con Zapier).",
     "brevoTitle": "Brevo",
     "brevoDescription": "Cada persona que se registra a un webinar se agrega automáticamente a la lista de Brevo que elijas para ese webinar (paso \"Marketing\" del wizard) — desde ahí puedes usar tus automatizaciones y triggers existentes para nutrir esos leads."
+  },
+  "DomainSettings": {
+    "title": "Dominio propio",
+    "lockedCardTitle": "Serví tus webinars desde tu propio dominio",
+    "lockedDescription": "El dominio propio está disponible en los planes Business y Enterprise. Actualiza tu plan para que tus webinars se vean en tu-dominio.com en vez de wewebinars.com.",
+    "seePlans": "Ver planes",
+    "cardTitle": "Dominio propio",
+    "cardDescription": "Servi todos tus webinars publicados desde tu propio dominio en vez de wewebinars.com.",
+    "hostnameLabel": "Dominio o subdominio",
+    "hostnameHint": "Recomendamos un subdominio (por ejemplo webinars.tuempresa.com) para no afectar el email de tu dominio raíz.",
+    "addDomain": "Agregar dominio",
+    "removeDomain": "Quitar dominio",
+    "verify": "Verificar",
+    "statusPending": "Pendiente",
+    "statusVerifying": "Verificando",
+    "statusActive": "Activo",
+    "statusFailed": "No verificado",
+    "dnsInstructionsTitle": "Configura este registro en tu proveedor de DNS",
+    "dnsTypeLabel": "Tipo",
+    "dnsNameLabel": "Nombre",
+    "dnsValueLabel": "Valor",
+    "dnsRootHint": "¿Querés usar el dominio raíz (sin subdominio)? Escribinos y te pasamos el registro A correspondiente.",
+    "lastCheckLabel": "Último chequeo:",
+    "nowActive": "¡Tu dominio ya está activo!"
+  },
+  "CustomDomainActions": {
+    "notAllowed": "No tenés permiso para hacer esto.",
+    "invalidHostname": "Ingresá un dominio válido, por ejemplo webinars.tuempresa.com.",
+    "hostnameTaken": "Ese dominio ya está en uso, o tu cuenta ya tiene un dominio configurado.",
+    "verifyFailed": "No pudimos registrar el dominio. Intentá de nuevo en unos minutos.",
+    "notVerifiedYet": "Todavía no detectamos el registro DNS. Puede tardar unos minutos en propagarse — probá de nuevo más tarde."
   },
   "WebhookForm": {
     "urlLabel": "URL de destino",
