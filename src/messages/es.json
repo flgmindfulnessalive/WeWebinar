@@ -152,6 +152,36 @@
     "waitingCount": "{count} personas ya están esperando",
     "icsDescription": "Accede al webinar acá: {url}"
   },
+  "LiveRoom": {
+    "hidePanel": "Ocultar panel",
+    "showPanel": "Mostrar panel",
+    "viewersConnected": "{count} conectados",
+    "clickToUnmute": "🔇 Click en cualquier parte del video para activar el sonido",
+    "live": "En vivo",
+    "tabChat": "Chat",
+    "tabConnected": "Conectados",
+    "tabPresenter": "Presentador",
+    "tabNotifications": "Avisos",
+    "connectedNow": "personas conectadas ahora",
+    "host": "(host)",
+    "you": "(tú)",
+    "andMore": "y {count} más...",
+    "notificationsEmpty": "Aquí verás encuestas, mensajes y ofertas cuando aparezcan.",
+    "tapToSeeMore": "Toca para ver más",
+    "alreadyVoted": "Ya votaste",
+    "thanksForJoining": "Gracias por acompañarnos en {title}",
+    "webinarEnded": "El webinar terminó.",
+    "seeMore": "Ver más"
+  },
+  "ChatPanel": {
+    "moderatorTeam": "Equipo moderador",
+    "typing": "{name} está escribiendo...",
+    "you": "(tú)",
+    "rateLimited": "Estás enviando mensajes muy rápido, espera un momento.",
+    "sendFailed": "No se pudo enviar el mensaje. Intenta de nuevo.",
+    "placeholder": "Escribe un mensaje...",
+    "send": "Enviar"
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",
