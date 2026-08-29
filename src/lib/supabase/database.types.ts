@@ -886,6 +886,7 @@ export interface Database {
         Returns: {
           total_accounts: number;
           active_accounts: number;
+          trial_accounts: number;
           mrr_usd: number;
           arr_usd: number;
           active_webinars: number;
