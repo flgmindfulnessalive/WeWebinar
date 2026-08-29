@@ -34,6 +34,11 @@ export default async function AdminOverviewPage() {
             sublabel="con suscripción activa"
           />
           <StatTile
+            label="Cuentas trial"
+            value={String(metrics?.trial_accounts ?? 0)}
+            sublabel="en período de prueba"
+          />
+          <StatTile
             label="MRR"
             value={`$${(metrics?.mrr_usd ?? 0).toLocaleString("es", { maximumFractionDigits: 0 })}`}
             sublabel={`ARR $${(metrics?.arr_usd ?? 0).toLocaleString("es", { maximumFractionDigits: 0 })}`}
