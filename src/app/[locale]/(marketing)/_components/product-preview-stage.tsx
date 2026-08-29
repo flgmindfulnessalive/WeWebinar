@@ -60,14 +60,22 @@ export function ProductPreviewStage({
 
   return (
     <div className="relative mx-auto w-full max-w-3xl rounded-xl border bg-card shadow-2xl shadow-[var(--brand)]/10">
-      <div className="flex items-center gap-1.5 border-b px-4 py-3">
-        <span className="size-2.5 rounded-full bg-red-400" />
-        <span className="size-2.5 rounded-full bg-yellow-400" />
-        <span className="size-2.5 rounded-full bg-green-400" />
-        <span className="ml-3 truncate text-xs text-muted-foreground">{urlBar}</span>
-      </div>
+      {/* Own overflow-hidden wrapper, separate from the outer card -- the
+          offer pill below deliberately overflows past the card's bottom
+          edge (-bottom-4), so clipping can't live on the outer div or it'd
+          cut the pill off too. Without clipping *something* to rounded-xl,
+          the dark video panel's own square corner pokes past the card's
+          curve wherever it sits flush against an edge (only visible in the
+          desktop side-by-side layout, at the video's bottom-left). */}
+      <div className="overflow-hidden rounded-xl">
+        <div className="flex items-center gap-1.5 border-b px-4 py-3">
+          <span className="size-2.5 rounded-full bg-red-400" />
+          <span className="size-2.5 rounded-full bg-yellow-400" />
+          <span className="size-2.5 rounded-full bg-green-400" />
+          <span className="ml-3 truncate text-xs text-muted-foreground">{urlBar}</span>
+        </div>
 
-      <div className="flex flex-col sm:flex-row">
+        <div className="flex flex-col sm:flex-row">
         {/* Perspective orb-blur "video" -- no play button or scrub bar,
             since this represents a Live, not a recording. */}
         <div className="relative flex flex-1 flex-col justify-end overflow-hidden bg-gradient-to-br from-[#0d0a1a] to-[#06040c] p-6 sm:aspect-video sm:p-8">
@@ -107,6 +115,7 @@ export function ProductPreviewStage({
               <span className="text-muted-foreground">{m.text}</span>
             </div>
           ))}
+        </div>
         </div>
       </div>
 
