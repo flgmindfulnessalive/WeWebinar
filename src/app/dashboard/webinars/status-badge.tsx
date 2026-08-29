@@ -1,11 +1,7 @@
+import { getTranslations } from "next-intl/server";
+
 import { Badge } from "@/components/ui/badge";
 import type { WebinarStatus } from "@/lib/supabase/database.types";
-
-const LABELS: Record<WebinarStatus, string> = {
-  draft: "Borrador",
-  published: "Activo",
-  archived: "Pausado",
-};
 
 const VARIANTS: Record<WebinarStatus, "default" | "secondary" | "outline"> = {
   draft: "secondary",
@@ -13,6 +9,7 @@ const VARIANTS: Record<WebinarStatus, "default" | "secondary" | "outline"> = {
   archived: "outline",
 };
 
-export function StatusBadge({ status }: { status: WebinarStatus }) {
-  return <Badge variant={VARIANTS[status]}>{LABELS[status]}</Badge>;
+export async function StatusBadge({ status }: { status: WebinarStatus }) {
+  const t = await getTranslations("WebinarStatusLabel");
+  return <Badge variant={VARIANTS[status]}>{t(status)}</Badge>;
 }
