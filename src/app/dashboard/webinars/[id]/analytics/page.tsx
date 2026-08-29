@@ -14,6 +14,7 @@ import { HorizontalBarChart } from "./bar-chart";
 import { CtaClickersToggle } from "./cta-clickers";
 import { RegistrantsTable } from "./registrants-table";
 import { MessagesTable } from "./messages-table";
+import { ReactionsTable } from "./reactions-table";
 import { Funnel } from "./funnel";
 import { ConcurrentViewersChart } from "./concurrent-viewers-chart";
 import { DateRangeSelect } from "./date-range-select";
@@ -107,6 +108,7 @@ export default async function WebinarAnalyticsPage({
     { data: clickerRows },
     { data: watchPositionRows },
     { data: messageRows },
+    { data: reactionRows },
     { data: schedulePerformanceRows },
     { data: concurrentViewerRows },
   ] = await Promise.all([
@@ -118,6 +120,7 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_concurrent_viewers", { p_webinar_id: webinarId }),
   ]);
@@ -403,6 +406,28 @@ export default async function WebinarAnalyticsPage({
                 aiRepliedAt: m.ai_replied_at,
                 hostReplied: m.host_replied,
                 createdAt: m.created_at,
+              }))}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {(reactionRows?.length ?? 0) > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("reactionsTitle", { count: reactionRows!.length })}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReactionsTable
+              reactions={reactionRows!.map((r) => ({
+                id: r.id,
+                registrantId: r.registrant_id,
+                name: r.name,
+                email: r.email,
+                emoji: r.emoji,
+                videoTimestampSeconds: r.video_timestamp_seconds,
               }))}
             />
           </CardContent>

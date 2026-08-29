@@ -171,7 +171,8 @@
     "alreadyVoted": "You already voted",
     "thanksForJoining": "Thanks for joining {title}",
     "webinarEnded": "The webinar has ended.",
-    "seeMore": "See more"
+    "seeMore": "See more",
+    "sendReaction": "Send {emoji} reaction"
   },
   "ChatPanel": {
     "moderatorTeam": "Moderator team",
@@ -740,6 +741,7 @@
     "ctaAppearsAt": "Appears at {time}",
     "ctaClicksValueLabel": "{clicks} clicks · {pct}%",
     "chatMessagesTitle": "Chat messages ({count})",
+    "reactionsTitle": "Reactions ({count})",
     "pollResultsTitle": "Poll results",
     "pollVotesValueLabel": "{votes, plural, one {# vote} other {# votes}}"
   },
@@ -782,7 +784,8 @@
     "firstClickHeader": "First click",
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",
-    "aiReplyHidden": "AI reply hidden"
+    "aiReplyHidden": "AI reply hidden",
+    "emojiHeader": "Reaction"
   },
   "WebinarReport": {
     "generatedOn": "Generated on {date}",

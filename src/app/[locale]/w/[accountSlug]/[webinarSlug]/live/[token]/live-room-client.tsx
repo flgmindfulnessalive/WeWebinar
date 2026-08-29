@@ -16,6 +16,7 @@ import {
   type LockedYouTubePlayerHandle,
 } from "@/components/locked-youtube-player";
 import { ChatPanel } from "./chat-panel";
+import { LiveReactions } from "./reactions";
 import { PoweredByBadge } from "@/components/powered-by-badge";
 import type { ChatMessageType, CtaType, Json } from "@/lib/supabase/database.types";
 import type { Presenter } from "@/lib/presenter";
@@ -132,7 +133,7 @@ export function LiveRoomClient({
   // impossible to diagnose. Log failures to the browser console instead.
   const recordViewerEvent = useCallback(
     (
-      eventType: "join" | "heartbeat" | "leave" | "cta_click" | "poll_response",
+      eventType: "join" | "heartbeat" | "leave" | "cta_click" | "poll_response" | "reaction",
       opts?: { videoTimestampSeconds?: number; metadata?: Json }
     ) => {
       supabase
@@ -284,6 +285,13 @@ export function LiveRoomClient({
       (c.timestamp_end_seconds === null || elapsed <= c.timestamp_end_seconds)
   );
 
+  function handleReaction(emoji: string) {
+    recordViewerEvent("reaction", {
+      videoTimestampSeconds: Math.round(getElapsedSeconds()),
+      metadata: { emoji },
+    });
+  }
+
   function recordCtaClick(ctaId: string) {
     recordViewerEvent("cta_click", {
       videoTimestampSeconds: Math.round(getElapsedSeconds()),
@@ -401,6 +409,7 @@ export function LiveRoomClient({
                   results={pollResults[cta.id]}
                 />
               ))}
+              <LiveReactions onReact={handleReaction} />
             </>
           )}
         </div>

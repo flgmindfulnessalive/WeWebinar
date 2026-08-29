@@ -1,0 +1,11 @@
+-- Adds 'reaction' to viewer_event_type so a registrant tapping an emoji in
+-- the live room (heart, thumbs up, etc.) is just another viewer_events row
+-- -- record_viewer_event already accepts any event type + jsonb metadata,
+-- so this needs no new write path, only the new enum value. The emoji
+-- itself travels in metadata->>'emoji' (free text, not its own enum --
+-- the reaction set is a product/UI choice, not a schema one).
+--
+-- In its own migration/transaction on purpose: Postgres won't let a new
+-- enum value be *used* (e.g. in a function body or a WHERE clause) in the
+-- same transaction that added it.
+alter type public.viewer_event_type add value 'reaction';
