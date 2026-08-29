@@ -1,0 +1,130 @@
+{
+  "MarketingLayout": {
+    "pricing": "Precios",
+    "login": "Ingresar",
+    "signup": "Empezar ahora",
+    "footer": "© {year} WeWebinars. Todos los derechos reservados."
+  },
+  "Home": {
+    "badge": "🚀 Vende mientras duermes",
+    "heroTitle": "Webinars evergreen que <highlight>se sienten en vivo</highlight>",
+    "heroSubtitle": "Graba una vez, preséntalo para siempre. Programa sesiones automáticas, simula chat en vivo y vende tus productos con CTAs cronometrados — sin depender de una transmisión real.",
+    "ctaStart": "Empezar ahora",
+    "ctaPlans": "Ver planes",
+    "trial": "15 días de prueba gratis — sin tarjeta de crédito",
+    "featuresTitle": "Todo lo que necesitas para vender",
+    "featuresSubtitle": "Una plataforma, sin depender de transmitir en vivo cada vez.",
+    "features": {
+      "video": {
+        "title": "Graba una vez, preséntalo para siempre",
+        "description": "Cada visitante ve tu webinar como si fuera en vivo, con reproductor bloqueado para que no adelante ni descargue el video."
+      },
+      "scheduling": {
+        "title": "Programación a tu manera",
+        "description": "Horarios fijos recurrentes, arranque inmediato (\"empieza ahora\"), o ambos combinados en el mismo webinar."
+      },
+      "chat": {
+        "title": "Chat en vivo simulado",
+        "description": "Mensajes cronometrados y contador de espectadores que hacen sentir el evento real, sin moderación manual."
+      },
+      "ctas": {
+        "title": "CTAs cronometrados",
+        "description": "Links, banners y encuestas que aparecen en el segundo exacto del video para vender en el momento justo."
+      },
+      "analytics": {
+        "title": "Analíticas por webinar",
+        "description": "Registrados, asistencia real, curva de retención, clics por CTA y resultados de encuestas, todo en un lugar."
+      },
+      "branding": {
+        "title": "Tu marca, no la nuestra",
+        "description": "Logo y colores propios en el registro, la sala y los emails automáticos de confirmación y recordatorio."
+      }
+    },
+    "howItWorksTitle": "Cómo funciona",
+    "howItWorksSubtitle": "De la grabación a la primera venta, en tres pasos.",
+    "steps": {
+      "record": {
+        "title": "Graba tu presentación",
+        "description": "Sube tu video a YouTube (como no listado) y carga el link en el wizard."
+      },
+      "schedule": {
+        "title": "Programa tus horarios",
+        "description": "Elige días y horas fijas, arranque inmediato, o las dos opciones juntas."
+      },
+      "share": {
+        "title": "Comparte tu link y vende",
+        "description": "Los CTAs y el chat simulado hacen el trabajo mientras tú generas tráfico."
+      }
+    },
+    "ctaBannerTitle": "Empieza a vender con tu primer webinar evergreen",
+    "ctaBannerSubtitle": "Configúralo en minutos y déjalo vendiendo las 24 horas.",
+    "comparisonTitle": "Tu mejor webinar no debería depender <highlight>de tu agenda</highlight>",
+    "comparisonSubtitle": "Un webinar en vivo depende de que estés ahí, a esa hora, otra vez. Uno evergreen queda grabado una sola vez — y sigue vendiendo mientras haces cualquier otra cosa.",
+    "liveCardTitle": "Webinar en vivo",
+    "liveCardSubtitle": "Zoom, Meet, transmisión real",
+    "livePoints": [
+      "Solo funciona durante sesiones en vivo",
+      "Limitado por zona horaria y horarios fijos",
+      "Menor tasa de asistencia",
+      "Consume tu tiempo y tu energía",
+      "Se detiene cuando tú te detienes"
+    ],
+    "evergreenBadge": "Así funciona con WeWebinars",
+    "evergreenCardTitle": "WeWebinars",
+    "evergreenCardSubtitle": "Evergreen, automatizado",
+    "evergreenPoints": [
+      "Webinars automatizados, todos los días",
+      "Funciona en todas las zonas horarias",
+      "Mejora la asistencia y la conversión",
+      "Sin repetir la presentación una y otra vez",
+      "Sigue funcionando sin ti"
+    ]
+  },
+  "ProductPreview": {
+    "urlBar": "tuempresa.com/webinar/lanzamiento-2026",
+    "live": "EN VIVO",
+    "chatLabel": "Chat en vivo",
+    "offer": "🎁 Oferta especial — últimos minutos",
+    "chat": {
+      "message1": "Justo lo que necesitaba 🙌",
+      "message2": "¿Queda grabado?",
+      "message3": "Excelente explicación"
+    }
+  },
+  "Pricing": {
+    "title": "Planes y precios",
+    "subtitle": "Elige anual o mensual. Crea webinars evergreen ilimitados para promocionar tus propios productos.",
+    "trial": "15 días de prueba gratis — sin tarjeta de crédito",
+    "billingAnnual": "Anual",
+    "billingMonthly": "Mensual",
+    "perYear": "año",
+    "perMonth": "mes",
+    "custom": "A medida",
+    "mostPopular": "Más elegido",
+    "getStarted": "Empezar con {plan}",
+    "enterpriseTitle": "Enterprise",
+    "enterpriseDescription": "Límites y condiciones a medida. Sin autoservicio — un asesor te contacta para armar tu plan.",
+    "features": {
+      "activeWebinars": "{count, plural, one {# webinar activo} other {# webinars activos}}",
+      "activeWebinarsCustom": "Webinars a medida",
+      "users": "{count, plural, one {# usuario} other {# usuarios}}",
+      "usersCustom": "Usuarios a medida",
+      "attendees": "{count, plural, one {# asistente por sesión} other {# asistentes por sesión}}",
+      "attendeesCustom": "Asistentes a medida",
+      "analytics": "Analíticas",
+      "aiChatReplies": "Agente AI de respuestas en chat",
+      "integrations": "Integraciones",
+      "removeBranding": "Sin \"Powered by\"",
+      "commercialRights": "Commercial Rights (Unlimited)"
+    }
+  },
+  "EnterpriseLeadForm": {
+    "name": "Nombre",
+    "email": "Email",
+    "company": "Empresa",
+    "message": "Cuéntanos qué necesitas",
+    "submit": "Hablar con ventas",
+    "submitting": "Enviando...",
+    "successMessage": "¡Gracias! Te vamos a contactar a la brevedad para armar tu plan Enterprise."
+  }
+}

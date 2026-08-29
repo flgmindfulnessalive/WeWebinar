@@ -32,9 +32,17 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  // Deliberately not locale-aware: this is the one root layout for the
+  // whole app (Next.js allows only a single <html> tag), so reading the
+  // resolved locale here (getLocale()) would pull in a dynamic API and
+  // force every route -- including pages with nothing to translate yet --
+  // out of static rendering. "es" matches the site's actual default
+  // language (this was previously hardcoded to "en", which was wrong).
+  // The English marketing pages (/en/...) will report lang="es" here
+  // until this gets a proper per-locale-root restructuring.
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

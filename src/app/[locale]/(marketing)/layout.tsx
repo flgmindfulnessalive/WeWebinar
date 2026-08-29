@@ -1,6 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import NextLink from "next/link";
 
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "./_components/language-switcher";
 
 function BrandMark() {
   return (
@@ -16,11 +19,13 @@ function BrandMark() {
   );
 }
 
-export default function MarketingLayout({
+export default async function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("MarketingLayout");
+
   return (
     <div className="marketing-theme flex min-h-svh flex-col">
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
@@ -31,10 +36,11 @@ export default function MarketingLayout({
               href="/pricing"
               className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
             >
-              Precios
+              {t("pricing")}
             </Link>
+            <LanguageSwitcher />
             <Button asChild variant="ghost" size="sm">
-              <Link href="/login">Ingresar</Link>
+              <NextLink href="/login">{t("login")}</NextLink>
             </Button>
             <Button
               asChild
@@ -42,7 +48,7 @@ export default function MarketingLayout({
               className="text-white shadow-sm"
               style={{ background: "var(--brand)" }}
             >
-              <Link href="/signup">Empezar ahora</Link>
+              <NextLink href="/signup">{t("signup")}</NextLink>
             </Button>
           </nav>
         </div>
@@ -54,7 +60,7 @@ export default function MarketingLayout({
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
           <BrandMark />
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} WeWebinars. Todos los derechos reservados.
+            {t("footer", { year: new Date().getFullYear() })}
           </p>
         </div>
       </footer>

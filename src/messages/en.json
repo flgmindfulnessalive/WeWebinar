@@ -1,0 +1,130 @@
+{
+  "MarketingLayout": {
+    "pricing": "Pricing",
+    "login": "Log in",
+    "signup": "Get started",
+    "footer": "© {year} WeWebinars. All rights reserved."
+  },
+  "Home": {
+    "badge": "🚀 Sell while you sleep",
+    "heroTitle": "Evergreen webinars that <highlight>feel live</highlight>",
+    "heroSubtitle": "Record once, present it forever. Schedule automated sessions, simulate live chat, and sell your products with timed CTAs — with no need for a real live stream.",
+    "ctaStart": "Get started",
+    "ctaPlans": "See plans",
+    "trial": "15-day free trial — no credit card required",
+    "featuresTitle": "Everything you need to sell",
+    "featuresSubtitle": "One platform, with no need to stream live every time.",
+    "features": {
+      "video": {
+        "title": "Record once, present it forever",
+        "description": "Every visitor watches your webinar as if it were live, with a locked player so they can't skip ahead or download the video."
+      },
+      "scheduling": {
+        "title": "Scheduling your way",
+        "description": "Recurring fixed times, instant start (\"start now\"), or both combined in the same webinar."
+      },
+      "chat": {
+        "title": "Simulated live chat",
+        "description": "Timed messages and a viewer counter that make the event feel real, with no manual moderation."
+      },
+      "ctas": {
+        "title": "Timed CTAs",
+        "description": "Links, banners, and polls that appear at the exact second in the video to sell at just the right moment."
+      },
+      "analytics": {
+        "title": "Per-webinar analytics",
+        "description": "Registrants, real attendance, retention curve, clicks per CTA, and poll results, all in one place."
+      },
+      "branding": {
+        "title": "Your brand, not ours",
+        "description": "Your own logo and colors on registration, the room, and the automated confirmation and reminder emails."
+      }
+    },
+    "howItWorksTitle": "How it works",
+    "howItWorksSubtitle": "From recording to your first sale, in three steps.",
+    "steps": {
+      "record": {
+        "title": "Record your presentation",
+        "description": "Upload your video to YouTube (as unlisted) and add the link in the wizard."
+      },
+      "schedule": {
+        "title": "Schedule your sessions",
+        "description": "Choose fixed days and times, instant start, or both options together."
+      },
+      "share": {
+        "title": "Share your link and sell",
+        "description": "The CTAs and simulated chat do the work while you drive traffic."
+      }
+    },
+    "ctaBannerTitle": "Start selling with your first evergreen webinar",
+    "ctaBannerSubtitle": "Set it up in minutes and let it sell around the clock.",
+    "comparisonTitle": "Your best webinar shouldn't depend <highlight>on your calendar</highlight>",
+    "comparisonSubtitle": "A live webinar depends on you being there, at that time, again. An evergreen one is recorded once — and keeps selling while you do anything else.",
+    "liveCardTitle": "Live webinar",
+    "liveCardSubtitle": "Zoom, Meet, a real broadcast",
+    "livePoints": [
+      "Only works during live sessions",
+      "Limited by time zone and fixed schedules",
+      "Lower attendance rates",
+      "Takes your time and energy",
+      "Stops when you stop"
+    ],
+    "evergreenBadge": "How it works with WeWebinars",
+    "evergreenCardTitle": "WeWebinars",
+    "evergreenCardSubtitle": "Evergreen, automated",
+    "evergreenPoints": [
+      "Automated webinars, every day",
+      "Works across every time zone",
+      "Improves attendance and conversion",
+      "No repeating the presentation over and over",
+      "Keeps going without you"
+    ]
+  },
+  "ProductPreview": {
+    "urlBar": "yourcompany.com/webinar/launch-2026",
+    "live": "LIVE",
+    "chatLabel": "Live chat",
+    "offer": "🎁 Special offer — final minutes",
+    "chat": {
+      "message1": "Exactly what I needed 🙌",
+      "message2": "Is this recorded?",
+      "message3": "Great explanation"
+    }
+  },
+  "Pricing": {
+    "title": "Plans and pricing",
+    "subtitle": "Choose annual or monthly. Create unlimited evergreen webinars to promote your own products.",
+    "trial": "15-day free trial — no credit card required",
+    "billingAnnual": "Annual",
+    "billingMonthly": "Monthly",
+    "perYear": "year",
+    "perMonth": "month",
+    "custom": "Custom",
+    "mostPopular": "Most popular",
+    "getStarted": "Get started with {plan}",
+    "enterpriseTitle": "Enterprise",
+    "enterpriseDescription": "Custom limits and terms. No self-serve — an advisor will contact you to build your plan.",
+    "features": {
+      "activeWebinars": "{count, plural, one {# active webinar} other {# active webinars}}",
+      "activeWebinarsCustom": "Custom webinar limit",
+      "users": "{count, plural, one {# user} other {# users}}",
+      "usersCustom": "Custom user limit",
+      "attendees": "{count, plural, one {# attendee per session} other {# attendees per session}}",
+      "attendeesCustom": "Custom attendee limit",
+      "analytics": "Analytics",
+      "aiChatReplies": "AI chat reply agent",
+      "integrations": "Integrations",
+      "removeBranding": "No \"Powered by\" badge",
+      "commercialRights": "Commercial Rights (Unlimited)"
+    }
+  },
+  "EnterpriseLeadForm": {
+    "name": "Name",
+    "email": "Email",
+    "company": "Company",
+    "message": "Tell us what you need",
+    "submit": "Talk to sales",
+    "submitting": "Sending...",
+    "successMessage": "Thanks! We'll be in touch shortly to build your Enterprise plan."
+  }
+}
