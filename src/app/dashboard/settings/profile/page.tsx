@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,14 +12,16 @@ export default async function ProfilePage() {
   const current = await getCurrentAccount();
   if (!current) redirect("/onboarding");
 
+  const t = await getTranslations("ProfileSettings");
+
   return (
     <div className="flex max-w-lg flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Perfil</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Datos personales</CardTitle>
-          <CardDescription>Tu nombre y foto de perfil.</CardDescription>
+          <CardTitle className="text-sm font-medium">{t("personalInfoTitle")}</CardTitle>
+          <CardDescription>{t("personalInfoDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <ProfileForm
@@ -30,10 +33,8 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Email de acceso</CardTitle>
-          <CardDescription>
-            Es el email con el que inicias sesión. Cambiarlo pide confirmación por correo.
-          </CardDescription>
+          <CardTitle className="text-sm font-medium">{t("emailTitle")}</CardTitle>
+          <CardDescription>{t("emailDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <EmailForm currentEmail={current.user.email} />
@@ -42,8 +43,8 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Cambiar contraseña</CardTitle>
-          <CardDescription>Mínimo 8 caracteres.</CardDescription>
+          <CardTitle className="text-sm font-medium">{t("passwordTitle")}</CardTitle>
+          <CardDescription>{t("passwordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <PasswordForm />
@@ -52,11 +53,8 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Diagnóstico de emails</CardTitle>
-          <CardDescription>
-            Prueba el envío de emails (confirmación, recordatorios) sin tener que
-            registrarte a un webinar.
-          </CardDescription>
+          <CardTitle className="text-sm font-medium">{t("diagnosticsTitle")}</CardTitle>
+          <CardDescription>{t("diagnosticsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <TestEmailForm />

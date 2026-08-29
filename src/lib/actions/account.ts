@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { getTranslations } from "next-intl/server";
+
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -103,14 +105,15 @@ export async function updateAccountGeneral(
   _prevState: UpdateAccountGeneralState,
   formData: FormData
 ): Promise<UpdateAccountGeneralState> {
+  const t = await getTranslations("AccountActions");
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
-    return { error: "No tienes permisos para editar la cuenta." };
+    return { error: t("noPermission") };
   }
 
   const name = String(formData.get("name") ?? "").trim();
   if (!name) {
-    return { error: "El nombre de la cuenta es obligatorio." };
+    return { error: t("nameRequired") };
   }
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
 

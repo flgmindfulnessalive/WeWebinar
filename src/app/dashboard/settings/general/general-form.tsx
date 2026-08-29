@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { updateAccountGeneral } from "@/lib/actions/account";
 import { Button } from "@/components/ui/button";
@@ -11,16 +12,18 @@ import { useTimezones } from "@/hooks/use-timezones";
 export function GeneralForm({ name, timezone }: { name: string; timezone: string }) {
   const [state, formAction, isPending] = useActionState(updateAccountGeneral, null);
   const timezones = useTimezones();
+  const t = useTranslations("GeneralSettings");
+  const tCommon = useTranslations("SettingsCommon");
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="name">Nombre</Label>
+        <Label htmlFor="name">{t("nameLabel")}</Label>
         <Input id="name" name="name" defaultValue={name} required />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="timezone">Zona horaria</Label>
+        <Label htmlFor="timezone">{t("timezoneLabel")}</Label>
         <select
           id="timezone"
           name="timezone"
@@ -40,11 +43,11 @@ export function GeneralForm({ name, timezone }: { name: string; timezone: string
         <p className="text-sm text-destructive">{state.error}</p>
       )}
       {state && "success" in state && (
-        <p className="text-sm text-primary">Guardado.</p>
+        <p className="text-sm text-primary">{tCommon("saved")}</p>
       )}
 
       <Button type="submit" disabled={isPending} className="w-fit">
-        {isPending ? "Guardando..." : "Guardar cambios"}
+        {isPending ? tCommon("saving") : tCommon("saveChanges")}
       </Button>
     </form>
   );
