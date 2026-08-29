@@ -548,5 +548,26 @@
     "categoryLabel": "Category",
     "categoryPlaceholder": "Marketing",
     "descriptionLabel": "Description"
+  },
+  "PresenterSection": {
+    "teamMember": "Team member",
+    "custom": "Custom",
+    "presenterLabel": "Presenter",
+    "noPresenter": "No presenter",
+    "memberHint": "That person's name and Profile photo are shown in the waiting room and the webinar's public link.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Presenter's name",
+    "avatarLabel": "Photo (URL)",
+    "bioLabel": "Bio",
+    "customHint": "Useful when the presenter doesn't have an account on the platform."
+  },
+  "VideoSection": {
+    "unlistedHint": "Paste the link to an \"unlisted\" YouTube video (Visibility → Hidden, in YouTube Studio). It doesn't need to be public.",
+    "youtubeLinkLabel": "YouTube link",
+    "load": "Load",
+    "invalidLink": "I couldn't recognize that YouTube link. Try pasting the full URL.",
+    "loadingDuration": "Loading video duration...",
+    "cancel": "Cancel",
+    "replaceVideo": "Replace video"
   }
 }
