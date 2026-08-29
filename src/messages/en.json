@@ -707,6 +707,7 @@
   },
   "WebinarAnalytics": {
     "exportCsv": "Export registrants (CSV)",
+    "downloadReport": "Download report",
     "startsInMinutes": "In {minutes} min",
     "onDemand": "On demand",
     "typeLinkFallback": "Link",
@@ -782,6 +783,18 @@
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",
     "aiReplyHidden": "AI reply hidden"
+  },
+  "WebinarReport": {
+    "generatedOn": "Generated on {date}",
+    "dataRangeAll": "Data: full history",
+    "scheduleModeFixed": "Scheduled",
+    "scheduleModeBoth": "Scheduled + on demand",
+    "footerBrand": "WeWebinars · wewebinars.com",
+    "footerConfidential": "Confidential report — internal use",
+    "pageOf": "Page {page} of {total}",
+    "noScheduleData": "Not enough time slot data yet.",
+    "noCtaData": "No CTA clicks yet.",
+    "noPollData": "No poll votes yet."
   },
   "AdminOverview": {
     "title": "Platform overview",

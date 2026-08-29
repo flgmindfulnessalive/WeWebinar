@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, FileDown } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -231,12 +231,20 @@ export default async function WebinarAnalyticsPage({
             {webinar.title} · {tWizard("analytics")}
           </h1>
         </div>
-        <Button asChild variant="outline" className="w-fit">
-          <a href={`/api/webinars/${webinarId}/export`}>
-            <Download className="size-4" />
-            {t("exportCsv")}
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" className="w-fit">
+            <a href={`/api/webinars/${webinarId}/report`}>
+              <FileDown className="size-4" />
+              {t("downloadReport")}
+            </a>
+          </Button>
+          <Button asChild variant="outline" className="w-fit">
+            <a href={`/api/webinars/${webinarId}/export`}>
+              <Download className="size-4" />
+              {t("exportCsv")}
+            </a>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
