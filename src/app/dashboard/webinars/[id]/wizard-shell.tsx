@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   Calendar,
   Check,
@@ -51,6 +52,7 @@ export type WizardStep = {
 // while editing one step. Opens on the first incomplete step so there's
 // always something actionable in view on load.
 export function WizardShell({ steps }: { steps: WizardStep[] }) {
+  const t = useTranslations("WizardShell");
   const firstIncomplete = steps.find((step) => !step.completed);
   const [activeId, setActiveId] = useState(firstIncomplete?.id ?? steps[0]?.id);
   const active = steps.find((step) => step.id === activeId) ?? steps[0];
@@ -65,7 +67,7 @@ export function WizardShell({ steps }: { steps: WizardStep[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-1 items-center gap-3">
           <span className="text-sm font-semibold whitespace-nowrap">
-            {completedCount} de {steps.length} pasos completos
+            {t("stepsProgress", { completed: completedCount, total: steps.length })}
           </span>
           <div className="h-1.5 max-w-[22rem] flex-1 overflow-hidden rounded-full bg-muted">
             <div
@@ -77,7 +79,7 @@ export function WizardShell({ steps }: { steps: WizardStep[] }) {
         {pending.length > 0 && (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock3 className="size-3.5" />
-            Falta configurar: {pending.map((step) => step.title).join(", ")}
+            {t("pendingLabel", { list: pending.map((step) => step.title).join(", ") })}
           </span>
         )}
       </div>
