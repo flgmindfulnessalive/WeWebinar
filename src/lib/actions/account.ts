@@ -28,7 +28,8 @@ export async function createAccount(
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
 
   if (!name) {
-    return { error: "El nombre de la cuenta es obligatorio." };
+    const t = await getTranslations("AccountActions");
+    return { error: t("nameRequired") };
   }
 
   // redirect() throws internally to navigate, so it can never be called

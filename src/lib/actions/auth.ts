@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,7 +23,8 @@ export async function signInWithPassword(
     redirectTo = next;
   } catch (err) {
     console.error("[auth] signInWithPassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
+    const t = await getTranslations("AuthActions");
+    return { error: t("connectionError") };
   }
 
   redirect(redirectTo);
@@ -57,7 +59,8 @@ export async function signUpWithPassword(
     hasSession = data.session !== null;
   } catch (err) {
     console.error("[auth] signUpWithPassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
+    const t = await getTranslations("AuthActions");
+    return { error: t("connectionError") };
   }
 
   if (!hasSession) return { checkEmail: true };
@@ -98,7 +101,8 @@ export async function requestPasswordReset(
   formData: FormData
 ): Promise<ForgotPasswordState> {
   const email = String(formData.get("email") ?? "").trim();
-  if (!email) return { error: "El email es obligatorio." };
+  const t = await getTranslations("AuthActions");
+  if (!email) return { error: t("emailRequired") };
 
   try {
     const supabase = await createClient();
@@ -109,11 +113,11 @@ export async function requestPasswordReset(
     // the caller's point of view, but still surface a real infra failure.
     if (error) {
       console.error("[auth] requestPasswordReset failed:", error);
-      return { error: "No pudimos enviar el email. Prueba de nuevo en un momento." };
+      return { error: t("sendEmailFailed") };
     }
   } catch (err) {
     console.error("[auth] requestPasswordReset failed:", err);
-    return { error: "No pudimos enviar el email. Prueba de nuevo en un momento." };
+    return { error: t("sendEmailFailed") };
   }
 
   return { success: true };
@@ -124,8 +128,9 @@ export async function updatePassword(
   formData: FormData
 ): Promise<AuthActionState> {
   const password = String(formData.get("password") ?? "");
+  const t = await getTranslations("AuthActions");
   if (password.length < 8) {
-    return { error: "La contraseña debe tener al menos 8 caracteres." };
+    return { error: t("passwordTooShort") };
   }
 
   try {
@@ -134,7 +139,7 @@ export async function updatePassword(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[auth] updatePassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
+    return { error: t("connectionError") };
   }
 
   redirect("/dashboard");

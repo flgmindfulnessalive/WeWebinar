@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { requestPasswordReset } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/card";
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("ForgotPasswordForm");
   const [state, formAction, isPending] = useActionState(
     requestPasswordReset,
     null
@@ -25,15 +27,12 @@ export function ForgotPasswordForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Revisa tu email</CardTitle>
-          <CardDescription>
-            Si existe una cuenta con ese email, te enviamos un link para
-            elegir una contraseña nueva.
-          </CardDescription>
+          <CardTitle>{t("successTitle")}</CardTitle>
+          <CardDescription>{t("successDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/login" className="text-sm underline underline-offset-4">
-            Volver a ingresar
+            {t("backToLogin")}
           </Link>
         </CardContent>
       </Card>
@@ -43,28 +42,26 @@ export function ForgotPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recuperar contraseña</CardTitle>
-        <CardDescription>
-          Te mandamos un link a tu email para elegir una contraseña nueva.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <form action={formAction} className="flex flex-col gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input id="email" name="email" type="email" required autoComplete="email" />
           </div>
           {state && "error" in state && (
             <p className="text-sm text-destructive">{state.error}</p>
           )}
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Enviando..." : "Enviar link de recuperación"}
+            {isPending ? t("submitting") : t("submit")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
           <Link href="/login" className="underline underline-offset-4">
-            Volver a ingresar
+            {t("backToLogin")}
           </Link>
         </p>
       </CardContent>

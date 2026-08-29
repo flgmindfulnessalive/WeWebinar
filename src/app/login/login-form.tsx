@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { signInWithPassword } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
 import { GoogleButton } from "@/components/google-button";
 
 export function LoginForm({ next }: { next: string }) {
+  const t = useTranslations("LoginForm");
   const [state, formAction, isPending] = useActionState(
     signInWithPassword,
     null
@@ -26,10 +28,8 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ingresa a tu cuenta</CardTitle>
-        <CardDescription>
-          Gestiona tus webinars evergreen desde el dashboard.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <GoogleButton next={next} />
@@ -39,24 +39,24 @@ export function LoginForm({ next }: { next: string }) {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">o con email</span>
+            <span className="bg-card px-2 text-muted-foreground">{t("orEmail")}</span>
           </div>
         </div>
 
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="next" value={next} />
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input id="email" name="email" type="email" required autoComplete="email" />
           </div>
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">{t("passwordLabel")}</Label>
               <Link
                 href="/forgot-password"
                 className="text-xs text-muted-foreground underline underline-offset-4"
               >
-                ¿Olvidaste tu contraseña?
+                {t("forgotPassword")}
               </Link>
             </div>
             <PasswordInput
@@ -70,14 +70,14 @@ export function LoginForm({ next }: { next: string }) {
             <p className="text-sm text-destructive">{state.error}</p>
           )}
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Ingresando..." : "Ingresar"}
+            {isPending ? t("submitting") : t("submit")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          ¿No tienes cuenta?{" "}
+          {t("noAccount")}{" "}
           <Link href="/signup" className="underline underline-offset-4">
-            Regístrate
+            {t("signupLink")}
           </Link>
         </p>
       </CardContent>

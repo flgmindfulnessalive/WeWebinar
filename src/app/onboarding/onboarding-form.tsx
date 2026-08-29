@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 import { createAccount } from "@/lib/actions/account";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
 import { useTimezones } from "@/hooks/use-timezones";
 
 export function OnboardingForm() {
+  const t = useTranslations("OnboardingForm");
   const [state, formAction, isPending] = useActionState(createAccount, null);
   const timezones = useTimezones();
   const detectedTimezone = useMemo(() => {
@@ -29,22 +31,18 @@ export function OnboardingForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Crea tu cuenta de host</CardTitle>
-        <CardDescription>
-          Elige un nombre para tu cuenta. Empieza con el plan Core y 7 días
-          de prueba gratis, sin tarjeta de crédito — escríbenos a
-          operaciones@wewebinars.com cuando quieras subir de plan.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-6">
           <div className="grid gap-2">
-            <Label htmlFor="name">Nombre de la cuenta / empresa</Label>
+            <Label htmlFor="name">{t("accountNameLabel")}</Label>
             <Input id="name" name="name" type="text" required placeholder="Acme Webinars" />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="timezone">Zona horaria</Label>
+            <Label htmlFor="timezone">{t("timezoneLabel")}</Label>
             <select
               id="timezone"
               name="timezone"
@@ -62,16 +60,16 @@ export function OnboardingForm() {
 
           <div className="flex items-center justify-between rounded-lg border bg-accent p-4 text-sm">
             <span className="flex flex-col">
-              <span className="font-medium">Plan Core</span>
-              <span className="text-muted-foreground">1 webinar activo · 1 usuario</span>
+              <span className="font-medium">{t("planCoreLabel")}</span>
+              <span className="text-muted-foreground">{t("planCoreDetail")}</span>
             </span>
-            <span className="font-medium">7 días gratis</span>
+            <span className="font-medium">{t("freeDays")}</span>
           </div>
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Creando cuenta..." : "Crear cuenta y continuar"}
+            {isPending ? t("submitting") : t("submit")}
           </Button>
         </form>
       </CardContent>

@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { signUpWithPassword } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { GoogleButton } from "@/components/google-button";
 const CHECK_EMAIL_REDIRECT_MS = 15_000;
 
 export function SignupForm({ initialEmail }: { initialEmail?: string }) {
+  const t = useTranslations("SignupForm");
   const [state, formAction, isPending] = useActionState(
     signUpWithPassword,
     null
@@ -38,25 +40,23 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Crea tu cuenta</CardTitle>
-        <CardDescription>
-          Empieza a crear webinars evergreen en minutos.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {showCheckEmail ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
             <Mail className="size-8 text-muted-foreground" />
-            <p className="text-sm font-medium">Revisa tu correo</p>
-            <p className="text-sm text-muted-foreground">
-              Te enviamos un link para confirmar tu cuenta. Haz clic ahí para continuar.
-            </p>
+            <p className="text-sm font-medium">{t("checkEmailTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("checkEmailBody")}</p>
             <p className="text-xs text-muted-foreground">
-              Te llevamos a Ingresar en unos segundos, o{" "}
-              <Link href="/login" className="underline underline-offset-4">
-                hazlo ahora
-              </Link>
-              .
+              {t.rich("checkEmailRedirect", {
+                link: (chunks) => (
+                  <Link href="/login" className="underline underline-offset-4">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           </div>
         ) : (
@@ -68,17 +68,17 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">o con email</span>
+                <span className="bg-card px-2 text-muted-foreground">{t("orEmail")}</span>
               </div>
             </div>
 
             <form action={formAction} className="flex flex-col gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="full_name">Nombre</Label>
+                <Label htmlFor="full_name">{t("nameLabel")}</Label>
                 <Input id="full_name" name="full_name" type="text" required autoComplete="name" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("emailLabel")}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -89,7 +89,7 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password">{t("passwordLabel")}</Label>
                 <PasswordInput
                   id="password"
                   name="password"
@@ -102,14 +102,14 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
                 <p className="text-sm text-destructive">{state.error}</p>
               )}
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "Creando cuenta..." : "Crear cuenta"}
+                {isPending ? t("submitting") : t("submit")}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground">
-              ¿Ya tienes cuenta?{" "}
+              {t("haveAccount")}{" "}
               <Link href="/login" className="underline underline-offset-4">
-                Ingresa
+                {t("loginLink")}
               </Link>
             </p>
           </>

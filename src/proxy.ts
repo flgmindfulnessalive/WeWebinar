@@ -20,6 +20,10 @@ function isLocaleRoutedPath(pathname: string): boolean {
   );
 }
 
+function resolveLocaleFromPath(pathname: string): "es" | "en" {
+  return pathname === "/en" || pathname.startsWith("/en/") ? "en" : "es";
+}
+
 export async function proxy(request: NextRequest) {
   const sessionResponse = await updateSession(request);
 
@@ -35,6 +39,18 @@ export async function proxy(request: NextRequest) {
     for (const cookie of sessionResponse.cookies.getAll()) {
       intlResponse.cookies.set(cookie);
     }
+    // Keep NEXT_LOCALE in sync with the URL locale so routes outside the
+    // [locale] segment (login, signup, dashboard...) inherit whichever
+    // language the visitor was just browsing on the marketing site --
+    // otherwise clicking "Start" on the English homepage could land on a
+    // Spanish-only signup page (see src/i18n/request.ts's cookie fallback,
+    // and src/app/dashboard/language-toggle.tsx which writes the same
+    // cookie from inside the dashboard).
+    intlResponse.cookies.set("NEXT_LOCALE", resolveLocaleFromPath(request.nextUrl.pathname), {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
     return intlResponse;
   }
 

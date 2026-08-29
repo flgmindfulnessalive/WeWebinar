@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/logo";
 import { ParticleNetwork } from "@/components/particle-network";
@@ -10,6 +11,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const { next } = await searchParams;
+  const t = await getTranslations("AuthLayout");
 
   return (
     <div className="grid min-h-svh md:grid-cols-2">
@@ -28,9 +30,7 @@ export default async function LoginPage({
             <Logo className="size-16 rounded-2xl text-2xl shadow-2xl shadow-indigo-500/30" />
             <span className="text-2xl font-semibold tracking-tight text-white">WeWebinars</span>
           </Link>
-          <p className="max-w-xs text-sm text-white/60">
-            Webinars evergreen que se sienten en vivo.
-          </p>
+          <p className="max-w-xs text-sm text-white/60">{t("tagline")}</p>
         </div>
       </div>
 
