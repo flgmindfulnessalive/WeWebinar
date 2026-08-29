@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -16,6 +17,9 @@ export default async function BillingPage() {
   if (current.user.role !== "owner") {
     redirect("/dashboard");
   }
+
+  const t = await getTranslations("BillingSettings");
+  const tStatus = await getTranslations("SubscriptionStatus");
 
   // Self-serve checkout is off until Stripe is actually set up (see
   // DEPLOY.md step 2) -- without this, the plan-change buttons would hit
@@ -58,43 +62,45 @@ export default async function BillingPage() {
     key: p.key,
     label:
       p.price_annual_usd === null
-        ? `Cambiar a ${p.name}`
-        : `Cambiar a ${p.name} ($${p.price_annual_usd}/año)`,
+        ? t("changeToPlan", { plan: p.name })
+        : t("changeToPlanWithPrice", { plan: p.name, price: p.price_annual_usd }),
   }));
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Facturación</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Plan {current.plan.name}
-            <Badge className="capitalize">{current.account.subscription_status}</Badge>
+            {t("planTitle", { plan: current.plan.name })}
+            <Badge>{tStatus(current.account.subscription_status)}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
           <p>
-            {publishedCount ?? 0} / {current.plan.max_active_webinars ?? "∞"}{" "}
-            webinars activos.
+            {t("activeWebinarsCount", {
+              count: publishedCount ?? 0,
+              max: current.plan.max_active_webinars ?? "∞",
+            })}
           </p>
           <p>
-            {monthlyRegistrantCount ?? 0} / {current.plan.max_registrants_per_month ?? "∞"}{" "}
-            registrados este mes.
+            {t("monthlyRegistrantsCount", {
+              count: monthlyRegistrantCount ?? 0,
+              max: current.plan.max_registrants_per_month ?? "∞",
+            })}
           </p>
           {current.account.stripe_customer_id ? (
             <BillingPortalButton />
           ) : (
-            <p>Todavía no activaste el cobro de tu suscripción.</p>
+            <p>{t("billingNotActivated")}</p>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            Cambiar de plan
-          </CardTitle>
+          <CardTitle className="text-sm font-medium">{t("changePlanTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           {stripeConfigured ? (
@@ -103,10 +109,12 @@ export default async function BillingPage() {
             ))
           ) : (
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <p>Todavía no habilitamos el cambio de plan automático.</p>
+              <p>{t("selfServeDisabled")}</p>
               <Button asChild variant="outline" className="w-fit">
-                <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Quiero subir de plan")}`}>
-                  Escríbenos para subir de plan
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t("upgradeEmailSubject"))}`}
+                >
+                  {t("contactToUpgrade")}
                 </a>
               </Button>
             </div>

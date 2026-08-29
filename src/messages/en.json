@@ -225,13 +225,6 @@
     "activeWebinars": "Active webinars",
     "currentPlan": "Current plan",
     "subscriptionStatus": "Subscription status",
-    "subscriptionStatusValue": {
-      "trialing": "Trial",
-      "active": "Active",
-      "past_due": "Past due",
-      "suspended": "Suspended",
-      "canceled": "Canceled"
-    },
     "metricsFailed": "We couldn't load the registrant metrics. A database migration might be missing (<code>supabase db push</code>) — check the server logs for details.",
     "totalRegistrants": "Total registrants",
     "realAttendees": "Real attendees",
@@ -383,6 +376,30 @@
     "chooseEvent": "Choose at least one event.",
     "planBlocked": "Outgoing webhooks are available on the Pro, Business, and Enterprise plans. Upgrade your plan from Billing to activate them.",
     "notFound": "Webhook not found."
+  },
+  "SubscriptionStatus": {
+    "trialing": "Trial",
+    "active": "Active",
+    "past_due": "Past due",
+    "suspended": "Suspended",
+    "canceled": "Canceled"
+  },
+  "BillingSettings": {
+    "title": "Billing",
+    "planTitle": "{plan} plan",
+    "activeWebinarsCount": "{count} / {max} active webinars.",
+    "monthlyRegistrantsCount": "{count} / {max} registrants this month.",
+    "billingNotActivated": "You haven't activated billing for your subscription yet.",
+    "changePlanTitle": "Change plan",
+    "changeToPlan": "Switch to {plan}",
+    "changeToPlanWithPrice": "Switch to {plan} (${price}/year)",
+    "selfServeDisabled": "Automatic plan changes aren't enabled yet.",
+    "contactToUpgrade": "Email us to upgrade your plan",
+    "upgradeEmailSubject": "I want to upgrade my plan",
+    "manageSubscription": "Manage subscription",
+    "redirecting": "Redirecting...",
+    "checkoutFailed": "Couldn't start checkout.",
+    "portalFailed": "Couldn't open the portal."
   },
   "EnterpriseLeadForm": {
     "name": "Name",

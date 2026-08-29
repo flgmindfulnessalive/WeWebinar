@@ -19,6 +19,7 @@ export default async function DashboardPage({
   if (!current) return null;
 
   const t = await getTranslations("DashboardHome");
+  const tStatus = await getTranslations("SubscriptionStatus");
   const locale = await getLocale();
 
   const { page: pageParam } = await searchParams;
@@ -81,7 +82,7 @@ export default async function DashboardPage({
         <StatTile label={t("currentPlan")} value={current.plan.name} icon={Package} />
         <StatTile
           label={t("subscriptionStatus")}
-          value={t(`subscriptionStatusValue.${current.account.subscription_status}`)}
+          value={tStatus(current.account.subscription_status)}
           icon={Activity}
         />
       </div>
