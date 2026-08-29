@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { slugify } from "@/lib/slug";
 import { randomFakeViewerRange } from "@/lib/fake-viewers";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { webinarPublishedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 
@@ -241,7 +242,7 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
     // Best-effort: the webinar is already published above, so a failed
     // notification email shouldn't surface as a publish error.
     try {
-      const [{ data: account }, { data: owner }] = await Promise.all([
+      const [{ data: account }, { data: owner }, customDomainHostname] = await Promise.all([
         supabase.from("accounts").select("slug").eq("id", webinar.account_id).maybeSingle(),
         supabase
           .from("users")
@@ -249,9 +250,10 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
           .eq("account_id", webinar.account_id)
           .eq("role", "owner")
           .maybeSingle(),
+        getActiveCustomDomainHostname(supabase, webinar.account_id),
       ]);
       if (account && owner?.email) {
-        const registrationLink = `${process.env.NEXT_PUBLIC_APP_URL}/w/${account.slug}/${webinar.slug}`;
+        const registrationLink = webinarPublicUrl(account.slug, webinar.slug, customDomainHostname);
         const { subject, html } = webinarPublishedEmail(webinar.title, registrationLink);
         await sendEmail({ to: owner.email, subject, html });
       }
