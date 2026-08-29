@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
@@ -119,6 +120,13 @@ export async function registerForWebinar(
     return { error: t("invalidWebinar") };
   }
 
+  // Vercel resolves this at the edge and hands it to every request as a
+  // header -- no third-party geolocation service or IP storage needed.
+  // Absent outside Vercel (local dev, other hosts), which is fine: the
+  // country column is just null there, same as any other request Vercel
+  // itself couldn't resolve.
+  const country = (await headers()).get("x-vercel-ip-country") || null;
+
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("register_for_webinar", {
     p_webinar_id: webinarId,
@@ -129,6 +137,7 @@ export async function registerForWebinar(
     p_session_starts_at: sessionStartsAt,
     p_offset_minutes: offsetMinutes,
     p_phone: phone,
+    p_country: country,
   });
 
   if (error) {

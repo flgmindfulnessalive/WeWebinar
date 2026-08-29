@@ -19,6 +19,7 @@ import { Funnel } from "./funnel";
 import { ConcurrentViewersChart } from "./concurrent-viewers-chart";
 import { DateRangeSelect } from "./date-range-select";
 import { analyticsRangeToDates, parseAnalyticsRange } from "./date-range";
+import { countryDisplayName, countryFlagEmoji } from "@/lib/country";
 
 function ctaLabel(
   config: unknown,
@@ -111,6 +112,7 @@ export default async function WebinarAnalyticsPage({
     { data: reactionRows },
     { data: schedulePerformanceRows },
     { data: concurrentViewerRows },
+    { data: countryRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId, p_start_date, p_end_date }),
@@ -123,6 +125,7 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_concurrent_viewers", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_country_breakdown", { p_webinar_id: webinarId, p_start_date, p_end_date }),
   ]);
 
   if (registrantsError) {
@@ -188,6 +191,18 @@ export default async function WebinarAnalyticsPage({
         }),
       };
     });
+
+  const countryBars = (countryRows ?? []).map((r) => {
+    const label = r.country
+      ? `${countryFlagEmoji(r.country)} ${countryDisplayName(r.country, locale)}`
+      : t("unknownCountry");
+    return {
+      id: r.country ?? "unknown",
+      label,
+      value: r.registrant_count,
+      valueLabel: t("countryValueLabel", { count: r.registrant_count, pct: r.pct }),
+    };
+  });
 
   const concurrentViewerPoints = (concurrentViewerRows ?? []).map((r) => ({
     minute: r.minute,
@@ -316,6 +331,19 @@ export default async function WebinarAnalyticsPage({
           </CardHeader>
           <CardContent>
             <HorizontalBarChart bars={scheduleBars} />
+          </CardContent>
+        </Card>
+      )}
+
+      {countryBars.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("countryBreakdownTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <HorizontalBarChart bars={countryBars} />
           </CardContent>
         </Card>
       )}
