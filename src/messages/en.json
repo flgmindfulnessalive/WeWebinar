@@ -182,6 +182,15 @@
     "placeholder": "Type a message...",
     "send": "Send"
   },
+  "RegisterAction": {
+    "nameEmailRequired": "Name and email are required.",
+    "invalidEmail": "Enter a valid email address.",
+    "invalidWebinar": "Invalid webinar.",
+    "monthlyLimitExceeded": "This webinar has reached its account's registration limit for this month. Contact us if you need help.",
+    "planLimitExceeded": "That time slot has reached its capacity. Choose another time.",
+    "scheduleUnavailable": "That time slot is no longer available. Choose another.",
+    "genericError": "We couldn't complete your registration. Please try again."
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",

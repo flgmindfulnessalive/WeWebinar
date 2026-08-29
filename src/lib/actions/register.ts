@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -27,6 +28,7 @@ async function sendConfirmationEmail({
   visitorTimezone,
   accessToken,
   accessLink,
+  locale,
 }: {
   webinarId: string;
   accountId: string;
@@ -37,6 +39,7 @@ async function sendConfirmationEmail({
   visitorTimezone: string | null;
   accessToken: string;
   accessLink: string;
+  locale: string;
 }) {
   const admin = createAdminClient();
 
@@ -45,7 +48,7 @@ async function sendConfirmationEmail({
     admin.from("account_public_profile").select("name, branding").eq("id", accountId).maybeSingle(),
   ]);
 
-  const horaWebinar = new Intl.DateTimeFormat("es", {
+  const horaWebinar = new Intl.DateTimeFormat(locale, {
     dateStyle: "full",
     timeStyle: "short",
     timeZone: visitorTimezone || "UTC",
@@ -110,18 +113,20 @@ export async function registerForWebinar(
   const sessionStartsAt = String(formData.get("session_starts_at") ?? "") || null;
   const offsetRaw = formData.get("offset_minutes");
   const offsetMinutes = offsetRaw ? Number(offsetRaw) : null;
+  const t = await getTranslations("RegisterAction");
+  const locale = await getLocale();
 
   if (!name || name.length < 2) {
-    return { error: "Nombre y email son obligatorios." };
+    return { error: t("nameEmailRequired") };
   }
   // Simple, dependency-free format check -- not exhaustive RFC 5322, but
   // enough to reject obvious typos/garbage without a new library.
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!email || !EMAIL_RE.test(email)) {
-    return { error: "Ingresa un email válido." };
+    return { error: t("invalidEmail") };
   }
   if (!webinarId) {
-    return { error: "Webinar inválido." };
+    return { error: t("invalidWebinar") };
   }
 
   const supabase = await createClient();
@@ -138,23 +143,20 @@ export async function registerForWebinar(
 
   if (error) {
     if (error.message.includes("registrant_monthly_limit_exceeded")) {
-      return {
-        error:
-          "Este webinar alcanzó el cupo de registros de su cuenta para este mes. Escríbenos si necesitas ayuda.",
-      };
+      return { error: t("monthlyLimitExceeded") };
     }
     if (error.message.includes("plan_limit_exceeded")) {
-      return { error: "Ese horario alcanzó el cupo máximo de esta sesión. Elige otro horario." };
+      return { error: t("planLimitExceeded") };
     }
     if (error.message.includes("already started") || error.message.includes("does not match")) {
-      return { error: "Ese horario ya no está disponible. Elige otro." };
+      return { error: t("scheduleUnavailable") };
     }
-    return { error: "No pudimos completar tu registro. Prueba de nuevo." };
+    return { error: t("genericError") };
   }
 
   const result = data?.[0];
   if (!result) {
-    return { error: "No pudimos completar tu registro. Prueba de nuevo." };
+    return { error: t("genericError") };
   }
 
   const accessLink = `${process.env.NEXT_PUBLIC_APP_URL}${returnTo}/room/${result.access_token}`;
@@ -179,6 +181,7 @@ export async function registerForWebinar(
         visitorTimezone,
         accessToken: result.access_token,
         accessLink,
+        locale,
       });
     } catch (err) {
       console.error("[register] failed to send confirmation email:", err);

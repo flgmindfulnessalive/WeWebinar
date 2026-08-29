@@ -182,6 +182,15 @@
     "placeholder": "Escribe un mensaje...",
     "send": "Enviar"
   },
+  "RegisterAction": {
+    "nameEmailRequired": "Nombre y email son obligatorios.",
+    "invalidEmail": "Ingresa un email válido.",
+    "invalidWebinar": "Webinar inválido.",
+    "monthlyLimitExceeded": "Este webinar alcanzó el cupo de registros de su cuenta para este mes. Escríbenos si necesitas ayuda.",
+    "planLimitExceeded": "Ese horario alcanzó el cupo máximo de esta sesión. Elige otro horario.",
+    "scheduleUnavailable": "Ese horario ya no está disponible. Elige otro.",
+    "genericError": "No pudimos completar tu registro. Prueba de nuevo."
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",
