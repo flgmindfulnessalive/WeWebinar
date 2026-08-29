@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Point = { minute: number; concurrentViewers: number };
 
@@ -16,6 +17,7 @@ const PAD_BOTTOM = 24;
 const LINE_COLOR = "#4f46e5";
 
 export function ConcurrentViewersChart({ points }: { points: Point[] }) {
+  const t = useTranslations("AnalyticsCharts");
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const gradientId = useId();
 
@@ -63,7 +65,7 @@ export function ConcurrentViewersChart({ points }: { points: Point[] }) {
   }
 
   if (points.length === 0) {
-    return <p className="text-sm text-muted-foreground">Todavía no hay datos de esta sesión.</p>;
+    return <p className="text-sm text-muted-foreground">{t("noSessionData")}</p>;
   }
 
   return (
@@ -72,7 +74,7 @@ export function ConcurrentViewersChart({ points }: { points: Point[] }) {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full"
         role="img"
-        aria-label="Espectadores simultáneos por minuto"
+        aria-label={t("concurrentAriaLabel")}
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -154,8 +156,10 @@ export function ConcurrentViewersChart({ points }: { points: Point[] }) {
             transform: "translateX(-50%)",
           }}
         >
-          <p className="font-medium">Minuto {hovered.minute}</p>
-          <p className="text-muted-foreground">{hovered.concurrentViewers} en la sala a la vez</p>
+          <p className="font-medium">{t("minuteTooltip", { minute: hovered.minute })}</p>
+          <p className="text-muted-foreground">
+            {t("concurrentViewersTooltip", { count: hovered.concurrentViewers })}
+          </p>
         </div>
       )}
     </div>

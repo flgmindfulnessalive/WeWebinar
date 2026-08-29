@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ArrowUpDown } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import { secondsToClock } from "@/lib/time";
 
@@ -23,6 +24,8 @@ export function RegistrantsTable({
   registrants: Registrant[];
   durationSeconds: number;
 }) {
+  const t = useTranslations("AnalyticsTables");
+  const locale = useLocale();
   // null = default order (as fetched, newest registration first); true/false
   // = sorted by watch position. Cycles null -> desc -> asc -> null on click.
   const [sortDesc, setSortDesc] = useState<boolean | null>(null);
@@ -51,19 +54,19 @@ export function RegistrantsTable({
       <table className="w-full min-w-[720px] text-sm">
         <thead className="sticky top-0 bg-muted/50">
           <tr>
-            <th className="p-2 text-left font-medium">Nombre</th>
-            <th className="p-2 text-left font-medium">Email</th>
-            <th className="p-2 text-left font-medium">Teléfono</th>
-            <th className="p-2 text-left font-medium">Emails</th>
-            <th className="p-2 text-left font-medium">Horario asignado</th>
-            <th className="p-2 text-left font-medium">Registrado el</th>
+            <th className="p-2 text-left font-medium">{t("nameHeader")}</th>
+            <th className="p-2 text-left font-medium">{t("emailHeader")}</th>
+            <th className="p-2 text-left font-medium">{t("phoneHeader")}</th>
+            <th className="p-2 text-left font-medium">{t("statusHeader")}</th>
+            <th className="p-2 text-left font-medium">{t("scheduleHeader")}</th>
+            <th className="p-2 text-left font-medium">{t("registeredHeader")}</th>
             <th className="p-2 text-left font-medium">
               <button
                 type="button"
                 onClick={toggleSort}
                 className="flex items-center gap-1 hover:text-foreground"
               >
-                Último minuto visto
+                {t("lastMinuteWatchedHeader")}
                 <ArrowUpDown className="size-3.5" />
               </button>
             </th>
@@ -79,19 +82,21 @@ export function RegistrantsTable({
                 {r.unsubscribedAt ? (
                   <span
                     className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                    title={`Se dio de baja el ${new Date(r.unsubscribedAt).toLocaleString("es")}`}
+                    title={t("unsubscribedAtTitle", {
+                      date: new Date(r.unsubscribedAt).toLocaleString(locale),
+                    })}
                   >
-                    Dado de baja
+                    {t("unsubscribedBadge")}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">Activo</span>
+                  <span className="text-muted-foreground">{t("activeStatus")}</span>
                 )}
               </td>
-              <td className="p-2">{new Date(r.computedSessionStart).toLocaleString("es")}</td>
-              <td className="p-2">{new Date(r.createdAt).toLocaleString("es")}</td>
+              <td className="p-2">{new Date(r.computedSessionStart).toLocaleString(locale)}</td>
+              <td className="p-2">{new Date(r.createdAt).toLocaleString(locale)}</td>
               <td className="p-2">
                 {r.lastPositionSeconds === null ? (
-                  <span className="text-muted-foreground">No asistió</span>
+                  <span className="text-muted-foreground">{t("didNotAttend")}</span>
                 ) : (
                   <>
                     {secondsToClock(r.lastPositionSeconds)}
