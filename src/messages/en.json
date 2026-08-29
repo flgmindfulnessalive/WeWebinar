@@ -219,6 +219,38 @@
   "AdminLayout": {
     "panelTitle": "Super Admin Panel"
   },
+  "DashboardHome": {
+    "title": "Summary",
+    "createWebinar": "Create webinar",
+    "activeWebinars": "Active webinars",
+    "currentPlan": "Current plan",
+    "subscriptionStatus": "Subscription status",
+    "subscriptionStatusValue": {
+      "trialing": "Trial",
+      "active": "Active",
+      "past_due": "Past due",
+      "suspended": "Suspended",
+      "canceled": "Canceled"
+    },
+    "metricsFailed": "We couldn't load the registrant metrics. A database migration might be missing (<code>supabase db push</code>) — check the server logs for details.",
+    "totalRegistrants": "Total registrants",
+    "realAttendees": "Real attendees",
+    "attendanceRate": "{pct}% attendance rate",
+    "avgWatchTime": "Average watch time",
+    "avgWatchTimeSublabel": "of the video, on average",
+    "registrantsTitle": "Registrants",
+    "registrantsTitleWithCount": "Registrants ({count})",
+    "loadListFailed": "We couldn't load the registrant list.",
+    "noRegistrantsOnPage": "No registrants on this page.",
+    "noRegistrantsYet": "No one has registered yet.",
+    "name": "Name",
+    "email": "Email",
+    "webinar": "Webinar",
+    "registeredOn": "Registered on",
+    "pageOf": "Page {page} of {total}",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",
