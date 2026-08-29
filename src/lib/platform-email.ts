@@ -132,6 +132,24 @@ export function webinarPublishedEmail(
   };
 }
 
+export function domainVerificationFailedEmail(
+  accountName: string,
+  hostname: string
+): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const safeHostname = escapeHtml(hostname);
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Dominio propio</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeHostname} dejó de verificarse</h1>
+<p style="margin:0 0 20px;">El dominio propio de <strong style="color:#18181b;">${safeName}</strong> estaba activo, pero dejó de resolver correctamente -- puede que se haya modificado o eliminado un registro DNS. Mientras tanto, tus webinars siguen disponibles en tu link de WeWebinars. Revisa la configuración y volvé a verificar el dominio para restablecerlo.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/domain" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Revisar mi dominio</a>
+</td></tr></table>`;
+  return {
+    subject: `Acción requerida: tu dominio ${hostname} dejó de verificarse`,
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
 export function teamInviteEmail(
   accountName: string,
   inviterName: string | null,
