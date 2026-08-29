@@ -1,7 +1,10 @@
+import { getTranslations } from "next-intl/server";
+
 import { createClient } from "@/lib/supabase/server";
 import { PlanForm } from "./plan-form";
 
 export default async function AdminPlansPage() {
+  const t = await getTranslations("AdminPlans");
   const supabase = await createClient();
   const { data: plans } = await supabase
     .from("plans")
@@ -11,11 +14,8 @@ export default async function AdminPlansPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Planes</h1>
-        <p className="text-sm text-muted-foreground">
-          Deja el precio o un límite vacío para &quot;a medida&quot; / sin límite —
-          así es como se configura Enterprise.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("customPricingHint")}</p>
       </div>
 
       <div className="grid gap-4">

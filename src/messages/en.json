@@ -859,6 +859,24 @@
     "statusConverted": "Converted",
     "statusClosed": "Closed"
   },
+  "AdminPlans": {
+    "title": "Plans",
+    "customPricingHint": "Leave the price or a limit empty for \"custom\" / unlimited — that's how Enterprise is set up.",
+    "annualPriceLabel": "Annual price (USD)",
+    "monthlyPriceLabel": "Monthly price (USD)",
+    "customPlaceholder": "Custom",
+    "activeWebinarsLabel": "Active webinars",
+    "usersLabel": "Users",
+    "unlimitedPlaceholder": "Unlimited",
+    "attendeesPerSessionLabel": "Attendees / session",
+    "aiRepliesPerMonthLabel": "AI replies / month",
+    "registrantsPerMonthLabel": "Registrants / month",
+    "aiChatFeatureLabel": "AI chat reply agent",
+    "removeBrandingFeatureLabel": "No \"Powered by\"",
+    "customDomainFeatureLabel": "Custom domain",
+    "integrationsFeatureLabel": "Webhooks, Meta pixel and Brevo",
+    "save": "Save"
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Top message",
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",
