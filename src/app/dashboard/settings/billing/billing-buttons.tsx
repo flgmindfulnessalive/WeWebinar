@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +18,7 @@ export function CheckoutButton({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("BillingSettings");
 
   return (
     <div className="flex flex-col gap-1">
@@ -33,14 +35,14 @@ export function CheckoutButton({
             });
             const data = await res.json();
             if (!res.ok) {
-              setError(data.error ?? "No se pudo iniciar el checkout.");
+              setError(data.error ?? t("checkoutFailed"));
               return;
             }
             await goTo(data.url);
           })
         }
       >
-        {isPending ? "Redirigiendo..." : label}
+        {isPending ? t("redirecting") : label}
       </Button>
       {error && <span className="text-xs text-destructive">{error}</span>}
     </div>
@@ -50,6 +52,7 @@ export function CheckoutButton({
 export function BillingPortalButton() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("BillingSettings");
 
   return (
     <div className="flex flex-col gap-1">
@@ -61,14 +64,14 @@ export function BillingPortalButton() {
             const res = await fetch("/api/stripe/portal", { method: "POST" });
             const data = await res.json();
             if (!res.ok) {
-              setError(data.error ?? "No se pudo abrir el portal.");
+              setError(data.error ?? t("portalFailed"));
               return;
             }
             await goTo(data.url);
           })
         }
       >
-        {isPending ? "Redirigiendo..." : "Gestionar suscripción"}
+        {isPending ? t("redirecting") : t("manageSubscription")}
       </Button>
       {error && <span className="text-xs text-destructive">{error}</span>}
     </div>

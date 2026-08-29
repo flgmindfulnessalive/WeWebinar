@@ -225,13 +225,6 @@
     "activeWebinars": "Webinars activos",
     "currentPlan": "Plan actual",
     "subscriptionStatus": "Estado de suscripción",
-    "subscriptionStatusValue": {
-      "trialing": "Prueba",
-      "active": "Activa",
-      "past_due": "Pago pendiente",
-      "suspended": "Suspendida",
-      "canceled": "Cancelada"
-    },
     "metricsFailed": "No pudimos cargar las métricas de registrados. Puede que falte aplicar una migración de base de datos (<code>supabase db push</code>) — revisa los logs del servidor para más detalle.",
     "totalRegistrants": "Registrados totales",
     "realAttendees": "Asistentes reales",
@@ -383,6 +376,30 @@
     "chooseEvent": "Elige al menos un evento.",
     "planBlocked": "Los webhooks salientes están disponibles en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlos.",
     "notFound": "Webhook no encontrado."
+  },
+  "SubscriptionStatus": {
+    "trialing": "Prueba",
+    "active": "Activa",
+    "past_due": "Pago pendiente",
+    "suspended": "Suspendida",
+    "canceled": "Cancelada"
+  },
+  "BillingSettings": {
+    "title": "Facturación",
+    "planTitle": "Plan {plan}",
+    "activeWebinarsCount": "{count} / {max} webinars activos.",
+    "monthlyRegistrantsCount": "{count} / {max} registrados este mes.",
+    "billingNotActivated": "Todavía no activaste el cobro de tu suscripción.",
+    "changePlanTitle": "Cambiar de plan",
+    "changeToPlan": "Cambiar a {plan}",
+    "changeToPlanWithPrice": "Cambiar a {plan} (${price}/año)",
+    "selfServeDisabled": "Todavía no habilitamos el cambio de plan automático.",
+    "contactToUpgrade": "Escríbenos para subir de plan",
+    "upgradeEmailSubject": "Quiero subir de plan",
+    "manageSubscription": "Gestionar suscripción",
+    "redirecting": "Redirigiendo...",
+    "checkoutFailed": "No se pudo iniciar el checkout.",
+    "portalFailed": "No se pudo abrir el portal."
   },
   "EnterpriseLeadForm": {
     "name": "Nombre",
