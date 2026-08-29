@@ -11,14 +11,11 @@ import { fakeViewerCount } from "@/lib/fake-viewers";
 import { fakeConnectedNames } from "@/lib/fake-names";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  LockedYouTubePlayer,
-  type LockedYouTubePlayerHandle,
-} from "@/components/locked-youtube-player";
+import { WebinarPlayer, type WebinarPlayerHandle } from "@/components/webinar-player";
 import { ChatPanel } from "./chat-panel";
 import { LiveReactions } from "./reactions";
 import { PoweredByBadge } from "@/components/powered-by-badge";
-import type { ChatMessageType, CtaType, Json } from "@/lib/supabase/database.types";
+import type { ChatMessageType, CtaType, Json, VideoProvider } from "@/lib/supabase/database.types";
 import type { Presenter } from "@/lib/presenter";
 
 type ChatMessage = {
@@ -57,7 +54,8 @@ export function LiveRoomClient({
   accessToken,
   webinarId,
   webinarTitle,
-  youtubeVideoId,
+  videoProvider,
+  videoSource,
   durationSeconds: initialDurationSeconds,
   initialElapsedSeconds,
   fakeViewerMin,
@@ -74,7 +72,8 @@ export function LiveRoomClient({
   accessToken: string;
   webinarId: string;
   webinarTitle: string;
-  youtubeVideoId: string;
+  videoProvider: VideoProvider;
+  videoSource: string;
   durationSeconds: number;
   initialElapsedSeconds: number;
   fakeViewerMin: number;
@@ -89,7 +88,7 @@ export function LiveRoomClient({
   showPoweredBy?: boolean;
 }) {
   const t = useTranslations("LiveRoom");
-  const playerRef = useRef<LockedYouTubePlayerHandle | null>(null);
+  const playerRef = useRef<WebinarPlayerHandle | null>(null);
   // Set from an effect, never read during render — only inside effects and
   // event handlers, where accessing refs and calling Date.now() is fine.
   const mountedAtRef = useRef<number | null>(null);
@@ -375,9 +374,10 @@ export function LiveRoomClient({
           ) : (
             <>
               <LiveBadge />
-              <LockedYouTubePlayer
+              <WebinarPlayer
                 ref={playerRef}
-                videoId={youtubeVideoId}
+                provider={videoProvider}
+                source={videoSource}
                 autoPlay
                 muted={isMuted}
                 onOverlayClick={isMuted ? handleUnmute : undefined}

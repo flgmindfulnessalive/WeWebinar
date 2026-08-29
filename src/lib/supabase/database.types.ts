@@ -20,6 +20,7 @@ export type SubscriptionStatus =
 export type WebinarStatus = "draft" | "published" | "archived";
 export type ScheduleMode = "fixed" | "just_in_time" | "both";
 export type CtaType = "link" | "poll" | "overlay";
+export type VideoProvider = "youtube" | "direct_url";
 export type ChatMessageType = "message" | "question" | "host_reply";
 export type ViewerEventType =
   | "join"
@@ -177,7 +178,8 @@ export interface Database {
           slug: string;
           description: string | null;
           category: string | null;
-          youtube_video_id: string | null;
+          video_provider: VideoProvider | null;
+          video_source: string | null;
           duration_seconds: number | null;
           schedule_mode: ScheduleMode;
           just_in_time_offsets_minutes: number[];
@@ -976,6 +978,7 @@ export interface Database {
       email_template_type: EmailTemplateType;
       invitation_status: InvitationStatus;
       lead_status: LeadStatus;
+      video_provider: VideoProvider;
     };
     CompositeTypes: Record<string, never>;
   };
