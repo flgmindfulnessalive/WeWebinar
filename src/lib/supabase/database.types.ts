@@ -320,6 +320,7 @@ export interface Database {
           access_token: string;
           visitor_timezone: string | null;
           unsubscribed_at: string | null;
+          country: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["registrants"]["Row"]> & {
@@ -734,10 +735,19 @@ export interface Database {
           p_session_starts_at?: string | null;
           p_offset_minutes?: number | null;
           p_phone?: string | null;
+          p_country?: string | null;
         };
         Returns: {
           access_token: string;
           computed_session_start: string;
+        }[];
+      };
+      get_webinar_country_breakdown: {
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
+        Returns: {
+          country: string | null;
+          registrant_count: number;
+          pct: number;
         }[];
       };
       get_webinar_summary: {
