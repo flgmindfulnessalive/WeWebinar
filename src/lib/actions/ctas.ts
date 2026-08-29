@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { clockToSeconds, secondsToClock } from "@/lib/time";
@@ -12,6 +13,7 @@ export async function addCta(
   _prevState: CtaActionState,
   formData: FormData
 ): Promise<CtaActionState> {
+  const t = await getTranslations("CtaActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const type = String(formData.get("type") ?? "") as CtaType;
   const startClock = String(formData.get("timestamp_start") ?? "");
@@ -19,17 +21,17 @@ export async function addCta(
 
   const timestampStart = clockToSeconds(startClock);
   if (timestampStart === null) {
-    return { error: "El inicio debe tener formato mm:ss." };
+    return { error: t("invalidStartFormat") };
   }
 
   let timestampEnd: number | null = null;
   if (endClock) {
     timestampEnd = clockToSeconds(endClock);
     if (timestampEnd === null) {
-      return { error: "El fin debe tener formato mm:ss." };
+      return { error: t("invalidEndFormat") };
     }
     if (timestampEnd <= timestampStart) {
-      return { error: "El fin debe ser posterior al inicio." };
+      return { error: t("endAfterStart") };
     }
   }
 
@@ -48,7 +50,7 @@ export async function addCta(
     const maxTimestamp = timestampEnd ?? timestampStart;
     if (maxTimestamp > webinar.duration_seconds) {
       return {
-        error: `El video dura ${secondsToClock(webinar.duration_seconds)} -- elige un momento dentro de ese rango.`,
+        error: t("timestampBeyondVideo", { duration: secondsToClock(webinar.duration_seconds) }),
       };
     }
   }
@@ -59,21 +61,21 @@ export async function addCta(
     const url = String(formData.get("link_url") ?? "").trim();
     const style = String(formData.get("link_style") ?? "banner");
     if (!text || !url) {
-      return { error: "El texto y la URL del botón son obligatorios." };
+      return { error: t("linkTextAndUrlRequired") };
     }
     // The live room renders this straight into an <a href> for every
     // attendee (live-room-client.tsx) -- without this, a "javascript:" (or
     // similar) URL saved here would execute in each viewer's session on
     // click.
     if (!/^https?:\/\//i.test(url)) {
-      return { error: "La URL debe empezar con http:// o https://." };
+      return { error: t("urlMustBeHttp") };
     }
     config = { text, url, style };
   } else if (type === "overlay") {
     const text = String(formData.get("overlay_text") ?? "").trim();
     const imageUrl = String(formData.get("overlay_image_url") ?? "").trim();
     if (!text && !imageUrl) {
-      return { error: "Agrega un texto o una imagen para el overlay." };
+      return { error: t("overlayNeedsContent") };
     }
     config = { text: text || null, image_url: imageUrl || null };
   } else if (type === "poll") {
@@ -83,11 +85,11 @@ export async function addCta(
       .map((o) => o.trim())
       .filter(Boolean);
     if (!question || options.length < 2) {
-      return { error: "La encuesta necesita una pregunta y al menos 2 opciones." };
+      return { error: t("pollNeedsQuestionAndOptions") };
     }
     config = { question, options };
   } else {
-    return { error: "Tipo de CTA inválido." };
+    return { error: t("invalidCtaType") };
   }
 
   const { error } = await supabase.from("ctas").insert({
