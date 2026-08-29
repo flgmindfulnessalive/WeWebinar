@@ -190,6 +190,7 @@
       "aiChatReplies": "Agente AI de respuestas en chat",
       "integrations": "Integraciones",
       "removeBranding": "Sin \"Powered by\"",
+      "customDomain": "Dominio propio",
       "commercialRights": "Commercial Rights (Unlimited)"
     }
   },

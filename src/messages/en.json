@@ -190,6 +190,7 @@
       "aiChatReplies": "AI chat reply agent",
       "integrations": "Integrations",
       "removeBranding": "No \"Powered by\" badge",
+      "customDomain": "Custom domain",
       "commercialRights": "Commercial Rights (Unlimited)"
     }
   },

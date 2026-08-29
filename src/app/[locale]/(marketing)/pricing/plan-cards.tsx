@@ -43,9 +43,7 @@ function featureList(
   if (features.ai_chat_replies) items.push(t("features.aiChatReplies"));
   if (features.integrations) items.push(t("features.integrations"));
   if (features.remove_branding) items.push(t("features.removeBranding"));
-  // Dominio propio (CNAME) is a plan flag with no real implementation yet
-  // (no domain field, no DNS/CNAME verification, no host-based routing) --
-  // left out of the pricing copy until it's actually built.
+  if (features.custom_domain) items.push(t("features.customDomain"));
   // Always last, in every plan, so the three cards line up bullet-for-bullet.
   items.push(t("features.commercialRights"));
   return items;
