@@ -143,6 +143,15 @@
       "noSchedulesYet": "Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde."
     }
   },
+  "WaitingRoom": {
+    "defaultHeadline": "Tu webinar está por comenzar",
+    "addToCalendar": "Agregar a mi calendario",
+    "googleCalendar": "Google Calendar",
+    "localTime": "(hora local)",
+    "whatYouWillLearn": "Lo que vas a aprender",
+    "waitingCount": "{count} personas ya están esperando",
+    "icsDescription": "Accede al webinar acá: {url}"
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",
