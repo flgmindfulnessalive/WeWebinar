@@ -681,10 +681,14 @@
     "cancel": "Cancelar",
     "replaceVideo": "Reemplazar video",
     "providerYoutube": "YouTube",
+    "providerVimeo": "Vimeo",
     "providerDirectUrl": "Video propio",
     "directUrlLabel": "URL directa del video (MP4)",
     "directUrlHint": "Pega el link directo a un video alojado por vos (tu propio servidor, S3, Cloudflare R2, Bunny, etc.). Tiene que ser un link público en HTTPS que termine cargando el archivo de video, no una página -- nosotros no alojamos ni transmitimos el video, solo lo reproducimos desde tu link.",
-    "invalidDirectUrl": "Ese link no parece una URL válida en HTTPS. Prueba pegando la URL completa del archivo de video."
+    "invalidDirectUrl": "Ese link no parece una URL válida en HTTPS. Prueba pegando la URL completa del archivo de video.",
+    "vimeoLinkLabel": "Link de Vimeo",
+    "vimeoHint": "Pega el link de tu video de Vimeo. Si el video es privado con \"Ocultar de Vimeo\", pega el link completo tal cual te lo da Vimeo (incluye el código de acceso) -- sin eso, el video no va a poder reproducirse acá.",
+    "invalidVimeoLink": "No pude reconocer ese link de Vimeo. Prueba pegando la URL completa."
   },
   "ScheduleSection": {
     "modeLabel": "Modo",

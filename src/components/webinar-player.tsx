@@ -4,12 +4,13 @@ import { forwardRef } from "react";
 
 import { LockedYouTubePlayer, type LockedYouTubePlayerHandle } from "./locked-youtube-player";
 import { LockedVideoPlayer, type LockedVideoPlayerHandle } from "./locked-video-player";
+import { LockedVimeoPlayer, type LockedVimeoPlayerHandle } from "./locked-vimeo-player";
 import type { VideoProvider } from "@/lib/supabase/database.types";
 
-// Structurally identical to both LockedYouTubePlayerHandle and
-// LockedVideoPlayerHandle -- neither of those components needs to import or
+// Structurally identical to LockedYouTubePlayerHandle, LockedVideoPlayerHandle,
+// and LockedVimeoPlayerHandle -- none of those components needs to import or
 // reference this type, they just happen to already match it. Declared as a
-// plain object type (not a union of the two) so callers can read *and
+// plain object type (not a union of the three) so callers can read *and
 // write* every property without TS narrowing headaches over which variant
 // they happen to have.
 export type WebinarPlayerHandle = {
@@ -43,6 +44,9 @@ export const WebinarPlayer = forwardRef<
 >(function WebinarPlayer({ provider, source, ...rest }, ref) {
   if (provider === "direct_url") {
     return <LockedVideoPlayer ref={ref as React.Ref<LockedVideoPlayerHandle>} src={source} {...rest} />;
+  }
+  if (provider === "vimeo") {
+    return <LockedVimeoPlayer ref={ref as React.Ref<LockedVimeoPlayerHandle>} videoId={source} {...rest} />;
   }
   return <LockedYouTubePlayer ref={ref as React.Ref<LockedYouTubePlayerHandle>} videoId={source} {...rest} />;
 });
