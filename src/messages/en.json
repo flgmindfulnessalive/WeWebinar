@@ -245,7 +245,8 @@
     "thanksForJoining": "Thanks for joining {title}",
     "webinarEnded": "The webinar has ended.",
     "seeMore": "See more",
-    "sendReaction": "Send {emoji} reaction"
+    "sendReaction": "Send {emoji} reaction",
+    "openReactions": "Open reactions"
   },
   "ChatPanel": {
     "moderatorTeam": "Moderator team",

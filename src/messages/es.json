@@ -245,7 +245,8 @@
     "thanksForJoining": "Gracias por acompañarnos en {title}",
     "webinarEnded": "El webinar terminó.",
     "seeMore": "Ver más",
-    "sendReaction": "Enviar reacción {emoji}"
+    "sendReaction": "Enviar reacción {emoji}",
+    "openReactions": "Abrir reacciones"
   },
   "ChatPanel": {
     "moderatorTeam": "Equipo moderador",
