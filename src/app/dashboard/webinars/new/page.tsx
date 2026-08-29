@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { createWebinar } from "@/lib/actions/webinars";
 import { Button } from "@/components/ui/button";
@@ -16,29 +17,27 @@ import {
 
 export default function NewWebinarPage() {
   const [state, formAction, isPending] = useActionState(createWebinar, null);
+  const t = useTranslations("NewWebinar");
 
   return (
     <div className="mx-auto max-w-xl">
       <Card>
         <CardHeader>
-          <CardTitle>Nuevo webinar</CardTitle>
-          <CardDescription>
-            Paso 1 de 7: datos generales. Se guarda como borrador — no cuenta
-            contra tu límite de plan hasta que lo publiques.
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Título</Label>
-              <Input id="title" name="title" required placeholder="Cómo duplicar tus ventas en 90 días" />
+              <Label htmlFor="title">{t("titleLabel")}</Label>
+              <Input id="title" name="title" required placeholder={t("titlePlaceholder")} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="category">Categoría</Label>
-              <Input id="category" name="category" placeholder="Marketing" />
+              <Label htmlFor="category">{t("categoryLabel")}</Label>
+              <Input id="category" name="category" placeholder={t("categoryPlaceholder")} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Descripción</Label>
+              <Label htmlFor="description">{t("descriptionLabel")}</Label>
               <textarea
                 id="description"
                 name="description"
@@ -50,7 +49,7 @@ export default function NewWebinarPage() {
               <p className="text-sm text-destructive">{state.error}</p>
             )}
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Creando..." : "Crear borrador"}
+              {isPending ? t("creating") : t("createDraft")}
             </Button>
           </form>
         </CardContent>

@@ -438,5 +438,55 @@
     "submit": "Talk to sales",
     "submitting": "Sending...",
     "successMessage": "Thanks! We'll be in touch shortly to build your Enterprise plan."
+  },
+  "WebinarsList": {
+    "createWebinar": "Create webinar",
+    "emptyState": "You haven't created any webinars yet.",
+    "createFirstWebinar": "Create your first webinar",
+    "registrantsCount": "{count, plural, one {# registrant} other {# registrants}}"
+  },
+  "WebinarStatusLabel": {
+    "draft": "Draft",
+    "published": "Active",
+    "archived": "Paused"
+  },
+  "WebinarRowActions": {
+    "publish": "Publish",
+    "publishTitleArchived": "It becomes available for registration and room access again, exactly as it was.",
+    "publishTitleDraft": "It becomes publicly available for people to register.",
+    "pause": "Pause",
+    "pauseTitle": "Cuts off registration and room access. Nothing is deleted — you can publish it again anytime.",
+    "duplicate": "Duplicate",
+    "duplicateTitle": "Creates a draft copy with the same content, waiting room, chat, CTAs and email templates. It doesn't copy registrants or analytics.",
+    "delete": "Delete",
+    "planLimitExceeded": "You've reached your plan's active webinars limit. Upgrade your plan or archive another webinar.",
+    "deleteModalTitle": "Delete \"{title}\"",
+    "deleteModalBody": "The registrants, chat, CTAs and analytics for this webinar will be permanently deleted. This action cannot be undone.",
+    "deleteConfirmLabel": "Type <code>{confirmWord}</code> to confirm",
+    "deleteConfirmWord": "DELETE",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "deletePermanently": "Delete permanently"
+  },
+  "NewWebinar": {
+    "title": "New webinar",
+    "description": "Step 1 of 7: general details. It's saved as a draft — it doesn't count against your plan limit until you publish it.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "How to double your sales in 90 days",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Marketing",
+    "descriptionLabel": "Description",
+    "creating": "Creating...",
+    "createDraft": "Create draft"
+  },
+  "WebinarActions": {
+    "titleRequired": "Title is required.",
+    "brevoListIdInteger": "The Brevo List ID must be a whole number.",
+    "marketingPlanBlocked": "Marketing (Meta pixel and Brevo) is available on the Pro, Business and Enterprise plans. Upgrade your plan from Billing to enable it.",
+    "presenterNameRequired": "The presenter's name is required.",
+    "sessionNotFound": "We couldn't identify your session.",
+    "presenterNotInAccount": "That user doesn't belong to your account.",
+    "videoRequiredToPublish": "Upload a video before publishing — without one, the live room won't work.",
+    "webinarNotFound": "Webinar not found."
   }
 }

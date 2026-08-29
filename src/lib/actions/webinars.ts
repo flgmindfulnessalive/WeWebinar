@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -15,12 +16,13 @@ export async function createWebinar(
   _prevState: WebinarActionState,
   formData: FormData
 ): Promise<WebinarActionState> {
+  const t = await getTranslations("WebinarActions");
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const category = String(formData.get("category") ?? "").trim();
 
   if (!title) {
-    return { error: "El título es obligatorio." };
+    return { error: t("titleRequired") };
   }
 
   const current = await getCurrentAccount();
@@ -59,13 +61,14 @@ export async function updateWebinarDetails(
   _prevState: WebinarActionState,
   formData: FormData
 ): Promise<WebinarActionState> {
+  const t = await getTranslations("WebinarActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const category = String(formData.get("category") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
 
   if (!title) {
-    return { error: "El título es obligatorio." };
+    return { error: t("titleRequired") };
   }
 
   const supabase = await createClient();
@@ -93,6 +96,7 @@ export async function updateMarketing(
   _prevState: WebinarActionState,
   formData: FormData
 ): Promise<WebinarActionState> {
+  const t = await getTranslations("WebinarActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const facebookPixelId = String(formData.get("facebook_pixel_id") ?? "").trim().slice(0, 64) || null;
   const brevoListIdRaw = String(formData.get("brevo_list_id") ?? "").trim();
@@ -100,7 +104,7 @@ export async function updateMarketing(
   if (brevoListIdRaw) {
     brevoListId = Number(brevoListIdRaw);
     if (!Number.isInteger(brevoListId) || brevoListId <= 0) {
-      return { error: "El List ID de Brevo debe ser un número entero." };
+      return { error: t("brevoListIdInteger") };
     }
   }
 
@@ -113,10 +117,7 @@ export async function updateMarketing(
   revalidatePath(`/dashboard/webinars/${webinarId}`);
   if (error) {
     if (error.message.includes("plan_feature_blocked")) {
-      return {
-        error:
-          "El marketing (pixel de Meta y Brevo) está disponible en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlo.",
-      };
+      return { error: t("marketingPlanBlocked") };
     }
     return { error: error.message };
   }
@@ -132,6 +133,7 @@ export async function updatePresenter(
   _prevState: WebinarActionState,
   formData: FormData
 ): Promise<WebinarActionState> {
+  const t = await getTranslations("WebinarActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const mode = String(formData.get("presenter_mode") ?? "member");
 
@@ -140,7 +142,7 @@ export async function updatePresenter(
   if (mode === "custom") {
     const name = String(formData.get("presenter_name") ?? "").trim();
     if (!name) {
-      return { error: "El nombre del presentador es obligatorio." };
+      return { error: t("presenterNameRequired") };
     }
     const avatarUrl = String(formData.get("presenter_avatar_url") ?? "").trim() || null;
     const bio = String(formData.get("presenter_bio") ?? "").trim() || null;
@@ -169,7 +171,7 @@ export async function updatePresenter(
     // presenter is validating the id here, server-side, before saving --
     // never trust it straight from form data.
     const current = await getCurrentAccount();
-    if (!current) return { error: "No pudimos identificar tu sesión." };
+    if (!current) return { error: t("sessionNotFound") };
 
     const { data: member } = await supabase
       .from("users")
@@ -178,7 +180,7 @@ export async function updatePresenter(
       .eq("account_id", current.account.id)
       .maybeSingle();
     if (!member) {
-      return { error: "Ese usuario no pertenece a tu cuenta." };
+      return { error: t("presenterNotInAccount") };
     }
   }
 
@@ -200,6 +202,7 @@ export async function updatePresenter(
 // Plan limit (max_active_webinars) is enforced by the
 // enforce_webinar_publish_limit trigger — this can legitimately fail.
 export async function publishWebinar(webinarId: string): Promise<WebinarActionState> {
+  const t = await getTranslations("WebinarActions");
   const supabase = await createClient();
 
   // Without a video, the public registration page still works but the live
@@ -212,9 +215,7 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
     .eq("id", webinarId)
     .maybeSingle();
   if (!current?.youtube_video_id) {
-    return {
-      error: "Cargá un video antes de publicar -- sin video, la sala en vivo no funciona.",
-    };
+    return { error: t("videoRequiredToPublish") };
   }
 
   const { data: webinar, error } = await supabase
@@ -329,8 +330,9 @@ export type DuplicateWebinarResult = { error: string } | { id: string };
 // a duplicate is meant as a fresh starting point, so a host picks new
 // dates for it rather than inheriting the original's exact schedule.
 export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebinarResult> {
+  const t = await getTranslations("WebinarActions");
   const current = await getCurrentAccount();
-  if (!current) return { error: "No pudimos identificar tu sesión." };
+  if (!current) return { error: t("sessionNotFound") };
 
   const supabase = await createClient();
 
@@ -344,7 +346,7 @@ export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebi
     .maybeSingle();
 
   if (sourceError) return { error: sourceError.message };
-  if (!source) return { error: "Webinar no encontrado." };
+  if (!source) return { error: t("webinarNotFound") };
 
   const newTitle = `${source.title} (copia)`;
   const slug = await uniqueSlugForAccount(supabase, current.account.id, slugify(newTitle));

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Video } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -12,6 +13,7 @@ export default async function WebinarsPage() {
   const current = await getCurrentAccount();
   if (!current) return null;
 
+  const t = await getTranslations("WebinarsList");
   const supabase = await createClient();
   const { data: webinars } = await supabase
     .from("webinars")
@@ -27,7 +29,7 @@ export default async function WebinarsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Webinars</h1>
         {canManage && (
           <Button asChild>
-            <Link href="/dashboard/webinars/new">Crear webinar</Link>
+            <Link href="/dashboard/webinars/new">{t("createWebinar")}</Link>
           </Button>
         )}
       </div>
@@ -37,11 +39,11 @@ export default async function WebinarsPage() {
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <Video className="size-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Todavía no creaste ningún webinar.
+              {t("emptyState")}
             </p>
             {canManage && (
               <Button asChild>
-                <Link href="/dashboard/webinars/new">Crear tu primer webinar</Link>
+                <Link href="/dashboard/webinars/new">{t("createFirstWebinar")}</Link>
               </Button>
             )}
           </CardContent>
@@ -62,7 +64,7 @@ export default async function WebinarsPage() {
                     {webinar.title}
                   </Link>
                   <span className="text-xs text-muted-foreground">
-                    {webinar.attendee_count} registrados
+                    {t("registrantsCount", { count: webinar.attendee_count })}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">

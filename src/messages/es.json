@@ -438,5 +438,55 @@
     "submit": "Hablar con ventas",
     "submitting": "Enviando...",
     "successMessage": "¡Gracias! Te vamos a contactar a la brevedad para armar tu plan Enterprise."
+  },
+  "WebinarsList": {
+    "createWebinar": "Crear webinar",
+    "emptyState": "Todavía no creaste ningún webinar.",
+    "createFirstWebinar": "Crear tu primer webinar",
+    "registrantsCount": "{count, plural, one {# registrado} other {# registrados}}"
+  },
+  "WebinarStatusLabel": {
+    "draft": "Borrador",
+    "published": "Activo",
+    "archived": "Pausado"
+  },
+  "WebinarRowActions": {
+    "publish": "Publicar",
+    "publishTitleArchived": "Vuelve a estar disponible para registro y acceso a la sala, tal como estaba.",
+    "publishTitleDraft": "Queda disponible públicamente para que la gente se registre.",
+    "pause": "Pausar",
+    "pauseTitle": "Corta el registro y el acceso a la sala. No borra nada — puedes publicarlo de nuevo cuando quieras.",
+    "duplicate": "Duplicar",
+    "duplicateTitle": "Crea una copia en borrador con el mismo contenido, sala de espera, chat, CTAs y plantillas de email. No copia registrados ni analíticas.",
+    "delete": "Eliminar",
+    "planLimitExceeded": "Llegaste al límite de webinars activos de tu plan. Pásate a un plan superior o archiva otro webinar.",
+    "deleteModalTitle": "Eliminar \"{title}\"",
+    "deleteModalBody": "Se van a borrar para siempre los registrados, el chat, las CTAs y las analíticas de este webinar. Esta acción no se puede deshacer.",
+    "deleteConfirmLabel": "Escribe <code>{confirmWord}</code> para confirmar",
+    "deleteConfirmWord": "ELIMINAR",
+    "cancel": "Cancelar",
+    "deleting": "Eliminando...",
+    "deletePermanently": "Eliminar definitivamente"
+  },
+  "NewWebinar": {
+    "title": "Nuevo webinar",
+    "description": "Paso 1 de 7: datos generales. Se guarda como borrador — no cuenta contra tu límite de plan hasta que lo publiques.",
+    "titleLabel": "Título",
+    "titlePlaceholder": "Cómo duplicar tus ventas en 90 días",
+    "categoryLabel": "Categoría",
+    "categoryPlaceholder": "Marketing",
+    "descriptionLabel": "Descripción",
+    "creating": "Creando...",
+    "createDraft": "Crear borrador"
+  },
+  "WebinarActions": {
+    "titleRequired": "El título es obligatorio.",
+    "brevoListIdInteger": "El List ID de Brevo debe ser un número entero.",
+    "marketingPlanBlocked": "El marketing (pixel de Meta y Brevo) está disponible en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlo.",
+    "presenterNameRequired": "El nombre del presentador es obligatorio.",
+    "sessionNotFound": "No pudimos identificar tu sesión.",
+    "presenterNotInAccount": "Ese usuario no pertenece a tu cuenta.",
+    "videoRequiredToPublish": "Carga un video antes de publicar — sin video, la sala en vivo no funciona.",
+    "webinarNotFound": "Webinar no encontrado."
   }
 }

@@ -2,14 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { publishWebinar, archiveWebinar, deleteWebinar, duplicateWebinar } from "@/lib/actions/webinars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { WebinarStatus } from "@/lib/supabase/database.types";
-
-const DELETE_CONFIRM_WORD = "ELIMINAR";
 
 export function WebinarRowActions({
   webinarId,
@@ -23,6 +22,8 @@ export function WebinarRowActions({
   isOwner: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("WebinarRowActions");
+  const DELETE_CONFIRM_WORD = t("deleteConfirmWord");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -38,7 +39,7 @@ export function WebinarRowActions({
       if (result?.error) {
         setError(
           result.error.startsWith("plan_limit_exceeded")
-            ? "Llegaste al límite de webinars activos de tu plan. Pásate a un plan superior o archiva otro webinar."
+            ? t("planLimitExceeded")
             : result.error
         );
         return;
@@ -77,11 +78,11 @@ export function WebinarRowActions({
           onClick={() => runAction(publishWebinar)}
           title={
             status === "archived"
-              ? "Vuelve a estar disponible para registro y acceso a la sala, tal como estaba."
-              : "Queda disponible públicamente para que la gente se registre."
+              ? t("publishTitleArchived")
+              : t("publishTitleDraft")
           }
         >
-          Publicar
+          {t("publish")}
         </Button>
       )}
       {status === "published" && (
@@ -90,9 +91,9 @@ export function WebinarRowActions({
           variant="ghost"
           disabled={isPending}
           onClick={() => runAction(archiveWebinar)}
-          title="Corta el registro y el acceso a la sala. No borra nada — puedes publicarlo de nuevo cuando quieras."
+          title={t("pauseTitle")}
         >
-          Pausar
+          {t("pause")}
         </Button>
       )}
       <Button
@@ -100,9 +101,9 @@ export function WebinarRowActions({
         variant="outline"
         disabled={isPending}
         onClick={handleDuplicate}
-        title="Crea una copia en borrador con el mismo contenido, sala de espera, chat, CTAs y plantillas de email. No copia registrados ni analíticas."
+        title={t("duplicateTitle")}
       >
-        Duplicar
+        {t("duplicate")}
       </Button>
       {isOwner && (
         <Button
@@ -114,7 +115,7 @@ export function WebinarRowActions({
             setShowDeleteConfirm(true);
           }}
         >
-          Eliminar
+          {t("delete")}
         </Button>
       )}
 
@@ -128,17 +129,22 @@ export function WebinarRowActions({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col gap-1.5">
-              <h2 className="text-sm font-semibold">Eliminar &quot;{webinarTitle}&quot;</h2>
+              <h2 className="text-sm font-semibold">
+                {t("deleteModalTitle", { title: webinarTitle })}
+              </h2>
               <p className="text-sm text-muted-foreground">
-                Se van a borrar para siempre los registrados, el chat, las CTAs y las analíticas
-                de este webinar. Esta acción no se puede deshacer.
+                {t("deleteModalBody")}
               </p>
             </div>
 
             <div className="grid gap-1.5">
               <Label htmlFor="delete-confirm-input">
-                Escribe <span className="font-mono font-semibold">{DELETE_CONFIRM_WORD}</span>{" "}
-                para confirmar
+                {t.rich("deleteConfirmLabel", {
+                  code: (chunks) => (
+                    <span className="font-mono font-semibold">{chunks}</span>
+                  ),
+                  confirmWord: DELETE_CONFIRM_WORD,
+                })}
               </Label>
               <Input
                 id="delete-confirm-input"
@@ -163,7 +169,7 @@ export function WebinarRowActions({
                 disabled={isPending}
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Cancelar
+                {t("cancel")}
               </Button>
               <Button
                 size="sm"
@@ -171,7 +177,7 @@ export function WebinarRowActions({
                 disabled={isPending || confirmInput.trim().toUpperCase() !== DELETE_CONFIRM_WORD}
                 onClick={handleConfirmDelete}
               >
-                {isPending ? "Eliminando..." : "Eliminar definitivamente"}
+                {isPending ? t("deleting") : t("deletePermanently")}
               </Button>
             </div>
           </div>
