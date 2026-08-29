@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import type { ScheduleMode } from "@/lib/supabase/database.types";
@@ -11,12 +12,13 @@ export async function updateSchedulingMode(
   _prevState: SchedulingActionState,
   formData: FormData
 ): Promise<SchedulingActionState> {
+  const t = await getTranslations("SchedulingActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const scheduleMode = String(formData.get("schedule_mode") ?? "") as ScheduleMode;
   const offsetsRaw = String(formData.get("offsets") ?? "");
 
   if (scheduleMode !== "fixed" && scheduleMode !== "just_in_time" && scheduleMode !== "both") {
-    return { error: "Modo de programación inválido." };
+    return { error: t("invalidMode") };
   }
 
   const update: { schedule_mode: ScheduleMode; just_in_time_offsets_minutes?: number[] } = {
@@ -33,7 +35,7 @@ export async function updateSchedulingMode(
       .filter((n) => Number.isInteger(n) && n > 0);
 
     if (offsets.length === 0) {
-      return { error: "Define al menos una opción de minutos para empezar." };
+      return { error: t("offsetsRequired") };
     }
     update.just_in_time_offsets_minutes = offsets;
   }
@@ -51,13 +53,14 @@ export async function addSchedule(
   _prevState: SchedulingActionState,
   formData: FormData
 ): Promise<SchedulingActionState> {
+  const t = await getTranslations("SchedulingActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const dayOfWeekRaw = String(formData.get("day_of_week") ?? "");
   const timeOfDay = String(formData.get("time_of_day") ?? "");
   const timezone = String(formData.get("timezone") ?? "");
 
   if (!timeOfDay || !timezone) {
-    return { error: "Hora y zona horaria son obligatorias." };
+    return { error: t("timeAndTimezoneRequired") };
   }
 
   const dayOfWeek = dayOfWeekRaw === "" ? null : Number(dayOfWeekRaw);
