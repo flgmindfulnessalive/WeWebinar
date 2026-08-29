@@ -694,6 +694,16 @@
     "offsetMustBePositive": "The lead time in minutes must be a positive number.",
     "reminderOffsetExists": "A reminder with that lead time already exists."
   },
+  "MarketingSection": {
+    "planHint": "Available on the Pro, Business and Enterprise plans — <a>upgrade plan</a>.",
+    "pixelIdLabel": "Meta (Facebook) Pixel ID",
+    "pixelHint": "It loads on this webinar's registration page and fires the standard <code>PageView</code> and <code>Lead</code> events — useful for building audiences and optimizing ad campaigns in Meta Ads Manager.",
+    "brevoListLabel": "Brevo list",
+    "brevoListPlaceholder": "Numeric list ID",
+    "brevoRequiresPlan": "Requires a Pro, Business or Enterprise plan.",
+    "brevoConnectedHint": "Every registrant for this webinar is automatically added to that list in your Brevo account — you'll find the ID in Brevo → Contacts → Lists, when you open the list.",
+    "brevoNotConnectedHint": "You need to connect your Brevo API key first, in <a>Settings → Integrations</a>."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Top message",
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",
