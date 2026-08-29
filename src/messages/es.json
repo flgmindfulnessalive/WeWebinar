@@ -859,6 +859,24 @@
     "statusConverted": "Convertido",
     "statusClosed": "Cerrado"
   },
+  "AdminPlans": {
+    "title": "Planes",
+    "customPricingHint": "Deja el precio o un límite vacío para \"a medida\" / sin límite — así es como se configura Enterprise.",
+    "annualPriceLabel": "Precio anual (USD)",
+    "monthlyPriceLabel": "Precio mensual (USD)",
+    "customPlaceholder": "A medida",
+    "activeWebinarsLabel": "Webinars activos",
+    "usersLabel": "Usuarios",
+    "unlimitedPlaceholder": "Sin límite",
+    "attendeesPerSessionLabel": "Asistentes / sesión",
+    "aiRepliesPerMonthLabel": "Respuestas AI / mes",
+    "registrantsPerMonthLabel": "Registros / mes",
+    "aiChatFeatureLabel": "Agente AI de respuestas en chat",
+    "removeBrandingFeatureLabel": "Sin \"Powered by\"",
+    "customDomainFeatureLabel": "Dominio propio",
+    "integrationsFeatureLabel": "Webhooks, pixel de Meta y Brevo",
+    "save": "Guardar"
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Mensaje superior",
     "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo acá.",

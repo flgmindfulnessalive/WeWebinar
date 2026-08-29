@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { updatePlan } from "@/lib/actions/admin-plans";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ type Plan = {
 
 export function PlanForm({ plan }: { plan: Plan }) {
   const [state, formAction, isPending] = useActionState(updatePlan, null);
+  const t = useTranslations("AdminPlans");
+  const tCommon = useTranslations("SettingsCommon");
   const features = (plan.features as Record<string, boolean> | null) ?? {};
 
   return (
@@ -41,7 +44,7 @@ export function PlanForm({ plan }: { plan: Plan }) {
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-price`}>Precio anual (USD)</Label>
+              <Label htmlFor={`${plan.id}-price`}>{t("annualPriceLabel")}</Label>
               <Input
                 id={`${plan.id}-price`}
                 name="price_annual_usd"
@@ -49,11 +52,11 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 min={0}
                 step="0.01"
                 defaultValue={plan.price_annual_usd ?? ""}
-                placeholder="A medida"
+                placeholder={t("customPlaceholder")}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-price-monthly`}>Precio mensual (USD)</Label>
+              <Label htmlFor={`${plan.id}-price-monthly`}>{t("monthlyPriceLabel")}</Label>
               <Input
                 id={`${plan.id}-price-monthly`}
                 name="price_monthly_usd"
@@ -61,62 +64,62 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 min={0}
                 step="0.01"
                 defaultValue={plan.price_monthly_usd ?? ""}
-                placeholder="A medida"
+                placeholder={t("customPlaceholder")}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-webinars`}>Webinars activos</Label>
+              <Label htmlFor={`${plan.id}-webinars`}>{t("activeWebinarsLabel")}</Label>
               <Input
                 id={`${plan.id}-webinars`}
                 name="max_active_webinars"
                 type="number"
                 min={0}
                 defaultValue={plan.max_active_webinars ?? ""}
-                placeholder="Sin límite"
+                placeholder={t("unlimitedPlaceholder")}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-users`}>Usuarios</Label>
+              <Label htmlFor={`${plan.id}-users`}>{t("usersLabel")}</Label>
               <Input
                 id={`${plan.id}-users`}
                 name="max_users"
                 type="number"
                 min={0}
                 defaultValue={plan.max_users ?? ""}
-                placeholder="Sin límite"
+                placeholder={t("unlimitedPlaceholder")}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-attendees`}>Asistentes / sesión</Label>
+              <Label htmlFor={`${plan.id}-attendees`}>{t("attendeesPerSessionLabel")}</Label>
               <Input
                 id={`${plan.id}-attendees`}
                 name="max_attendees_per_webinar"
                 type="number"
                 min={0}
                 defaultValue={plan.max_attendees_per_webinar ?? ""}
-                placeholder="Sin límite"
+                placeholder={t("unlimitedPlaceholder")}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-ai-replies`}>Respuestas AI / mes</Label>
+              <Label htmlFor={`${plan.id}-ai-replies`}>{t("aiRepliesPerMonthLabel")}</Label>
               <Input
                 id={`${plan.id}-ai-replies`}
                 name="max_ai_replies_per_month"
                 type="number"
                 min={0}
                 defaultValue={plan.max_ai_replies_per_month ?? ""}
-                placeholder="Sin límite"
+                placeholder={t("unlimitedPlaceholder")}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor={`${plan.id}-registrants`}>Registros / mes</Label>
+              <Label htmlFor={`${plan.id}-registrants`}>{t("registrantsPerMonthLabel")}</Label>
               <Input
                 id={`${plan.id}-registrants`}
                 name="max_registrants_per_month"
                 type="number"
                 min={0}
                 defaultValue={plan.max_registrants_per_month ?? ""}
-                placeholder="Sin límite"
+                placeholder={t("unlimitedPlaceholder")}
               />
             </div>
           </div>
@@ -129,7 +132,7 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 defaultChecked={Boolean(features.ai_chat_replies)}
                 className="size-4"
               />
-              Agente AI de respuestas en chat
+              {t("aiChatFeatureLabel")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -138,7 +141,7 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 defaultChecked={Boolean(features.remove_branding)}
                 className="size-4"
               />
-              Sin &quot;Powered by&quot;
+              {t("removeBrandingFeatureLabel")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -147,7 +150,7 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 defaultChecked={Boolean(features.custom_domain)}
                 className="size-4"
               />
-              Dominio propio
+              {t("customDomainFeatureLabel")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -156,14 +159,14 @@ export function PlanForm({ plan }: { plan: Plan }) {
                 defaultChecked={Boolean(features.integrations)}
                 className="size-4"
               />
-              Webhooks, pixel de Meta y Brevo
+              {t("integrationsFeatureLabel")}
             </label>
           </div>
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
           <Button type="submit" size="sm" disabled={isPending} className="w-fit">
-            {isPending ? "Guardando..." : "Guardar"}
+            {isPending ? tCommon("saving") : t("save")}
           </Button>
         </form>
       </CardContent>
