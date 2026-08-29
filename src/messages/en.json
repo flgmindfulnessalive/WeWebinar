@@ -191,6 +191,34 @@
     "scheduleUnavailable": "That time slot is no longer available. Choose another.",
     "genericError": "We couldn't complete your registration. Please try again."
   },
+  "DashboardNav": {
+    "summary": "Summary",
+    "webinars": "Webinars",
+    "team": "Team",
+    "settings": "Settings"
+  },
+  "AdminNav": {
+    "summary": "Summary",
+    "accounts": "Accounts",
+    "leads": "Enterprise Leads",
+    "plans": "Plans"
+  },
+  "MobileNav": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "UserMenu": {
+    "signOut": "Sign out"
+  },
+  "DashboardLayout": {
+    "accountSuspended": "Your account is suspended",
+    "contactToReactivate": "Email us at <email>{supportEmail}</email> to reactivate it.",
+    "signOut": "Sign out",
+    "trialBanner": "Free trial: expires in {days, plural, one {# day} other {# days}}. Contact us at <email>{supportEmail}</email> to activate your account."
+  },
+  "AdminLayout": {
+    "panelTitle": "Super Admin Panel"
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",

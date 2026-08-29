@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { signOut } from "@/lib/actions/auth";
@@ -32,6 +32,7 @@ export default async function DashboardLayout({
 }) {
   const current = await getCurrentAccount();
   const messages = await getMessages();
+  const t = await getTranslations("DashboardLayout");
 
   if (!current) {
     redirect("/onboarding");
@@ -42,17 +43,20 @@ export default async function DashboardLayout({
       <NextIntlClientProvider messages={messages}>
         <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
           <CircleAlert className="size-10 text-destructive" />
-          <h1 className="text-xl font-semibold">Tu cuenta está suspendida</h1>
+          <h1 className="text-xl font-semibold">{t("accountSuspended")}</h1>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Escríbenos a{" "}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
-              {SUPPORT_EMAIL}
-            </a>{" "}
-            para reactivarla.
+            {t.rich("contactToReactivate", {
+              supportEmail: SUPPORT_EMAIL,
+              email: (chunks) => (
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
+                  {chunks}
+                </a>
+              ),
+            })}
           </p>
           <form action={signOut}>
             <Button type="submit" variant="outline" size="sm">
-              Cerrar sesión
+              {t("signOut")}
             </Button>
           </form>
         </div>
@@ -113,12 +117,15 @@ export default async function DashboardLayout({
             <div className="flex items-center justify-center gap-2 border-b bg-amber-50 px-4 py-2 text-center text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
               <CircleAlert className="size-4 shrink-0" />
               <span>
-                Período de prueba: vence en {trialDaysLeft}{" "}
-                {trialDaysLeft === 1 ? "día" : "días"}. Contáctanos a{" "}
-                <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
-                  {SUPPORT_EMAIL}
-                </a>{" "}
-                para activar tu cuenta.
+                {t.rich("trialBanner", {
+                  days: trialDaysLeft,
+                  supportEmail: SUPPORT_EMAIL,
+                  email: (chunks) => (
+                    <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
+                      {chunks}
+                    </a>
+                  ),
+                })}
               </span>
             </div>
           )}

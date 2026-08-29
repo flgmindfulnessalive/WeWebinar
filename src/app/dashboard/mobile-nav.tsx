@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { DashboardNav } from "./dashboard-nav";
@@ -19,6 +20,7 @@ export function MobileNav({ role }: { role: UserRole }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastPathname, setLastPathname] = useState(pathname);
+  const t = useTranslations("MobileNav");
 
   if (pathname !== lastPathname) {
     setLastPathname(pathname);
@@ -30,7 +32,7 @@ export function MobileNav({ role }: { role: UserRole }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        aria-label={open ? t("closeMenu") : t("openMenu")}
         onClick={() => setOpen((o) => !o)}
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}

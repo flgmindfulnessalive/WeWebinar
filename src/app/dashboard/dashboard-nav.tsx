@@ -3,33 +3,35 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Video, Users, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/lib/supabase/database.types";
 
 const NAV_ITEMS: {
   href: string;
-  label: string;
+  labelKey: "summary" | "webinars" | "team" | "settings";
   icon: typeof LayoutDashboard;
   minRole?: UserRole[];
 }[] = [
-  { href: "/dashboard", label: "Resumen", icon: LayoutDashboard },
-  { href: "/dashboard/webinars", label: "Webinars", icon: Video },
+  { href: "/dashboard", labelKey: "summary", icon: LayoutDashboard },
+  { href: "/dashboard/webinars", labelKey: "webinars", icon: Video },
   {
     href: "/dashboard/team",
-    label: "Equipo",
+    labelKey: "team",
     icon: Users,
     minRole: ["owner"],
   },
   {
     href: "/dashboard/settings",
-    label: "Configuración",
+    labelKey: "settings",
     icon: Settings,
   },
 ];
 
 export function DashboardNav({ role }: { role: UserRole }) {
   const pathname = usePathname();
+  const t = useTranslations("DashboardNav");
 
   return (
     <nav className="flex flex-col gap-1">
@@ -50,7 +52,7 @@ export function DashboardNav({ role }: { role: UserRole }) {
               )}
             >
               <Icon className="size-4" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         }

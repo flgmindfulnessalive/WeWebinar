@@ -191,6 +191,34 @@
     "scheduleUnavailable": "Ese horario ya no está disponible. Elige otro.",
     "genericError": "No pudimos completar tu registro. Prueba de nuevo."
   },
+  "DashboardNav": {
+    "summary": "Resumen",
+    "webinars": "Webinars",
+    "team": "Equipo",
+    "settings": "Configuración"
+  },
+  "AdminNav": {
+    "summary": "Resumen",
+    "accounts": "Cuentas",
+    "leads": "Leads Enterprise",
+    "plans": "Planes"
+  },
+  "MobileNav": {
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "UserMenu": {
+    "signOut": "Salir"
+  },
+  "DashboardLayout": {
+    "accountSuspended": "Tu cuenta está suspendida",
+    "contactToReactivate": "Escríbenos a <email>{supportEmail}</email> para reactivarla.",
+    "signOut": "Cerrar sesión",
+    "trialBanner": "Período de prueba: vence en {days, plural, one {# día} other {# días}}. Contáctanos a <email>{supportEmail}</email> para activar tu cuenta."
+  },
+  "AdminLayout": {
+    "panelTitle": "Panel de Super Admin"
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",
