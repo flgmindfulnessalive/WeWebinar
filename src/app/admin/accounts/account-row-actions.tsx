@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { suspendAccount, reactivateAccount, changeAccountPlan } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export function AccountRowActions({
   currentPlanId: string | null;
   plans: Plan[];
 }) {
+  const t = useTranslations("AccountRowActions");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState(currentPlanId ?? "");
@@ -26,7 +28,7 @@ export function AccountRowActions({
   // trialing/past_due/canceled all graduate to "active" through the same
   // action as un-suspending -- reactivateAccount just sets the status to
   // "active" unconditionally, so there's no separate "activate" action.
-  const activateLabel = isSuspended ? "Reactivar" : "Activar";
+  const activateLabel = isSuspended ? t("reactivate") : t("activate");
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -37,7 +39,7 @@ export function AccountRowActions({
           onChange={(e) => {
             const planId = e.target.value;
             const planName = plans.find((p) => p.id === planId)?.name ?? planId;
-            if (!confirm(`¿Cambiar el plan de esta cuenta a "${planName}"?`)) {
+            if (!confirm(t("confirmChangePlan", { plan: planName }))) {
               return;
             }
             const previousPlanId = selectedPlanId;
@@ -67,7 +69,7 @@ export function AccountRowActions({
           variant="outline"
           disabled={isPending}
           onClick={() => {
-            if (isActive && !confirm("¿Suspender esta cuenta? El host pierde acceso de inmediato.")) {
+            if (isActive && !confirm(t("confirmSuspend"))) {
               return;
             }
             startTransition(async () => {
@@ -79,7 +81,7 @@ export function AccountRowActions({
             });
           }}
         >
-          {isActive ? "Suspender" : activateLabel}
+          {isActive ? t("suspend") : activateLabel}
         </Button>
       </div>
       {error && <span className="text-xs text-destructive">{error}</span>}

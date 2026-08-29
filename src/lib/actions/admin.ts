@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -16,9 +17,10 @@ export type OwnerActionState = { error: string } | { success: true } | null;
 // accounts_update_owner's is_platform_admin() check, so it has to verify
 // admin status itself before touching auth.admin.
 async function assertPlatformAdmin(): Promise<{ error: string } | null> {
+  const t = await getTranslations("AdminActions");
   const supabase = await createClient();
   const { data: isAdmin } = await supabase.rpc("is_platform_admin");
-  if (!isAdmin) return { error: "No autorizado." };
+  if (!isAdmin) return { error: t("notAuthorized") };
   return null;
 }
 
@@ -34,6 +36,7 @@ export async function resendOwnerPasswordReset(
   _formData: FormData
 ): Promise<OwnerActionState> {
   /* eslint-enable @typescript-eslint/no-unused-vars */
+  const t = await getTranslations("AdminActions");
   const unauthorized = await assertPlatformAdmin();
   if (unauthorized) return unauthorized;
 
@@ -45,7 +48,7 @@ export async function resendOwnerPasswordReset(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[admin] resendOwnerPasswordReset failed:", err);
-    return { error: "No pudimos enviar el email. Prueba de nuevo en un momento." };
+    return { error: t("passwordResetSendFailed") };
   }
 
   return { success: true };
@@ -65,12 +68,13 @@ export async function updateOwnerEmail(
   _prevState: OwnerActionState,
   formData: FormData
 ): Promise<OwnerActionState> {
+  const t = await getTranslations("AdminActions");
   const unauthorized = await assertPlatformAdmin();
   if (unauthorized) return unauthorized;
 
   const trimmed = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!trimmed || !trimmed.includes("@")) {
-    return { error: "Ingresa un email válido." };
+    return { error: t("invalidEmail") };
   }
 
   try {
@@ -82,7 +86,7 @@ export async function updateOwnerEmail(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[admin] updateOwnerEmail failed:", err);
-    return { error: "No pudimos actualizar el email. Prueba de nuevo en un momento." };
+    return { error: t("emailUpdateFailed") };
   }
 
   revalidatePath("/admin/accounts");
@@ -160,6 +164,7 @@ export async function changeAccountPlan(
   accountId: string,
   planId: string
 ): Promise<AdminActionState> {
+  const t = await getTranslations("AdminActions");
   const unauthorized = await assertPlatformAdmin();
   if (unauthorized) return unauthorized;
 
@@ -170,10 +175,7 @@ export async function changeAccountPlan(
 
   if (error) {
     if (error.message.includes("plan_downgrade_blocked")) {
-      return {
-        error:
-          "No se puede bajar de plan: la cuenta supera los límites del plan nuevo (webinars publicados o usuarios). Pídele al host que archive/reduzca primero.",
-      };
+      return { error: t("planDowngradeBlocked") };
     }
     return { error: error.message };
   }

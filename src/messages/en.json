@@ -810,6 +810,47 @@
     "hoursUnit": "{hours} h",
     "daysUnit": "{days} days"
   },
+  "AdminAccounts": {
+    "title": "Accounts",
+    "searchPlaceholder": "Search by name or slug...",
+    "noAccountsFound": "No accounts found.",
+    "listSignupMeta": "/{slug} · signed up {date}",
+    "noOwner": "no owner",
+    "backToAccounts": "← Accounts",
+    "detailSignupMeta": "/{slug} · signed up {date} · timezone {timezone}",
+    "planAndStatusTitle": "Plan and status",
+    "usersTitle": "Users",
+    "noUsers": "No users.",
+    "webinarsTitle": "Webinars",
+    "noWebinars": "No webinars."
+  },
+  "AdminWebinarStatus": {
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
+  },
+  "AccountRowActions": {
+    "reactivate": "Reactivate",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "confirmChangePlan": "Change this account's plan to \"{plan}\"?",
+    "confirmSuspend": "Suspend this account? The host loses access immediately."
+  },
+  "OwnerActions": {
+    "editEmail": "Edit email",
+    "sending": "Sending...",
+    "resendPasswordReset": "Resend password reset",
+    "resetEmailSent": "Reset email sent.",
+    "save": "Save",
+    "emailUpdated": "Email updated."
+  },
+  "AdminActions": {
+    "notAuthorized": "Not authorized.",
+    "passwordResetSendFailed": "We couldn't send the email. Please try again in a moment.",
+    "invalidEmail": "Enter a valid email.",
+    "emailUpdateFailed": "We couldn't update the email. Please try again in a moment.",
+    "planDowngradeBlocked": "Can't downgrade the plan: the account exceeds the new plan's limits (published webinars or users). Ask the host to archive/reduce first."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Top message",
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",

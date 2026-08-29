@@ -1,17 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AccountRowActions } from "../account-row-actions";
 import { OwnerActions } from "./owner-actions";
-import {
-  ROLE_LABEL,
-  STATUS_LABEL,
-  STATUS_VARIANT,
-  WEBINAR_STATUS_LABEL,
-} from "../status-labels";
+import { ROLE_LABEL, STATUS_VARIANT } from "../status-labels";
 
 export default async function AdminAccountDetailPage({
   params,
@@ -19,6 +15,10 @@ export default async function AdminAccountDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const t = await getTranslations("AdminAccounts");
+  const tStatus = await getTranslations("SubscriptionStatus");
+  const tWebinarStatus = await getTranslations("AdminWebinarStatus");
+  const locale = await getLocale();
   const supabase = await createClient();
 
   const [{ data: account }, { data: plans }, { data: users }, { data: webinars }] =
@@ -52,20 +52,23 @@ export default async function AdminAccountDetailPage({
     <div className="flex max-w-2xl flex-col gap-6">
       <div className="flex flex-col gap-1">
         <Link href="/admin/accounts" className="text-sm text-muted-foreground hover:underline">
-          ← Cuentas
+          {t("backToAccounts")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{account.name}</h1>
         <span className="text-xs text-muted-foreground">
-          /{account.slug} · alta {new Date(account.created_at).toLocaleDateString("es")} ·
-          zona horaria {account.timezone_default}
+          {t("detailSignupMeta", {
+            slug: account.slug,
+            date: new Date(account.created_at).toLocaleDateString(locale),
+            timezone: account.timezone_default,
+          })}
         </span>
       </div>
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-sm font-medium">Plan y estado</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("planAndStatusTitle")}</CardTitle>
           <Badge variant={STATUS_VARIANT[account.subscription_status]}>
-            {STATUS_LABEL[account.subscription_status]}
+            {tStatus(account.subscription_status)}
           </Badge>
         </CardHeader>
         <CardContent>
@@ -80,11 +83,11 @@ export default async function AdminAccountDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Usuarios</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("usersTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="divide-y p-0">
           {(!users || users.length === 0) && (
-            <p className="p-4 text-sm text-muted-foreground">Sin usuarios.</p>
+            <p className="p-4 text-sm text-muted-foreground">{t("noUsers")}</p>
           )}
           {users?.map((user) => (
             <div key={user.id} className="flex items-center justify-between gap-4 p-4">
@@ -105,16 +108,16 @@ export default async function AdminAccountDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Webinars</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("webinarsTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="divide-y p-0">
           {(!webinars || webinars.length === 0) && (
-            <p className="p-4 text-sm text-muted-foreground">Sin webinars.</p>
+            <p className="p-4 text-sm text-muted-foreground">{t("noWebinars")}</p>
           )}
           {webinars?.map((webinar) => (
             <div key={webinar.id} className="flex items-center justify-between gap-4 p-4">
               <span className="text-sm font-medium">{webinar.title}</span>
-              <Badge variant="outline">{WEBINAR_STATUS_LABEL[webinar.status]}</Badge>
+              <Badge variant="outline">{tWebinarStatus(webinar.status)}</Badge>
             </div>
           ))}
         </CardContent>

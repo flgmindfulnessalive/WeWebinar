@@ -810,6 +810,47 @@
     "hoursUnit": "{hours} h",
     "daysUnit": "{days} días"
   },
+  "AdminAccounts": {
+    "title": "Cuentas",
+    "searchPlaceholder": "Buscar por nombre o slug...",
+    "noAccountsFound": "No se encontraron cuentas.",
+    "listSignupMeta": "/{slug} · alta {date}",
+    "noOwner": "sin owner",
+    "backToAccounts": "← Cuentas",
+    "detailSignupMeta": "/{slug} · alta {date} · zona horaria {timezone}",
+    "planAndStatusTitle": "Plan y estado",
+    "usersTitle": "Usuarios",
+    "noUsers": "Sin usuarios.",
+    "webinarsTitle": "Webinars",
+    "noWebinars": "Sin webinars."
+  },
+  "AdminWebinarStatus": {
+    "draft": "Borrador",
+    "published": "Publicado",
+    "archived": "Archivado"
+  },
+  "AccountRowActions": {
+    "reactivate": "Reactivar",
+    "activate": "Activar",
+    "suspend": "Suspender",
+    "confirmChangePlan": "¿Cambiar el plan de esta cuenta a \"{plan}\"?",
+    "confirmSuspend": "¿Suspender esta cuenta? El host pierde acceso de inmediato."
+  },
+  "OwnerActions": {
+    "editEmail": "Editar email",
+    "sending": "Enviando...",
+    "resendPasswordReset": "Reenviar reset de contraseña",
+    "resetEmailSent": "Email de reset enviado.",
+    "save": "Guardar",
+    "emailUpdated": "Email actualizado."
+  },
+  "AdminActions": {
+    "notAuthorized": "No autorizado.",
+    "passwordResetSendFailed": "No pudimos enviar el email. Prueba de nuevo en un momento.",
+    "invalidEmail": "Ingresa un email válido.",
+    "emailUpdateFailed": "No pudimos actualizar el email. Prueba de nuevo en un momento.",
+    "planDowngradeBlocked": "No se puede bajar de plan: la cuenta supera los límites del plan nuevo (webinars publicados o usuarios). Pídele al host que archive/reduzca primero."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Mensaje superior",
     "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo acá.",
