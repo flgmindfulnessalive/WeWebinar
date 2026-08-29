@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { updateLeadStatus } from "@/lib/actions/admin-leads";
 import type { LeadStatus } from "@/lib/supabase/database.types";
 
-const OPTIONS: { value: LeadStatus; label: string }[] = [
-  { value: "new", label: "Nuevo" },
-  { value: "contacted", label: "Contactado" },
-  { value: "converted", label: "Convertido" },
-  { value: "closed", label: "Cerrado" },
+const OPTION_KEYS: { value: LeadStatus; key: "statusNew" | "statusContacted" | "statusConverted" | "statusClosed" }[] = [
+  { value: "new", key: "statusNew" },
+  { value: "contacted", key: "statusContacted" },
+  { value: "converted", key: "statusConverted" },
+  { value: "closed", key: "statusClosed" },
 ];
 
 export function LeadStatusSelect({ leadId, status }: { leadId: string; status: LeadStatus }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("AdminLeads");
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -34,9 +36,9 @@ export function LeadStatusSelect({ leadId, status }: { leadId: string; status: L
         }}
         className="flex h-8 rounded-md border border-input bg-transparent px-2 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
       >
-        {OPTIONS.map((o) => (
+        {OPTION_KEYS.map((o) => (
           <option key={o.value} value={o.value}>
-            {o.label}
+            {t(o.key)}
           </option>
         ))}
       </select>

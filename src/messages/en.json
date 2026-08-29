@@ -851,6 +851,14 @@
     "emailUpdateFailed": "We couldn't update the email. Please try again in a moment.",
     "planDowngradeBlocked": "Can't downgrade the plan: the account exceeds the new plan's limits (published webinars or users). Ask the host to archive/reduce first."
   },
+  "AdminLeads": {
+    "title": "Enterprise Leads",
+    "noLeadsYet": "There are no leads from the Enterprise contact form yet.",
+    "statusNew": "New",
+    "statusContacted": "Contacted",
+    "statusConverted": "Converted",
+    "statusClosed": "Closed"
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Top message",
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",
