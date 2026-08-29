@@ -5,13 +5,86 @@
     "signup": "Get started",
     "footer": "© {year} WeWebinars. All rights reserved."
   },
+  "AuthLayout": {
+    "tagline": "Evergreen webinars that feel live."
+  },
+  "GoogleButton": {
+    "continueWithGoogle": "Continue with Google"
+  },
+  "LoginForm": {
+    "title": "Log in to your account",
+    "description": "Manage your evergreen webinars from the dashboard.",
+    "orEmail": "or with email",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot your password?",
+    "submitting": "Logging in...",
+    "submit": "Log in",
+    "noAccount": "Don't have an account?",
+    "signupLink": "Sign up"
+  },
+  "SignupForm": {
+    "title": "Create your account",
+    "description": "Start creating evergreen webinars in minutes.",
+    "checkEmailTitle": "Check your email",
+    "checkEmailBody": "We sent you a link to confirm your account. Click it to continue.",
+    "checkEmailRedirect": "We'll take you to Log in in a few seconds, or <link>do it now</link>.",
+    "orEmail": "or with email",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submitting": "Creating account...",
+    "submit": "Create account",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Log in"
+  },
+  "ForgotPasswordForm": {
+    "successTitle": "Check your email",
+    "successDescription": "If an account exists with that email, we sent a link to choose a new password.",
+    "backToLogin": "Back to login",
+    "title": "Reset your password",
+    "description": "We'll send a link to your email to choose a new password.",
+    "emailLabel": "Email",
+    "submitting": "Sending...",
+    "submit": "Send reset link"
+  },
+  "ResetPasswordForm": {
+    "title": "Choose a new password",
+    "description": "At least 8 characters.",
+    "passwordLabel": "New password",
+    "submitting": "Saving...",
+    "submit": "Save password"
+  },
+  "OnboardingForm": {
+    "title": "Create your host account",
+    "description": "Choose a name for your account. Start on the Core plan with a 7-day free trial, no credit card required — email us at operaciones@wewebinars.com when you want to upgrade.",
+    "accountNameLabel": "Account / company name",
+    "timezoneLabel": "Time zone",
+    "planCoreLabel": "Core plan",
+    "planCoreDetail": "1 active webinar · 1 user",
+    "freeDays": "7 days free",
+    "submitting": "Creating account...",
+    "submit": "Create account and continue"
+  },
+  "AuthConfirm": {
+    "invalidLink": "This link isn't valid or is incomplete.",
+    "usedOrExpired": "This link was already used or has expired. Request a new one.",
+    "backToLogin": "Back to login",
+    "confirming": "Confirming..."
+  },
+  "AuthActions": {
+    "connectionError": "We couldn't connect to the authentication server. Try again in a moment.",
+    "emailRequired": "Email is required.",
+    "sendEmailFailed": "We couldn't send the email. Try again in a moment.",
+    "passwordTooShort": "Password must be at least 8 characters."
+  },
   "Home": {
     "badge": "🚀 Sell while you sleep",
     "heroTitle": "Evergreen webinars that <highlight>feel live</highlight>",
     "heroSubtitle": "Record once, present it forever. Schedule automated sessions, simulate live chat, and sell your products with timed CTAs — with no need for a real live stream.",
     "ctaStart": "Get started",
     "ctaPlans": "See plans",
-    "trial": "15-day free trial — no credit card required",
+    "trial": "7-day free trial — no credit card required",
     "featuresTitle": "Everything you need to sell",
     "featuresSubtitle": "One platform, with no need to stream live every time.",
     "features": {
@@ -94,7 +167,7 @@
   "Pricing": {
     "title": "Plans and pricing",
     "subtitle": "Choose annual or monthly. Create unlimited evergreen webinars to promote your own products.",
-    "trial": "15-day free trial — no credit card required",
+    "trial": "7-day free trial — no credit card required",
     "billingAnnual": "Annual",
     "billingMonthly": "Monthly",
     "perYear": "year",

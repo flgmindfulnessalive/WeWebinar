@@ -5,13 +5,86 @@
     "signup": "Empezar ahora",
     "footer": "© {year} WeWebinars. Todos los derechos reservados."
   },
+  "AuthLayout": {
+    "tagline": "Webinars evergreen que se sienten en vivo."
+  },
+  "GoogleButton": {
+    "continueWithGoogle": "Continuar con Google"
+  },
+  "LoginForm": {
+    "title": "Ingresa a tu cuenta",
+    "description": "Gestiona tus webinars evergreen desde el dashboard.",
+    "orEmail": "o con email",
+    "emailLabel": "Email",
+    "passwordLabel": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "submitting": "Ingresando...",
+    "submit": "Ingresar",
+    "noAccount": "¿No tienes cuenta?",
+    "signupLink": "Regístrate"
+  },
+  "SignupForm": {
+    "title": "Crea tu cuenta",
+    "description": "Empieza a crear webinars evergreen en minutos.",
+    "checkEmailTitle": "Revisa tu correo",
+    "checkEmailBody": "Te enviamos un link para confirmar tu cuenta. Haz clic ahí para continuar.",
+    "checkEmailRedirect": "Te llevamos a Ingresar en unos segundos, o <link>hazlo ahora</link>.",
+    "orEmail": "o con email",
+    "nameLabel": "Nombre",
+    "emailLabel": "Email",
+    "passwordLabel": "Contraseña",
+    "submitting": "Creando cuenta...",
+    "submit": "Crear cuenta",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "loginLink": "Ingresa"
+  },
+  "ForgotPasswordForm": {
+    "successTitle": "Revisa tu email",
+    "successDescription": "Si existe una cuenta con ese email, te enviamos un link para elegir una contraseña nueva.",
+    "backToLogin": "Volver a ingresar",
+    "title": "Recuperar contraseña",
+    "description": "Te mandamos un link a tu email para elegir una contraseña nueva.",
+    "emailLabel": "Email",
+    "submitting": "Enviando...",
+    "submit": "Enviar link de recuperación"
+  },
+  "ResetPasswordForm": {
+    "title": "Elige una contraseña nueva",
+    "description": "Al menos 8 caracteres.",
+    "passwordLabel": "Contraseña nueva",
+    "submitting": "Guardando...",
+    "submit": "Guardar contraseña"
+  },
+  "OnboardingForm": {
+    "title": "Crea tu cuenta de host",
+    "description": "Elige un nombre para tu cuenta. Empieza con el plan Core y 7 días de prueba gratis, sin tarjeta de crédito — escríbenos a operaciones@wewebinars.com cuando quieras subir de plan.",
+    "accountNameLabel": "Nombre de la cuenta / empresa",
+    "timezoneLabel": "Zona horaria",
+    "planCoreLabel": "Plan Core",
+    "planCoreDetail": "1 webinar activo · 1 usuario",
+    "freeDays": "7 días gratis",
+    "submitting": "Creando cuenta...",
+    "submit": "Crear cuenta y continuar"
+  },
+  "AuthConfirm": {
+    "invalidLink": "Este link no es válido o está incompleto.",
+    "usedOrExpired": "Este link ya fue usado o expiró. Pide uno nuevo.",
+    "backToLogin": "Volver a ingresar",
+    "confirming": "Confirmando..."
+  },
+  "AuthActions": {
+    "connectionError": "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento.",
+    "emailRequired": "El email es obligatorio.",
+    "sendEmailFailed": "No pudimos enviar el email. Prueba de nuevo en un momento.",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres."
+  },
   "Home": {
     "badge": "🚀 Vende mientras duermes",
     "heroTitle": "Webinars evergreen que <highlight>se sienten en vivo</highlight>",
     "heroSubtitle": "Graba una vez, preséntalo para siempre. Programa sesiones automáticas, simula chat en vivo y vende tus productos con CTAs cronometrados — sin depender de una transmisión real.",
     "ctaStart": "Empezar ahora",
     "ctaPlans": "Ver planes",
-    "trial": "15 días de prueba gratis — sin tarjeta de crédito",
+    "trial": "7 días de prueba gratis — sin tarjeta de crédito",
     "featuresTitle": "Todo lo que necesitas para vender",
     "featuresSubtitle": "Una plataforma, sin depender de transmitir en vivo cada vez.",
     "features": {
@@ -94,7 +167,7 @@
   "Pricing": {
     "title": "Planes y precios",
     "subtitle": "Elige anual o mensual. Crea webinars evergreen ilimitados para promocionar tus propios productos.",
-    "trial": "15 días de prueba gratis — sin tarjeta de crédito",
+    "trial": "7 días de prueba gratis — sin tarjeta de crédito",
     "billingAnnual": "Anual",
     "billingMonthly": "Mensual",
     "perYear": "año",

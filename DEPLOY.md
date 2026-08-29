@@ -203,7 +203,7 @@ y querés que los recordatorios previos al webinar lleguen a tiempo.
    sacarlo. Corre una vez al día además del externo, pero el endpoint ya
    evita mandar el mismo email dos veces (usa `email_sends` como
    candado), así que no hay riesgo de duplicados.
-6. Este mismo endpoint también revisa el período de prueba de 15 días de
+6. Este mismo endpoint también revisa el período de prueba de 7 días de
    cada cuenta (avisa por email unos días antes de que venza, y la
    suspende automáticamente si vence sin activarse), manda un resumen
    mensual automático a cada cuenta con sus resultados del mes anterior, y

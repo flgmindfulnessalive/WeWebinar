@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,12 +48,18 @@ function isEmailOtpType(value: string | null): value is EmailOtpType {
 // an existing session (and listen for the sign-in event) before concluding
 // the link is actually invalid.
 export function AuthConfirmClient() {
+  const t = useTranslations("AuthConfirm");
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const otpType = searchParams.get("type");
-  const [error, setError] = useState<string | null>(null);
+  // "invalid" / "expired" are translated at render time (below) instead of
+  // storing the translated string itself, so this effect never needs `t`
+  // (from useTranslations, not stable across renders) in its dep array.
+  const [error, setError] = useState<
+    { kind: "invalid" } | { kind: "expired" } | { kind: "raw"; message: string } | null
+  >(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -83,7 +91,7 @@ export function AuthConfirmClient() {
           : null;
 
       if (!verify) {
-        setError("Este link no es válido o está incompleto.");
+        setError({ kind: "invalid" });
         return;
       }
       verify.then(({ error: verifyError }) => {
@@ -91,8 +99,8 @@ export function AuthConfirmClient() {
         if (verifyError) {
           setError(
             verifyError.code === "bad_code_verifier" || verifyError.code === "otp_expired"
-              ? "Este link ya fue usado o expiró. Pide uno nuevo."
-              : verifyError.message
+              ? { kind: "expired" }
+              : { kind: "raw", message: verifyError.message }
           );
           return;
         }
@@ -106,15 +114,23 @@ export function AuthConfirmClient() {
   }, [code, tokenHash, otpType, searchParams, router]);
 
   if (error) {
+    let message: string;
+    if (error.kind === "invalid") {
+      message = t("invalidLink");
+    } else if (error.kind === "expired") {
+      message = t("usedOrExpired");
+    } else {
+      message = error.message;
+    }
     return (
       <div className="flex flex-col items-center gap-4 text-center">
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="text-sm text-destructive">{message}</p>
         <Button asChild variant="outline">
-          <a href="/login">Volver a ingresar</a>
+          <Link href="/login">{t("backToLogin")}</Link>
         </Button>
       </div>
     );
   }
 
-  return <p className="text-center text-sm text-muted-foreground">Confirmando...</p>;
+  return <p className="text-center text-sm text-muted-foreground">{t("confirming")}</p>;
 }
