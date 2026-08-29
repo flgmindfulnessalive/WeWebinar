@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Download } from "lucide-react";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -16,11 +17,15 @@ import { MessagesTable } from "./messages-table";
 import { Funnel } from "./funnel";
 import { ConcurrentViewersChart } from "./concurrent-viewers-chart";
 
-function ctaLabel(config: unknown, type: string): string {
+function ctaLabel(
+  config: unknown,
+  type: string,
+  t: Awaited<ReturnType<typeof getTranslations<"WebinarAnalytics">>>
+): string {
   const c = (config ?? {}) as Record<string, unknown>;
-  if (type === "link") return String(c.text ?? "Link");
-  if (type === "overlay") return String(c.text ?? c.image_url ?? "Overlay");
-  if (type === "poll") return String(c.question ?? "Encuesta");
+  if (type === "link") return String(c.text ?? t("typeLinkFallback"));
+  if (type === "overlay") return String(c.text ?? c.image_url ?? t("typeOverlayFallback"));
+  if (type === "poll") return String(c.question ?? t("typePollFallback"));
   return type;
 }
 
@@ -28,19 +33,34 @@ function ctaLabel(config: unknown, type: string): string {
 // The RPC/chart stay wired so re-enabling is just flipping this back.
 const SHOW_CONCURRENT_VIEWERS = false;
 
-const DAY_LABELS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const DAY_KEYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+] as const;
 
-function scheduleRowLabel(row: {
-  kind: string;
-  day_of_week: number | null;
-  time_of_day: string | null;
-  timezone: string | null;
-  offset_minutes: number | null;
-}): { label: string; sublabel: string } {
+function scheduleRowLabel(
+  row: {
+    kind: string;
+    day_of_week: number | null;
+    time_of_day: string | null;
+    timezone: string | null;
+    offset_minutes: number | null;
+  },
+  t: Awaited<ReturnType<typeof getTranslations<"WebinarAnalytics">>>,
+  tSchedule: Awaited<ReturnType<typeof getTranslations<"ScheduleSection">>>
+): { label: string; sublabel: string } {
   if (row.kind === "jit") {
-    return { label: `En ${row.offset_minutes} min`, sublabel: "Bajo demanda" };
+    return {
+      label: t("startsInMinutes", { minutes: row.offset_minutes ?? 0 }),
+      sublabel: t("onDemand"),
+    };
   }
-  const day = row.day_of_week === null ? "Todos los días" : DAY_LABELS[row.day_of_week];
+  const day = row.day_of_week === null ? tSchedule("allDays") : tSchedule(DAY_KEYS[row.day_of_week]);
   const time = row.time_of_day?.slice(0, 5) ?? "";
   return { label: `${day} · ${time}`, sublabel: row.timezone ?? "" };
 }
@@ -54,6 +74,10 @@ export default async function WebinarAnalyticsPage({
   const current = await getCurrentAccount();
   if (!current) return null;
 
+  const t = await getTranslations("WebinarAnalytics");
+  const tWizard = await getTranslations("WebinarWizard");
+  const tSchedule = await getTranslations("ScheduleSection");
+  const locale = await getLocale();
   const supabase = await createClient();
   const { data: webinar } = await supabase
     .from("webinars")
@@ -121,12 +145,12 @@ export default async function WebinarAnalyticsPage({
       : 0;
 
   const funnelSteps = [
-    { label: "Registrados", sublabel: "base", value: registrantCount },
-    { label: "Asistieron", sublabel: "entraron a la sala", value: attendeeCount },
+    { label: t("registrantsLabel"), sublabel: t("funnelBase"), value: registrantCount },
+    { label: t("funnelAttended"), sublabel: t("funnelJoinedRoom"), value: attendeeCount },
     ...(durationSeconds > 0
-      ? [{ label: "Vieron +50%", sublabel: "del video", value: watchedHalfCount }]
+      ? [{ label: t("funnelWatchedHalf"), sublabel: t("funnelOfVideo"), value: watchedHalfCount }]
       : []),
-    { label: "Hicieron clic", sublabel: "en algún CTA", value: uniqueClickerCount },
+    { label: t("funnelClicked"), sublabel: t("funnelOnSomeCta"), value: uniqueClickerCount },
   ];
 
   const retentionPoints = (retentionRows ?? []).map((r) => ({
@@ -138,13 +162,16 @@ export default async function WebinarAnalyticsPage({
   const scheduleBars = (schedulePerformanceRows ?? [])
     .filter((r) => r.registrant_count > 0)
     .map((r) => {
-      const { label, sublabel } = scheduleRowLabel(r);
+      const { label, sublabel } = scheduleRowLabel(r, t, tSchedule);
       return {
         id: r.schedule_id ?? `jit-${r.offset_minutes}`,
         label,
         sublabel,
         value: r.attendance_pct,
-        valueLabel: `${r.attendance_pct}% asistencia · ${r.registrant_count} registrados`,
+        valueLabel: t("scheduleValueLabel", {
+          pct: r.attendance_pct,
+          count: r.registrant_count,
+        }),
       };
     });
 
@@ -156,10 +183,10 @@ export default async function WebinarAnalyticsPage({
 
   const ctaBars = (ctaRows ?? []).map((c) => ({
     id: c.cta_id,
-    label: ctaLabel(c.config, c.cta_type),
-    sublabel: `Aparece a los ${secondsToClock(c.timestamp_start_seconds)}`,
+    label: ctaLabel(c.config, c.cta_type, t),
+    sublabel: t("ctaAppearsAt", { time: secondsToClock(c.timestamp_start_seconds) }),
     value: c.clicks,
-    valueLabel: `${c.clicks} clics · ${c.conversion_pct}%`,
+    valueLabel: t("ctaClicksValueLabel", { clicks: c.clicks, pct: c.conversion_pct }),
   }));
 
   const clickersByCta = new Map<
@@ -181,13 +208,13 @@ export default async function WebinarAnalyticsPage({
   for (const row of pollRows ?? []) {
     const key = row.cta_id;
     if (!pollsByQuestion.has(key)) {
-      pollsByQuestion.set(key, { question: row.question ?? "Encuesta", bars: [] });
+      pollsByQuestion.set(key, { question: row.question ?? t("typePollFallback"), bars: [] });
     }
     pollsByQuestion.get(key)!.bars.push({
       id: `${key}-${row.option}`,
       label: row.option ?? "—",
       value: row.votes,
-      valueLabel: `${row.votes} voto${row.votes === 1 ? "" : "s"}`,
+      valueLabel: t("pollVotesValueLabel", { votes: row.votes }),
     });
   }
 
@@ -200,39 +227,44 @@ export default async function WebinarAnalyticsPage({
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
-          <h1 className="text-2xl font-semibold tracking-tight">{webinar.title} · Analíticas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {webinar.title} · {tWizard("analytics")}
+          </h1>
         </div>
         <Button asChild variant="outline" className="w-fit">
           <a href={`/api/webinars/${webinarId}/export`}>
             <Download className="size-4" />
-            Exportar registrados (CSV)
+            {t("exportCsv")}
           </a>
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Registrados" value={String(registrantCount)} />
+        <StatTile label={t("registrantsLabel")} value={String(registrantCount)} />
         <StatTile
-          label="Asistentes reales"
+          label={t("actualAttendeesLabel")}
           value={String(attendeeCount)}
-          sublabel={`${joinRatePct}% tasa de asistencia`}
+          sublabel={t("attendanceRateSublabel", { pct: joinRatePct })}
         />
         <StatTile
-          label="Tiempo de visualización promedio"
+          label={t("avgWatchTimeLabel")}
           value={secondsToClock(avgWatchSeconds)}
-          sublabel={durationSeconds > 0 ? `${watchPct}% del video` : undefined}
+          sublabel={durationSeconds > 0 ? t("pctOfVideoSublabel", { pct: watchPct }) : undefined}
         />
         <StatTile
-          label="Baja de emails"
+          label={t("unsubscribeRateLabel")}
           value={`${unsubscribeRatePct}%`}
-          sublabel={`${unsubscribedCount} de ${registrantCount} registrados`}
+          sublabel={t("unsubscribeSublabel", {
+            count: unsubscribedCount,
+            total: registrantCount,
+          })}
         />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Embudo del webinar
+            {t("funnelTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -243,7 +275,7 @@ export default async function WebinarAnalyticsPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Curva de abandono
+            {t("retentionTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -255,7 +287,7 @@ export default async function WebinarAnalyticsPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Rendimiento por horario
+              {t("scheduleTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -268,13 +300,13 @@ export default async function WebinarAnalyticsPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Espectadores simultáneos
+              {t("concurrentViewersTitle")}
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Sesión del{" "}
-              {new Date(concurrentViewerSession.session_starts_at).toLocaleString("es")} ·{" "}
-              {concurrentViewerSession.session_registrant_count} registrados (la de más
-              asistencia) · entradas y salidas reales de la sala, no posición del video
+              {t("concurrentViewersSublabel", {
+                date: new Date(concurrentViewerSession.session_starts_at).toLocaleString(locale),
+                count: concurrentViewerSession.session_registrant_count,
+              })}
             </p>
           </CardHeader>
           <CardContent>
@@ -286,17 +318,14 @@ export default async function WebinarAnalyticsPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Registrados ({registrants?.length ?? 0})
+            {t("registrantsTitle", { count: registrants?.length ?? 0 })}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {registrantsError ? (
-            <p className="text-sm text-destructive">
-              No pudimos cargar la lista de registrados. Actualiza la página -- si el problema
-              sigue, escríbenos.
-            </p>
+            <p className="text-sm text-destructive">{t("registrantsLoadError")}</p>
           ) : !registrants || registrants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Todavía no hay nadie registrado.</p>
+            <p className="text-sm text-muted-foreground">{t("noRegistrantsYet")}</p>
           ) : (
             <RegistrantsTable
               durationSeconds={durationSeconds}
@@ -318,7 +347,7 @@ export default async function WebinarAnalyticsPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Clics por CTA
+            {t("ctaClicksTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -337,7 +366,7 @@ export default async function WebinarAnalyticsPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Mensajes del chat ({messageRows!.length})
+              {t("chatMessagesTitle", { count: messageRows!.length })}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -363,7 +392,7 @@ export default async function WebinarAnalyticsPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Resultados de encuestas
+              {t("pollResultsTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
