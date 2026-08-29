@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, FileDown } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -16,6 +16,8 @@ import { RegistrantsTable } from "./registrants-table";
 import { MessagesTable } from "./messages-table";
 import { Funnel } from "./funnel";
 import { ConcurrentViewersChart } from "./concurrent-viewers-chart";
+import { DateRangeSelect } from "./date-range-select";
+import { analyticsRangeToDates, parseAnalyticsRange } from "./date-range";
 
 function ctaLabel(
   config: unknown,
@@ -67,10 +69,13 @@ function scheduleRowLabel(
 
 export default async function WebinarAnalyticsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ range?: string }>;
 }) {
   const { id: webinarId } = await params;
+  const { range: rawRange } = await searchParams;
   const current = await getCurrentAccount();
   if (!current) return null;
 
@@ -87,6 +92,12 @@ export default async function WebinarAnalyticsPage({
 
   if (!webinar || webinar.account_id !== current.account.id) notFound();
 
+  const range = parseAnalyticsRange(rawRange);
+  const { start: p_start_date, end: p_end_date } = analyticsRangeToDates(
+    range,
+    current.account.timezone_default
+  );
+
   const [
     { data: summaryRows },
     { data: retentionRows },
@@ -99,15 +110,15 @@ export default async function WebinarAnalyticsPage({
     { data: schedulePerformanceRows },
     { data: concurrentViewerRows },
   ] = await Promise.all([
-    supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_registrants", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_registrants", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_concurrent_viewers", { p_webinar_id: webinarId }),
   ]);
 
@@ -231,13 +242,23 @@ export default async function WebinarAnalyticsPage({
             {webinar.title} · {tWizard("analytics")}
           </h1>
         </div>
-        <Button asChild variant="outline" className="w-fit">
-          <a href={`/api/webinars/${webinarId}/export`}>
-            <Download className="size-4" />
-            {t("exportCsv")}
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" className="w-fit">
+            <a href={`/api/webinars/${webinarId}/report`}>
+              <FileDown className="size-4" />
+              {t("downloadReport")}
+            </a>
+          </Button>
+          <Button asChild variant="outline" className="w-fit">
+            <a href={`/api/webinars/${webinarId}/export`}>
+              <Download className="size-4" />
+              {t("exportCsv")}
+            </a>
+          </Button>
+        </div>
       </div>
+
+      <DateRangeSelect />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label={t("registrantsLabel")} value={String(registrantCount)} />

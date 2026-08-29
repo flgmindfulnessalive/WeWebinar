@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
   // repo already has its own README/CLAUDE conventions.
   agentRules: false,
 
+  // The PDF report route reads these TTFs via fs at request time (not
+  // `import`), so Vercel's build-time file tracer can't discover them on
+  // its own -- without this they'd be missing from the serverless bundle.
+  outputFileTracingIncludes: {
+    "/api/webinars/[id]/report/route": ["./public/fonts/report/**/*"],
+  },
+
   // Baseline security headers. No page in this app embeds itself (or
   // needs to be embeddable) in an iframe -- the only <iframe> anywhere is
   // the YouTube player's own, a different origin, unaffected by
