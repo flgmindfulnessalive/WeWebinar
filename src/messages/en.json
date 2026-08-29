@@ -600,6 +600,37 @@
     "offsetsRequired": "Set at least one start-time option in minutes.",
     "timeAndTimezoneRequired": "Time and timezone are required."
   },
+  "ChatSection": {
+    "aiAgentTitle": "AI reply agent",
+    "aiAgentDescription": "When a real attendee writes a question in the live chat, an AI agent replies automatically.",
+    "aiAgentPlanHint": "Available on the Pro and Business plans — <a>upgrade plan</a>.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "trainAgentLabel": "Train your AI agent",
+    "trainAgentHint": "Extra info to help the agent answer better: FAQs, pricing, product or service details, policies, etc.",
+    "trainAgentPlaceholder": "E.g.: \"The Pro plan costs $49/mo. Includes priority support. 30-day guarantee...\"",
+    "save": "Save",
+    "timestampLabel": "Time (mm:ss)",
+    "nameLabel": "Name",
+    "typeLabel": "Type",
+    "typeMessage": "Message",
+    "typeQuestion": "Question",
+    "typeHostReply": "Host reply",
+    "textLabel": "Text",
+    "adding": "Adding...",
+    "add": "Add",
+    "noMessages": "You haven't added any messages yet.",
+    "previewLabel": "Preview",
+    "playing": "Playing...",
+    "play": "Play (12x)",
+    "remove": "Remove"
+  },
+  "ChatActions": {
+    "invalidTimestamp": "The timestamp must be in mm:ss format.",
+    "nameAndMessageRequired": "Name and message are required.",
+    "timestampBeyondVideo": "The video is {duration} long -- pick a moment within that range.",
+    "aiAgentPlanBlocked": "The AI reply agent is available on the Pro and Business plans. Upgrade your plan from Billing to enable it."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Top message",
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",

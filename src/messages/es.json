@@ -600,6 +600,37 @@
     "offsetsRequired": "Define al menos una opción de minutos para empezar.",
     "timeAndTimezoneRequired": "Hora y zona horaria son obligatorias."
   },
+  "ChatSection": {
+    "aiAgentTitle": "Agente AI de respuestas",
+    "aiAgentDescription": "Cuando un asistente real escribe una pregunta en el chat en vivo, un agente AI le responde automáticamente.",
+    "aiAgentPlanHint": "Disponible en los planes Pro y Business — <a>actualizar plan</a>.",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "trainAgentLabel": "Entrena a tu agente AI",
+    "trainAgentHint": "Información adicional para que el agente responda mejor: preguntas frecuentes, precios, detalles del producto o servicio, políticas, etc.",
+    "trainAgentPlaceholder": "Ej: \"El plan Pro cuesta $49/mes. Incluye soporte prioritario. La garantía es de 30 días...\"",
+    "save": "Guardar",
+    "timestampLabel": "Minuto (mm:ss)",
+    "nameLabel": "Nombre",
+    "typeLabel": "Tipo",
+    "typeMessage": "Mensaje",
+    "typeQuestion": "Pregunta",
+    "typeHostReply": "Respuesta del host",
+    "textLabel": "Texto",
+    "adding": "Agregando...",
+    "add": "Agregar",
+    "noMessages": "Todavía no agregaste mensajes.",
+    "previewLabel": "Vista previa",
+    "playing": "Reproduciendo...",
+    "play": "Reproducir (12x)",
+    "remove": "Quitar"
+  },
+  "ChatActions": {
+    "invalidTimestamp": "El timestamp debe tener formato mm:ss.",
+    "nameAndMessageRequired": "Nombre y mensaje son obligatorios.",
+    "timestampBeyondVideo": "El video dura {duration} -- elige un momento dentro de ese rango.",
+    "aiAgentPlanBlocked": "El agente AI de respuestas está disponible en los planes Pro y Business. Actualiza tu plan desde Facturación para activarlo."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Mensaje superior",
     "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo acá.",
