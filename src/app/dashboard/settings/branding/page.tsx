@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,19 +13,17 @@ export default async function BrandingPage() {
     redirect("/dashboard");
   }
 
+  const t = await getTranslations("BrandingSettings");
+
   return (
     <div className="flex max-w-lg flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Marca</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            Branding de la cuenta
-          </CardTitle>
+          <CardTitle className="text-sm font-medium">{t("cardTitle")}</CardTitle>
           <CardDescription>
-            Se aplica en la página de registro, la sala del webinar y el pie
-            de los emails.
-            {current.plan.key !== "business" &&
-              " El plan Business además permite ocultar el \"Powered by\" y usar dominio propio."}
+            {t("description")}
+            {current.plan.key !== "business" && t("businessNote")}
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -11,9 +12,10 @@ export async function updateBrevoApiKey(
   _prevState: IntegrationActionState,
   formData: FormData
 ): Promise<IntegrationActionState> {
+  const t = await getTranslations("IntegrationActions");
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
-    return { error: "Solo el owner puede editar esta integración." };
+    return { error: t("ownerOnly") };
   }
 
   const apiKey = String(formData.get("brevo_api_key") ?? "").trim() || null;
@@ -27,10 +29,7 @@ export async function updateBrevoApiKey(
   revalidatePath("/dashboard/settings/integrations");
   if (error) {
     if (error.message.includes("plan_feature_blocked")) {
-      return {
-        error:
-          "La integración con Brevo está disponible en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarla.",
-      };
+      return { error: t("brevoPlanBlocked") };
     }
     return { error: error.message };
   }

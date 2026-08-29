@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -16,28 +18,23 @@ export default async function IntegrationsSettingsPage() {
     redirect("/dashboard");
   }
 
+  const t = await getTranslations("IntegrationsSettings");
+
   const planFeatures = (current.plan.features as Record<string, boolean> | null) ?? {};
   const integrationsAllowed = Boolean(planFeatures.integrations);
 
   if (!integrationsAllowed) {
     return (
       <div className="flex max-w-2xl flex-col gap-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Integraciones</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Webhooks, pixel de Meta y Brevo
-            </CardTitle>
-            <CardDescription>
-              Estas integraciones están disponibles en los planes Pro,
-              Business y Enterprise. Actualiza tu plan para conectar
-              WeWebinars con Zapier/Make/n8n, cargar el pixel de Meta por
-              webinar y sincronizar tus registrados con Brevo.
-            </CardDescription>
+            <CardTitle className="text-sm font-medium">{t("lockedCardTitle")}</CardTitle>
+            <CardDescription>{t("lockedDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-fit">
-              <a href="/dashboard/settings/billing">Ver planes</a>
+              <Link href="/dashboard/settings/billing">{t("seePlans")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -69,20 +66,19 @@ export default async function IntegrationsSettingsPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Integraciones</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Webhooks salientes</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("webhooksTitle")}</CardTitle>
           <CardDescription>
-            Conecta WeWebinars a Zapier, Make, n8n o cualquier herramienta que
-            reciba webhooks. Cada evento se envía como POST con el body en JSON,
-            firmado con HMAC-SHA256 en el header{" "}
-            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
-              X-WeWebinars-Signature
-            </code>{" "}
-            (puedes ignorarlo si tu herramienta no verifica firmas, como suele
-            pasar con Zapier).
+            {t.rich("webhooksDescription", {
+              code: (chunks) => (
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
+                  {chunks}
+                </code>
+              ),
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -107,13 +103,8 @@ export default async function IntegrationsSettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Brevo</CardTitle>
-          <CardDescription>
-            Cada persona que se registra a un webinar se agrega automáticamente
-            a la lista de Brevo que elijas para ese webinar (paso
-            &quot;Marketing&quot; del wizard) — desde ahí puedes usar tus
-            automatizaciones y triggers existentes para nutrir esos leads.
-          </CardDescription>
+          <CardTitle className="text-sm font-medium">{t("brevoTitle")}</CardTitle>
+          <CardDescription>{t("brevoDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <BrevoForm isConnected={Boolean(current.account.brevo_api_key)} />

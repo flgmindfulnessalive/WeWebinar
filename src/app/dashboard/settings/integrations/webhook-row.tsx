@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Check, Copy } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
   deleteWebhookEndpoint,
@@ -11,12 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const EVENT_LABELS: Record<string, string> = {
-  registration: "Nuevo registro",
-  attendance: "Asistió en vivo",
-  cta_click: "Click en CTA",
-  completion: "Terminó de ver",
-  test: "Prueba",
+const EVENT_LABEL_KEYS: Record<
+  string,
+  "eventRegistration" | "eventAttendance" | "eventCtaClick" | "eventCompletion" | "eventTest"
+> = {
+  registration: "eventRegistration",
+  attendance: "eventAttendance",
+  cta_click: "eventCtaClick",
+  completion: "eventCompletion",
+  test: "eventTest",
 };
 
 type Delivery = {
@@ -47,6 +51,13 @@ export function WebhookRow({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const t = useTranslations("WebhookRow");
+  const locale = useLocale();
+
+  const eventLabel = (type: string) => {
+    const key = EVENT_LABEL_KEYS[type];
+    return key ? t(key) : type;
+  };
 
   return (
     <div className="flex flex-col gap-2 border-t p-4 first:border-t-0">
@@ -56,7 +67,7 @@ export function WebhookRow({
           <div className="flex flex-wrap gap-1">
             {eventTypes.map((type) => (
               <Badge key={type} variant="outline" className="text-[11px]">
-                {EVENT_LABELS[type] ?? type}
+                {eventLabel(type)}
               </Badge>
             ))}
           </div>
@@ -72,12 +83,12 @@ export function WebhookRow({
                 setTestResult(null);
                 const result = await sendTestWebhook(id);
                 setTestResult(
-                  result?.error ? `Error: ${result.error}` : "Prueba enviada — mirá el historial abajo."
+                  result?.error ? t("testError", { message: result.error }) : t("testSuccess")
                 );
               })
             }
           >
-            Enviar prueba
+            {t("sendTest")}
           </Button>
           <Button
             size="sm"
@@ -91,14 +102,14 @@ export function WebhookRow({
               })
             }
           >
-            {isActive ? "Desactivar" : "Activar"}
+            {isActive ? t("deactivate") : t("activate")}
           </Button>
           <Button
             size="sm"
             variant="ghost"
             disabled={isPending}
             onClick={() => {
-              if (!confirm("¿Eliminar este webhook?")) return;
+              if (!confirm(t("confirmDelete"))) return;
               startTransition(async () => {
                 setError(null);
                 const result = await deleteWebhookEndpoint(id);
@@ -106,13 +117,13 @@ export function WebhookRow({
               });
             }}
           >
-            Eliminar
+            {t("delete")}
           </Button>
         </div>
       </div>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>Secreto de firma:</span>
+        <span>{t("signingSecret")}</span>
         <code className="rounded bg-muted px-1.5 py-0.5 font-mono">{secret}</code>
         <button
           type="button"
@@ -125,17 +136,17 @@ export function WebhookRow({
           className="inline-flex items-center gap-1 hover:text-foreground"
         >
           {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-          {copied ? "Copiado" : "Copiar"}
+          {copied ? t("copied") : t("copy")}
         </button>
       </div>
 
-      {!isActive && <span className="text-xs text-muted-foreground">Desactivado — no recibe eventos.</span>}
+      {!isActive && <span className="text-xs text-muted-foreground">{t("inactiveNotice")}</span>}
       {error && <p className="text-xs text-destructive">{error}</p>}
       {testResult && <p className="text-xs text-muted-foreground">{testResult}</p>}
 
       {deliveries.length > 0 && (
         <div className="flex flex-col gap-1 pt-1">
-          <span className="text-xs font-medium text-muted-foreground">Últimos intentos</span>
+          <span className="text-xs font-medium text-muted-foreground">{t("recentAttempts")}</span>
           <ul className="flex flex-col gap-1">
             {deliveries.map((d) => (
               <li key={d.id} className="flex items-center gap-2 text-xs">
@@ -143,11 +154,10 @@ export function WebhookRow({
                   variant={d.succeeded ? "outline" : "destructive"}
                   className="shrink-0 text-[11px]"
                 >
-                  {d.succeeded ? (d.status_code ?? "OK") : (d.error_message ?? "Error")}
+                  {d.succeeded ? (d.status_code ?? t("statusOk")) : (d.error_message ?? t("statusError"))}
                 </Badge>
                 <span className="text-muted-foreground">
-                  {EVENT_LABELS[d.event_type] ?? d.event_type} ·{" "}
-                  {new Date(d.created_at).toLocaleString("es")}
+                  {eventLabel(d.event_type)} · {new Date(d.created_at).toLocaleString(locale)}
                 </span>
               </li>
             ))}

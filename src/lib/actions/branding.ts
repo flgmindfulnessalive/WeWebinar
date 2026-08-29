@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -11,9 +12,10 @@ export async function updateBranding(
   _prevState: BrandingActionState,
   formData: FormData
 ): Promise<BrandingActionState> {
+  const t = await getTranslations("BrandingActions");
   const current = await getCurrentAccount();
   if (!current || current.user.role !== "owner") {
-    return { error: "No tienes permisos para editar la marca de la cuenta." };
+    return { error: t("noPermission") };
   }
 
   const branding = {
