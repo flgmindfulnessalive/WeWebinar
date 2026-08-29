@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BarChart3, ExternalLink } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,8 @@ export default async function WebinarDetailPage({
   const current = await getCurrentAccount();
   if (!current) return null;
 
+  const t = await getTranslations("WebinarWizard");
+  const tSteps = await getTranslations("WizardSteps");
   const supabase = await createClient();
   const { data: webinar } = await supabase
     .from("webinars")
@@ -113,21 +116,21 @@ export default async function WebinarDetailPage({
             <Button asChild variant="outline">
               <Link href={publicPath} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-4" />
-                Abrir página pública
+                {t("openPublicPage")}
               </Link>
             </Button>
           ) : (
             <Button asChild variant="outline">
               <Link href={`${publicPath}?preview=1`} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-4" />
-                Vista previa
+                {t("preview")}
               </Link>
             </Button>
           )}
           <Button asChild variant="outline">
             <Link href={`/dashboard/webinars/${webinar.id}/analytics`}>
               <BarChart3 className="size-4" />
-              Analíticas
+              {t("analytics")}
             </Link>
           </Button>
           {canManage && (
@@ -143,8 +146,11 @@ export default async function WebinarDetailPage({
 
       {webinar.status !== "published" && (
         <p className="text-sm text-muted-foreground">
-          El link público (<span className="font-mono">{publicPath}</span>) se
-          activa cuando publiques el webinar — usa &quot;Vista previa&quot; para verlo antes.
+          {t.rich("publicLinkPending", {
+            code: (chunks) => <span className="font-mono">{chunks}</span>,
+            path: publicPath,
+            previewLabel: t("preview"),
+          })}
         </p>
       )}
 
@@ -152,16 +158,16 @@ export default async function WebinarDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Detalle
+              {t("detailSectionTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
             <p>
-              <span className="text-muted-foreground">Categoría:</span>{" "}
+              <span className="text-muted-foreground">{t("categoryLabel")}</span>{" "}
               {webinar.category ?? "—"}
             </p>
             <p className="sm:col-span-2">
-              <span className="text-muted-foreground">Descripción:</span>{" "}
+              <span className="text-muted-foreground">{t("descriptionLabel")}</span>{" "}
               {webinar.description ?? "—"}
             </p>
           </CardContent>
@@ -172,12 +178,12 @@ export default async function WebinarDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Video
+              {t("videoSectionTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Video cargado ({Math.round((webinar.duration_seconds ?? 0) / 60)} min).
+              {t("videoLoaded", { minutes: Math.round((webinar.duration_seconds ?? 0) / 60) })}
             </p>
           </CardContent>
         </Card>
@@ -188,12 +194,12 @@ export default async function WebinarDetailPage({
           webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both";
         const scheduleSummary =
           webinar.schedule_mode === "just_in_time"
-            ? "Arranque inmediato"
+            ? tSteps("scheduleJustInTime")
             : schedules.length === 0
-              ? "Sin horarios configurados"
+              ? tSteps("scheduleNoSlots")
               : webinar.schedule_mode === "both"
-                ? `${schedules.length} horario(s) + arranque inmediato`
-                : `${schedules.length} horario(s) fijo(s)`;
+                ? tSteps("scheduleBoth", { count: schedules.length })
+                : tSteps("scheduleFixed", { count: schedules.length });
         const scheduleCompleted = hasFixedSlots ? schedules.length > 0 : true;
 
         const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
@@ -202,9 +208,9 @@ export default async function WebinarDetailPage({
           {
             id: "detail",
             icon: "file-text",
-            title: "Detalle",
-            description: "Título, categoría y descripción pública del webinar.",
-            summary: webinar.category || "Sin categoría",
+            title: tSteps("detailTitle"),
+            description: tSteps("detailDescription"),
+            summary: webinar.category || tSteps("noCategory"),
             completed: true,
             content: (
               <DetailSection
@@ -220,14 +226,14 @@ export default async function WebinarDetailPage({
           {
             id: "presenter",
             icon: "user",
-            title: "Presentador",
-            description: "Quién aparece como presentador en la sala de espera y el link público.",
+            title: tSteps("presenterTitle"),
+            description: tSteps("presenterDescription"),
             summary: webinar.presenter_name
               ? webinar.presenter_name
               : webinar.presenter_user_id
                 ? (members.find((m) => m.id === webinar.presenter_user_id)?.display_name ??
-                  "Miembro del equipo")
-                : "Sin presentador",
+                  tSteps("teamMemberFallback"))
+                : tSteps("noPresenter"),
             completed: Boolean(webinar.presenter_name || webinar.presenter_user_id),
             content: (
               <PresenterSection
@@ -245,11 +251,13 @@ export default async function WebinarDetailPage({
           {
             id: "video",
             icon: "play-circle",
-            title: "Video",
-            description: "El video que ven tus visitantes al entrar a la sala.",
+            title: tSteps("videoTitle"),
+            description: tSteps("videoDescription"),
             summary: webinar.youtube_video_id
-              ? `${Math.round((webinar.duration_seconds ?? 0) / 60)} min · cargado`
-              : "Sin video cargado",
+              ? tSteps("videoSummaryLoaded", {
+                  minutes: Math.round((webinar.duration_seconds ?? 0) / 60),
+                })
+              : tSteps("videoSummaryEmpty"),
             completed: Boolean(webinar.youtube_video_id),
             content: (
               <VideoSection
@@ -264,8 +272,8 @@ export default async function WebinarDetailPage({
           {
             id: "schedule",
             icon: "calendar",
-            title: "Programación",
-            description: "Cómo y cuándo pueden entrar tus visitantes.",
+            title: tSteps("scheduleTitle"),
+            description: tSteps("scheduleDescription"),
             summary: scheduleSummary,
             completed: scheduleCompleted,
             content: (
@@ -281,21 +289,23 @@ export default async function WebinarDetailPage({
           {
             id: "waiting-room",
             icon: "users",
-            title: "Sala de espera",
-            description: "Lo que ve el registrado mientras espera que empiece.",
-            summary: waitingRoom ? `${bullets.length} bullets configurados` : "Config pendiente",
+            title: tSteps("waitingRoomTitle"),
+            description: tSteps("waitingRoomDescription"),
+            summary: waitingRoom
+              ? tSteps("waitingRoomSummaryConfigured", { count: bullets.length })
+              : tSteps("waitingRoomSummaryPending"),
             completed: waitingRoom !== null,
             content: <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />,
           },
           {
             id: "chat",
             icon: "message-square",
-            title: "Chat simulado",
-            description: "Mensajes cronometrados que aparecen durante la reproducción.",
+            title: tSteps("chatTitle"),
+            description: tSteps("chatDescription"),
             summary:
               (chatMessages?.length ?? 0) > 0
-                ? `${chatMessages.length} mensajes programados`
-                : "Sin mensajes todavía",
+                ? tSteps("chatSummaryConfigured", { count: chatMessages.length })
+                : tSteps("chatSummaryEmpty"),
             completed: (chatMessages?.length ?? 0) > 0,
             content: (
               <ChatSection
@@ -310,22 +320,24 @@ export default async function WebinarDetailPage({
           {
             id: "ctas",
             icon: "mouse-pointer-click",
-            title: "CTAs",
-            description: "Links, banners y encuestas que aparecen en momentos exactos del video.",
+            title: tSteps("ctasTitle"),
+            description: tSteps("ctasDescription"),
             summary:
-              (ctas?.length ?? 0) > 0 ? `${ctas.length} CTAs programados` : "Sin CTAs todavía",
+              (ctas?.length ?? 0) > 0
+                ? tSteps("ctasSummaryConfigured", { count: ctas.length })
+                : tSteps("ctasSummaryEmpty"),
             completed: (ctas?.length ?? 0) > 0,
             content: <CtasSection webinarId={webinar.id} ctas={ctas ?? []} />,
           },
           {
             id: "emails",
             icon: "mail",
-            title: "Plantillas de email",
-            description: 'Confirmación, recordatorios y el aviso de "te lo perdiste".',
+            title: tSteps("emailsTitle"),
+            description: tSteps("emailsDescription"),
             summary:
               emailTemplates.length > 0
-                ? `${emailTemplates.length} plantillas personalizadas`
-                : "Usando plantillas por defecto",
+                ? tSteps("emailsSummaryConfigured", { count: emailTemplates.length })
+                : tSteps("emailsSummaryDefault"),
             completed: emailTemplates.length > 0,
             content: (
               <EmailTemplatesSection
@@ -338,9 +350,11 @@ export default async function WebinarDetailPage({
           {
             id: "marketing",
             icon: "megaphone",
-            title: "Marketing",
-            description: "Pixel de Meta (Facebook) para esta página de registro.",
-            summary: webinar.facebook_pixel_id ? "Pixel configurado" : "Sin pixel configurado",
+            title: tSteps("marketingTitle"),
+            description: tSteps("marketingDescription"),
+            summary: webinar.facebook_pixel_id
+              ? tSteps("marketingSummaryConfigured")
+              : tSteps("marketingSummaryEmpty"),
             completed: Boolean(webinar.facebook_pixel_id),
             content: (
               <MarketingSection
