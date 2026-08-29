@@ -569,5 +569,35 @@
     "loadingDuration": "Loading video duration...",
     "cancel": "Cancel",
     "replaceVideo": "Replace video"
+  },
+  "ScheduleSection": {
+    "modeLabel": "Mode",
+    "modeJustInTime": "Just-in-time",
+    "modeFixed": "Fixed time slots",
+    "modeBoth": "Both",
+    "offsetsLabel": "Start options (minutes from now, comma-separated)",
+    "saveMode": "Save mode",
+    "recurringSchedulesTitle": "Recurring time slots",
+    "dayLabel": "Day",
+    "allDays": "Every day",
+    "excludeWeekends": "Exclude weekends",
+    "excludeWeekendsSuffix": "(no weekends)",
+    "timeLabel": "Time",
+    "timezoneLabel": "Timezone",
+    "adding": "Adding...",
+    "addSchedule": "Add time slot",
+    "remove": "Remove",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
+  },
+  "SchedulingActions": {
+    "invalidMode": "Invalid scheduling mode.",
+    "offsetsRequired": "Set at least one start-time option in minutes.",
+    "timeAndTimezoneRequired": "Time and timezone are required."
   }
 }

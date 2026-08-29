@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   updateSchedulingMode,
@@ -13,15 +14,15 @@ import { Label } from "@/components/ui/label";
 import { useTimezones } from "@/hooks/use-timezones";
 import type { ScheduleMode } from "@/lib/supabase/database.types";
 
-const DAY_LABELS = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-];
+const DAY_KEYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+] as const;
 
 type ScheduleRow = {
   id: string;
@@ -55,13 +56,15 @@ export function ScheduleSection({
   );
   const [newScheduleDay, setNewScheduleDay] = useState("");
   const timezones = useTimezones();
+  const t = useTranslations("ScheduleSection");
+  const tCommon = useTranslations("SettingsCommon");
 
   return (
     <div className="flex flex-col gap-6">
       <form action={modeAction} className="flex flex-col gap-4">
         <input type="hidden" name="webinar_id" value={webinarId} />
         <div className="grid gap-2">
-          <Label htmlFor="schedule_mode">Modo</Label>
+          <Label htmlFor="schedule_mode">{t("modeLabel")}</Label>
           <select
             id="schedule_mode"
             name="schedule_mode"
@@ -69,17 +72,15 @@ export function ScheduleSection({
             onChange={(e) => setMode(e.target.value as ScheduleMode)}
             className="flex h-9 w-fit rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            <option value="just_in_time">Just-in-time</option>
-            <option value="fixed">Horarios fijos</option>
-            <option value="both">Ambos</option>
+            <option value="just_in_time">{t("modeJustInTime")}</option>
+            <option value="fixed">{t("modeFixed")}</option>
+            <option value="both">{t("modeBoth")}</option>
           </select>
         </div>
 
         {(mode === "just_in_time" || mode === "both") && (
           <div className="grid gap-2">
-            <Label htmlFor="offsets">
-              Opciones de inicio (minutos desde ahora, separados por coma)
-            </Label>
+            <Label htmlFor="offsets">{t("offsetsLabel")}</Label>
             <Input
               id="offsets"
               name="offsets"
@@ -94,13 +95,13 @@ export function ScheduleSection({
           <p className="text-sm text-destructive">{modeState.error}</p>
         )}
         <Button type="submit" disabled={modePending} className="w-fit">
-          {modePending ? "Guardando..." : "Guardar modo"}
+          {modePending ? tCommon("saving") : t("saveMode")}
         </Button>
       </form>
 
       {(mode === "fixed" || mode === "both") && (
         <div className="flex flex-col gap-4 border-t pt-6">
-          <p className="text-sm font-medium">Horarios recurrentes</p>
+          <p className="text-sm font-medium">{t("recurringSchedulesTitle")}</p>
 
           {schedules.length > 0 && (
             <div className="flex flex-col gap-2">
@@ -117,7 +118,7 @@ export function ScheduleSection({
           <form action={scheduleAction} className="flex flex-wrap items-end gap-3">
             <input type="hidden" name="webinar_id" value={webinarId} />
             <div className="grid gap-1.5">
-              <Label htmlFor="day_of_week">Día</Label>
+              <Label htmlFor="day_of_week">{t("dayLabel")}</Label>
               <select
                 id="day_of_week"
                 name="day_of_week"
@@ -125,10 +126,10 @@ export function ScheduleSection({
                 onChange={(e) => setNewScheduleDay(e.target.value)}
                 className="flex h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
               >
-                <option value="">Todos los días</option>
-                {DAY_LABELS.map((label, i) => (
-                  <option key={label} value={i}>
-                    {label}
+                <option value="">{t("allDays")}</option>
+                {DAY_KEYS.map((key, i) => (
+                  <option key={key} value={i}>
+                    {t(key)}
                   </option>
                 ))}
               </select>
@@ -136,11 +137,11 @@ export function ScheduleSection({
             {newScheduleDay === "" && (
               <label className="flex items-center gap-2 pb-2 text-sm">
                 <input type="checkbox" name="exclude_weekends" className="size-4" />
-                Excluir fines de semana
+                {t("excludeWeekends")}
               </label>
             )}
             <div className="grid gap-1.5">
-              <Label htmlFor="time_of_day">Hora</Label>
+              <Label htmlFor="time_of_day">{t("timeLabel")}</Label>
               <Input
                 id="time_of_day"
                 name="time_of_day"
@@ -150,7 +151,7 @@ export function ScheduleSection({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="timezone">Zona horaria</Label>
+              <Label htmlFor="timezone">{t("timezoneLabel")}</Label>
               <select
                 id="timezone"
                 name="timezone"
@@ -166,7 +167,7 @@ export function ScheduleSection({
               </select>
             </div>
             <Button type="submit" disabled={schedulePending}>
-              {schedulePending ? "Agregando..." : "Agregar horario"}
+              {schedulePending ? t("adding") : t("addSchedule")}
             </Button>
           </form>
           {scheduleState?.error && (
@@ -186,12 +187,13 @@ function ScheduleRowItem({
   webinarId: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("ScheduleSection");
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
       <span>
-        {schedule.day_of_week === null ? "Todos los días" : DAY_LABELS[schedule.day_of_week]}
-        {schedule.exclude_weekends && " (sin fines de semana)"} ·{" "}
+        {schedule.day_of_week === null ? t("allDays") : t(DAY_KEYS[schedule.day_of_week])}
+        {schedule.exclude_weekends && ` ${t("excludeWeekendsSuffix")}`} ·{" "}
         {schedule.time_of_day.slice(0, 5)} · {schedule.timezone}
       </span>
       <Button
@@ -204,7 +206,7 @@ function ScheduleRowItem({
           })
         }
       >
-        Quitar
+        {t("remove")}
       </Button>
     </div>
   );

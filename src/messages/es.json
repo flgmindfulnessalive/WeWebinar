@@ -569,5 +569,35 @@
     "loadingDuration": "Cargando duración del video...",
     "cancel": "Cancelar",
     "replaceVideo": "Reemplazar video"
+  },
+  "ScheduleSection": {
+    "modeLabel": "Modo",
+    "modeJustInTime": "Just-in-time",
+    "modeFixed": "Horarios fijos",
+    "modeBoth": "Ambos",
+    "offsetsLabel": "Opciones de inicio (minutos desde ahora, separados por coma)",
+    "saveMode": "Guardar modo",
+    "recurringSchedulesTitle": "Horarios recurrentes",
+    "dayLabel": "Día",
+    "allDays": "Todos los días",
+    "excludeWeekends": "Excluir fines de semana",
+    "excludeWeekendsSuffix": "(sin fines de semana)",
+    "timeLabel": "Hora",
+    "timezoneLabel": "Zona horaria",
+    "adding": "Agregando...",
+    "addSchedule": "Agregar horario",
+    "remove": "Quitar",
+    "sunday": "Domingo",
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado"
+  },
+  "SchedulingActions": {
+    "invalidMode": "Modo de programación inválido.",
+    "offsetsRequired": "Define al menos una opción de minutos para empezar.",
+    "timeAndTimezoneRequired": "Hora y zona horaria son obligatorias."
   }
 }
