@@ -234,15 +234,11 @@
     "registrantsTitle": "Registrants",
     "registrantsTitleWithCount": "Registrants ({count})",
     "loadListFailed": "We couldn't load the registrant list.",
-    "noRegistrantsOnPage": "No registrants on this page.",
     "noRegistrantsYet": "No one has registered yet.",
     "name": "Name",
     "email": "Email",
     "webinar": "Webinar",
-    "registeredOn": "Registered on",
-    "pageOf": "Page {page} of {total}",
-    "previous": "Previous",
-    "next": "Next"
+    "registeredOn": "Registered on"
   },
   "SettingsShell": {
     "title": "Settings",

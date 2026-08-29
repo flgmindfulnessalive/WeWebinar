@@ -234,15 +234,11 @@
     "registrantsTitle": "Registrados",
     "registrantsTitleWithCount": "Registrados ({count})",
     "loadListFailed": "No pudimos cargar la lista de registrados.",
-    "noRegistrantsOnPage": "No hay registrados en esta página.",
     "noRegistrantsYet": "Todavía no hay nadie registrado.",
     "name": "Nombre",
     "email": "Email",
     "webinar": "Webinar",
-    "registeredOn": "Registrado el",
-    "pageOf": "Página {page} de {total}",
-    "previous": "Anterior",
-    "next": "Siguiente"
+    "registeredOn": "Registrado el"
   },
   "SettingsShell": {
     "title": "Configuración",
