@@ -178,7 +178,7 @@ export default async function WebinarDetailPage({
         </Card>
       )}
 
-      {!canManage && webinar.youtube_video_id && (
+      {!canManage && webinar.video_source && (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -257,17 +257,18 @@ export default async function WebinarDetailPage({
             icon: "play-circle",
             title: tSteps("videoTitle"),
             description: tSteps("videoDescription"),
-            summary: webinar.youtube_video_id
+            summary: webinar.video_source
               ? tSteps("videoSummaryLoaded", {
                   minutes: Math.round((webinar.duration_seconds ?? 0) / 60),
                 })
               : tSteps("videoSummaryEmpty"),
-            completed: Boolean(webinar.youtube_video_id),
+            completed: Boolean(webinar.video_source),
             content: (
               <VideoSection
                 webinarId={webinar.id}
                 initial={{
-                  youtube_video_id: webinar.youtube_video_id,
+                  video_provider: webinar.video_provider,
+                  video_source: webinar.video_source,
                   duration_seconds: webinar.duration_seconds,
                 }}
               />

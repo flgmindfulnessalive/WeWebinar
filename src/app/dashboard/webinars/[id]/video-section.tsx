@@ -6,15 +6,16 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  LockedYouTubePlayer,
-  type LockedYouTubePlayerHandle,
-} from "@/components/locked-youtube-player";
+import { WebinarPlayer, type WebinarPlayerHandle } from "@/components/webinar-player";
 import { extractYouTubeVideoId } from "@/lib/youtube";
+import { parseDirectVideoUrl } from "@/lib/direct-video";
 import { setWebinarVideo } from "@/lib/actions/webinars";
+import type { VideoProvider } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
 type VideoState = {
-  youtube_video_id: string | null;
+  video_provider: VideoProvider | null;
+  video_source: string | null;
   duration_seconds: number | null;
 };
 
@@ -28,51 +29,97 @@ export function VideoSection({
   const t = useTranslations("VideoSection");
   const tCommon = useTranslations("SettingsCommon");
   const [state, setState] = useState<VideoState>(initial);
-  const [showInput, setShowInput] = useState(!initial.youtube_video_id);
+  const [showInput, setShowInput] = useState(!initial.video_source);
+  const [provider, setProvider] = useState<VideoProvider>(initial.video_provider ?? "youtube");
   const [urlInput, setUrlInput] = useState("");
-  const [pendingVideoId, setPendingVideoId] = useState<string | null>(null);
+  const [pendingSource, setPendingSource] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const previewRef = useRef<LockedYouTubePlayerHandle | null>(null);
+  const previewRef = useRef<WebinarPlayerHandle | null>(null);
 
   function handleLoad() {
-    const id = extractYouTubeVideoId(urlInput);
-    if (!id) {
-      setError(t("invalidLink"));
-      return;
+    if (provider === "youtube") {
+      const id = extractYouTubeVideoId(urlInput);
+      if (!id) {
+        setError(t("invalidLink"));
+        return;
+      }
+      setError(null);
+      setPendingSource(id);
+    } else {
+      const url = parseDirectVideoUrl(urlInput);
+      if (!url) {
+        setError(t("invalidDirectUrl"));
+        return;
+      }
+      setError(null);
+      setPendingSource(url);
     }
-    setError(null);
-    setPendingVideoId(id);
   }
 
   async function handleDurationReady(durationSeconds: number) {
-    if (!pendingVideoId || durationSeconds <= 0) return;
+    if (!pendingSource || durationSeconds <= 0) return;
     setIsSaving(true);
-    const result = await setWebinarVideo(webinarId, pendingVideoId, durationSeconds);
+    const result = await setWebinarVideo(webinarId, provider, pendingSource, durationSeconds);
     setIsSaving(false);
     if (result?.error) {
       setError(result.error);
-      setPendingVideoId(null);
+      setPendingSource(null);
       return;
     }
-    setState({ youtube_video_id: pendingVideoId, duration_seconds: Math.round(durationSeconds) });
-    setPendingVideoId(null);
+    setState({
+      video_provider: provider,
+      video_source: pendingSource,
+      duration_seconds: Math.round(durationSeconds),
+    });
+    setPendingSource(null);
     setShowInput(false);
     setUrlInput("");
+  }
+
+  function switchProvider(next: VideoProvider) {
+    setProvider(next);
+    setUrlInput("");
+    setPendingSource(null);
+    setError(null);
   }
 
   if (showInput) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">{t("unlistedHint")}</p>
+        <div className="flex w-fit flex-wrap gap-1 rounded-md border p-1">
+          <Button
+            type="button"
+            size="sm"
+            variant={provider === "youtube" ? "default" : "ghost"}
+            onClick={() => switchProvider("youtube")}
+          >
+            {t("providerYoutube")}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={provider === "direct_url" ? "default" : "ghost"}
+            onClick={() => switchProvider("direct_url")}
+          >
+            {t("providerDirectUrl")}
+          </Button>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          {provider === "youtube" ? t("unlistedHint") : t("directUrlHint")}
+        </p>
+
         <div className="grid gap-1.5">
-          <Label htmlFor="youtube-url">{t("youtubeLinkLabel")}</Label>
+          <Label htmlFor="video-url">
+            {provider === "youtube" ? t("youtubeLinkLabel") : t("directUrlLabel")}
+          </Label>
           <div className="flex gap-2">
             <Input
-              id="youtube-url"
+              id="video-url"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="https://youtu.be/..."
+              placeholder={provider === "youtube" ? "https://youtu.be/..." : "https://cdn.tuempresa.com/video.mp4"}
             />
             <Button type="button" onClick={handleLoad} disabled={!urlInput.trim()}>
               {t("load")}
@@ -81,12 +128,13 @@ export function VideoSection({
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
-        {pendingVideoId && (
+        {pendingSource && (
           <div className="flex flex-col gap-2">
             <div className="aspect-video w-full overflow-hidden rounded-md bg-black">
-              <LockedYouTubePlayer
+              <WebinarPlayer
                 ref={previewRef}
-                videoId={pendingVideoId}
+                provider={provider}
+                source={pendingSource}
                 muted
                 onLoadedMetadata={handleDurationReady}
               />
@@ -97,7 +145,7 @@ export function VideoSection({
           </div>
         )}
 
-        {state.youtube_video_id && (
+        {state.video_source && (
           <Button type="button" variant="ghost" onClick={() => setShowInput(false)}>
             {t("cancel")}
           </Button>
@@ -108,14 +156,17 @@ export function VideoSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <span className={cn("text-xs font-medium text-muted-foreground")}>
+          {state.video_provider === "direct_url" ? t("providerDirectUrl") : t("providerYoutube")}
+        </span>
         <Button size="sm" variant="outline" onClick={() => setShowInput(true)}>
           {t("replaceVideo")}
         </Button>
       </div>
-      {state.youtube_video_id && (
+      {state.video_source && state.video_provider && (
         <div className="aspect-video w-full overflow-hidden rounded-md bg-black">
-          <LockedYouTubePlayer videoId={state.youtube_video_id} muted />
+          <WebinarPlayer provider={state.video_provider} source={state.video_source} muted />
         </div>
       )}
     </div>

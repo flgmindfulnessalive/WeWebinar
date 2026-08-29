@@ -679,7 +679,12 @@
     "invalidLink": "I couldn't recognize that YouTube link. Try pasting the full URL.",
     "loadingDuration": "Loading video duration...",
     "cancel": "Cancel",
-    "replaceVideo": "Replace video"
+    "replaceVideo": "Replace video",
+    "providerYoutube": "YouTube",
+    "providerDirectUrl": "Your own video",
+    "directUrlLabel": "Direct video URL (MP4)",
+    "directUrlHint": "Paste the direct link to a video you host yourself (your own server, S3, Cloudflare R2, Bunny, etc.). It needs to be a public HTTPS link that resolves to the video file itself, not a page -- we don't host or stream the video, we just play it from your link.",
+    "invalidDirectUrl": "That doesn't look like a valid HTTPS URL. Try pasting the full URL of the video file."
   },
   "ScheduleSection": {
     "modeLabel": "Mode",

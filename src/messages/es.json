@@ -679,7 +679,12 @@
     "invalidLink": "No pude reconocer ese link de YouTube. Prueba pegando la URL completa.",
     "loadingDuration": "Cargando duración del video...",
     "cancel": "Cancelar",
-    "replaceVideo": "Reemplazar video"
+    "replaceVideo": "Reemplazar video",
+    "providerYoutube": "YouTube",
+    "providerDirectUrl": "Video propio",
+    "directUrlLabel": "URL directa del video (MP4)",
+    "directUrlHint": "Pega el link directo a un video alojado por vos (tu propio servidor, S3, Cloudflare R2, Bunny, etc.). Tiene que ser un link público en HTTPS que termine cargando el archivo de video, no una página -- nosotros no alojamos ni transmitimos el video, solo lo reproducimos desde tu link.",
+    "invalidDirectUrl": "Ese link no parece una URL válida en HTTPS. Prueba pegando la URL completa del archivo de video."
   },
   "ScheduleSection": {
     "modeLabel": "Modo",

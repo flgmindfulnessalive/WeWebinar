@@ -11,6 +11,7 @@ import { randomFakeViewerRange } from "@/lib/fake-viewers";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { webinarPublishedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
+import type { VideoProvider } from "@/lib/supabase/database.types";
 
 export type WebinarActionState = { error: string } | null;
 
@@ -217,10 +218,10 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
   // whoever just registered.
   const { data: current } = await supabase
     .from("webinars")
-    .select("youtube_video_id")
+    .select("video_source")
     .eq("id", webinarId)
     .maybeSingle();
-  if (!current?.youtube_video_id) {
+  if (!current?.video_source) {
     return { error: t("videoRequiredToPublish") };
   }
 
@@ -267,13 +268,18 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
 
 export async function setWebinarVideo(
   webinarId: string,
-  youtubeVideoId: string,
+  videoProvider: VideoProvider,
+  videoSource: string,
   durationSeconds: number
 ): Promise<WebinarActionState> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("webinars")
-    .update({ youtube_video_id: youtubeVideoId, duration_seconds: Math.round(durationSeconds) })
+    .update({
+      video_provider: videoProvider,
+      video_source: videoSource,
+      duration_seconds: Math.round(durationSeconds),
+    })
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
@@ -349,7 +355,7 @@ export async function duplicateWebinar(
   const { data: source, error: sourceError } = await supabase
     .from("webinars")
     .select(
-      "title, description, category, youtube_video_id, duration_seconds, schedule_mode, just_in_time_offsets_minutes, fake_viewer_min, fake_viewer_max, ai_chat_enabled, ai_agent_training_info, facebook_pixel_id, brevo_list_id, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio"
+      "title, description, category, video_provider, video_source, duration_seconds, schedule_mode, just_in_time_offsets_minutes, fake_viewer_min, fake_viewer_max, ai_chat_enabled, ai_agent_training_info, facebook_pixel_id, brevo_list_id, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio"
     )
     .eq("id", webinarId)
     .eq("account_id", current.account.id)
