@@ -167,7 +167,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // --- Trial lifecycle: suspend accounts whose 15-day trial expired, and
+  // --- Trial lifecycle: suspend accounts whose 7-day trial expired, and
   // warn accounts about to expire. Lives in this same handler instead of a
   // separate cron route so it needs no extra entry in vercel.json or a
   // second URL in the external 5-minute cron -- both checks below are

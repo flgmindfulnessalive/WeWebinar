@@ -62,7 +62,7 @@ export function accountSuspendedEmail(accountName: string): { subject: string; h
   const safeName = escapeHtml(accountName);
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta suspendida</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu período de prueba terminó</h1>
-<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> quedó suspendida porque el período de prueba de 15 días terminó sin activarse. Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
+<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> quedó suspendida porque el período de prueba de 7 días terminó sin activarse. Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
   return {
     subject: "Tu cuenta en WeWebinars fue suspendida",
     html: wrapPlatformEmailShell(inner),
@@ -77,7 +77,7 @@ export function welcomeEmail(
   const greeting = ownerName ? `Hola ${escapeHtml(ownerName)},` : "Hola,";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Bienvenido</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu cuenta en WeWebinars está lista</h1>
-<p style="margin:0 0 16px;">${greeting} creamos <strong style="color:#18181b;">${safeName}</strong> con un período de prueba de 15 días para que la pruebes sin apuro.</p>
+<p style="margin:0 0 16px;">${greeting} creamos <strong style="color:#18181b;">${safeName}</strong> con un período de prueba de 7 días para que la pruebes sin apuro.</p>
 <p style="margin:0 0 20px;">Entra a tu panel para crear tu primer webinar evergreen. Cualquier duda, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
   <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ir a mi panel</a>
