@@ -171,7 +171,8 @@
     "alreadyVoted": "Ya votaste",
     "thanksForJoining": "Gracias por acompañarnos en {title}",
     "webinarEnded": "El webinar terminó.",
-    "seeMore": "Ver más"
+    "seeMore": "Ver más",
+    "sendReaction": "Enviar reacción {emoji}"
   },
   "ChatPanel": {
     "moderatorTeam": "Equipo moderador",
@@ -234,15 +235,11 @@
     "registrantsTitle": "Registrados",
     "registrantsTitleWithCount": "Registrados ({count})",
     "loadListFailed": "No pudimos cargar la lista de registrados.",
-    "noRegistrantsOnPage": "No hay registrados en esta página.",
     "noRegistrantsYet": "Todavía no hay nadie registrado.",
     "name": "Nombre",
     "email": "Email",
     "webinar": "Webinar",
-    "registeredOn": "Registrado el",
-    "pageOf": "Página {page} de {total}",
-    "previous": "Anterior",
-    "next": "Siguiente"
+    "registeredOn": "Registrado el"
   },
   "SettingsShell": {
     "title": "Configuración",
@@ -744,6 +741,7 @@
     "ctaAppearsAt": "Aparece a los {time}",
     "ctaClicksValueLabel": "{clicks} clics · {pct}%",
     "chatMessagesTitle": "Mensajes del chat ({count})",
+    "reactionsTitle": "Reacciones ({count})",
     "pollResultsTitle": "Resultados de encuestas",
     "pollVotesValueLabel": "{votes, plural, one {# voto} other {# votos}}"
   },
@@ -786,7 +784,8 @@
     "firstClickHeader": "Primer clic",
     "clicksHeader": "Clics",
     "hideAiReplies": "Ocultar respuestas de la AI",
-    "aiReplyHidden": "Respuesta de la AI oculta"
+    "aiReplyHidden": "Respuesta de la AI oculta",
+    "emojiHeader": "Reacción"
   },
   "WebinarReport": {
     "generatedOn": "Generado el {date}",
@@ -798,7 +797,9 @@
     "pageOf": "Página {page} de {total}",
     "noScheduleData": "Sin datos suficientes de horarios todavía.",
     "noCtaData": "Sin clics en CTAs todavía.",
-    "noPollData": "Sin votos en encuestas todavía."
+    "noPollData": "Sin votos en encuestas todavía.",
+    "ctaClickersLabel": "Quiénes hicieron clic",
+    "ctaClickersMore": "+{count} más"
   },
   "AdminOverview": {
     "title": "Resumen de la plataforma",

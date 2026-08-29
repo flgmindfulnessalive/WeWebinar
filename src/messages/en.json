@@ -171,7 +171,8 @@
     "alreadyVoted": "You already voted",
     "thanksForJoining": "Thanks for joining {title}",
     "webinarEnded": "The webinar has ended.",
-    "seeMore": "See more"
+    "seeMore": "See more",
+    "sendReaction": "Send {emoji} reaction"
   },
   "ChatPanel": {
     "moderatorTeam": "Moderator team",
@@ -234,15 +235,11 @@
     "registrantsTitle": "Registrants",
     "registrantsTitleWithCount": "Registrants ({count})",
     "loadListFailed": "We couldn't load the registrant list.",
-    "noRegistrantsOnPage": "No registrants on this page.",
     "noRegistrantsYet": "No one has registered yet.",
     "name": "Name",
     "email": "Email",
     "webinar": "Webinar",
-    "registeredOn": "Registered on",
-    "pageOf": "Page {page} of {total}",
-    "previous": "Previous",
-    "next": "Next"
+    "registeredOn": "Registered on"
   },
   "SettingsShell": {
     "title": "Settings",
@@ -744,6 +741,7 @@
     "ctaAppearsAt": "Appears at {time}",
     "ctaClicksValueLabel": "{clicks} clicks · {pct}%",
     "chatMessagesTitle": "Chat messages ({count})",
+    "reactionsTitle": "Reactions ({count})",
     "pollResultsTitle": "Poll results",
     "pollVotesValueLabel": "{votes, plural, one {# vote} other {# votes}}"
   },
@@ -786,7 +784,8 @@
     "firstClickHeader": "First click",
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",
-    "aiReplyHidden": "AI reply hidden"
+    "aiReplyHidden": "AI reply hidden",
+    "emojiHeader": "Reaction"
   },
   "WebinarReport": {
     "generatedOn": "Generated on {date}",
@@ -798,7 +797,9 @@
     "pageOf": "Page {page} of {total}",
     "noScheduleData": "Not enough time slot data yet.",
     "noCtaData": "No CTA clicks yet.",
-    "noPollData": "No poll votes yet."
+    "noPollData": "No poll votes yet.",
+    "ctaClickersLabel": "Who clicked",
+    "ctaClickersMore": "+{count} more"
   },
   "AdminOverview": {
     "title": "Platform overview",

@@ -96,6 +96,30 @@
   background-size: 48px 48px;
 }
 
+/* Live room reaction particles (reactions.tsx) -- a tapped emoji rises and
+   fades out over the video, Facebook-Live style. */
+@keyframes float-up-fade {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(-24px) scale(1);
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-220px) scale(1.05);
+    opacity: 0;
+  }
+}
+
+.animate-float-up-fade {
+  animation: float-up-fade 2.6s ease-out forwards;
+}
+
 /* Used by LockedYouTubePlayer's loading cover (app-wide, not just
    marketing) -- a subtle pulse on the brand mark while the video loads. */
 @keyframes locked-player-pulse {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, UserCheck, Eye, ChevronLeft, ChevronRight, Video, Package, Activity } from "lucide-react";
+import { Users, UserCheck, Eye, Video, Package, Activity } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -8,23 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatTile } from "./stat-tile";
 
-const REGISTRANTS_PAGE_SIZE = 10;
+// Recent-registrants feed, not a paginated full list -- the table itself
+// scrolls (see the markup below) instead of paging through, so this just
+// caps how deep that scroll goes.
+const RECENT_REGISTRANTS_LIMIT = 50;
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
+export default async function DashboardPage() {
   const current = await getCurrentAccount();
   if (!current) return null;
 
   const t = await getTranslations("DashboardHome");
   const tStatus = await getTranslations("SubscriptionStatus");
   const locale = await getLocale();
-
-  const { page: pageParam } = await searchParams;
-  const requestedPage = Number(pageParam);
-  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
   const supabase = await createClient();
   const [
@@ -40,8 +35,8 @@ export default async function DashboardPage({
     supabase.rpc("get_account_summary", { p_account_id: current.account.id }),
     supabase.rpc("get_account_recent_registrants", {
       p_account_id: current.account.id,
-      p_limit: REGISTRANTS_PAGE_SIZE,
-      p_offset: (page - 1) * REGISTRANTS_PAGE_SIZE,
+      p_limit: RECENT_REGISTRANTS_LIMIT,
+      p_offset: 0,
     }),
   ]);
 
@@ -62,7 +57,6 @@ export default async function DashboardPage({
   const attendeeCount = summary?.attendee_count ?? 0;
   const avgWatchPct = Math.round(summary?.avg_watch_pct ?? 0);
   const joinRatePct = registrantCount > 0 ? Math.round((attendeeCount / registrantCount) * 100) : 0;
-  const totalPages = Math.max(1, Math.ceil(registrantCount / REGISTRANTS_PAGE_SIZE));
 
   return (
     <div className="flex flex-col gap-6">
@@ -127,13 +121,11 @@ export default async function DashboardPage({
           {metricsFailed ? (
             <p className="text-sm text-muted-foreground">{t("loadListFailed")}</p>
           ) : !recentRegistrants || recentRegistrants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {page > 1 ? t("noRegistrantsOnPage") : t("noRegistrantsYet")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("noRegistrantsYet")}</p>
           ) : (
-            <div className="overflow-x-auto rounded-md border">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
+            <div className="max-h-96 overflow-auto rounded-md border">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead className="sticky top-0 bg-muted/50">
                   <tr>
                     <th className="p-2 text-left font-medium">{t("name")}</th>
                     <th className="p-2 text-left font-medium">{t("email")}</th>
@@ -152,46 +144,6 @@ export default async function DashboardPage({
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-
-          {!metricsFailed && totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                {t("pageOf", { page, total: totalPages })}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className={page <= 1 ? "pointer-events-none opacity-50" : undefined}
-                >
-                  <Link
-                    href={page <= 2 ? "/dashboard" : `/dashboard?page=${page - 1}`}
-                    aria-disabled={page <= 1}
-                    tabIndex={page <= 1 ? -1 : undefined}
-                  >
-                    <ChevronLeft className="size-4" />
-                    {t("previous")}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className={page >= totalPages ? "pointer-events-none opacity-50" : undefined}
-                >
-                  <Link
-                    href={`/dashboard?page=${page + 1}`}
-                    aria-disabled={page >= totalPages}
-                    tabIndex={page >= totalPages ? -1 : undefined}
-                  >
-                    {t("next")}
-                    <ChevronRight className="size-4" />
-                  </Link>
-                </Button>
-              </div>
             </div>
           )}
         </CardContent>

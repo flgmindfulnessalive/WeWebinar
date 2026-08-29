@@ -26,7 +26,8 @@ export type ViewerEventType =
   | "heartbeat"
   | "leave"
   | "cta_click"
-  | "poll_response";
+  | "poll_response"
+  | "reaction";
 export type EmailTemplateType =
   | "registration_confirmation"
   | "reminder"
@@ -830,6 +831,18 @@ export interface Database {
           ai_replied_at: string | null;
           host_replied: boolean;
           created_at: string;
+        }[];
+      };
+      get_webinar_reactions: {
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
+        Returns: {
+          id: string;
+          registrant_id: string;
+          name: string;
+          email: string;
+          emoji: string;
+          video_timestamp_seconds: number | null;
+          occurred_at: string;
         }[];
       };
       count_registrant_ai_replies: {
