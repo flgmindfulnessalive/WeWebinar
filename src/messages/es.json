@@ -694,6 +694,16 @@
     "offsetMustBePositive": "Los minutos de anticipación deben ser un número positivo.",
     "reminderOffsetExists": "Ya existe un recordatorio con esa anticipación."
   },
+  "MarketingSection": {
+    "planHint": "Disponible en los planes Pro, Business y Enterprise — <a>actualizar plan</a>.",
+    "pixelIdLabel": "Meta (Facebook) Pixel ID",
+    "pixelHint": "Se carga en la página de registro de este webinar y dispara los eventos estándar <code>PageView</code> y <code>Lead</code> — sirve para armar públicos y optimizar campañas de anuncios en Meta Ads Manager.",
+    "brevoListLabel": "Lista de Brevo",
+    "brevoListPlaceholder": "ID numérico de la lista",
+    "brevoRequiresPlan": "Requiere un plan Pro, Business o Enterprise.",
+    "brevoConnectedHint": "Cada registrado de este webinar se agrega automáticamente a esa lista en tu cuenta de Brevo — encuentras el ID en Brevo → Contactos → Listas, al abrir la lista.",
+    "brevoNotConnectedHint": "Necesitas conectar tu API key de Brevo primero, en <a>Configuración → Integraciones</a>."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Mensaje superior",
     "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo acá.",
