@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,6 @@ type DisplayMessage = {
   timestampSeconds: number;
   kind: "simulated-message" | "simulated-question" | "simulated-host" | "own" | "ai-reply";
 };
-
-// Shown as the sender of every AI-generated reply, instead of a real
-// person's name -- the reply isn't from any specific staff member.
-const AI_REPLY_NAME = "Equipo moderador";
 
 // A reply -- or even the "está escribiendo" indicator -- appearing the
 // instant a message is sent doesn't read as a real person answering. Split
@@ -65,6 +62,10 @@ export function ChatPanel({
   const [aiPending, setAiPending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const shownIdsRef = useRef(new Set<string>());
+  const t = useTranslations("ChatPanel");
+  // Shown as the sender of every AI-generated reply, instead of a real
+  // person's name -- the reply isn't from any specific staff member.
+  const aiReplyName = t("moderatorTeam");
 
   // Real messages only ever lived in this component's state, so a page
   // refresh during the live webinar silently dropped them (and any AI
@@ -90,7 +91,7 @@ export function ChatPanel({
         if (row.ai_reply_text) {
           restored.push({
             id: `${row.id}-ai-reply`,
-            name: AI_REPLY_NAME,
+            name: aiReplyName,
             text: row.ai_reply_text,
             timestampSeconds: row.video_timestamp_seconds,
             kind: "ai-reply",
@@ -108,7 +109,7 @@ export function ChatPanel({
     return () => {
       cancelled = true;
     };
-  }, [accessToken, visitorName]);
+  }, [accessToken, visitorName, aiReplyName]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -175,7 +176,7 @@ export function ChatPanel({
       ...prev,
       {
         id: `${messageId}-ai-reply`,
-        name: AI_REPLY_NAME,
+        name: aiReplyName,
         text: reply,
         timestampSeconds: Math.round(getElapsedSeconds()),
         kind: "ai-reply",
@@ -218,9 +219,7 @@ export function ChatPanel({
     // per-registrant rate limit or max length check rejected it.
     setDraft(text);
     setSendError(
-      error?.message.includes("rate_limited")
-        ? "Estás enviando mensajes muy rápido, espera un momento."
-        : "No se pudo enviar el mensaje. Intenta de nuevo."
+      error?.message.includes("rate_limited") ? t("rateLimited") : t("sendFailed")
     );
     setSending(false);
   }
@@ -238,14 +237,14 @@ export function ChatPanel({
               )}
             >
               {m.name}
-              {m.kind === "own" && " (tú)"}:
+              {m.kind === "own" && ` ${t("you")}`}:
             </span>{" "}
             <span className="text-muted-foreground">{m.text}</span>
           </div>
         ))}
         {aiPending && (
           <div className="text-sm text-muted-foreground italic">
-            {AI_REPLY_NAME} está escribiendo...
+            {t("typing", { name: aiReplyName })}
           </div>
         )}
       </div>
@@ -262,12 +261,12 @@ export function ChatPanel({
               handleSend();
             }
           }}
-          placeholder="Escribe un mensaje..."
+          placeholder={t("placeholder")}
           maxLength={2000}
           disabled={sending}
         />
         <Button size="sm" onClick={handleSend} disabled={sending || !draft.trim()}>
-          Enviar
+          {t("send")}
         </Button>
       </div>
     </div>

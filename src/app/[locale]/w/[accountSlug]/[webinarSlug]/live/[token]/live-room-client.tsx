@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Bell, MessageSquare, User, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
 import { fakeViewerCount } from "@/lib/fake-viewers";
@@ -86,6 +87,7 @@ export function LiveRoomClient({
   ctas: Cta[];
   showPoweredBy?: boolean;
 }) {
+  const t = useTranslations("LiveRoom");
   const playerRef = useRef<LockedYouTubePlayerHandle | null>(null);
   // Set from an effect, never read during render — only inside effects and
   // event handlers, where accessing refs and calling Date.now() is fine.
@@ -343,17 +345,17 @@ export function LiveRoomClient({
             </div>
           )}
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {viewerCount} conectados
+            {t("viewersConnected", { count: viewerCount })}
           </span>
           {showPoweredBy && <PoweredByBadge className="hidden text-muted-foreground md:inline-flex" />}
           <Button
             size="sm"
             variant="outline"
-            aria-label={showPanel ? "Ocultar panel" : "Mostrar panel"}
+            aria-label={showPanel ? t("hidePanel") : t("showPanel")}
             onClick={() => setShowPanel((s) => !s)}
           >
             <MessageSquare className="size-4 sm:hidden" />
-            <span className="hidden sm:inline">{showPanel ? "Ocultar panel" : "Mostrar panel"}</span>
+            <span className="hidden sm:inline">{showPanel ? t("hidePanel") : t("showPanel")}</span>
           </Button>
         </div>
       </header>
@@ -386,7 +388,7 @@ export function LiveRoomClient({
                   onClick={handleUnmute}
                   className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg"
                 >
-                  🔇 Click en cualquier parte del video para activar el sonido
+                  {t("clickToUnmute")}
                 </button>
               )}
               {activeCtas.map((cta) => (
@@ -407,13 +409,13 @@ export function LiveRoomClient({
           <div className="flex h-64 w-full shrink-0 flex-col border-t bg-background md:h-auto md:w-80 md:border-t-0 md:border-l">
             <div className="flex shrink-0 border-b">
               <PanelTabButton
-                label="Chat"
+                label={t("tabChat")}
                 icon={MessageSquare}
                 active={activeTab === "chat"}
                 onClick={() => setActiveTab("chat")}
               />
               <PanelTabButton
-                label="Conectados"
+                label={t("tabConnected")}
                 icon={Users}
                 active={activeTab === "connected"}
                 onClick={() => setActiveTab("connected")}
@@ -421,7 +423,7 @@ export function LiveRoomClient({
               />
               {presenter?.display_name && (
                 <PanelTabButton
-                  label="Presentador"
+                  label={t("tabPresenter")}
                   icon={User}
                   active={activeTab === "presenter"}
                   onClick={() => setActiveTab("presenter")}
@@ -429,7 +431,7 @@ export function LiveRoomClient({
               )}
               {ctas.length > 0 && (
                 <PanelTabButton
-                  label="Avisos"
+                  label={t("tabNotifications")}
                   icon={Bell}
                   active={activeTab === "notifications"}
                   onClick={() => setActiveTab("notifications")}
@@ -478,13 +480,14 @@ export function LiveRoomClient({
 }
 
 function LiveBadge() {
+  const t = useTranslations("LiveRoom");
   return (
     <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
       <span className="relative flex size-2">
         <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75" />
         <span className="relative inline-flex size-2 rounded-full bg-red-500" />
       </span>
-      En vivo
+      {t("live")}
     </div>
   );
 }
@@ -545,6 +548,7 @@ function ConnectedTab({
   chatMessages: ChatMessage[];
   seed: string;
 }) {
+  const t = useTranslations("LiveRoom");
   const seen = new Set<string>([visitorName]);
   if (presenterName) seen.add(presenterName);
   const chatNames: string[] = [];
@@ -576,18 +580,22 @@ function ConnectedTab({
     <div className="flex h-full flex-col overflow-y-auto p-4">
       <div className="mb-4 text-center">
         <p className="text-3xl font-semibold text-primary">{viewerCount}</p>
-        <p className="text-xs text-muted-foreground">personas conectadas ahora</p>
+        <p className="text-xs text-muted-foreground">{t("connectedNow")}</p>
       </div>
       <div className="flex flex-col gap-2">
         {showHost && (
           <div className="flex items-center gap-2 text-sm">
             <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-            <span className="truncate font-medium text-primary">{presenterName} (host)</span>
+            <span className="truncate font-medium text-primary">
+              {presenterName} {t("host")}
+            </span>
           </div>
         )}
         <div className="flex items-center gap-2 text-sm">
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-          <span className="truncate font-medium text-primary">{visitorName} (tú)</span>
+          <span className="truncate font-medium text-primary">
+            {visitorName} {t("you")}
+          </span>
         </div>
         {shownChatNames.map((name) => (
           <div key={name} className="flex items-center gap-2 text-sm">
@@ -603,7 +611,9 @@ function ConnectedTab({
         ))}
       </div>
       {moreCount > 0 && (
-        <p className="mt-3 text-center text-xs text-muted-foreground">y {moreCount} más...</p>
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {t("andMore", { count: moreCount })}
+        </p>
       )}
     </div>
   );
@@ -641,10 +651,11 @@ function NotificationsTab({
   pollAnswers: Record<string, string>;
   pollResults: Record<string, { option: string; votes: number }[]>;
 }) {
+  const t = useTranslations("LiveRoom");
   if (ctas.length === 0) {
     return (
       <div className="flex h-full items-center justify-center p-4 text-center text-xs text-muted-foreground">
-        Aquí verás encuestas, mensajes y ofertas cuando aparezcan.
+        {t("notificationsEmpty")}
       </div>
     );
   }
@@ -678,6 +689,7 @@ function NotificationCard({
   answeredOption?: string;
   results?: { option: string; votes: number }[];
 }) {
+  const t = useTranslations("LiveRoom");
   const config = (cta.config ?? {}) as Record<string, unknown>;
 
   if (cta.type === "poll") {
@@ -729,7 +741,7 @@ function NotificationCard({
         className="flex flex-col gap-1 rounded-md border bg-muted/40 p-3 text-sm hover:bg-muted"
       >
         <span className="font-medium">🔗 {text}</span>
-        <span className="text-xs text-muted-foreground">Toca para ver más</span>
+        <span className="text-xs text-muted-foreground">{t("tapToSeeMore")}</span>
       </a>
     );
   }
@@ -821,6 +833,7 @@ function PollResultBars({
 }
 
 function VotedNote({ variant }: { variant: "dark" | "light" }) {
+  const t = useTranslations("LiveRoom");
   return (
     <p
       className={cn(
@@ -831,7 +844,7 @@ function VotedNote({ variant }: { variant: "dark" | "light" }) {
       <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white">
         ✓
       </span>
-      Ya votaste
+      {t("alreadyVoted")}
     </p>
   );
 }
@@ -940,12 +953,13 @@ function EndedState({
   ctas: Cta[];
   onCtaClick: (ctaId: string) => void;
 }) {
+  const t = useTranslations("LiveRoom");
   const linkCtas = ctas.filter((c) => c.type === "link");
 
   return (
     <div className="flex flex-col items-center gap-4 px-6 text-center text-white">
-      <p className="text-xl font-semibold">Gracias por acompañarnos en {webinarTitle}</p>
-      <p className="text-sm text-white/70">El webinar terminó.</p>
+      <p className="text-xl font-semibold">{t("thanksForJoining", { title: webinarTitle })}</p>
+      <p className="text-sm text-white/70">{t("webinarEnded")}</p>
       {linkCtas.length > 0 && (
         <div className="flex flex-wrap justify-center gap-2">
           {linkCtas.map((cta) => {
@@ -959,7 +973,7 @@ function EndedState({
                 onClick={() => onCtaClick(cta.id)}
                 className="rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
               >
-                {String(config.text ?? "Ver más")}
+                {String(config.text ?? t("seeMore"))}
               </a>
             );
           })}
