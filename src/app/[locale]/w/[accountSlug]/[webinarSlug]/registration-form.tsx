@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { ArrowRight, Calendar, Lock, Mail, User, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { registerForWebinar } from "@/lib/actions/register";
 import { Label } from "@/components/ui/label";
@@ -55,6 +56,7 @@ export function RegistrationForm({
   brandColorB?: string;
   previewMode?: boolean;
 }) {
+  const t = useTranslations("Register.form");
   const [state, formAction, isPending] = useActionState(registerForWebinar, null);
   const [previewSubmitAttempted, setPreviewSubmitAttempted] = useState(false);
   const [selectedOccurrence, setSelectedOccurrence] = useState(() => {
@@ -102,10 +104,8 @@ export function RegistrationForm({
   if (allFixedSlotsFull) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-xl border border-gray-100 bg-white py-10 text-center shadow-sm">
-        <p className="text-lg font-medium text-gray-900">
-          Todos los horarios disponibles están completos
-        </p>
-        <p className="text-sm text-gray-500">Vuelve a intentarlo más tarde para ver nuevas fechas.</p>
+        <p className="text-lg font-medium text-gray-900">{t("allFull")}</p>
+        <p className="text-sm text-gray-500">{t("tryLater")}</p>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export function RegistrationForm({
   if (scheduleMode === "fixed" && occurrences.length === 0) {
     return (
       <div className="rounded-xl border border-gray-100 bg-white py-10 text-center text-sm text-gray-500 shadow-sm">
-        Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde.
+        {t("noSchedulesYet")}
       </div>
     );
   }
@@ -160,7 +160,7 @@ export function RegistrationForm({
             style={activeTab === "fixed" ? { background: gradient } : undefined}
           >
             <Calendar className="size-3.5" />
-            Elegir horario
+            {t("tabFixed")}
           </button>
           <button
             type="button"
@@ -174,7 +174,7 @@ export function RegistrationForm({
             style={activeTab === "jit" ? { background: gradient } : undefined}
           >
             <Zap className="size-3.5" />
-            Empezar ahora
+            {t("tabJit")}
           </button>
         </div>
       )}
@@ -183,7 +183,7 @@ export function RegistrationForm({
         <div className="grid gap-2">
           <input type="hidden" name="schedule_id" value={selectedScheduleId ?? ""} />
           <input type="hidden" name="session_starts_at" value={selectedStartsAt ?? ""} />
-          <Label className="text-gray-700">Elige un horario ({visitorTimezone})</Label>
+          <Label className="text-gray-700">{t("chooseTime", { timezone: visitorTimezone })}</Label>
           <div className="flex flex-col gap-2">
             {occurrences.map((occ) => {
               const key = occurrenceKey(occ);
@@ -225,7 +225,7 @@ export function RegistrationForm({
                   >
                     {formatter.format(new Date(occ.startsAt))}
                   </span>
-                  {full && <span className="text-xs text-gray-400">Cupo lleno</span>}
+                  {full && <span className="text-xs text-gray-400">{t("spotsFull")}</span>}
                 </label>
               );
             })}
@@ -234,7 +234,7 @@ export function RegistrationForm({
       ) : (
         <div className="grid gap-2">
           <input type="hidden" name="offset_minutes" value={selectedOffset} />
-          <Label className="text-gray-700">¿Cuándo quieres empezar?</Label>
+          <Label className="text-gray-700">{t("whenStart")}</Label>
           <div className="flex flex-wrap gap-2">
             {offsets.map((minutes) => {
               const selected = selectedOffset === minutes;
@@ -252,7 +252,7 @@ export function RegistrationForm({
                   style={selected ? { background: gradient } : undefined}
                 >
                   <Zap className="size-3.5" />
-                  En {minutes} min
+                  {t("inMinutes", { minutes })}
                 </button>
               );
             })}
@@ -268,7 +268,7 @@ export function RegistrationForm({
             name="name"
             required
             autoComplete="name"
-            placeholder="Nombre completo"
+            placeholder={t("namePlaceholder")}
             className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2"
             style={{ "--tw-ring-color": brandColorA } as CSSProperties}
           />
@@ -281,7 +281,7 @@ export function RegistrationForm({
             type="email"
             required
             autoComplete="email"
-            placeholder="Email"
+            placeholder={t("emailPlaceholder")}
             className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-2"
             style={{ "--tw-ring-color": brandColorA } as CSSProperties}
           />
@@ -291,10 +291,7 @@ export function RegistrationForm({
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
       {previewMode && previewSubmitAttempted && (
-        <p className="text-sm text-amber-600">
-          Esto es una vista previa — los registros están desactivados hasta que publiques el
-          webinar.
-        </p>
+        <p className="text-sm text-amber-600">{t("previewNotice")}</p>
       )}
 
       <button
@@ -303,13 +300,13 @@ export function RegistrationForm({
         className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 disabled:opacity-60"
         style={{ background: gradient }}
       >
-        {isPending ? "Reservando..." : "Reservar mi lugar"}
+        {isPending ? t("submitting") : t("submit")}
         {!isPending && <ArrowRight className="size-4" />}
       </button>
 
       <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
         <Lock className="size-3" />
-        Tus datos están protegidos. Sin spam.
+        {t("privacyNotice")}
       </div>
     </form>
   );

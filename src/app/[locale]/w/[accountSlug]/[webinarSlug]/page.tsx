@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -12,9 +13,10 @@ import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
 import { FacebookPixel } from "@/components/facebook-pixel";
 import { PoweredByBadge } from "@/components/powered-by-badge";
+import { routing } from "@/i18n/routing";
 import { RegistrationForm } from "./registration-form";
 
-type RouteParams = { accountSlug: string; webinarSlug: string };
+type RouteParams = { locale: string; accountSlug: string; webinarSlug: string };
 
 // Without this, every webinar link shared on WhatsApp/social showed the
 // same generic "WeWebinars" title/description/thumbnail (the root
@@ -64,9 +66,10 @@ export default async function RegisterPage({
   params: Promise<RouteParams>;
   searchParams: Promise<{ preview?: string }>;
 }) {
-  const { accountSlug, webinarSlug } = await params;
+  const { locale, accountSlug, webinarSlug } = await params;
   const { preview } = await searchParams;
   const supabase = await createClient();
+  const t = await getTranslations("Register");
 
   const { data: account } = await supabase
     .from("account_public_profile")
@@ -171,7 +174,11 @@ export default async function RegisterPage({
   const branding = (account.branding as Record<string, string | null>) ?? {};
   const { a: brandColorA, b: brandColorB } = resolveBrandColors(branding);
   const bullets = (Array.isArray(waitingRoom?.bullets) ? waitingRoom.bullets : []) as string[];
-  const badgeLabel = webinar.category?.toUpperCase() || "WEBINAR GRATUITO";
+  const badgeLabel = webinar.category?.toUpperCase() || t("defaultBadge");
+  // Preserve the locale prefix (e.g. /en) across the post-registration
+  // redirect to the room -- without this, registering from /en/w/... would
+  // silently drop back to the default-locale (es) room URL.
+  const localePrefix = locale === routing.defaultLocale ? "" : `/${locale}`;
 
   // Same host-uploaded background already used on the waiting room
   // (waiting_room_config.background_url) -- replaces the default animated
@@ -208,7 +215,7 @@ export default async function RegisterPage({
   const registrationForm = (
     <RegistrationForm
       webinarId={webinar.id}
-      returnTo={`/w/${accountSlug}/${webinarSlug}`}
+      returnTo={`${localePrefix}/w/${accountSlug}/${webinarSlug}`}
       scheduleMode={webinar.schedule_mode}
       offsets={webinar.just_in_time_offsets_minutes}
       occurrences={occurrences}
@@ -242,7 +249,7 @@ export default async function RegisterPage({
     <div className="min-h-svh bg-[#fafafa]">
       {isPreview && (
         <div className="sticky top-0 z-20 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-amber-950">
-          Vista previa — este webinar todavía no está publicado. Solo tú puedes ver esta página.
+          {t("preview")}
         </div>
       )}
       {webinar.facebook_pixel_id && <FacebookPixel pixelId={webinar.facebook_pixel_id} />}
@@ -259,7 +266,7 @@ export default async function RegisterPage({
           <div className="relative z-10 flex flex-col gap-7">
             <div className="flex items-center gap-2.5">
               {accountBadge}
-              <span className="text-sm text-white/70">{account.name} presenta</span>
+              <span className="text-sm text-white/70">{t("presents", { name: account.name })}</span>
             </div>
 
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5">
@@ -325,8 +332,8 @@ export default async function RegisterPage({
         <div className="flex items-center justify-center px-10 py-16">
           <div className="flex w-full max-w-md flex-col gap-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Reserva tu lugar</h2>
-              <p className="text-sm text-gray-500">Elige un horario y guarda tu cupo gratis.</p>
+              <h2 className="text-2xl font-bold text-gray-900">{t("reserveTitle")}</h2>
+              <p className="text-sm text-gray-500">{t("reserveSubtitle")}</p>
             </div>
             {registrationForm}
           </div>
@@ -353,7 +360,9 @@ export default async function RegisterPage({
               )}
               <h1 className="text-xl font-bold leading-snug text-gray-900">{webinar.title}</h1>
               {presenter?.display_name && (
-                <p className="text-xs text-gray-500">Presenta {presenter.display_name}</p>
+                <p className="text-xs text-gray-500">
+                  {t("presentedBy", { name: presenter.display_name })}
+                </p>
               )}
             </div>
             {registrationForm}

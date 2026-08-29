@@ -6,15 +6,17 @@ import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-// Only the marketing site currently lives under the [locale] URL segment
-// (home + pricing). Everything else -- dashboard, admin, auth, public
-// webinar pages -- stays outside it and is untouched by locale routing.
-function isMarketingPath(pathname: string): boolean {
+// The marketing site and public webinar pages (/w/...) live under the
+// [locale] URL segment. Everything else -- dashboard, admin, auth --
+// stays outside it and is untouched by locale routing.
+function isLocaleRoutedPath(pathname: string): boolean {
   return (
     pathname === "/" ||
     pathname === "/en" ||
     pathname.startsWith("/pricing") ||
-    pathname.startsWith("/en/pricing")
+    pathname.startsWith("/en/pricing") ||
+    pathname.startsWith("/w/") ||
+    pathname.startsWith("/en/w/")
   );
 }
 
@@ -26,7 +28,7 @@ export async function proxy(request: NextRequest) {
     return sessionResponse;
   }
 
-  if (isMarketingPath(request.nextUrl.pathname)) {
+  if (isLocaleRoutedPath(request.nextUrl.pathname)) {
     const intlResponse = intlMiddleware(request);
     // Carry over the refreshed Supabase session cookies from
     // updateSession onto the locale-routing response.
