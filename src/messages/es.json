@@ -219,6 +219,38 @@
   "AdminLayout": {
     "panelTitle": "Panel de Super Admin"
   },
+  "DashboardHome": {
+    "title": "Resumen",
+    "createWebinar": "Crear webinar",
+    "activeWebinars": "Webinars activos",
+    "currentPlan": "Plan actual",
+    "subscriptionStatus": "Estado de suscripción",
+    "subscriptionStatusValue": {
+      "trialing": "Prueba",
+      "active": "Activa",
+      "past_due": "Pago pendiente",
+      "suspended": "Suspendida",
+      "canceled": "Cancelada"
+    },
+    "metricsFailed": "No pudimos cargar las métricas de registrados. Puede que falte aplicar una migración de base de datos (<code>supabase db push</code>) — revisa los logs del servidor para más detalle.",
+    "totalRegistrants": "Registrados totales",
+    "realAttendees": "Asistentes reales",
+    "attendanceRate": "{pct}% tasa de asistencia",
+    "avgWatchTime": "Visualización promedio",
+    "avgWatchTimeSublabel": "del video, en promedio",
+    "registrantsTitle": "Registrados",
+    "registrantsTitleWithCount": "Registrados ({count})",
+    "loadListFailed": "No pudimos cargar la lista de registrados.",
+    "noRegistrantsOnPage": "No hay registrados en esta página.",
+    "noRegistrantsYet": "Todavía no hay nadie registrado.",
+    "name": "Nombre",
+    "email": "Email",
+    "webinar": "Webinar",
+    "registeredOn": "Registrado el",
+    "pageOf": "Página {page} de {total}",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",

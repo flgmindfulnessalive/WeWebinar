@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Users, UserCheck, Eye, ChevronLeft, ChevronRight, Video, Package, Activity } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
@@ -16,6 +17,9 @@ export default async function DashboardPage({
 }) {
   const current = await getCurrentAccount();
   if (!current) return null;
+
+  const t = await getTranslations("DashboardHome");
+  const locale = await getLocale();
 
   const { page: pageParam } = await searchParams;
   const requestedPage = Number(pageParam);
@@ -62,53 +66,50 @@ export default async function DashboardPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Resumen</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <Button asChild>
-          <Link href="/dashboard/webinars/new">Crear webinar</Link>
+          <Link href="/dashboard/webinars/new">{t("createWebinar")}</Link>
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile
-          label="Webinars activos"
+          label={t("activeWebinars")}
           value={`${publishedCount ?? 0} / ${maxActiveWebinars ?? "∞"}`}
           icon={Video}
         />
-        <StatTile label="Plan actual" value={current.plan.name} icon={Package} />
+        <StatTile label={t("currentPlan")} value={current.plan.name} icon={Package} />
         <StatTile
-          label="Estado de suscripción"
-          value={
-            current.account.subscription_status.charAt(0).toUpperCase() +
-            current.account.subscription_status.slice(1)
-          }
+          label={t("subscriptionStatus")}
+          value={t(`subscriptionStatusValue.${current.account.subscription_status}`)}
           icon={Activity}
         />
       </div>
 
       {metricsFailed && (
         <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          No pudimos cargar las métricas de registrados. Puede que falte aplicar una migración de
-          base de datos (<code className="font-mono">supabase db push</code>) — revisa los logs
-          del servidor para más detalle.
+          {t.rich("metricsFailed", {
+            code: (chunks) => <code className="font-mono">{chunks}</code>,
+          })}
         </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile
-          label="Registrados totales"
+          label={t("totalRegistrants")}
           value={metricsFailed ? "—" : String(registrantCount)}
           icon={Users}
         />
         <StatTile
-          label="Asistentes reales"
+          label={t("realAttendees")}
           value={metricsFailed ? "—" : String(attendeeCount)}
-          sublabel={metricsFailed ? undefined : `${joinRatePct}% tasa de asistencia`}
+          sublabel={metricsFailed ? undefined : t("attendanceRate", { pct: joinRatePct })}
           icon={UserCheck}
         />
         <StatTile
-          label="Visualización promedio"
+          label={t("avgWatchTime")}
           value={metricsFailed ? "—" : `${avgWatchPct}%`}
-          sublabel={metricsFailed ? undefined : "del video, en promedio"}
+          sublabel={metricsFailed ? undefined : t("avgWatchTimeSublabel")}
           icon={Eye}
         />
       </div>
@@ -116,27 +117,27 @@ export default async function DashboardPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Registrados{registrantCount > 0 ? ` (${registrantCount})` : ""}
+            {registrantCount > 0
+              ? t("registrantsTitleWithCount", { count: registrantCount })
+              : t("registrantsTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {metricsFailed ? (
-            <p className="text-sm text-muted-foreground">
-              No pudimos cargar la lista de registrados.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("loadListFailed")}</p>
           ) : !recentRegistrants || recentRegistrants.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {page > 1 ? "No hay registrados en esta página." : "Todavía no hay nadie registrado."}
+              {page > 1 ? t("noRegistrantsOnPage") : t("noRegistrantsYet")}
             </p>
           ) : (
             <div className="overflow-x-auto rounded-md border">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="p-2 text-left font-medium">Nombre</th>
-                    <th className="p-2 text-left font-medium">Email</th>
-                    <th className="p-2 text-left font-medium">Webinar</th>
-                    <th className="p-2 text-left font-medium">Registrado el</th>
+                    <th className="p-2 text-left font-medium">{t("name")}</th>
+                    <th className="p-2 text-left font-medium">{t("email")}</th>
+                    <th className="p-2 text-left font-medium">{t("webinar")}</th>
+                    <th className="p-2 text-left font-medium">{t("registeredOn")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -145,7 +146,7 @@ export default async function DashboardPage({
                       <td className="p-2">{r.name}</td>
                       <td className="p-2">{r.email}</td>
                       <td className="p-2 text-muted-foreground">{r.webinar_title}</td>
-                      <td className="p-2">{new Date(r.created_at).toLocaleString("es")}</td>
+                      <td className="p-2">{new Date(r.created_at).toLocaleString(locale)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -156,7 +157,7 @@ export default async function DashboardPage({
           {!metricsFailed && totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Página {page} de {totalPages}
+                {t("pageOf", { page, total: totalPages })}
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -171,7 +172,7 @@ export default async function DashboardPage({
                     tabIndex={page <= 1 ? -1 : undefined}
                   >
                     <ChevronLeft className="size-4" />
-                    Anterior
+                    {t("previous")}
                   </Link>
                 </Button>
                 <Button
@@ -185,7 +186,7 @@ export default async function DashboardPage({
                     aria-disabled={page >= totalPages}
                     tabIndex={page >= totalPages ? -1 : undefined}
                   >
-                    Siguiente
+                    {t("next")}
                     <ChevronRight className="size-4" />
                   </Link>
                 </Button>
