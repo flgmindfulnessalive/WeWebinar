@@ -401,6 +401,35 @@
     "checkoutFailed": "Couldn't start checkout.",
     "portalFailed": "Couldn't open the portal."
   },
+  "TeamSettings": {
+    "title": "Team",
+    "singleUserPlan": "The {plan} plan includes a single user. Upgrade to Pro or Business to invite Editors and Viewers.",
+    "inviteTitle": "Invite user",
+    "membersTitle": "Members",
+    "pendingInvitationsTitle": "Pending invitations",
+    "remove": "Remove",
+    "confirmRemove": "Remove this member from the account? They'll lose access immediately.",
+    "revoke": "Revoke",
+    "confirmRevoke": "Revoke this invitation?"
+  },
+  "InviteForm": {
+    "emailLabel": "Email",
+    "roleLabel": "Role",
+    "roleEditor": "Editor",
+    "roleViewer": "Viewer",
+    "inviting": "Inviting...",
+    "invite": "Invite"
+  },
+  "TeamActions": {
+    "emailRequired": "Email is required.",
+    "invalidRole": "Invalid role.",
+    "ownerOnlyInvite": "Only the Owner can invite users.",
+    "pendingInvitationExists": "There's already a pending invitation for that email.",
+    "userLimitReached": "You've reached your plan's user limit. Upgrade to a higher plan to invite more people.",
+    "ownerOnlyChangeRole": "Only the Owner can change roles.",
+    "cannotDemoteLastOwner": "You can't remove the Owner role from the account's only Owner.",
+    "cannotChangeOwnRole": "You can't change your own role."
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",
