@@ -311,6 +311,79 @@
     "alreadyCurrentEmail": "That's already your current email.",
     "sendFailed": "Couldn't send: {message}"
   },
+  "BrandingSettings": {
+    "title": "Branding",
+    "cardTitle": "Account branding",
+    "description": "Applied on the registration page, the webinar room, and the footer of emails.",
+    "businessNote": " The Business plan also lets you hide the \"Powered by\" badge and use a custom domain.",
+    "logoLabel": "Logo (URL)",
+    "faviconLabel": "Favicon (URL)",
+    "primaryColorLabel": "Primary color",
+    "secondaryColorLabel": "Secondary color",
+    "saveBranding": "Save branding"
+  },
+  "IntegrationsSettings": {
+    "title": "Integrations",
+    "lockedCardTitle": "Webhooks, Meta pixel, and Brevo",
+    "lockedDescription": "These integrations are available on the Pro, Business, and Enterprise plans. Upgrade your plan to connect WeWebinars with Zapier/Make/n8n, add a Meta pixel per webinar, and sync your registrants with Brevo.",
+    "seePlans": "See plans",
+    "webhooksTitle": "Outgoing webhooks",
+    "webhooksDescription": "Connect WeWebinars to Zapier, Make, n8n, or any tool that receives webhooks. Each event is sent as a POST with a JSON body, signed with HMAC-SHA256 in the <code>X-WeWebinars-Signature</code> header (you can ignore it if your tool doesn't verify signatures, which is common with Zapier).",
+    "brevoTitle": "Brevo",
+    "brevoDescription": "Everyone who registers for a webinar is automatically added to the Brevo list you choose for that webinar (the \"Marketing\" step of the wizard) — from there you can use your existing automations and triggers to nurture those leads."
+  },
+  "WebhookForm": {
+    "urlLabel": "Destination URL",
+    "eventsLabel": "Events to send",
+    "eventRegistration": "New registration",
+    "eventAttendance": "Attended live",
+    "eventCtaClick": "Clicked a CTA",
+    "eventCompletion": "Finished watching the webinar",
+    "adding": "Adding...",
+    "addWebhook": "Add webhook"
+  },
+  "WebhookRow": {
+    "eventRegistration": "New registration",
+    "eventAttendance": "Attended live",
+    "eventCtaClick": "Clicked CTA",
+    "eventCompletion": "Finished watching",
+    "eventTest": "Test",
+    "sendTest": "Send test",
+    "testError": "Error: {message}",
+    "testSuccess": "Test sent — check the history below.",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "delete": "Delete",
+    "confirmDelete": "Delete this webhook?",
+    "signingSecret": "Signing secret:",
+    "copy": "Copy",
+    "copied": "Copied",
+    "inactiveNotice": "Deactivated — not receiving events.",
+    "recentAttempts": "Recent attempts",
+    "statusOk": "OK",
+    "statusError": "Error"
+  },
+  "BrevoForm": {
+    "apiKeyLabel": "Brevo API key",
+    "placeholderConfigured": "•••••••••••••••••••• (already set)",
+    "placeholderEmpty": "xkeysib-...",
+    "helpText": "You'll find it in Brevo → SMTP & API → API Keys. Once set, choose which list each webinar goes to from its \"Marketing\" step.",
+    "save": "Save"
+  },
+  "BrandingActions": {
+    "noPermission": "You don't have permission to edit the account's branding."
+  },
+  "IntegrationActions": {
+    "ownerOnly": "Only the owner can edit this integration.",
+    "brevoPlanBlocked": "The Brevo integration is available on the Pro, Business, and Enterprise plans. Upgrade your plan from Billing to activate it."
+  },
+  "WebhookActions": {
+    "sessionNotFound": "We couldn't identify your session.",
+    "urlMustBeHttps": "The URL must start with https://.",
+    "chooseEvent": "Choose at least one event.",
+    "planBlocked": "Outgoing webhooks are available on the Pro, Business, and Enterprise plans. Upgrade your plan from Billing to activate them.",
+    "notFound": "Webhook not found."
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",

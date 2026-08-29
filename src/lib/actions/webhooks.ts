@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -22,17 +23,18 @@ export async function createWebhookEndpoint(
   _prevState: WebhookActionState,
   formData: FormData
 ): Promise<WebhookActionState> {
+  const t = await getTranslations("WebhookActions");
   const current = await getCurrentAccount();
-  if (!current) return { error: "No pudimos identificar tu sesión." };
+  if (!current) return { error: t("sessionNotFound") };
 
   const url = String(formData.get("url") ?? "").trim();
   if (!/^https:\/\//i.test(url)) {
-    return { error: "La URL debe empezar con https://." };
+    return { error: t("urlMustBeHttps") };
   }
 
-  const eventTypes = WEBHOOK_EVENT_TYPES.filter((t) => formData.get(`event_${t}`) === "on");
+  const eventTypes = WEBHOOK_EVENT_TYPES.filter((et) => formData.get(`event_${et}`) === "on");
   if (eventTypes.length === 0) {
-    return { error: "Elige al menos un evento." };
+    return { error: t("chooseEvent") };
   }
 
   const supabase = await createClient();
@@ -45,10 +47,7 @@ export async function createWebhookEndpoint(
   revalidatePath("/dashboard/settings/integrations");
   if (error) {
     if (error.message.includes("plan_feature_blocked")) {
-      return {
-        error:
-          "Los webhooks salientes están disponibles en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlos.",
-      };
+      return { error: t("planBlocked") };
     }
     return { error: error.message };
   }
@@ -65,6 +64,7 @@ export async function deleteWebhookEndpoint(id: string): Promise<WebhookActionSt
 }
 
 export async function sendTestWebhook(id: string): Promise<WebhookActionState> {
+  const t = await getTranslations("WebhookActions");
   const supabase = await createClient();
   // Goes through the regular RLS-scoped client first -- confirms the
   // caller can actually see this endpoint (account membership) before
@@ -76,7 +76,7 @@ export async function sendTestWebhook(id: string): Promise<WebhookActionState> {
     .maybeSingle();
 
   if (error) return { error: error.message };
-  if (!endpoint) return { error: "Webhook no encontrado." };
+  if (!endpoint) return { error: t("notFound") };
 
   await sendTestWebhookEvent(endpoint);
   revalidatePath("/dashboard/settings/integrations");
