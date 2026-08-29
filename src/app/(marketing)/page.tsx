@@ -11,6 +11,7 @@ import {
   Palette,
   Rocket,
   Video,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,22 @@ const STEPS = [
     title: "Comparte tu link y vende",
     description: "Los CTAs y el chat simulado hacen el trabajo mientras tú generas tráfico.",
   },
+];
+
+const LIVE_WEBINAR_POINTS = [
+  "Solo funciona durante sesiones en vivo",
+  "Limitado por zona horaria y horarios fijos",
+  "Menor tasa de asistencia",
+  "Consume tu tiempo y tu energía",
+  "Se detiene cuando tú te detienes",
+];
+
+const EVERGREEN_WEBINAR_POINTS = [
+  "Webinars automatizados, todos los días",
+  "Funciona en todas las zonas horarias",
+  "Mejora la asistencia y la conversión",
+  "Sin repetir la presentación una y otra vez",
+  "Sigue funcionando sin ti",
 ];
 
 export default function HomePage() {
@@ -239,6 +256,72 @@ export default function HomePage() {
           <Button asChild size="lg" variant="secondary">
             <Link href="/signup">Empezar ahora</Link>
           </Button>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 py-20">
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Tu mejor webinar no debería depender de tu agenda
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Un webinar en vivo depende de que estés ahí, a esa hora, otra vez. Uno evergreen
+            queda grabado una sola vez — y sigue vendiendo mientras haces cualquier otra cosa.
+          </p>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="rounded-xl border bg-muted/30 p-7">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <X className="size-4" />
+              </span>
+              <div>
+                <p className="font-medium">Webinar en vivo</p>
+                <p className="text-xs text-muted-foreground">Zoom, Meet, transmisión real</p>
+              </div>
+            </div>
+            <ul className="flex flex-col gap-3 text-sm text-muted-foreground">
+              {LIVE_WEBINAR_POINTS.map((point) => (
+                <li key={point} className="flex items-start gap-2.5">
+                  <X className="mt-0.5 size-4 shrink-0 text-muted-foreground/60" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div
+            className="relative rounded-xl bg-card p-7 shadow-lg"
+            style={{ borderColor: "var(--brand)", borderWidth: 2 }}
+          >
+            <span
+              className="absolute -top-3 left-1/2 w-fit -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium text-white"
+              style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+            >
+              Así funciona con WeWebinars
+            </span>
+            <div className="mb-5 flex items-center gap-3">
+              <span
+                className="flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white"
+                style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
+              >
+                W
+              </span>
+              <div>
+                <p className="font-medium">WeWebinars</p>
+                <p className="text-xs text-muted-foreground">Evergreen, automatizado</p>
+              </div>
+            </div>
+            <ul className="flex flex-col gap-3 text-sm">
+              {EVERGREEN_WEBINAR_POINTS.map((point) => (
+                <li key={point} className="flex items-start gap-2.5">
+                  <Check className="mt-0.5 size-4 shrink-0" style={{ color: "var(--brand)" }} />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
     </div>
