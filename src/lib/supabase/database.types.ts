@@ -700,7 +700,7 @@ export interface Database {
         }[];
       };
       get_webinar_summary: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           registrant_count: number;
           attendee_count: number;
@@ -737,7 +737,7 @@ export interface Database {
         }[];
       };
       get_webinar_retention_curve: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           minute: number;
           viewers_remaining: number;
@@ -745,7 +745,7 @@ export interface Database {
         }[];
       };
       get_webinar_cta_stats: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           cta_id: string;
           cta_type: CtaType;
@@ -756,7 +756,7 @@ export interface Database {
         }[];
       };
       get_webinar_poll_results: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           cta_id: string;
           question: string | null;
@@ -765,7 +765,7 @@ export interface Database {
         }[];
       };
       get_webinar_schedule_performance: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           kind: string;
           schedule_id: string | null;
@@ -788,7 +788,7 @@ export interface Database {
         }[];
       };
       get_webinar_registrants: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           id: string;
           name: string;
@@ -800,7 +800,7 @@ export interface Database {
         }[];
       };
       get_webinar_cta_clickers: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           cta_id: string;
           registrant_id: string;
@@ -811,14 +811,14 @@ export interface Database {
         }[];
       };
       get_webinar_watch_positions: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           registrant_id: string;
           last_position_seconds: number | null;
         }[];
       };
       get_webinar_registrant_messages: {
-        Args: { p_webinar_id: string };
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
           id: string;
           registrant_id: string;

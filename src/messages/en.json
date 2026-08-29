@@ -708,6 +708,10 @@
   "WebinarAnalytics": {
     "exportCsv": "Export registrants (CSV)",
     "downloadReport": "Download report",
+    "rangeToday": "Today",
+    "rangeWeek": "Last 7 days",
+    "rangeMonth": "This month",
+    "rangeAll": "All time",
     "startsInMinutes": "In {minutes} min",
     "onDemand": "On demand",
     "typeLinkFallback": "Link",
