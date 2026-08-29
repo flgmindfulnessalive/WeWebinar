@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Video } from "lucide-react";
+import { Eye, Video } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -69,6 +69,12 @@ export default async function WebinarsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <StatusBadge status={webinar.status} />
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/dashboard/webinars/${webinar.id}`}>
+                      <Eye className="size-4" />
+                      {t("view")}
+                    </Link>
+                  </Button>
                   {canManage && (
                     <WebinarRowActions
                       webinarId={webinar.id}
