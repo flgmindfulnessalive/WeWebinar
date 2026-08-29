@@ -3,7 +3,9 @@
     "pricing": "Pricing",
     "login": "Log in",
     "signup": "Get started",
-    "footer": "© {year} WeWebinars. All rights reserved."
+    "footer": "© {year} WeWebinars. All rights reserved.",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "AuthLayout": {
     "tagline": "Evergreen webinars that feel live."
@@ -245,7 +247,8 @@
     "thanksForJoining": "Thanks for joining {title}",
     "webinarEnded": "The webinar has ended.",
     "seeMore": "See more",
-    "sendReaction": "Send {emoji} reaction"
+    "sendReaction": "Send {emoji} reaction",
+    "openReactions": "Open reactions"
   },
   "ChatPanel": {
     "moderatorTeam": "Moderator team",
@@ -321,7 +324,8 @@
     "billing": "Billing and plan",
     "team": "Team",
     "branding": "Branding (logo, colors)",
-    "integrations": "Integrations"
+    "integrations": "Integrations",
+    "domain": "Custom domain"
   },
   "SettingsCommon": {
     "saved": "Saved.",
@@ -394,6 +398,37 @@
     "webhooksDescription": "Connect WeWebinars to Zapier, Make, n8n, or any tool that receives webhooks. Each event is sent as a POST with a JSON body, signed with HMAC-SHA256 in the <code>X-WeWebinars-Signature</code> header (you can ignore it if your tool doesn't verify signatures, which is common with Zapier).",
     "brevoTitle": "Brevo",
     "brevoDescription": "Everyone who registers for a webinar is automatically added to the Brevo list you choose for that webinar (the \"Marketing\" step of the wizard) — from there you can use your existing automations and triggers to nurture those leads."
+  },
+  "DomainSettings": {
+    "title": "Custom domain",
+    "lockedCardTitle": "Serve your webinars from your own domain",
+    "lockedDescription": "Custom domains are available on the Business and Enterprise plans. Upgrade your plan so your webinars show up on your-domain.com instead of wewebinars.com.",
+    "seePlans": "See plans",
+    "cardTitle": "Custom domain",
+    "cardDescription": "Serve all your published webinars from your own domain instead of wewebinars.com.",
+    "hostnameLabel": "Domain or subdomain",
+    "hostnameHint": "We recommend a subdomain (e.g. webinars.yourcompany.com) so it doesn't affect your root domain's email.",
+    "addDomain": "Add domain",
+    "removeDomain": "Remove domain",
+    "verify": "Verify",
+    "statusPending": "Pending",
+    "statusVerifying": "Verifying",
+    "statusActive": "Active",
+    "statusFailed": "Not verified",
+    "dnsInstructionsTitle": "Set this record with your DNS provider",
+    "dnsTypeLabel": "Type",
+    "dnsNameLabel": "Name",
+    "dnsValueLabel": "Value",
+    "dnsRootHint": "Want to use the root domain (no subdomain)? Reach out and we'll give you the matching A record.",
+    "lastCheckLabel": "Last check:",
+    "nowActive": "Your domain is now active!"
+  },
+  "CustomDomainActions": {
+    "notAllowed": "You don't have permission to do this.",
+    "invalidHostname": "Enter a valid domain, e.g. webinars.yourcompany.com.",
+    "hostnameTaken": "That domain is already in use, or your account already has one configured.",
+    "verifyFailed": "We couldn't register the domain. Try again in a few minutes.",
+    "notVerifiedYet": "We haven't detected the DNS record yet. It can take a few minutes to propagate — try again shortly."
   },
   "WebhookForm": {
     "urlLabel": "Destination URL",
@@ -529,6 +564,10 @@
     "pauseTitle": "Cuts off registration and room access. Nothing is deleted — you can publish it again anytime.",
     "duplicate": "Duplicate",
     "duplicateTitle": "Creates a draft copy with the same content, waiting room, chat, CTAs and email templates. It doesn't copy registrants or analytics.",
+    "duplicateDefaultTitle": "{title} (copy)",
+    "duplicateModalTitle": "Name the copy",
+    "duplicateNameLabel": "Title",
+    "duplicating": "Duplicating...",
     "delete": "Delete",
     "planLimitExceeded": "You've reached your plan's active webinars limit. Upgrade your plan or archive another webinar.",
     "deleteModalTitle": "Delete \"{title}\"",
@@ -984,6 +1023,11 @@
     "testimonialsLabel": "Testimonials (optional) — format \"Name: text\", one per line",
     "calendarButtonLabel": "\"Add to my calendar\" button",
     "fakeCounterLabel": "Connected viewers counter",
+    "fakeViewerRangeLabel": "Simulated viewer range",
+    "fakeViewerRangeHint": "How many simulated people show as connected during the Live (it varies within this range over the course of the stream).",
+    "fakeViewerMinLabel": "Minimum viewers",
+    "fakeViewerMaxLabel": "Maximum viewers",
+    "fakeViewerRangeSeparator": "to",
     "saveWaitingRoom": "Save waiting room"
   }
 }

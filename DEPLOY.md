@@ -176,6 +176,29 @@ error de OAuth; el login con email/contraseña sigue funcionando igual.
    como `wewebinars` en Settings → General — es solo cosmético, no afecta
    el dominio ya conectado.
 
+## 4quater. Dominio propio de tus clientes (feature Business/Enterprise)
+
+Esto es distinto del paso 4bis (ese es TU dominio, ej. wewebinars.com). Esta
+sección habilita que tus clientes Business/Enterprise conecten SU PROPIO
+dominio desde **Configuración → Dominio propio** dentro de su cuenta.
+
+1. En [vercel.com/account/tokens](https://vercel.com/account/tokens), crear
+   un token con scope sobre este proyecto (alcanza con el default "Full
+   Account").
+2. En Vercel → tu proyecto → Settings → General, copiar el **Project ID**.
+3. En Vercel → Settings → Environment Variables, agregar:
+   - `VERCEL_API_TOKEN` = el token del paso 1
+   - `VERCEL_PROJECT_ID` = el ID del paso 2
+   - `VERCEL_TEAM_ID` = solo si el proyecto vive bajo un team (Settings →
+     General → Team ID); si es tu cuenta personal, dejarlo vacío.
+4. Redeploy. Sin estos tres, la pantalla de "Dominio propio" sigue
+   funcionando (el cliente puede cargar su dominio) pero se queda en
+   "Pendiente" para siempre — nunca llega a registrarse en Vercel ni a
+   verificarse.
+
+No requiere ninguna migración adicional: la tabla `custom_domains` y el
+ruteo en `proxy.ts` ya están en el código.
+
 ## 4ter. Cron externo para recordatorios cada 5 minutos (gratis, sin plan Pro)
 
 Necesario solo si estás en el plan Hobby de Vercel (ver nota en el paso 4)

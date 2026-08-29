@@ -3,7 +3,9 @@
     "pricing": "Precios",
     "login": "Ingresar",
     "signup": "Empezar ahora",
-    "footer": "© {year} WeWebinars. Todos los derechos reservados."
+    "footer": "© {year} WeWebinars. Todos los derechos reservados.",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
   },
   "AuthLayout": {
     "tagline": "Webinars evergreen que se sienten en vivo."
@@ -245,7 +247,8 @@
     "thanksForJoining": "Gracias por acompañarnos en {title}",
     "webinarEnded": "El webinar terminó.",
     "seeMore": "Ver más",
-    "sendReaction": "Enviar reacción {emoji}"
+    "sendReaction": "Enviar reacción {emoji}",
+    "openReactions": "Abrir reacciones"
   },
   "ChatPanel": {
     "moderatorTeam": "Equipo moderador",
@@ -321,7 +324,8 @@
     "billing": "Facturación y plan",
     "team": "Equipo",
     "branding": "Marca (logo, colores)",
-    "integrations": "Integraciones"
+    "integrations": "Integraciones",
+    "domain": "Dominio propio"
   },
   "SettingsCommon": {
     "saved": "Guardado.",
@@ -394,6 +398,37 @@
     "webhooksDescription": "Conecta WeWebinars a Zapier, Make, n8n o cualquier herramienta que reciba webhooks. Cada evento se envía como POST con el body en JSON, firmado con HMAC-SHA256 en el header <code>X-WeWebinars-Signature</code> (puedes ignorarlo si tu herramienta no verifica firmas, como suele pasar con Zapier).",
     "brevoTitle": "Brevo",
     "brevoDescription": "Cada persona que se registra a un webinar se agrega automáticamente a la lista de Brevo que elijas para ese webinar (paso \"Marketing\" del wizard) — desde ahí puedes usar tus automatizaciones y triggers existentes para nutrir esos leads."
+  },
+  "DomainSettings": {
+    "title": "Dominio propio",
+    "lockedCardTitle": "Serví tus webinars desde tu propio dominio",
+    "lockedDescription": "El dominio propio está disponible en los planes Business y Enterprise. Actualiza tu plan para que tus webinars se vean en tu-dominio.com en vez de wewebinars.com.",
+    "seePlans": "Ver planes",
+    "cardTitle": "Dominio propio",
+    "cardDescription": "Servi todos tus webinars publicados desde tu propio dominio en vez de wewebinars.com.",
+    "hostnameLabel": "Dominio o subdominio",
+    "hostnameHint": "Recomendamos un subdominio (por ejemplo webinars.tuempresa.com) para no afectar el email de tu dominio raíz.",
+    "addDomain": "Agregar dominio",
+    "removeDomain": "Quitar dominio",
+    "verify": "Verificar",
+    "statusPending": "Pendiente",
+    "statusVerifying": "Verificando",
+    "statusActive": "Activo",
+    "statusFailed": "No verificado",
+    "dnsInstructionsTitle": "Configura este registro en tu proveedor de DNS",
+    "dnsTypeLabel": "Tipo",
+    "dnsNameLabel": "Nombre",
+    "dnsValueLabel": "Valor",
+    "dnsRootHint": "¿Querés usar el dominio raíz (sin subdominio)? Escribinos y te pasamos el registro A correspondiente.",
+    "lastCheckLabel": "Último chequeo:",
+    "nowActive": "¡Tu dominio ya está activo!"
+  },
+  "CustomDomainActions": {
+    "notAllowed": "No tenés permiso para hacer esto.",
+    "invalidHostname": "Ingresá un dominio válido, por ejemplo webinars.tuempresa.com.",
+    "hostnameTaken": "Ese dominio ya está en uso, o tu cuenta ya tiene un dominio configurado.",
+    "verifyFailed": "No pudimos registrar el dominio. Intentá de nuevo en unos minutos.",
+    "notVerifiedYet": "Todavía no detectamos el registro DNS. Puede tardar unos minutos en propagarse — probá de nuevo más tarde."
   },
   "WebhookForm": {
     "urlLabel": "URL de destino",
@@ -529,6 +564,10 @@
     "pauseTitle": "Corta el registro y el acceso a la sala. No borra nada — puedes publicarlo de nuevo cuando quieras.",
     "duplicate": "Duplicar",
     "duplicateTitle": "Crea una copia en borrador con el mismo contenido, sala de espera, chat, CTAs y plantillas de email. No copia registrados ni analíticas.",
+    "duplicateDefaultTitle": "{title} (copia)",
+    "duplicateModalTitle": "Nombre de la copia",
+    "duplicateNameLabel": "Título",
+    "duplicating": "Duplicando...",
     "delete": "Eliminar",
     "planLimitExceeded": "Llegaste al límite de webinars activos de tu plan. Pásate a un plan superior o archiva otro webinar.",
     "deleteModalTitle": "Eliminar \"{title}\"",
@@ -984,6 +1023,11 @@
     "testimonialsLabel": "Testimonios (opcional) — formato \"Nombre: texto\", uno por línea",
     "calendarButtonLabel": "Botón \"Agregar a mi calendario\"",
     "fakeCounterLabel": "Contador de conectados",
+    "fakeViewerRangeLabel": "Rango de conectados ficticios",
+    "fakeViewerRangeHint": "Cuántas personas simuladas se muestran conectadas durante el Live (varía dentro de este rango a lo largo de la transmisión).",
+    "fakeViewerMinLabel": "Mínimo de conectados",
+    "fakeViewerMaxLabel": "Máximo de conectados",
+    "fakeViewerRangeSeparator": "a",
     "saveWaitingRoom": "Guardar sala de espera"
   }
 }

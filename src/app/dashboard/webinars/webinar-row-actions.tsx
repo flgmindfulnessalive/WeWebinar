@@ -28,6 +28,8 @@ export function WebinarRowActions({
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [confirmInput, setConfirmInput] = useState("");
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateTitle, setDuplicateTitle] = useState("");
 
   const runAction = (
     action: (id: string) => Promise<{ error: string } | null>,
@@ -55,14 +57,15 @@ export function WebinarRowActions({
     });
   };
 
-  const handleDuplicate = () => {
+  const handleConfirmDuplicate = () => {
     setError(null);
     startTransition(async () => {
-      const result = await duplicateWebinar(webinarId);
+      const result = await duplicateWebinar(webinarId, duplicateTitle);
       if ("error" in result) {
         setError(result.error);
         return;
       }
+      setShowDuplicateModal(false);
       router.push(`/dashboard/webinars/${result.id}`);
     });
   };
@@ -100,7 +103,11 @@ export function WebinarRowActions({
         size="sm"
         variant="outline"
         disabled={isPending}
-        onClick={handleDuplicate}
+        onClick={() => {
+          setError(null);
+          setDuplicateTitle(t("duplicateDefaultTitle", { title: webinarTitle }));
+          setShowDuplicateModal(true);
+        }}
         title={t("duplicateTitle")}
       >
         {t("duplicate")}
@@ -117,6 +124,53 @@ export function WebinarRowActions({
         >
           {t("delete")}
         </Button>
+      )}
+
+      {showDuplicateModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowDuplicateModal(false)}
+        >
+          <div
+            className="flex w-full max-w-sm flex-col gap-4 rounded-lg border bg-background p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-1.5">
+              <h2 className="text-sm font-semibold">{t("duplicateModalTitle")}</h2>
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="duplicate-title-input">{t("duplicateNameLabel")}</Label>
+              <Input
+                id="duplicate-title-input"
+                autoFocus
+                value={duplicateTitle}
+                onChange={(e) => setDuplicateTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && duplicateTitle.trim()) handleConfirmDuplicate();
+                }}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setShowDuplicateModal(false)}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                size="sm"
+                disabled={isPending || !duplicateTitle.trim()}
+                onClick={handleConfirmDuplicate}
+              >
+                {isPending ? t("duplicating") : t("duplicate")}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showDeleteConfirm && (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, CreditCard, Palette, Plug, User, Users } from "lucide-react";
+import { Building2, CreditCard, Globe, Palette, Plug, User, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -36,6 +36,11 @@ export default async function SettingsPage() {
             href: "/dashboard/settings/integrations",
             label: t("integrations"),
             icon: Plug,
+          },
+          {
+            href: "/dashboard/settings/domain",
+            label: t("domain"),
+            icon: Globe,
           },
         ]
       : []),

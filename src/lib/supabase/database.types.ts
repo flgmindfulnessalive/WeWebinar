@@ -598,8 +598,41 @@ export interface Database {
           },
         ];
       };
+      custom_domains: {
+        Row: {
+          id: string;
+          account_id: string;
+          hostname: string;
+          status: string;
+          verification_txt: string;
+          last_checked_at: string | null;
+          last_error: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["custom_domains"]["Row"]> & {
+          account_id: string;
+          hostname: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["custom_domains"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "custom_domains_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
+      custom_domain_lookup: {
+        Row: {
+          hostname: string;
+          account_slug: string;
+        };
+        Relationships: [];
+      };
       account_public_profile: {
         Row: {
           id: string;

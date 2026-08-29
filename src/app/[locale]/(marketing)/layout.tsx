@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "./_components/language-switcher";
+import { MobileMenu } from "./_components/mobile-menu";
 
 function BrandMark() {
   return (
@@ -29,17 +30,22 @@ export default async function MarketingLayout({
   return (
     <div className="marketing-theme flex min-h-svh flex-col">
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <BrandMark />
           <nav className="flex items-center gap-2 sm:gap-4">
+            {/* Below sm, Planes/Idioma/Ingresar move into the hamburger
+                menu -- crammed inline next to "Empezar" they had nowhere
+                to align against and the language toggle read as adrift. */}
             <Link
               href="/pricing"
               className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
             >
               {t("pricing")}
             </Link>
-            <LanguageSwitcher />
-            <Button asChild variant="ghost" size="sm">
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <NextLink href="/login">{t("login")}</NextLink>
             </Button>
             <Button
@@ -50,6 +56,7 @@ export default async function MarketingLayout({
             >
               <NextLink href="/signup">{t("signup")}</NextLink>
             </Button>
+            <MobileMenu pricingLabel={t("pricing")} loginLabel={t("login")} />
           </nav>
         </div>
       </header>

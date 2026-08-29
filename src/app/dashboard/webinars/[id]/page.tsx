@@ -295,7 +295,14 @@ export default async function WebinarDetailPage({
               ? tSteps("waitingRoomSummaryConfigured", { count: bullets.length })
               : tSteps("waitingRoomSummaryPending"),
             completed: waitingRoom !== null,
-            content: <WaitingRoomSection webinarId={webinar.id} config={waitingRoom} />,
+            content: (
+              <WaitingRoomSection
+                webinarId={webinar.id}
+                config={waitingRoom}
+                fakeViewerMin={webinar.fake_viewer_min}
+                fakeViewerMax={webinar.fake_viewer_max}
+              />
+            ),
           },
           {
             id: "chat",

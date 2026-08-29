@@ -67,6 +67,7 @@ export default async function WaitingRoomPage({
       serverNow={session.server_now}
       config={waitingRoom}
       presenter={presenter}
+      durationSeconds={webinar.duration_seconds}
       isFixedSchedule={session.session_id !== null}
       accountName={account?.name ?? null}
       accountLogoUrl={branding.logo_url ?? null}

@@ -468,6 +468,7 @@ export function LiveRoomClient({
                   presenterName={presenter?.display_name ?? null}
                   chatMessages={chatMessages}
                   seed={`${webinarId}:${sessionStart}`}
+                  elapsedSeconds={elapsedSeconds}
                 />
               )}
               {activeTab === "presenter" && presenter && <PresenterTab presenter={presenter} />}
@@ -544,18 +545,26 @@ function PanelTabButton({
 // nothing to render.
 const CONNECTED_LIST_CAP = 30;
 
+// How often the filler names in the Conectados list churn -- long enough
+// that it doesn't read as flickering, short enough that someone watching
+// for a minute or two sees the list turn over instead of the exact same
+// names sitting there for the whole session.
+const NAME_ROTATION_INTERVAL_SECONDS = 40;
+
 function ConnectedTab({
   viewerCount,
   visitorName,
   presenterName,
   chatMessages,
   seed,
+  elapsedSeconds,
 }: {
   viewerCount: number;
   visitorName: string;
   presenterName: string | null;
   chatMessages: ChatMessage[];
   seed: string;
+  elapsedSeconds: number;
 }) {
   const t = useTranslations("LiveRoom");
   const seen = new Set<string>([visitorName]);
@@ -580,7 +589,12 @@ function ConnectedTab({
   const chatSlots = Math.max(0, availableSlots - (showHost ? 1 : 0));
   const shownChatNames = chatNames.slice(0, chatSlots);
   const fillerSlots = Math.max(0, availableSlots - (showHost ? 1 : 0) - shownChatNames.length);
-  const fillerNames = fakeConnectedNames({ seed, count: fillerSlots, exclude: seen });
+  const rotationBucket = Math.floor(Math.max(0, elapsedSeconds) / NAME_ROTATION_INTERVAL_SECONDS);
+  const fillerNames = fakeConnectedNames({
+    seed: `${seed}:${rotationBucket}`,
+    count: fillerSlots,
+    exclude: seen,
+  });
 
   const shownCount = 1 + (showHost ? 1 : 0) + shownChatNames.length + fillerNames.length;
   const moreCount = Math.max(0, viewerCount - shownCount);

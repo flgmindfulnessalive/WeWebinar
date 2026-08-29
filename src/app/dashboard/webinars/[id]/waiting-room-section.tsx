@@ -23,9 +23,13 @@ type WaitingRoomConfig = {
 export function WaitingRoomSection({
   webinarId,
   config,
+  fakeViewerMin,
+  fakeViewerMax,
 }: {
   webinarId: string;
   config: WaitingRoomConfig;
+  fakeViewerMin: number;
+  fakeViewerMax: number;
 }) {
   const [state, formAction, isPending] = useActionState(upsertWaitingRoom, null);
   const t = useTranslations("WaitingRoomSection");
@@ -126,6 +130,30 @@ export function WaitingRoomSection({
           />
           {t("fakeCounterLabel")}
         </label>
+      </div>
+
+      <div className="grid gap-2">
+        <Label>{t("fakeViewerRangeLabel")}</Label>
+        <p className="text-xs text-muted-foreground">{t("fakeViewerRangeHint")}</p>
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            min={0}
+            name="fake_viewer_min"
+            defaultValue={fakeViewerMin}
+            aria-label={t("fakeViewerMinLabel")}
+            className="w-24"
+          />
+          <span className="text-sm text-muted-foreground">{t("fakeViewerRangeSeparator")}</span>
+          <Input
+            type="number"
+            min={0}
+            name="fake_viewer_max"
+            defaultValue={fakeViewerMax}
+            aria-label={t("fakeViewerMaxLabel")}
+            className="w-24"
+          />
+        </div>
       </div>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}

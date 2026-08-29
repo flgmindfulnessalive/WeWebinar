@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { slugify } from "@/lib/slug";
+import { randomFakeViewerRange } from "@/lib/fake-viewers";
 import { webinarPublishedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 
@@ -30,6 +31,8 @@ export async function createWebinar(
     redirect("/onboarding");
   }
 
+  const { min: fakeViewerMin, max: fakeViewerMax } = randomFakeViewerRange();
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("webinars")
@@ -41,6 +44,8 @@ export async function createWebinar(
       category: category || null,
       slug: slugify(title) || "webinar",
       status: "draft",
+      fake_viewer_min: fakeViewerMin,
+      fake_viewer_max: fakeViewerMax,
     })
     .select("id")
     .single();
@@ -329,7 +334,10 @@ export type DuplicateWebinarResult = { error: string } | { id: string };
 // analytics/viewer events, or fixed calendar slots (webinar_schedules) --
 // a duplicate is meant as a fresh starting point, so a host picks new
 // dates for it rather than inheriting the original's exact schedule.
-export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebinarResult> {
+export async function duplicateWebinar(
+  webinarId: string,
+  title?: string
+): Promise<DuplicateWebinarResult> {
   const t = await getTranslations("WebinarActions");
   const current = await getCurrentAccount();
   if (!current) return { error: t("sessionNotFound") };
@@ -348,7 +356,7 @@ export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebi
   if (sourceError) return { error: sourceError.message };
   if (!source) return { error: t("webinarNotFound") };
 
-  const newTitle = `${source.title} (copia)`;
+  const newTitle = title?.trim() || `${source.title} (copia)`;
   const slug = await uniqueSlugForAccount(supabase, current.account.id, slugify(newTitle));
 
   const { data: created, error: insertError } = await supabase
