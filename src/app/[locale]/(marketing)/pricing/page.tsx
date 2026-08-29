@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { EnterpriseLeadForm } from "./enterprise-lead-form";
 import { PlanCards } from "./plan-cards";
+import { LiveVsEvergreen } from "../_components/live-vs-evergreen";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Plan = Database["public"]["Tables"]["plans"]["Row"];
@@ -68,6 +69,12 @@ export default async function PricingPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Self-contained (own max-w-5xl/px-6/py-20), same as on Home --
+          the extra horizontal inset next to this page's plan cards/
+          Enterprise card is a small, acceptable trade for sharing one
+          component instead of forking the comparison's styling per page. */}
+      <LiveVsEvergreen />
     </div>
   );
 }
