@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ export function VideoSection({
   webinarId: string;
   initial: VideoState;
 }) {
+  const t = useTranslations("VideoSection");
+  const tCommon = useTranslations("SettingsCommon");
   const [state, setState] = useState<VideoState>(initial);
   const [showInput, setShowInput] = useState(!initial.youtube_video_id);
   const [urlInput, setUrlInput] = useState("");
@@ -35,7 +38,7 @@ export function VideoSection({
   function handleLoad() {
     const id = extractYouTubeVideoId(urlInput);
     if (!id) {
-      setError("No pude reconocer ese link de YouTube. Prueba pegando la URL completa.");
+      setError(t("invalidLink"));
       return;
     }
     setError(null);
@@ -61,13 +64,9 @@ export function VideoSection({
   if (showInput) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">
-          Pega el link de un video de YouTube &ldquo;no listado&rdquo;
-          (Visibilidad → Oculto, en YouTube Studio). No hace falta que sea
-          público.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("unlistedHint")}</p>
         <div className="grid gap-1.5">
-          <Label htmlFor="youtube-url">Link de YouTube</Label>
+          <Label htmlFor="youtube-url">{t("youtubeLinkLabel")}</Label>
           <div className="flex gap-2">
             <Input
               id="youtube-url"
@@ -76,7 +75,7 @@ export function VideoSection({
               placeholder="https://youtu.be/..."
             />
             <Button type="button" onClick={handleLoad} disabled={!urlInput.trim()}>
-              Cargar
+              {t("load")}
             </Button>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -93,14 +92,14 @@ export function VideoSection({
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              {isSaving ? "Guardando..." : "Cargando duración del video..."}
+              {isSaving ? tCommon("saving") : t("loadingDuration")}
             </p>
           </div>
         )}
 
         {state.youtube_video_id && (
           <Button type="button" variant="ghost" onClick={() => setShowInput(false)}>
-            Cancelar
+            {t("cancel")}
           </Button>
         )}
       </div>
@@ -111,7 +110,7 @@ export function VideoSection({
     <div className="flex flex-col gap-3">
       <div className="flex justify-end">
         <Button size="sm" variant="outline" onClick={() => setShowInput(true)}>
-          Reemplazar video
+          {t("replaceVideo")}
         </Button>
       </div>
       {state.youtube_video_id && (
