@@ -666,6 +666,34 @@
     "pollNeedsQuestionAndOptions": "The poll needs a question and at least 2 options.",
     "invalidCtaType": "Invalid CTA type."
   },
+  "EmailTemplatesSection": {
+    "variableHint": "Available variables: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}, {{marca_color}}. Your logo and brand color (Settings → Branding) are already added above and below the email automatically — this is just the message.",
+    "bodyLabel": "Email body",
+    "preview": "Preview",
+    "htmlCode": "HTML code",
+    "copied": "Copied",
+    "copy": "Copy",
+    "previewTitle": "Email preview",
+    "subjectLabel": "Subject",
+    "update": "Update",
+    "save": "Save",
+    "minutesBeforeText": "{minutes} min before",
+    "remove": "Remove",
+    "confirmationTitle": "Registration confirmation",
+    "remindersTitle": "Reminders",
+    "minutesBeforeLabel": "Minutes before",
+    "adding": "Adding...",
+    "addReminder": "Add reminder",
+    "replayMissedTitle": "\"You missed it\" email (to non-attendees)"
+  },
+  "EmailTemplateActions": {
+    "invalidTemplateType": "Invalid template type.",
+    "subjectAndBodyRequired": "Subject and body are required.",
+    "notAuthenticated": "Not authenticated.",
+    "saveFailedRetry": "We couldn't save the template. Please try again.",
+    "offsetMustBePositive": "The lead time in minutes must be a positive number.",
+    "reminderOffsetExists": "A reminder with that lead time already exists."
+  },
   "WaitingRoomSection": {
     "headlineLabel": "Top message",
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",
