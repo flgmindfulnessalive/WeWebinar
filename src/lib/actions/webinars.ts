@@ -334,7 +334,10 @@ export type DuplicateWebinarResult = { error: string } | { id: string };
 // analytics/viewer events, or fixed calendar slots (webinar_schedules) --
 // a duplicate is meant as a fresh starting point, so a host picks new
 // dates for it rather than inheriting the original's exact schedule.
-export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebinarResult> {
+export async function duplicateWebinar(
+  webinarId: string,
+  title?: string
+): Promise<DuplicateWebinarResult> {
   const t = await getTranslations("WebinarActions");
   const current = await getCurrentAccount();
   if (!current) return { error: t("sessionNotFound") };
@@ -353,7 +356,7 @@ export async function duplicateWebinar(webinarId: string): Promise<DuplicateWebi
   if (sourceError) return { error: sourceError.message };
   if (!source) return { error: t("webinarNotFound") };
 
-  const newTitle = `${source.title} (copia)`;
+  const newTitle = title?.trim() || `${source.title} (copia)`;
   const slug = await uniqueSlugForAccount(supabase, current.account.id, slugify(newTitle));
 
   const { data: created, error: insertError } = await supabase
