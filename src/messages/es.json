@@ -251,6 +251,66 @@
     "previous": "Anterior",
     "next": "Siguiente"
   },
+  "SettingsShell": {
+    "title": "Configuración",
+    "profile": "Perfil",
+    "general": "General",
+    "billing": "Facturación y plan",
+    "team": "Equipo",
+    "branding": "Marca (logo, colores)",
+    "integrations": "Integraciones"
+  },
+  "SettingsCommon": {
+    "saved": "Guardado.",
+    "saving": "Guardando...",
+    "saveChanges": "Guardar cambios"
+  },
+  "GeneralSettings": {
+    "title": "General",
+    "accountNameTitle": "Nombre de la cuenta",
+    "accountNameDescription": "Se muestra en el panel y no afecta tu plan actual (<planKey>{plan}</planKey>). Para cambiar de plan, ve a Facturación y plan.",
+    "nameLabel": "Nombre",
+    "timezoneLabel": "Zona horaria"
+  },
+  "ProfileSettings": {
+    "title": "Perfil",
+    "personalInfoTitle": "Datos personales",
+    "personalInfoDescription": "Tu nombre y foto de perfil.",
+    "nameLabel": "Nombre",
+    "avatarLabel": "Foto de perfil (URL)",
+    "emailTitle": "Email de acceso",
+    "emailDescription": "Es el email con el que inicias sesión. Cambiarlo pide confirmación por correo.",
+    "currentEmailLabel": "Email actual",
+    "newEmailLabel": "Nuevo email",
+    "newEmailPlaceholder": "nuevo@email.com",
+    "changeEmail": "Cambiar email",
+    "sending": "Enviando...",
+    "emailChangeSuccess": "Revisa tu correo para confirmar el cambio (puede pedirte confirmar tanto desde el email actual como desde el nuevo).",
+    "passwordTitle": "Cambiar contraseña",
+    "passwordDescription": "Mínimo 8 caracteres.",
+    "newPasswordLabel": "Nueva contraseña",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "passwordChanged": "Contraseña actualizada.",
+    "changePassword": "Cambiar contraseña",
+    "diagnosticsTitle": "Diagnóstico de emails",
+    "diagnosticsDescription": "Prueba el envío de emails (confirmación, recordatorios) sin tener que registrarte a un webinar.",
+    "diagnosticsIntro": "Envía un email real a <email>{diagnosticEmail}</email> para confirmar que el envío de emails está funcionando. Si falla, el error exacto aparece acá abajo.",
+    "diagnosticsSuccess": "Enviado. Revisa la bandeja de entrada (y spam) de {email}.",
+    "sendTestEmail": "Enviar email de prueba"
+  },
+  "AccountActions": {
+    "noPermission": "No tienes permisos para editar la cuenta.",
+    "nameRequired": "El nombre de la cuenta es obligatorio."
+  },
+  "ProfileActions": {
+    "sessionNotFound": "No pudimos identificar tu sesión.",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "authServerError": "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento.",
+    "invalidEmail": "Ingresa un email válido.",
+    "alreadyCurrentEmail": "Ese ya es tu email actual.",
+    "sendFailed": "No se pudo enviar: {message}"
+  },
   "EnterpriseLeadForm": {
     "name": "Nombre",
     "email": "Email",

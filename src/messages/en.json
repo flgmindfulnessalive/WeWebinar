@@ -251,6 +251,66 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "SettingsShell": {
+    "title": "Settings",
+    "profile": "Profile",
+    "general": "General",
+    "billing": "Billing and plan",
+    "team": "Team",
+    "branding": "Branding (logo, colors)",
+    "integrations": "Integrations"
+  },
+  "SettingsCommon": {
+    "saved": "Saved.",
+    "saving": "Saving...",
+    "saveChanges": "Save changes"
+  },
+  "GeneralSettings": {
+    "title": "General",
+    "accountNameTitle": "Account name",
+    "accountNameDescription": "Shown in the panel and doesn't affect your current plan (<planKey>{plan}</planKey>). To change plans, go to Billing and plan.",
+    "nameLabel": "Name",
+    "timezoneLabel": "Time zone"
+  },
+  "ProfileSettings": {
+    "title": "Profile",
+    "personalInfoTitle": "Personal info",
+    "personalInfoDescription": "Your name and profile photo.",
+    "nameLabel": "Name",
+    "avatarLabel": "Profile photo (URL)",
+    "emailTitle": "Login email",
+    "emailDescription": "This is the email you sign in with. Changing it requires confirmation by email.",
+    "currentEmailLabel": "Current email",
+    "newEmailLabel": "New email",
+    "newEmailPlaceholder": "new@email.com",
+    "changeEmail": "Change email",
+    "sending": "Sending...",
+    "emailChangeSuccess": "Check your inbox to confirm the change (it may ask you to confirm from both the current and the new email).",
+    "passwordTitle": "Change password",
+    "passwordDescription": "8 characters minimum.",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm password",
+    "passwordMismatch": "Passwords don't match.",
+    "passwordChanged": "Password updated.",
+    "changePassword": "Change password",
+    "diagnosticsTitle": "Email diagnostics",
+    "diagnosticsDescription": "Test email delivery (confirmation, reminders) without registering for a webinar.",
+    "diagnosticsIntro": "Send a real email to <email>{diagnosticEmail}</email> to confirm email delivery is working. If it fails, the exact error appears below.",
+    "diagnosticsSuccess": "Sent. Check the inbox (and spam) for {email}.",
+    "sendTestEmail": "Send test email"
+  },
+  "AccountActions": {
+    "noPermission": "You don't have permission to edit the account.",
+    "nameRequired": "The account name is required."
+  },
+  "ProfileActions": {
+    "sessionNotFound": "We couldn't identify your session.",
+    "passwordTooShort": "The password must be at least 8 characters.",
+    "authServerError": "We couldn't connect to the authentication server. Please try again shortly.",
+    "invalidEmail": "Enter a valid email address.",
+    "alreadyCurrentEmail": "That's already your current email.",
+    "sendFailed": "Couldn't send: {message}"
+  },
   "EnterpriseLeadForm": {
     "name": "Name",
     "email": "Email",

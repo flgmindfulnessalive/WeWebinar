@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
@@ -12,8 +13,9 @@ export async function updateProfile(
   _prevState: ProfileActionState,
   formData: FormData
 ): Promise<ProfileActionState> {
+  const t = await getTranslations("ProfileActions");
   const current = await getCurrentAccount();
-  if (!current) return { error: "No pudimos identificar tu sesión." };
+  if (!current) return { error: t("sessionNotFound") };
 
   const displayName = String(formData.get("display_name") ?? "").trim() || null;
   const avatarUrl = String(formData.get("avatar_url") ?? "").trim() || null;
@@ -35,9 +37,10 @@ export async function changePassword(
   _prevState: ProfileActionState,
   formData: FormData
 ): Promise<ProfileActionState> {
+  const t = await getTranslations("ProfileActions");
   const password = String(formData.get("password") ?? "");
   if (password.length < 8) {
-    return { error: "La contraseña debe tener al menos 8 caracteres." };
+    return { error: t("passwordTooShort") };
   }
 
   try {
@@ -46,7 +49,7 @@ export async function changePassword(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[profile] changePassword failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
+    return { error: t("authServerError") };
   }
 
   return { success: true };
@@ -62,9 +65,10 @@ export async function changeEmail(
   _prevState: ProfileActionState,
   formData: FormData
 ): Promise<ProfileActionState> {
+  const t = await getTranslations("ProfileActions");
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!email || !email.includes("@")) {
-    return { error: "Ingresa un email válido." };
+    return { error: t("invalidEmail") };
   }
 
   try {
@@ -72,9 +76,9 @@ export async function changeEmail(
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { error: "No pudimos identificar tu sesión." };
+    if (!user) return { error: t("sessionNotFound") };
     if (email === user.email) {
-      return { error: "Ese ya es tu email actual." };
+      return { error: t("alreadyCurrentEmail") };
     }
 
     const { error } = await supabase.auth.updateUser(
@@ -86,7 +90,7 @@ export async function changeEmail(
     if (error) return { error: error.message };
   } catch (err) {
     console.error("[profile] changeEmail failed:", err);
-    return { error: "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento." };
+    return { error: t("authServerError") };
   }
 
   return { success: true };
@@ -106,8 +110,9 @@ export async function sendTestEmail(
   _formData: FormData
 ): Promise<ProfileActionState> {
   /* eslint-enable @typescript-eslint/no-unused-vars */
+  const t = await getTranslations("ProfileActions");
   const current = await getCurrentAccount();
-  if (!current) return { error: "No pudimos identificar tu sesión." };
+  if (!current) return { error: t("sessionNotFound") };
 
   try {
     await sendEmail({
@@ -117,7 +122,7 @@ export async function sendTestEmail(
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { error: `No se pudo enviar: ${message}` };
+    return { error: t("sendFailed", { message }) };
   }
 
   return { success: true };
