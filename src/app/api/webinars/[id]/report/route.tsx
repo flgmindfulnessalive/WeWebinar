@@ -157,11 +157,18 @@ export async function GET(
     return type;
   }
 
+  const clickersByCta = new Map<string, { name: string; email: string }[]>();
+  for (const row of clickerRows ?? []) {
+    if (!clickersByCta.has(row.cta_id)) clickersByCta.set(row.cta_id, []);
+    clickersByCta.get(row.cta_id)!.push({ name: row.name, email: row.email });
+  }
+
   const ctaBars: ReportBar[] = (ctaRows ?? []).map((c) => ({
     label: ctaLabel(c.config, c.cta_type),
     sublabel: t("ctaAppearsAt", { time: secondsToClock(c.timestamp_start_seconds) }),
     pct: c.clicks,
     valueLabel: t("ctaClicksValueLabel", { clicks: c.clicks, pct: c.conversion_pct }),
+    clickers: clickersByCta.get(c.cta_id) ?? [],
   }));
 
   const pollsByQuestion = new Map<string, ReportPollGroup>();
@@ -229,6 +236,8 @@ export async function GET(
           noScheduleData: tReport("noScheduleData"),
           noCtaData: tReport("noCtaData"),
           noPollData: tReport("noPollData"),
+          ctaClickersLabel: tReport("ctaClickersLabel"),
+          ctaClickersMore: (count) => tReport("ctaClickersMore", { count }),
           footerBrand: tReport("footerBrand"),
           footerConfidential: tReport("footerConfidential"),
           pageOf: (page, total) => tReport("pageOf", { page, total }),

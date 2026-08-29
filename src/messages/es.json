@@ -794,7 +794,9 @@
     "pageOf": "Página {page} de {total}",
     "noScheduleData": "Sin datos suficientes de horarios todavía.",
     "noCtaData": "Sin clics en CTAs todavía.",
-    "noPollData": "Sin votos en encuestas todavía."
+    "noPollData": "Sin votos en encuestas todavía.",
+    "ctaClickersLabel": "Quiénes hicieron clic",
+    "ctaClickersMore": "+{count} más"
   },
   "AdminOverview": {
     "title": "Resumen de la plataforma",

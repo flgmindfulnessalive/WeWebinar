@@ -794,7 +794,9 @@
     "pageOf": "Page {page} of {total}",
     "noScheduleData": "Not enough time slot data yet.",
     "noCtaData": "No CTA clicks yet.",
-    "noPollData": "No poll votes yet."
+    "noPollData": "No poll votes yet.",
+    "ctaClickersLabel": "Who clicked",
+    "ctaClickersMore": "+{count} more"
   },
   "AdminOverview": {
     "title": "Platform overview",

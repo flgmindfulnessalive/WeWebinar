@@ -13,7 +13,14 @@ const PAPER = "#fefeff";
 export type ReportKpi = { label: string; value: string; sublabel?: string };
 export type ReportFunnelStep = { count: number; countLabel: string; label: string; pctOfFirst: number };
 export type ReportRetentionPoint = { minute: number; pct: number };
-export type ReportBar = { label: string; sublabel?: string; valueLabel: string; pct: number };
+export type ReportClicker = { name: string; email: string };
+export type ReportBar = {
+  label: string;
+  sublabel?: string;
+  valueLabel: string;
+  pct: number;
+  clickers?: ReportClicker[];
+};
 export type ReportPollGroup = { question: string; bars: ReportBar[] };
 
 export type WebinarReportData = {
@@ -38,6 +45,8 @@ export type WebinarReportData = {
     noScheduleData: string;
     noCtaData: string;
     noPollData: string;
+    ctaClickersLabel: string;
+    ctaClickersMore: (count: number) => string;
     footerBrand: string;
     footerConfidential: string;
     pageOf: (page: number, total: number) => string;
@@ -164,6 +173,17 @@ const styles = StyleSheet.create({
   barValue: { fontFamily: "Roboto Mono", fontSize: 7.5, color: ACCENT_DEEP, fontWeight: 600 },
   barTrack: { height: 7, backgroundColor: FILL, borderRadius: 2 },
   barFill: { height: 7, backgroundColor: ACCENT, borderRadius: 2 },
+  clickersBox: { marginTop: 4 },
+  clickersLabel: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    color: MUTED,
+    marginBottom: 2,
+  },
+  clickersText: { fontSize: 7.5, color: BODY, lineHeight: 1.5 },
+  clickersMore: { color: MUTED, fontWeight: 500 },
   pollQuestion: { fontSize: 8.5, color: INK, fontWeight: 500, marginBottom: 7 },
   emptyNote: { fontSize: 8, color: MUTED },
   footerRow: {
@@ -180,7 +200,7 @@ const styles = StyleSheet.create({
 
 function Masthead({ generatedAtLabel }: { generatedAtLabel: string }) {
   return (
-    <View style={styles.mastheadBar}>
+    <View style={styles.mastheadBar} fixed>
       <Text style={styles.wordmark}>
         We<Text style={styles.wordmarkInk}>Webinars</Text>
       </Text>
@@ -189,11 +209,11 @@ function Masthead({ generatedAtLabel }: { generatedAtLabel: string }) {
   );
 }
 
-function Footer({ left, page, total, pageOf }: { left: string; page: number; total: number; pageOf: (p: number, t: number) => string }) {
+function Footer({ left, pageOf }: { left: string; pageOf: (p: number, t: number) => string }) {
   return (
     <View style={styles.footerRow} fixed>
       <Text>{left}</Text>
-      <Text>{pageOf(page, total)}</Text>
+      <Text render={({ pageNumber, totalPages }) => pageOf(pageNumber, totalPages)} />
     </View>
   );
 }
@@ -272,32 +292,61 @@ function RetentionCurve({ points, caption }: { points: ReportRetentionPoint[]; c
   );
 }
 
-function Bars({ bars, emptyLabel }: { bars: ReportBar[]; emptyLabel: string }) {
+const MAX_CLICKERS_SHOWN = 12;
+
+function Bars({
+  bars,
+  emptyLabel,
+  clickersLabel,
+  moreLabel,
+}: {
+  bars: ReportBar[];
+  emptyLabel: string;
+  clickersLabel?: string;
+  moreLabel?: (count: number) => string;
+}) {
   if (bars.length === 0) return <Text style={styles.emptyNote}>{emptyLabel}</Text>;
   const max = Math.max(...bars.map((b) => b.pct), 1);
   return (
     <View>
-      {bars.map((bar, i) => (
-        <View key={i} style={styles.barRow}>
-          <View style={styles.barTopRow}>
-            <Text style={styles.barName}>
-              {bar.label}
-              {bar.sublabel ? <Text style={styles.barSub}>  {bar.sublabel}</Text> : null}
-            </Text>
-            <Text style={styles.barValue}>{bar.valueLabel}</Text>
+      {bars.map((bar, i) => {
+        const clickers = bar.clickers ?? [];
+        const visible = clickers.slice(0, MAX_CLICKERS_SHOWN);
+        const remaining = clickers.length - visible.length;
+        return (
+          <View key={i} style={styles.barRow}>
+            <View style={styles.barTopRow}>
+              <Text style={styles.barName}>
+                {bar.label}
+                {bar.sublabel ? <Text style={styles.barSub}>  {bar.sublabel}</Text> : null}
+              </Text>
+              <Text style={styles.barValue}>{bar.valueLabel}</Text>
+            </View>
+            <View style={styles.barTrack}>
+              <View style={{ ...styles.barFill, width: `${Math.max(3, (bar.pct / max) * 100)}%` }} />
+            </View>
+            {visible.length > 0 && (
+              <View style={styles.clickersBox}>
+                <Text style={styles.clickersLabel}>{clickersLabel}</Text>
+                <Text style={styles.clickersText}>
+                  {visible.map((c) => `${c.name} (${c.email})`).join(", ")}
+                </Text>
+                {remaining > 0 && moreLabel && (
+                  <Text style={{ ...styles.clickersText, ...styles.clickersMore }}>
+                    {moreLabel(remaining)}
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
-          <View style={styles.barTrack}>
-            <View style={{ ...styles.barFill, width: `${Math.max(3, (bar.pct / max) * 100)}%` }} />
-          </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
 
 export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
   const hasPage2 = data.scheduleBars.length > 0 || data.ctaBars.length > 0 || data.pollGroups.length > 0;
-  const totalPages = hasPage2 ? 2 : 1;
 
   return (
     <Document title={data.webinarTitle}>
@@ -338,7 +387,7 @@ export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
           <RetentionCurve points={data.retention} caption={data.retentionCaption} />
         </View>
 
-        <Footer left={data.labels.footerBrand} page={1} total={totalPages} pageOf={data.labels.pageOf} />
+        <Footer left={data.labels.footerBrand} pageOf={data.labels.pageOf} />
       </Page>
 
       {hasPage2 && (
@@ -352,7 +401,12 @@ export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.labels.ctaClicksTitle}</Text>
-            <Bars bars={data.ctaBars} emptyLabel={data.labels.noCtaData} />
+            <Bars
+              bars={data.ctaBars}
+              emptyLabel={data.labels.noCtaData}
+              clickersLabel={data.labels.ctaClickersLabel}
+              moreLabel={data.labels.ctaClickersMore}
+            />
           </View>
 
           <View style={{ ...styles.section, marginBottom: 0 }}>
@@ -369,7 +423,7 @@ export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
             )}
           </View>
 
-          <Footer left={data.labels.footerConfidential} page={2} total={totalPages} pageOf={data.labels.pageOf} />
+          <Footer left={data.labels.footerConfidential} pageOf={data.labels.pageOf} />
         </Page>
       )}
     </Document>
