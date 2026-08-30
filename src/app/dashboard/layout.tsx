@@ -110,6 +110,7 @@ export default async function DashboardLayout({
               <UserMenu
                 email={current.user.email}
                 displayName={current.user.display_name}
+                avatarUrl={current.user.avatar_url}
               />
             </div>
           </header>
