@@ -13,10 +13,12 @@ const BRAND_2 = "#c026d3";
 
 export default async function OpengraphImage() {
   const fontsDir = join(process.cwd(), "src/app/og-fonts");
-  const [bold, regular] = await Promise.all([
+  const [bold, regular, badge] = await Promise.all([
     readFile(join(fontsDir, "Geist-Bold.ttf")),
     readFile(join(fontsDir, "Geist-Regular.ttf")),
+    readFile(join(process.cwd(), "public/brand/w-badge.png")),
   ]);
+  const badgeDataUrl = `data:image/png;base64,${badge.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -94,22 +96,13 @@ export default async function OpengraphImage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 108,
-                height: 108,
-                borderRadius: 28,
-                background: `linear-gradient(135deg, ${BRAND}, ${BRAND_2})`,
-                color: "#ffffff",
-                fontSize: 58,
-                fontWeight: 700,
-              }}
-            >
-              W
-            </div>
+            <img
+              src={badgeDataUrl}
+              alt=""
+              width={108}
+              height={108}
+              style={{ borderRadius: 28 }}
+            />
             <div
               style={{
                 display: "flex",

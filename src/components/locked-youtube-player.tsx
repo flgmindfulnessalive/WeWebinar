@@ -429,23 +429,16 @@ export const LockedYouTubePlayer = forwardRef<
             pointerEvents: coverVisible ? "auto" : "none",
           }}
         >
-          <div
+          <img
+            src="/brand/w-badge.png"
+            alt=""
+            width={56}
+            height={56}
             style={{
-              display: "flex",
-              height: 56,
-              width: 56,
-              alignItems: "center",
-              justifyContent: "center",
               borderRadius: 12,
-              fontSize: 22,
-              fontWeight: 700,
-              color: "white",
-              background: "linear-gradient(135deg, #4f46e5, #c026d3)",
               animation: "locked-player-pulse 1.6s ease-in-out infinite",
             }}
-          >
-            W
-          </div>
+          />
           {showResumePrompt && (
             <button
               type="button"

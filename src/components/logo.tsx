@@ -1,19 +1,20 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 // Brand mark used next to the "WeWebinars" wordmark in the dashboard/admin
-// nav. Same gradient as the branded loading cover in
-// locked-youtube-player.tsx, kept as one small reusable piece instead of
-// duplicating the style in every nav.
+// nav, on login/signup, and anywhere else the platform's own icon appears
+// (favicon and apple-icon are the same source art, see src/app/icon.png and
+// src/app/apple-icon.png). The wrapper -- not the image -- owns the corner
+// radius/shadow so every caller's className (rounded-md, rounded-2xl,
+// shadow-*, size-*) keeps working exactly as before.
 export function Logo({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className={cn(
-        "flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-xs font-bold text-white",
-        className
-      )}
+      className={cn("relative size-6 shrink-0 overflow-hidden rounded-md", className)}
     >
-      W
+      <Image src="/brand/w-badge.png" alt="" fill sizes="64px" className="object-cover" />
     </div>
   );
 }
