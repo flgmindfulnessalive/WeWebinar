@@ -10,7 +10,7 @@ import { MobileMenu } from "./_components/mobile-menu";
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <Logo className="size-7 rounded-lg" />
+      <Logo variant="mark" className="size-8" />
       <span className="text-lg font-semibold tracking-tight">
         <span style={{ color: "var(--brand)" }}>We</span>Webinars
       </span>
