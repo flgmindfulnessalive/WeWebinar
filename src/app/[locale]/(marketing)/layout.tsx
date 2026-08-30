@@ -7,19 +7,22 @@ import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "./_components/language-switcher";
 import { MobileMenu } from "./_components/mobile-menu";
 
-// Header uses the borderless mark; footer keeps the original gradient
-// badge -- the user asked for the header-only swap, not a full replace.
-function BrandMark({ logo }: { logo: "mark" | "badge" }) {
+function Wordmark() {
   return (
-    <Link href="/" className="flex items-center gap-2">
-      {logo === "mark" ? (
-        <Logo variant="mark" className="size-11" />
-      ) : (
-        <Logo className="size-7 rounded-lg" />
-      )}
-      <span className="text-lg font-semibold tracking-tight">
-        <span style={{ color: "var(--brand)" }}>We</span>Webinars
-      </span>
+    <span className="text-lg font-semibold tracking-tight">
+      <span style={{ color: "var(--brand)" }}>We</span>Webinars
+    </span>
+  );
+}
+
+// Header uses the borderless mark, tight against the wordmark (the mark's
+// own transparent padding already reads as a gap, so gap-1 below sm avoids
+// doubling up on mobile). Footer is wordmark-only -- no icon.
+function BrandMark() {
+  return (
+    <Link href="/" className="flex items-center gap-1 sm:gap-2">
+      <Logo variant="mark" className="size-11" />
+      <Wordmark />
     </Link>
   );
 }
@@ -35,7 +38,7 @@ export default async function MarketingLayout({
     <div className="marketing-theme flex min-h-svh flex-col">
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <BrandMark logo="mark" />
+          <BrandMark />
           <nav className="flex items-center gap-2 sm:gap-4">
             {/* Below sm, Planes/Idioma/Ingresar move into the hamburger
                 menu -- crammed inline next to "Empezar" they had nowhere
@@ -69,7 +72,9 @@ export default async function MarketingLayout({
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
-          <BrandMark logo="badge" />
+          <Link href="/">
+            <Wordmark />
+          </Link>
           <p className="text-sm text-muted-foreground">
             {t("footer", { year: new Date().getFullYear() })}
           </p>
