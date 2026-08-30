@@ -968,6 +968,7 @@
     "hostRepliedBadge": "Respondido por el host",
     "noReply": "Sin respuesta",
     "viewClickers": "Ver quién hizo clic en \"{label}\" ({count})",
+    "noClickersYet": "Nadie hizo clic en \"{label}\" todavía",
     "firstClickHeader": "Primer clic",
     "clicksHeader": "Clics",
     "hideAiReplies": "Ocultar respuestas de la AI",

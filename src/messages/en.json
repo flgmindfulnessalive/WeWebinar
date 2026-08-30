@@ -968,6 +968,7 @@
     "hostRepliedBadge": "Replied by host",
     "noReply": "No reply",
     "viewClickers": "See who clicked \"{label}\" ({count})",
+    "noClickersYet": "No one has clicked \"{label}\" yet",
     "firstClickHeader": "First click",
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",

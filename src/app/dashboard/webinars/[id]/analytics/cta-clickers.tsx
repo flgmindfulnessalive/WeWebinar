@@ -17,7 +17,12 @@ export function CtaClickersToggle({ label, clickers }: { label: string; clickers
   const t = useTranslations("AnalyticsTables");
   const locale = useLocale();
 
-  if (clickers.length === 0) return null;
+  // Previously returned null here -- indistinguishable from a broken query:
+  // a host with zero real clicks on a CTA saw exactly the same nothing as a
+  // host whose clicks silently failed to record. Say it outright instead.
+  if (clickers.length === 0) {
+    return <p className="text-xs text-muted-foreground">{t("noClickersYet", { label })}</p>;
+  }
 
   return (
     <div className="flex flex-col gap-2">
