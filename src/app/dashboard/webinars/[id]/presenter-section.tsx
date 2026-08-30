@@ -90,15 +90,6 @@ export function PresenterSection({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="presenter-avatar">{t("avatarLabel")}</Label>
-            <Input
-              id="presenter-avatar"
-              name="presenter_avatar_url"
-              defaultValue={initial.presenterAvatarUrl ?? ""}
-              placeholder="https://..."
-            />
-          </div>
-          <div className="grid gap-2">
             <Label htmlFor="presenter-bio">{t("bioLabel")}</Label>
             <textarea
               id="presenter-bio"
@@ -111,6 +102,23 @@ export function PresenterSection({
           <p className="text-xs text-muted-foreground">{t("customHint")}</p>
         </>
       )}
+
+      {/* Independent of the mode above -- never inherited from the team
+          member's own account Profile photo (see resolvePresenter), since
+          the presenter isn't always the account owner. Left blank, no
+          photo shows in the room at all rather than falling back to
+          someone else's account photo. */}
+      <div className="grid gap-2">
+        <Label htmlFor="presenter-avatar">{t("avatarLabel")}</Label>
+        <Input
+          id="presenter-avatar"
+          name="presenter_avatar_url"
+          type="url"
+          defaultValue={initial.presenterAvatarUrl ?? ""}
+          placeholder="https://..."
+        />
+        <p className="text-xs text-muted-foreground">{t("avatarHint")}</p>
+      </div>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 

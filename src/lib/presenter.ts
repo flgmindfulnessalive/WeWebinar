@@ -19,6 +19,13 @@ type WebinarPresenterFields = {
 // priority over the linked team member's own Perfil, when both are set --
 // the editor keeps them mutually exclusive, but this stays defensive
 // either way. Falls back to no presenter shown at all if neither is set.
+//
+// The photo always comes from presenter_avatar_url (set in the wizard,
+// works in both "team member" and "custom" mode) -- it never falls back to
+// the team member's own account Profile photo. The presenter and the
+// account owner are frequently different people, and silently reusing
+// someone's account photo in a public room they didn't choose to appear in
+// is worse than showing no photo at all.
 export async function resolvePresenter(
   supabase: SupabaseClient<Database>,
   webinar: WebinarPresenterFields
@@ -35,9 +42,14 @@ export async function resolvePresenter(
 
   const { data } = await supabase
     .from("presenter_public_profile")
-    .select("display_name, avatar_url, bio")
+    .select("display_name, bio")
     .eq("id", webinar.presenter_user_id)
     .maybeSingle();
 
-  return data ?? null;
+  if (!data) return null;
+  return {
+    display_name: data.display_name,
+    avatar_url: webinar.presenter_avatar_url,
+    bio: data.bio,
+  };
 }

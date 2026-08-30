@@ -134,8 +134,11 @@ export async function updateMarketing(
 // Lets a host pick who shows as presenter, instead of it being silently
 // locked to whoever created the webinar (createWebinar above). Two
 // mutually exclusive modes: a team member (their own Perfil display_name/
-// avatar_url/bio, from presenter_public_profile) or free-form custom
-// details (for a speaker with no login on the platform).
+// bio, from presenter_public_profile) or free-form custom details (for a
+// speaker with no login on the platform). The photo (presenter_avatar_url)
+// is independent of the mode -- it's never pulled from the team member's
+// account Profile photo (see resolvePresenter), since the presenter is
+// often not the account owner.
 export async function updatePresenter(
   _prevState: WebinarActionState,
   formData: FormData
@@ -143,6 +146,7 @@ export async function updatePresenter(
   const t = await getTranslations("WebinarActions");
   const webinarId = String(formData.get("webinar_id") ?? "");
   const mode = String(formData.get("presenter_mode") ?? "member");
+  const avatarUrl = String(formData.get("presenter_avatar_url") ?? "").trim() || null;
 
   const supabase = await createClient();
 
@@ -151,7 +155,6 @@ export async function updatePresenter(
     if (!name) {
       return { error: t("presenterNameRequired") };
     }
-    const avatarUrl = String(formData.get("presenter_avatar_url") ?? "").trim() || null;
     const bio = String(formData.get("presenter_bio") ?? "").trim() || null;
 
     const { error } = await supabase
@@ -196,7 +199,7 @@ export async function updatePresenter(
     .update({
       presenter_user_id: presenterUserId,
       presenter_name: null,
-      presenter_avatar_url: null,
+      presenter_avatar_url: avatarUrl,
       presenter_bio: null,
     })
     .eq("id", webinarId);

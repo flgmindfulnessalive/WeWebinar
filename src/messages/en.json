@@ -667,10 +667,11 @@
     "custom": "Custom",
     "presenterLabel": "Presenter",
     "noPresenter": "No presenter",
-    "memberHint": "That person's name and Profile photo are shown in the waiting room and the webinar's public link.",
+    "memberHint": "That person's name is shown in the waiting room and the webinar's public link. The photo isn't pulled from their Profile -- add one below if you want to show it.",
     "nameLabel": "Name",
     "namePlaceholder": "Presenter's name",
-    "avatarLabel": "Photo (URL)",
+    "avatarLabel": "Presenter photo (URL)",
+    "avatarHint": "Independent of the account's Profile photo -- leave it blank and no photo shows in the room.",
     "bioLabel": "Bio",
     "customHint": "Useful when the presenter doesn't have an account on the platform."
   },

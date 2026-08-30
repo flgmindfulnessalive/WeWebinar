@@ -667,10 +667,11 @@
     "custom": "Personalizado",
     "presenterLabel": "Presentador",
     "noPresenter": "Sin presentador",
-    "memberHint": "Se muestra el nombre y la foto de Perfil de esa persona en la sala de espera y en el link público del webinar.",
+    "memberHint": "Se muestra el nombre de esa persona en la sala de espera y en el link público del webinar. La foto no se toma de su Perfil -- cargala abajo si querés mostrar una.",
     "nameLabel": "Nombre",
     "namePlaceholder": "Nombre del presentador",
-    "avatarLabel": "Foto (URL)",
+    "avatarLabel": "Foto del presentador (URL)",
+    "avatarHint": "Independiente de la foto de Perfil de la cuenta -- si la dejás vacía, no se muestra ninguna foto en la sala.",
     "bioLabel": "Bio",
     "customHint": "Útil cuando quien presenta no tiene cuenta en la plataforma."
   },
