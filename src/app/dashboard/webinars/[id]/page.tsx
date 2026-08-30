@@ -215,6 +215,7 @@ export default async function WebinarDetailPage({
         const steps: WizardStep[] = [
           {
             id: "detail",
+            group: "essential",
             icon: "file-text",
             title: tSteps("detailTitle"),
             description: tSteps("detailDescription"),
@@ -233,6 +234,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "presenter",
+            group: "customize",
             icon: "user",
             title: tSteps("presenterTitle"),
             description: tSteps("presenterDescription"),
@@ -258,6 +260,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "video",
+            group: "essential",
             icon: "play-circle",
             title: tSteps("videoTitle"),
             description: tSteps("videoDescription"),
@@ -280,6 +283,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "schedule",
+            group: "essential",
             icon: "calendar",
             title: tSteps("scheduleTitle"),
             description: tSteps("scheduleDescription"),
@@ -297,6 +301,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "waiting-room",
+            group: "customize",
             icon: "users",
             title: tSteps("waitingRoomTitle"),
             description: tSteps("waitingRoomDescription"),
@@ -315,6 +320,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "chat",
+            group: "advanced",
             icon: "message-square",
             title: tSteps("chatTitle"),
             description: tSteps("chatDescription"),
@@ -335,6 +341,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "ctas",
+            group: "customize",
             icon: "mouse-pointer-click",
             title: tSteps("ctasTitle"),
             description: tSteps("ctasDescription"),
@@ -347,6 +354,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "emails",
+            group: "advanced",
             icon: "mail",
             title: tSteps("emailsTitle"),
             description: tSteps("emailsDescription"),
@@ -365,6 +373,7 @@ export default async function WebinarDetailPage({
           },
           {
             id: "marketing",
+            group: "advanced",
             icon: "megaphone",
             title: tSteps("marketingTitle"),
             description: tSteps("marketingDescription"),
