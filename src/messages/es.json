@@ -249,7 +249,9 @@
     "webinarEnded": "El webinar terminó.",
     "seeMore": "Ver más",
     "sendReaction": "Enviar reacción {emoji}",
-    "openReactions": "Abrir reacciones"
+    "openReactions": "Abrir reacciones",
+    "scarcityClosesIn": "Se cierra en {time}",
+    "scarcityClosed": "Oferta cerrada"
   },
   "ChatPanel": {
     "moderatorTeam": "Equipo moderador",
@@ -773,7 +775,10 @@
     "addCta": "Agregar CTA",
     "remove": "Quitar",
     "summaryLinkFormat": "\"{text}\" → {url}",
-    "summaryPollFormat": "{question} ({count, plural, one {# opción} other {# opciones}})"
+    "summaryPollFormat": "{question} ({count, plural, one {# opción} other {# opciones}})",
+    "scarcityMinutesLabel": "Cierre con urgencia (min, opcional)",
+    "scarcityMinutesPlaceholder": "Ej. 15",
+    "summaryScarcity": "se cierra {minutes} min después de aparecer"
   },
   "CtaActions": {
     "invalidStartFormat": "El inicio debe tener formato mm:ss.",
@@ -782,6 +787,7 @@
     "timestampBeyondVideo": "El video dura {duration} -- elige un momento dentro de ese rango.",
     "linkTextAndUrlRequired": "El texto y la URL del botón son obligatorios.",
     "urlMustBeHttp": "La URL debe empezar con http:// o https://.",
+    "invalidScarcityMinutes": "El cierre con urgencia debe ser un número entero de minutos mayor a 0.",
     "overlayNeedsContent": "Agrega un texto o una imagen para el overlay.",
     "pollNeedsQuestionAndOptions": "La encuesta necesita una pregunta y al menos 2 opciones.",
     "invalidCtaType": "Tipo de CTA inválido."

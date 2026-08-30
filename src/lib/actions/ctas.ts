@@ -70,7 +70,15 @@ export async function addCta(
     if (!/^https?:\/\//i.test(url)) {
       return { error: t("urlMustBeHttp") };
     }
-    config = { text, url, style };
+    const scarcityRaw = String(formData.get("link_scarcity_minutes") ?? "").trim();
+    let scarcityMinutes: number | null = null;
+    if (scarcityRaw) {
+      scarcityMinutes = Number(scarcityRaw);
+      if (!Number.isInteger(scarcityMinutes) || scarcityMinutes < 1) {
+        return { error: t("invalidScarcityMinutes") };
+      }
+    }
+    config = { text, url, style, scarcity_minutes: scarcityMinutes };
   } else if (type === "overlay") {
     const text = String(formData.get("overlay_text") ?? "").trim();
     const imageUrl = String(formData.get("overlay_image_url") ?? "").trim();

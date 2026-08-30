@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
+import { secondsToClock } from "@/lib/time";
 import { fakeViewerCount } from "@/lib/fake-viewers";
 import { fakeConnectedNames } from "@/lib/fake-names";
 import { Button } from "@/components/ui/button";
@@ -407,6 +408,7 @@ export function LiveRoomClient({
                   onPollAnswer={(option) => recordPollResponse(cta.id, option)}
                   answeredOption={pollAnswers[cta.id]}
                   results={pollResults[cta.id]}
+                  getElapsedSeconds={getElapsedSeconds}
                 />
               ))}
               <LiveReactions onReact={handleReaction} />
@@ -898,14 +900,40 @@ function CtaOverlay({
   onPollAnswer,
   answeredOption,
   results,
+  getElapsedSeconds,
 }: {
   cta: Cta;
   onLinkClick: () => void;
   onPollAnswer: (option: string) => void;
   answeredOption?: string;
   results?: { option: string; votes: number }[];
+  getElapsedSeconds: () => number;
 }) {
   const config = (cta.config ?? {}) as Record<string, unknown>;
+  const t = useTranslations("LiveRoom");
+  const scarcityMinutes =
+    cta.type === "link" && typeof config.scarcity_minutes === "number" && config.scarcity_minutes > 0
+      ? config.scarcity_minutes
+      : null;
+
+  // Server-anchored deadline, not a client-side timer that resets on
+  // refresh: the moment this CTA first appeared for this registrant is
+  // derived from their already-synced elapsed video time (the same anchor
+  // driving playback sync), so reloading the page recomputes the same real
+  // deadline instead of restarting the countdown. Date.now() reads happen
+  // inside the effect/interval below (not during render) to keep the
+  // component pure. Called unconditionally (not behind the
+  // `if (cta.type === "link")` below) so hook order stays stable.
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  useEffect(() => {
+    if (scarcityMinutes === null) return;
+    const interval = setInterval(() => {
+      const appearedAtMs = Date.now() - (getElapsedSeconds() - cta.timestamp_start_seconds) * 1000;
+      const deadlineMs = appearedAtMs + scarcityMinutes * 60_000;
+      setRemainingSeconds(Math.max(0, Math.round((deadlineMs - Date.now()) / 1000)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [scarcityMinutes, getElapsedSeconds, cta.timestamp_start_seconds]);
 
   if (cta.type === "link") {
     const style = String(config.style ?? "banner");
@@ -918,19 +946,34 @@ function CtaOverlay({
           ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           : "bottom-4 left-1/2 -translate-x-1/2";
 
+    const isClosed = remainingSeconds === 0;
+
     return (
-      <GlowCtaBorder className={cn("absolute z-10", positionClass)}>
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          onClick={onLinkClick}
-          className="block rounded-[5px] px-5 py-3 text-sm font-medium text-white"
-          style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
-        >
-          {text}
-        </a>
-      </GlowCtaBorder>
+      <div className={cn("absolute z-10 flex flex-col items-center gap-1.5", positionClass)}>
+        {isClosed ? (
+          <span className="block cursor-not-allowed rounded-md bg-black/60 px-5 py-3 text-sm font-medium text-white/70 shadow-lg">
+            {t("scarcityClosed")}
+          </span>
+        ) : (
+          <GlowCtaBorder>
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={onLinkClick}
+              className="block rounded-[5px] px-5 py-3 text-sm font-medium text-white"
+              style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+            >
+              {text}
+            </a>
+          </GlowCtaBorder>
+        )}
+        {remainingSeconds !== null && remainingSeconds > 0 && (
+          <span className="rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white">
+            {t("scarcityClosesIn", { time: secondsToClock(remainingSeconds) })}
+          </span>
+        )}
+      </div>
     );
   }
 
