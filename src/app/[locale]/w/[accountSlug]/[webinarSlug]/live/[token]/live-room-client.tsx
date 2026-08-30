@@ -872,6 +872,26 @@ function VotedNote({ variant }: { variant: "dark" | "light" }) {
   );
 }
 
+// Wraps a link CTA in a continuously-sliding brand-gradient border to make
+// it stand out against the video without stealing focus -- animation is a
+// looping background-position slide (see .animate-cta-glow-border in
+// globals.css), which degrades gracefully to a static gradient ring under
+// prefers-reduced-motion.
+function GlowCtaBorder({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <div
+      className={cn("animate-cta-glow-border rounded-md p-[3px] shadow-lg", className)}
+      style={{
+        backgroundImage:
+          "linear-gradient(90deg, var(--brand), #a78bfa, #e879f9, var(--brand), #a78bfa, #e879f9)",
+        backgroundSize: "300% 100%",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function CtaOverlay({
   cta,
   onLinkClick,
@@ -899,18 +919,18 @@ function CtaOverlay({
           : "bottom-4 left-1/2 -translate-x-1/2";
 
     return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        onClick={onLinkClick}
-        className={cn(
-          "absolute z-10 rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg",
-          positionClass
-        )}
-      >
-        {text}
-      </a>
+      <GlowCtaBorder className={cn("absolute z-10", positionClass)}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={onLinkClick}
+          className="block rounded-[5px] px-5 py-3 text-sm font-medium text-white"
+          style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+        >
+          {text}
+        </a>
+      </GlowCtaBorder>
     );
   }
 
@@ -988,16 +1008,18 @@ function EndedState({
           {linkCtas.map((cta) => {
             const config = (cta.config ?? {}) as Record<string, unknown>;
             return (
-              <a
-                key={cta.id}
-                href={String(config.url ?? "#")}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => onCtaClick(cta.id)}
-                className="rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
-              >
-                {String(config.text ?? t("seeMore"))}
-              </a>
+              <GlowCtaBorder key={cta.id}>
+                <a
+                  href={String(config.url ?? "#")}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => onCtaClick(cta.id)}
+                  className="block rounded-[5px] px-5 py-3 text-sm font-medium text-white"
+                  style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+                >
+                  {String(config.text ?? t("seeMore"))}
+                </a>
+              </GlowCtaBorder>
             );
           })}
         </div>
