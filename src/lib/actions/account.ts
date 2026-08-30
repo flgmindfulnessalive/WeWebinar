@@ -63,7 +63,11 @@ export async function createAccount(
         });
 
         if (!error) {
-          redirectTo = "/dashboard";
+          // Straight into creating the first webinar, not the (empty)
+          // dashboard -- the whole point of signing up is to get a webinar
+          // running, and a generic summary screen with zero data is a dead
+          // end the host has to figure their way out of on their own.
+          redirectTo = "/dashboard/webinars/new";
           resolved = true;
           // Best-effort: a failed welcome email should never block the
           // account from being created, so it's logged and swallowed

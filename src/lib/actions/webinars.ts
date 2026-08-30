@@ -236,6 +236,7 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
     .maybeSingle();
 
   revalidatePath("/dashboard/webinars");
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
   revalidatePath("/dashboard");
 
   if (error) {
@@ -305,6 +306,7 @@ export async function archiveWebinar(webinarId: string): Promise<WebinarActionSt
     .eq("id", webinarId);
 
   revalidatePath("/dashboard/webinars");
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
   revalidatePath("/dashboard");
 
   if (error) {

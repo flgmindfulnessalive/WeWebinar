@@ -595,7 +595,7 @@
   },
   "NewWebinar": {
     "title": "Nuevo webinar",
-    "description": "Paso 1 de 7: datos generales. Se guarda como borrador — no cuenta contra tu límite de plan hasta que lo publiques.",
+    "description": "Datos generales. Se guarda como borrador — no cuenta contra tu límite de plan hasta que lo publiques.",
     "titleLabel": "Título",
     "titlePlaceholder": "Cómo duplicar tus ventas en 90 días",
     "categoryLabel": "Categoría",
@@ -617,6 +617,21 @@
   "WizardShell": {
     "stepsProgress": "{completed} de {total} pasos completos",
     "pendingLabel": "Falta configurar: {list}"
+  },
+  "PublishBar": {
+    "readyTitle": "Listo para publicar",
+    "readyBody": "Ya tenés lo esencial configurado. Podés publicarlo ahora o seguir personalizando.",
+    "notReadyTitle": "Todavía no está listo",
+    "notReadyBody": "Cargá un video para poder publicarlo — sin video, la sala en vivo no funciona.",
+    "publishedTitle": "Publicado",
+    "publishedBody": "Tu webinar está en vivo y disponible para que la gente se registre.",
+    "pausedTitle": "En pausa",
+    "pausedBody": "El registro y el acceso a la sala están cortados. Podés reactivarlo cuando quieras.",
+    "publish": "Publicar webinar",
+    "republish": "Reactivar webinar",
+    "publishing": "Publicando...",
+    "pause": "Pausar",
+    "pausing": "Pausando..."
   },
   "WebinarWizard": {
     "openPublicPage": "Abrir página pública",
