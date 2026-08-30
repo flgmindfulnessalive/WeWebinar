@@ -115,6 +115,7 @@ export async function addCta(
   });
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;
@@ -125,6 +126,7 @@ export async function removeCta(ctaId: string, webinarId: string): Promise<CtaAc
   const { error } = await supabase.from("ctas").delete().eq("id", ctaId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;

@@ -54,6 +54,7 @@ export async function addChatMessage(
   });
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;
@@ -67,6 +68,7 @@ export async function removeChatMessage(
   const { error } = await supabase.from("chat_messages").delete().eq("id", messageId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;
@@ -86,6 +88,7 @@ export async function updateAiChatEnabled(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) {
     if (error.message.includes("plan_feature_blocked")) {
@@ -110,6 +113,7 @@ export async function updateAiTrainingInfo(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;

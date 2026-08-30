@@ -56,7 +56,9 @@ export async function createWebinar(
     return { error: error.message };
   }
 
-  redirect(`/dashboard/webinars/${data.id}`);
+  // Straight into the edit wizard, not the (still-empty) Control Center --
+  // a brand-new draft has nothing to show there yet.
+  redirect(`/dashboard/webinars/${data.id}/edit`);
 }
 
 // Title/category/description are set once at creation (createWebinar
@@ -85,6 +87,7 @@ export async function updateWebinarDetails(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
   revalidatePath("/dashboard/webinars");
 
   if (error) {
@@ -122,6 +125,7 @@ export async function updateMarketing(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
   if (error) {
     if (error.message.includes("plan_feature_blocked")) {
       return { error: t("marketingPlanBlocked") };
@@ -168,6 +172,7 @@ export async function updatePresenter(
       .eq("id", webinarId);
 
     revalidatePath(`/dashboard/webinars/${webinarId}`);
+    revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
     if (error) return { error: error.message };
     return null;
   }
@@ -205,6 +210,7 @@ export async function updatePresenter(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
   if (error) return { error: error.message };
   return null;
 }
@@ -237,6 +243,7 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
 
   revalidatePath("/dashboard/webinars");
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
   revalidatePath("/dashboard");
 
   if (error) {
@@ -287,6 +294,7 @@ export async function setWebinarVideo(
     .eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) {
     return { error: error.message };
@@ -307,6 +315,7 @@ export async function archiveWebinar(webinarId: string): Promise<WebinarActionSt
 
   revalidatePath("/dashboard/webinars");
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
   revalidatePath("/dashboard");
 
   if (error) {

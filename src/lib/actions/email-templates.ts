@@ -79,6 +79,7 @@ export async function upsertSingletonTemplate(
   }
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) {
     console.error("[email-templates] upsertSingletonTemplate failed:", {
@@ -126,6 +127,7 @@ export async function addReminderTemplate(
   });
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) {
     if (error.code === "23505") {
@@ -144,6 +146,7 @@ export async function removeReminderTemplate(
   const { error } = await supabase.from("email_templates").delete().eq("id", templateId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;
