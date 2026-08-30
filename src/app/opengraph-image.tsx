@@ -10,6 +10,7 @@ export const alt =
 
 const BRAND = "#4f46e5";
 const BRAND_2 = "#c026d3";
+const ACCENT = "#8b7bf0";
 
 export default async function OpengraphImage() {
   const fontsDir = join(process.cwd(), "src/app/og-fonts");
@@ -28,58 +29,62 @@ export default async function OpengraphImage() {
           height: "100%",
           display: "flex",
           position: "relative",
-          background: "linear-gradient(135deg, #eef2ff 0%, #ffffff 55%, #fdf4ff 100%)",
+          background: "linear-gradient(135deg, #0d0a1a 0%, #06040c 100%)",
           fontFamily: "Geist",
         }}
       >
-        {/* Soft brand-color glows, top-left and bottom-right */}
+        {/* Blurred brand-color orbs, same visual language as the Home hero mockup */}
         <div
           style={{
             display: "flex",
             position: "absolute",
-            top: -140,
-            left: -140,
+            top: -120,
+            left: -100,
+            width: 480,
+            height: 480,
+            borderRadius: 9999,
+            background: BRAND,
+            opacity: 0.55,
+            filter: "blur(90px)",
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            bottom: -160,
+            right: -100,
             width: 460,
             height: 460,
             borderRadius: 9999,
-            background: `linear-gradient(135deg, ${BRAND}, #818cf8)`,
-            opacity: 0.22,
+            background: BRAND_2,
+            opacity: 0.45,
+            filter: "blur(90px)",
           }}
         />
         <div
           style={{
             display: "flex",
             position: "absolute",
-            bottom: -180,
-            right: -120,
-            width: 520,
-            height: 520,
+            right: 220,
+            top: 60,
+            width: 300,
+            height: 300,
             borderRadius: 9999,
-            background: `linear-gradient(135deg, ${BRAND_2}, #f0abfc)`,
-            opacity: 0.18,
+            background: ACCENT,
+            opacity: 0.4,
+            filter: "blur(80px)",
           }}
         />
-
-        {/* Decorative play glyph, right side */}
         <div
           style={{
             display: "flex",
             position: "absolute",
-            right: 110,
-            top: 245,
-            width: 140,
-            height: 140,
-            borderRadius: 9999,
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(79,70,229,0.08)",
-            border: `2px solid rgba(79,70,229,0.25)`,
+            inset: 0,
+            background:
+              "radial-gradient(120% 100% at 50% 40%, transparent 35%, rgba(0,0,0,.55) 100%)",
           }}
-        >
-          <svg width="46" height="52" viewBox="0 0 46 52" style={{ marginLeft: 10 }}>
-            <polygon points="0,0 46,26 0,52" fill={BRAND} />
-          </svg>
-        </div>
+        />
 
         {/* Main content */}
         <div
@@ -108,11 +113,11 @@ export default async function OpengraphImage() {
                 display: "flex",
                 fontSize: 76,
                 fontWeight: 700,
-                color: "#111827",
                 letterSpacing: "-0.02em",
               }}
             >
-              WeWebinars
+              <span style={{ display: "flex", color: BRAND }}>We</span>
+              <span style={{ display: "flex", color: "#ffffff" }}>Webinars</span>
             </div>
           </div>
 
@@ -124,7 +129,7 @@ export default async function OpengraphImage() {
               marginTop: 76,
               fontSize: 34,
               fontWeight: 400,
-              color: "#4b5563",
+              color: "rgba(255,255,255,0.68)",
               lineHeight: 1.5,
             }}
           >
