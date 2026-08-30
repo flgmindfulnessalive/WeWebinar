@@ -330,7 +330,11 @@
     "team": "Team",
     "branding": "Branding (logo, colors)",
     "integrations": "Integrations",
-    "domain": "Custom domain"
+    "domain": "Custom domain",
+    "groupAccount": "Account",
+    "groupBrandDomain": "Branding & domain",
+    "groupBilling": "Billing",
+    "groupIntegrations": "Integrations"
   },
   "SettingsCommon": {
     "saved": "Saved.",
@@ -616,7 +620,10 @@
   },
   "WizardShell": {
     "stepsProgress": "{completed} of {total} steps complete",
-    "pendingLabel": "Still to configure: {list}"
+    "pendingLabel": "Still to configure: {list}",
+    "groupEssential": "Essentials",
+    "groupCustomize": "Customization",
+    "groupAdvanced": "Advanced"
   },
   "PublishBar": {
     "readyTitle": "Ready to publish",

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import {
   Calendar,
   Check,
+  ChevronDown,
   Clock3,
   FileText,
   Mail,
@@ -36,6 +37,13 @@ const ICONS = {
 
 export type WizardStepIcon = keyof typeof ICONS;
 
+// essential: required to actually publish (matches PublishBar's own
+// readiness check). customize: improves conversion, not required.
+// advanced: integrations/AI settings only some hosts touch -- collapsed by
+// default so a first-time host isn't asked to scan 9 equal-weight options
+// to find the 3 that matter for going live.
+export type WizardStepGroup = "essential" | "customize" | "advanced";
+
 export type WizardStep = {
   id: string;
   icon: WizardStepIcon;
@@ -43,8 +51,11 @@ export type WizardStep = {
   description: string;
   summary: string;
   completed: boolean;
+  group: WizardStepGroup;
   content: ReactNode;
 };
+
+const GROUP_ORDER: WizardStepGroup[] = ["essential", "customize", "advanced"];
 
 // Rail + panel: every step stays visible on the left (icon, one-line
 // status, completion check) while the active step's full form fills the
@@ -60,13 +71,24 @@ export function WizardShell({
 }) {
   const t = useTranslations("WizardShell");
   const firstIncomplete = steps.find((step) => !step.completed);
-  const [activeId, setActiveId] = useState(firstIncomplete?.id ?? steps[0]?.id);
+  const initialActiveId = firstIncomplete?.id ?? steps[0]?.id;
+  const [activeId, setActiveId] = useState(initialActiveId);
+  // Collapsed unless it already holds the step the wizard opened on (e.g. a
+  // returning host who left off mid-way through an advanced setting).
+  const [advancedOpen, setAdvancedOpen] = useState(() =>
+    steps.some((step) => step.id === initialActiveId && step.group === "advanced")
+  );
   const active = steps.find((step) => step.id === activeId) ?? steps[0];
 
   if (!active) return null;
 
   const completedCount = steps.filter((step) => step.completed).length;
   const pending = steps.filter((step) => !step.completed);
+  const groupLabels: Record<WizardStepGroup, string> = {
+    essential: t("groupEssential"),
+    customize: t("groupCustomize"),
+    advanced: t("groupAdvanced"),
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -93,50 +115,84 @@ export function WizardShell({
       {footer}
 
       <div className="grid items-start gap-5 lg:grid-cols-[280px_1fr]">
-        <nav className="flex flex-col gap-0.5 rounded-xl border bg-card p-1.5">
-          {steps.map((step) => {
-            const Icon = ICONS[step.icon];
-            const isActive = step.id === active.id;
+        <nav className="flex flex-col gap-3 rounded-xl border bg-card p-1.5">
+          {GROUP_ORDER.map((group) => {
+            const groupSteps = steps.filter((step) => step.group === group);
+            if (groupSteps.length === 0) return null;
+            const isAdvanced = group === "advanced";
+            const isOpen = !isAdvanced || advancedOpen;
+
             return (
-              <button
-                key={step.id}
-                type="button"
-                onClick={() => setActiveId(step.id)}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors",
-                  isActive ? "bg-indigo-50" : "hover:bg-accent"
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "size-4 shrink-0",
-                    isActive ? "text-indigo-600" : "text-muted-foreground"
-                  )}
-                />
-                <span className="min-w-0 flex-1">
-                  <span
-                    className={cn(
-                      "block truncate text-sm font-medium",
-                      isActive ? "text-indigo-700" : "text-foreground"
-                    )}
+              <div key={group} className="flex flex-col gap-0.5">
+                {isAdvanced ? (
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedOpen((open) => !open)}
+                    className="flex items-center justify-between rounded-lg px-3 py-1 text-left"
                   >
-                    {step.title}
-                  </span>
-                  <span
-                    className={cn(
-                      "block truncate text-xs",
-                      isActive ? "text-indigo-600" : "text-muted-foreground"
-                    )}
-                  >
-                    {step.summary}
-                  </span>
-                </span>
-                {step.completed ? (
-                  <Check className="size-4 shrink-0 text-green-600" />
+                    <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      {groupLabels[group]}
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "size-3.5 text-muted-foreground transition-transform",
+                        isOpen && "rotate-180"
+                      )}
+                    />
+                  </button>
                 ) : (
-                  <span className="size-3.5 shrink-0 rounded-full border-[1.5px] border-muted-foreground/30" />
+                  <span className="px-3 py-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    {groupLabels[group]}
+                  </span>
                 )}
-              </button>
+
+                {isOpen &&
+                  groupSteps.map((step) => {
+                    const Icon = ICONS[step.icon];
+                    const isActive = step.id === active.id;
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => setActiveId(step.id)}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors",
+                          isActive ? "bg-indigo-50" : "hover:bg-accent"
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "size-4 shrink-0",
+                            isActive ? "text-indigo-600" : "text-muted-foreground"
+                          )}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span
+                            className={cn(
+                              "block truncate text-sm font-medium",
+                              isActive ? "text-indigo-700" : "text-foreground"
+                            )}
+                          >
+                            {step.title}
+                          </span>
+                          <span
+                            className={cn(
+                              "block truncate text-xs",
+                              isActive ? "text-indigo-600" : "text-muted-foreground"
+                            )}
+                          >
+                            {step.summary}
+                          </span>
+                        </span>
+                        {step.completed ? (
+                          <Check className="size-4 shrink-0 text-green-600" />
+                        ) : (
+                          <span className="size-3.5 shrink-0 rounded-full border-[1.5px] border-muted-foreground/30" />
+                        )}
+                      </button>
+                    );
+                  })}
+              </div>
             );
           })}
         </nav>

@@ -330,7 +330,11 @@
     "team": "Equipo",
     "branding": "Marca (logo, colores)",
     "integrations": "Integraciones",
-    "domain": "Dominio propio"
+    "domain": "Dominio propio",
+    "groupAccount": "Cuenta",
+    "groupBrandDomain": "Marca y dominio",
+    "groupBilling": "Facturación",
+    "groupIntegrations": "Integraciones"
   },
   "SettingsCommon": {
     "saved": "Guardado.",
@@ -616,7 +620,10 @@
   },
   "WizardShell": {
     "stepsProgress": "{completed} de {total} pasos completos",
-    "pendingLabel": "Falta configurar: {list}"
+    "pendingLabel": "Falta configurar: {list}",
+    "groupEssential": "Esenciales",
+    "groupCustomize": "Personalización",
+    "groupAdvanced": "Avanzado"
   },
   "PublishBar": {
     "readyTitle": "Listo para publicar",
