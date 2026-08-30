@@ -186,6 +186,8 @@
       "usersCustom": "Custom user limit",
       "attendees": "{count, plural, one {# attendee per session} other {# attendees per session}}",
       "attendeesCustom": "Custom attendee limit",
+      "monthlyRegistrants": "Up to {count, number} registrants/month",
+      "monthlyRegistrantsCustom": "Custom monthly registrant limit",
       "analytics": "Analytics",
       "aiChatReplies": "AI chat reply agent",
       "integrations": "Integrations",
@@ -380,6 +382,16 @@
     "invalidEmail": "Enter a valid email address.",
     "alreadyCurrentEmail": "That's already your current email.",
     "sendFailed": "Couldn't send: {message}"
+  },
+  "AvatarUpload": {
+    "uploadFile": "Upload image",
+    "fileHint": "JPG or PNG, max 5 MB."
+  },
+  "UploadActions": {
+    "sessionNotFound": "We couldn't identify your session.",
+    "noFile": "No file was received.",
+    "invalidImageType": "The image must be JPG or PNG.",
+    "imageTooLarge": "The image can't be larger than 5 MB."
   },
   "BrandingSettings": {
     "title": "Branding",
@@ -608,6 +620,8 @@
   },
   "WebinarWizard": {
     "openPublicPage": "Open public page",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
     "preview": "Preview",
     "analytics": "Analytics",
     "publicLinkPending": "The public link (<code>{path}</code>) activates once you publish the webinar — use \"{previewLabel}\" to see it beforehand.",

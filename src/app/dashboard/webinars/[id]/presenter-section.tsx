@@ -7,6 +7,7 @@ import { updatePresenter } from "@/lib/actions/webinars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AvatarUrlField } from "@/components/avatar-url-field";
 import { cn } from "@/lib/utils";
 
 type Member = { id: string; display_name: string | null; email: string };
@@ -110,12 +111,10 @@ export function PresenterSection({
           someone else's account photo. */}
       <div className="grid gap-2">
         <Label htmlFor="presenter-avatar">{t("avatarLabel")}</Label>
-        <Input
+        <AvatarUrlField
           id="presenter-avatar"
           name="presenter_avatar_url"
-          type="url"
-          defaultValue={initial.presenterAvatarUrl ?? ""}
-          placeholder="https://..."
+          defaultValue={initial.presenterAvatarUrl}
         />
         <p className="text-xs text-muted-foreground">{t("avatarHint")}</p>
       </div>
