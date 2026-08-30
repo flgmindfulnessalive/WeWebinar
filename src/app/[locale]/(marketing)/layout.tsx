@@ -7,10 +7,16 @@ import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "./_components/language-switcher";
 import { MobileMenu } from "./_components/mobile-menu";
 
-function BrandMark() {
+// Header uses the borderless mark; footer keeps the original gradient
+// badge -- the user asked for the header-only swap, not a full replace.
+function BrandMark({ logo }: { logo: "mark" | "badge" }) {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <Logo variant="mark" className="size-8" />
+      {logo === "mark" ? (
+        <Logo variant="mark" className="size-8" />
+      ) : (
+        <Logo className="size-7 rounded-lg" />
+      )}
       <span className="text-lg font-semibold tracking-tight">
         <span style={{ color: "var(--brand)" }}>We</span>Webinars
       </span>
@@ -29,7 +35,7 @@ export default async function MarketingLayout({
     <div className="marketing-theme flex min-h-svh flex-col">
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <BrandMark />
+          <BrandMark logo="mark" />
           <nav className="flex items-center gap-2 sm:gap-4">
             {/* Below sm, Planes/Idioma/Ingresar move into the hamburger
                 menu -- crammed inline next to "Empezar" they had nowhere
@@ -63,7 +69,7 @@ export default async function MarketingLayout({
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
-          <BrandMark />
+          <BrandMark logo="badge" />
           <p className="text-sm text-muted-foreground">
             {t("footer", { year: new Date().getFullYear() })}
           </p>
