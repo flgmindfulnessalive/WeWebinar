@@ -13,7 +13,7 @@ function BrandMark({ logo }: { logo: "mark" | "badge" }) {
   return (
     <Link href="/" className="flex items-center gap-2">
       {logo === "mark" ? (
-        <Logo variant="mark" className="size-8" />
+        <Logo variant="mark" className="size-11" />
       ) : (
         <Logo className="size-7 rounded-lg" />
       )}
