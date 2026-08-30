@@ -640,6 +640,21 @@
     "pause": "Pause",
     "pausing": "Pausing..."
   },
+  "PublishBar": {
+    "readyTitle": "Ready to publish",
+    "readyBody": "You've got the essentials set up. You can publish now or keep customizing.",
+    "notReadyTitle": "Not ready yet",
+    "notReadyBody": "Load a video before publishing — without one, the live room won't work.",
+    "publishedTitle": "Published",
+    "publishedBody": "Your webinar is live and open for registrations.",
+    "pausedTitle": "Paused",
+    "pausedBody": "Registration and room access are cut off. You can republish whenever you're ready.",
+    "publish": "Publish webinar",
+    "republish": "Republish webinar",
+    "publishing": "Publishing...",
+    "pause": "Pause",
+    "pausing": "Pausing..."
+  },
   "WebinarWizard": {
     "openPublicPage": "Open public page",
     "copyLink": "Copy link",
