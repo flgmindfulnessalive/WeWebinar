@@ -769,6 +769,7 @@
     "styleFixedButton": "Botón fijo",
     "overlayTextLabel": "Texto",
     "overlayImageLabel": "Imagen (URL)",
+    "overlayLinkUrlLabel": "Link al hacer clic (URL, opcional)",
     "questionLabel": "Pregunta",
     "optionsLabel": "Opciones (una por línea)",
     "adding": "Agregando...",

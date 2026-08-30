@@ -773,8 +773,9 @@ function NotificationCard({
 
   const text = config.text ? String(config.text) : null;
   const imageUrl = config.image_url ? String(config.image_url) : null;
-  return (
-    <div className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
+  const linkUrl = config.url ? String(config.url) : null;
+  const content = (
+    <>
       {imageUrl && (
         <Image
           src={imageUrl}
@@ -786,8 +787,22 @@ function NotificationCard({
         />
       )}
       {text && <p className="text-sm">📢 {text}</p>}
-    </div>
+    </>
   );
+  if (linkUrl) {
+    return (
+      <a
+        href={linkUrl}
+        target="_blank"
+        rel="noreferrer"
+        onClick={onLinkClick}
+        className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3 hover:bg-muted"
+      >
+        {content}
+      </a>
+    );
+  }
+  return <div className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">{content}</div>;
 }
 
 // A voter's own choice always shows even with 0 other votes so far, and
@@ -879,13 +894,29 @@ function VotedNote({ variant }: { variant: "dark" | "light" }) {
 // looping background-position slide (see .animate-cta-glow-border in
 // globals.css), which degrades gracefully to a static gradient ring under
 // prefers-reduced-motion.
-function GlowCtaBorder({ className, children }: { className?: string; children: React.ReactNode }) {
+//
+// Literal hex, not var(--brand)/var(--brand-2): those tokens are scoped to
+// .marketing-theme (see globals.css) and the live room doesn't wrap in it --
+// using the var() here silently resolved to nothing, rendering the whole
+// button transparent.
+function GlowCtaBorder({
+  className,
+  rounded = "md",
+  children,
+}: {
+  className?: string;
+  rounded?: "md" | "full";
+  children: React.ReactNode;
+}) {
   return (
     <div
-      className={cn("animate-cta-glow-border rounded-md p-[3px] shadow-lg", className)}
+      className={cn(
+        "animate-cta-glow-border p-[3px] shadow-lg",
+        rounded === "full" ? "rounded-full" : "rounded-md",
+        className
+      )}
       style={{
-        backgroundImage:
-          "linear-gradient(90deg, var(--brand), #a78bfa, #e879f9, var(--brand), #a78bfa, #e879f9)",
+        backgroundImage: "linear-gradient(90deg, #4f46e5, #a78bfa, #e879f9, #4f46e5, #a78bfa, #e879f9)",
         backgroundSize: "300% 100%",
       }}
     >
@@ -939,40 +970,76 @@ function CtaOverlay({
     const style = String(config.style ?? "banner");
     const text = String(config.text ?? "");
     const url = String(config.url ?? "#");
-    const positionClass =
-      style === "fixed_button"
-        ? "bottom-4 right-4"
-        : style === "popup"
-          ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          : "bottom-4 left-1/2 -translate-x-1/2";
-
     const isClosed = remainingSeconds === 0;
+    const isPill = style === "fixed_button";
+    const isBanner = style === "banner";
+
+    const button = isClosed ? (
+      <span
+        className={cn(
+          "block cursor-not-allowed bg-black/70 px-5 py-3 text-center text-sm font-medium text-white shadow-lg",
+          isPill ? "rounded-full" : "rounded-md",
+          isBanner && "w-full"
+        )}
+      >
+        {t("scarcityClosed")}
+      </span>
+    ) : (
+      <GlowCtaBorder rounded={isPill ? "full" : "md"} className={isBanner ? "w-full" : undefined}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={onLinkClick}
+          className={cn(
+            "block text-center text-sm font-medium text-white",
+            isPill ? "rounded-full px-5 py-2.5" : "rounded-[5px] px-5 py-3"
+          )}
+          style={{ background: "linear-gradient(90deg, #4f46e5, #c026d3)" }}
+        >
+          {text}
+        </a>
+      </GlowCtaBorder>
+    );
+
+    const countdown = remainingSeconds !== null && remainingSeconds > 0 && (
+      <span className="rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white">
+        {t("scarcityClosesIn", { time: secondsToClock(remainingSeconds) })}
+      </span>
+    );
+
+    // Three visibly distinct treatments sharing the same glow line: a wide
+    // bar along the bottom edge (banner), a centered card with a dimmed
+    // backdrop that reads as an interruption (popup), and a compact
+    // floating pill anchored to a corner (fixed_button) -- previously all
+    // three only differed by position, with identical shrink-wrapped
+    // buttons, so "popup" and "fixed_button" looked like the same banner
+    // just moved around.
+    if (style === "popup") {
+      return (
+        <>
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-10 bg-black/40" />
+          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
+            {button}
+            {countdown}
+          </div>
+        </>
+      );
+    }
+
+    if (style === "fixed_button") {
+      return (
+        <div className="absolute bottom-4 right-4 z-10 flex flex-col items-end gap-1.5">
+          {button}
+          {countdown}
+        </div>
+      );
+    }
 
     return (
-      <div className={cn("absolute z-10 flex flex-col items-center gap-1.5", positionClass)}>
-        {isClosed ? (
-          <span className="block cursor-not-allowed rounded-md bg-black/60 px-5 py-3 text-sm font-medium text-white/70 shadow-lg">
-            {t("scarcityClosed")}
-          </span>
-        ) : (
-          <GlowCtaBorder>
-            <a
-              href={url}
-              target="_blank"
-              rel="noreferrer"
-              onClick={onLinkClick}
-              className="block rounded-[5px] px-5 py-3 text-sm font-medium text-white"
-              style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
-            >
-              {text}
-            </a>
-          </GlowCtaBorder>
-        )}
-        {remainingSeconds !== null && remainingSeconds > 0 && (
-          <span className="rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white">
-            {t("scarcityClosesIn", { time: secondsToClock(remainingSeconds) })}
-          </span>
-        )}
+      <div className="absolute inset-x-4 bottom-4 z-10 flex flex-col items-center gap-1.5">
+        {button}
+        {countdown}
       </div>
     );
   }
@@ -980,14 +1047,31 @@ function CtaOverlay({
   if (cta.type === "overlay") {
     const text = config.text ? String(config.text) : null;
     const imageUrl = config.image_url ? String(config.image_url) : null;
-    return (
-      <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 rounded-md bg-black/80 p-4 text-white shadow-lg">
+    const linkUrl = config.url ? String(config.url) : null;
+    const cardClass =
+      "absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 rounded-md bg-black/80 p-4 text-white shadow-lg";
+    const content = (
+      <>
         {imageUrl && (
           <Image src={imageUrl} alt="" width={240} height={120} className="max-h-32 w-auto object-contain" unoptimized />
         )}
         {text && <p className="text-sm">{text}</p>}
-      </div>
+      </>
     );
+    if (linkUrl) {
+      return (
+        <a
+          href={linkUrl}
+          target="_blank"
+          rel="noreferrer"
+          onClick={onLinkClick}
+          className={cn(cardClass, "cursor-pointer transition-opacity hover:opacity-90")}
+        >
+          {content}
+        </a>
+      );
+    }
+    return <div className={cardClass}>{content}</div>;
   }
 
   if (cta.type === "poll") {
@@ -1058,7 +1142,7 @@ function EndedState({
                   rel="noreferrer"
                   onClick={() => onCtaClick(cta.id)}
                   className="block rounded-[5px] px-5 py-3 text-sm font-medium text-white"
-                  style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+                  style={{ background: "linear-gradient(90deg, #4f46e5, #c026d3)" }}
                 >
                   {String(config.text ?? t("seeMore"))}
                 </a>
