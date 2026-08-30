@@ -110,6 +110,13 @@ export default async function RegisterPage({
       current?.account.id === account.id &&
       (current.user.role === "owner" || current.user.role === "editor");
     if (!canPreview) notFound();
+  } else {
+    // Only real, published-page visits count -- a host previewing their own
+    // unpublished webinar above never reaches here. Feeds Analytics'
+    // "Visitas" funnel stage (get_webinar_summary); best-effort, so a
+    // failure here never breaks the actual registration page.
+    const { error: viewError } = await supabase.rpc("record_page_view", { p_webinar_id: webinar.id });
+    if (viewError) console.error("[register] record_page_view failed:", viewError);
   }
 
   const hasFixedSlots = webinar.schedule_mode === "fixed" || webinar.schedule_mode === "both";
