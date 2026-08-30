@@ -20,6 +20,7 @@ import { CtasSection } from "./ctas-section";
 import { EmailTemplatesSection } from "./email-templates-section";
 import { MarketingSection } from "./marketing-section";
 import { CopyLinkButton } from "./copy-link-button";
+import { PublishBar } from "./publish-bar";
 import { resolveEmailBranding } from "@/lib/email-templates";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import type { Database } from "@/lib/supabase/database.types";
@@ -145,6 +146,7 @@ export default async function WebinarDetailPage({
               webinarTitle={webinar.title}
               status={webinar.status}
               isOwner={current.user.role === "owner"}
+              showLifecycleActions={false}
             />
           )}
         </div>
@@ -384,7 +386,18 @@ export default async function WebinarDetailPage({
           },
         ];
 
-        return <WizardShell steps={steps} />;
+        return (
+          <WizardShell
+            steps={steps}
+            footer={
+              <PublishBar
+                webinarId={webinar.id}
+                status={webinar.status}
+                hasVideo={Boolean(webinar.video_source)}
+              />
+            }
+          />
+        );
       })()}
     </div>
   );

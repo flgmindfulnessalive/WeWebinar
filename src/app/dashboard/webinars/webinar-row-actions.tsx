@@ -15,11 +15,17 @@ export function WebinarRowActions({
   webinarTitle,
   status,
   isOwner,
+  showLifecycleActions = true,
 }: {
   webinarId: string;
   webinarTitle: string;
   status: WebinarStatus;
   isOwner: boolean;
+  // Publish/Pause -- false on the webinar detail page, where the
+  // PublishBar below the wizard is the single, prominent place for those
+  // (see publish-bar.tsx). Still true (default) on the webinars list,
+  // which has no such bar.
+  showLifecycleActions?: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations("WebinarRowActions");
@@ -73,7 +79,7 @@ export function WebinarRowActions({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {error && <span className="text-xs text-destructive">{error}</span>}
-      {status !== "published" && (
+      {showLifecycleActions && status !== "published" && (
         <Button
           size="sm"
           variant="outline"
@@ -88,7 +94,7 @@ export function WebinarRowActions({
           {t("publish")}
         </Button>
       )}
-      {status === "published" && (
+      {showLifecycleActions && status === "published" && (
         <Button
           size="sm"
           variant="ghost"

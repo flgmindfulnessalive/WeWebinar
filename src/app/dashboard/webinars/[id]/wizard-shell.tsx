@@ -51,7 +51,13 @@ export type WizardStep = {
 // right panel -- lets a host see overall progress without losing context
 // while editing one step. Opens on the first incomplete step so there's
 // always something actionable in view on load.
-export function WizardShell({ steps }: { steps: WizardStep[] }) {
+export function WizardShell({
+  steps,
+  footer,
+}: {
+  steps: WizardStep[];
+  footer?: ReactNode;
+}) {
   const t = useTranslations("WizardShell");
   const firstIncomplete = steps.find((step) => !step.completed);
   const [activeId, setActiveId] = useState(firstIncomplete?.id ?? steps[0]?.id);
@@ -83,6 +89,8 @@ export function WizardShell({ steps }: { steps: WizardStep[] }) {
           </span>
         )}
       </div>
+
+      {footer}
 
       <div className="grid items-start gap-5 lg:grid-cols-[280px_1fr]">
         <nav className="flex flex-col gap-0.5 rounded-xl border bg-card p-1.5">
