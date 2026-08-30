@@ -134,6 +134,26 @@
   }
 }
 
+/* Live-room link CTAs (GlowCtaBorder in live-room-client.tsx) -- a light
+   band slides continuously along the button's border to draw the eye
+   without stealing focus from the video. Paused for reduced-motion; the
+   gradient border itself still reads fine as a static accent. */
+@keyframes cta-glow-border {
+  to {
+    background-position: -300% 0;
+  }
+}
+
+.animate-cta-glow-border {
+  animation: cta-glow-border 3.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cta-glow-border {
+    animation: none;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

@@ -82,7 +82,7 @@ export function CtasSection({
         </div>
 
         {type === "link" && (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-4">
             <div className="grid gap-1.5">
               <Label htmlFor="link_text">{t("buttonTextLabel")}</Label>
               <Input id="link_text" name="link_text" required />
@@ -103,6 +103,16 @@ export function CtasSection({
                 <option value="popup">{t("stylePopup")}</option>
                 <option value="fixed_button">{t("styleFixedButton")}</option>
               </select>
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="link_scarcity_minutes">{t("scarcityMinutesLabel")}</Label>
+              <Input
+                id="link_scarcity_minutes"
+                name="link_scarcity_minutes"
+                type="number"
+                min={1}
+                placeholder={t("scarcityMinutesPlaceholder")}
+              />
             </div>
           </div>
         )}
@@ -152,7 +162,12 @@ export function CtasSection({
 function ctaSummary(cta: Cta, t: ReturnType<typeof useTranslations<"CtasSection">>): string {
   const config = (cta.config ?? {}) as Record<string, unknown>;
   if (cta.type === "link") {
-    return t("summaryLinkFormat", { text: String(config.text ?? ""), url: String(config.url ?? "") });
+    const base = t("summaryLinkFormat", { text: String(config.text ?? ""), url: String(config.url ?? "") });
+    const scarcityMinutes = config.scarcity_minutes;
+    if (typeof scarcityMinutes === "number" && scarcityMinutes > 0) {
+      return `${base} · ${t("summaryScarcity", { minutes: scarcityMinutes })}`;
+    }
+    return base;
   }
   if (cta.type === "overlay") return String(config.text ?? config.image_url ?? "");
   if (cta.type === "poll") {

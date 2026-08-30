@@ -249,7 +249,9 @@
     "webinarEnded": "The webinar has ended.",
     "seeMore": "See more",
     "sendReaction": "Send {emoji} reaction",
-    "openReactions": "Open reactions"
+    "openReactions": "Open reactions",
+    "scarcityClosesIn": "Closes in {time}",
+    "scarcityClosed": "Offer closed"
   },
   "ChatPanel": {
     "moderatorTeam": "Moderator team",
@@ -773,7 +775,10 @@
     "addCta": "Add CTA",
     "remove": "Remove",
     "summaryLinkFormat": "\"{text}\" → {url}",
-    "summaryPollFormat": "{question} ({count, plural, one {# option} other {# options}})"
+    "summaryPollFormat": "{question} ({count, plural, one {# option} other {# options}})",
+    "scarcityMinutesLabel": "Urgency close (min, optional)",
+    "scarcityMinutesPlaceholder": "E.g. 15",
+    "summaryScarcity": "closes {minutes} min after it first appears"
   },
   "CtaActions": {
     "invalidStartFormat": "Start must be in mm:ss format.",
@@ -782,6 +787,7 @@
     "timestampBeyondVideo": "The video is {duration} long -- pick a moment within that range.",
     "linkTextAndUrlRequired": "The button text and URL are required.",
     "urlMustBeHttp": "The URL must start with http:// or https://.",
+    "invalidScarcityMinutes": "The urgency close must be a whole number of minutes greater than 0.",
     "overlayNeedsContent": "Add a text or an image for the overlay.",
     "pollNeedsQuestionAndOptions": "The poll needs a question and at least 2 options.",
     "invalidCtaType": "Invalid CTA type."
@@ -910,7 +916,12 @@
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",
     "aiReplyHidden": "AI reply hidden",
-    "emojiHeader": "Reaction"
+    "emojiHeader": "Reaction",
+    "reactionLove": "Love",
+    "reactionClap": "Clap",
+    "reactionLaugh": "Laugh",
+    "reactionWow": "Wow",
+    "reactionLike": "Like"
   },
   "WebinarReport": {
     "generatedOn": "Generated on {date}",
@@ -921,10 +932,10 @@
     "footerConfidential": "Confidential report — internal use",
     "pageOf": "Page {page} of {total}",
     "noScheduleData": "Not enough time slot data yet.",
+    "noCountryData": "No country data yet.",
     "noCtaData": "No CTA clicks yet.",
     "noPollData": "No poll votes yet.",
-    "ctaClickersLabel": "Who clicked",
-    "ctaClickersMore": "+{count} more"
+    "ctaClickersLabel": "Who clicked"
   },
   "AdminOverview": {
     "title": "Platform overview",
