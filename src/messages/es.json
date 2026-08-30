@@ -910,7 +910,12 @@
     "clicksHeader": "Clics",
     "hideAiReplies": "Ocultar respuestas de la AI",
     "aiReplyHidden": "Respuesta de la AI oculta",
-    "emojiHeader": "Reacción"
+    "emojiHeader": "Reacción",
+    "reactionLove": "Me encanta",
+    "reactionClap": "Aplausos",
+    "reactionLaugh": "Risa",
+    "reactionWow": "Sorpresa",
+    "reactionLike": "Me gusta"
   },
   "WebinarReport": {
     "generatedOn": "Generado el {date}",
@@ -921,10 +926,10 @@
     "footerConfidential": "Reporte confidencial — uso interno",
     "pageOf": "Página {page} de {total}",
     "noScheduleData": "Sin datos suficientes de horarios todavía.",
+    "noCountryData": "Sin datos de países todavía.",
     "noCtaData": "Sin clics en CTAs todavía.",
     "noPollData": "Sin votos en encuestas todavía.",
-    "ctaClickersLabel": "Quiénes hicieron clic",
-    "ctaClickersMore": "+{count} más"
+    "ctaClickersLabel": "Quiénes hicieron clic"
   },
   "AdminOverview": {
     "title": "Resumen de la plataforma",

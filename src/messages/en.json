@@ -910,7 +910,12 @@
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",
     "aiReplyHidden": "AI reply hidden",
-    "emojiHeader": "Reaction"
+    "emojiHeader": "Reaction",
+    "reactionLove": "Love",
+    "reactionClap": "Clap",
+    "reactionLaugh": "Laugh",
+    "reactionWow": "Wow",
+    "reactionLike": "Like"
   },
   "WebinarReport": {
     "generatedOn": "Generated on {date}",
@@ -921,10 +926,10 @@
     "footerConfidential": "Confidential report — internal use",
     "pageOf": "Page {page} of {total}",
     "noScheduleData": "Not enough time slot data yet.",
+    "noCountryData": "No country data yet.",
     "noCtaData": "No CTA clicks yet.",
     "noPollData": "No poll votes yet.",
-    "ctaClickersLabel": "Who clicked",
-    "ctaClickersMore": "+{count} more"
+    "ctaClickersLabel": "Who clicked"
   },
   "AdminOverview": {
     "title": "Platform overview",

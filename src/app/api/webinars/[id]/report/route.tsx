@@ -5,11 +5,15 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
 import { secondsToClock } from "@/lib/time";
+import { countryDisplayName } from "@/lib/country";
 import { registerReportFonts } from "@/lib/pdf-report/fonts";
 import {
   WebinarReportDocument,
   type ReportBar,
   type ReportPollGroup,
+  type ReportRegistrant,
+  type ReportMessage,
+  type ReportReaction,
 } from "@/lib/pdf-report/webinar-report-document";
 
 const DAY_KEYS = [
@@ -36,6 +40,7 @@ export async function GET(
   const t = await getTranslations("WebinarAnalytics");
   const tSchedule = await getTranslations("ScheduleSection");
   const tReport = await getTranslations("WebinarReport");
+  const tTables = await getTranslations("AnalyticsTables");
   const locale = await getLocale();
 
   const supabase = await createClient();
@@ -58,6 +63,9 @@ export async function GET(
     { data: clickerRows },
     { data: watchPositionRows },
     { data: schedulePerformanceRows },
+    { data: countryRows },
+    { data: messageRows },
+    { data: reactionRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
@@ -67,6 +75,9 @@ export async function GET(
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_country_breakdown", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId }),
   ]);
 
   const watchPositionByRegistrant = new Map(
@@ -149,6 +160,65 @@ export async function GET(
       };
     });
 
+  // No emoji here (flags or otherwise) -- react-pdf's embedded text fonts
+  // don't carry pictograph glyphs, so multi-codepoint flag sequences render
+  // as garbled overlapping characters instead of a blank/missing glyph.
+  const countryBars: ReportBar[] = (countryRows ?? []).map((r) => {
+    const label = r.country ? countryDisplayName(r.country, locale) : t("unknownCountry");
+    return {
+      label,
+      pct: r.registrant_count,
+      valueLabel: t("countryValueLabel", { count: r.registrant_count, pct: r.pct }),
+    };
+  });
+
+  const reportRegistrants: ReportRegistrant[] = (registrants ?? []).map((r) => {
+    const pos = watchPositionByRegistrant.get(r.id) ?? null;
+    const watchLabel =
+      pos === null
+        ? tTables("didNotAttend")
+        : durationSeconds > 0
+          ? `${secondsToClock(pos)} (${Math.round((pos / durationSeconds) * 100)}%)`
+          : secondsToClock(pos);
+    return {
+      name: r.name,
+      email: r.email,
+      phone: r.phone ?? "—",
+      statusLabel: r.unsubscribed_at ? tTables("unsubscribedBadge") : tTables("activeStatus"),
+      scheduleLabel: new Date(r.computed_session_start).toLocaleString(locale),
+      registeredLabel: new Date(r.created_at).toLocaleString(locale),
+      watchLabel,
+    };
+  });
+
+  const reportMessages: ReportMessage[] = (messageRows ?? []).map((m) => ({
+    name: m.name,
+    email: m.email,
+    minuteLabel: secondsToClock(m.video_timestamp_seconds),
+    messageText: m.message_text,
+    replyKind: m.ai_reply_text ? "ai" : m.host_replied ? "host" : "none",
+    replyText: m.ai_reply_text,
+  }));
+
+  // Same font limitation as country flags -- react-pdf's text fonts have no
+  // pictograph glyphs, so the raw reaction emoji renders as garbled
+  // characters. Swap each of the app's fixed reaction emoji for a short
+  // text label instead of leaving it in the PDF's font.
+  const REACTION_LABELS: Record<string, string> = {
+    "❤️": tTables("reactionLove"),
+    "👏": tTables("reactionClap"),
+    "😂": tTables("reactionLaugh"),
+    "😮": tTables("reactionWow"),
+    "👍": tTables("reactionLike"),
+  };
+
+  const reportReactions: ReportReaction[] = (reactionRows ?? []).map((r) => ({
+    name: r.name,
+    email: r.email,
+    emoji: REACTION_LABELS[r.emoji] ?? r.emoji,
+    minuteLabel: r.video_timestamp_seconds === null ? "—" : secondsToClock(r.video_timestamp_seconds),
+  }));
+
   function ctaLabel(config: unknown, type: string): string {
     const c = (config ?? {}) as Record<string, unknown>;
     if (type === "link") return String(c.text ?? t("typeLinkFallback"));
@@ -225,22 +295,47 @@ export async function GET(
         retention,
         retentionCaption: t("retentionTitle"),
         scheduleBars,
+        countryBars,
         ctaBars,
         pollGroups: Array.from(pollsByQuestion.values()),
+        registrants: reportRegistrants,
+        messages: reportMessages,
+        reactions: reportReactions,
         labels: {
           funnelTitle: t("funnelTitle"),
           retentionTitle: t("retentionTitle"),
           scheduleTitle: t("scheduleTitle"),
+          countryBreakdownTitle: t("countryBreakdownTitle"),
           ctaClicksTitle: t("ctaClicksTitle"),
           pollResultsTitle: t("pollResultsTitle"),
+          registrantsTitle: t("registrantsTitle", { count: reportRegistrants.length }),
+          chatMessagesTitle: t("chatMessagesTitle", { count: reportMessages.length }),
+          reactionsTitle: t("reactionsTitle", { count: reportReactions.length }),
           noScheduleData: tReport("noScheduleData"),
+          noCountryData: tReport("noCountryData"),
           noCtaData: tReport("noCtaData"),
           noPollData: tReport("noPollData"),
           ctaClickersLabel: tReport("ctaClickersLabel"),
-          ctaClickersMore: (count) => tReport("ctaClickersMore", { count }),
           footerBrand: tReport("footerBrand"),
           footerConfidential: tReport("footerConfidential"),
           pageOf: (page, total) => tReport("pageOf", { page, total }),
+          table: {
+            name: tTables("nameHeader"),
+            email: tTables("emailHeader"),
+            phone: tTables("phoneHeader"),
+            status: tTables("statusHeader"),
+            schedule: tTables("scheduleHeader"),
+            registered: tTables("registeredHeader"),
+            watched: tTables("lastMinuteWatchedHeader"),
+            attendee: tTables("attendeeHeader"),
+            minute: tTables("minuteHeader"),
+            message: tTables("messageHeader"),
+            reply: tTables("replyHeader"),
+            emoji: tTables("emojiHeader"),
+            aiReplyBadge: tTables("aiReplyBadge"),
+            hostRepliedBadge: tTables("hostRepliedBadge"),
+            noReply: tTables("noReply"),
+          },
         },
       }}
     />

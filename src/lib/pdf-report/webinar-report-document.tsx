@@ -23,6 +23,32 @@ export type ReportBar = {
 };
 export type ReportPollGroup = { question: string; bars: ReportBar[] };
 
+export type ReportRegistrant = {
+  name: string;
+  email: string;
+  phone: string;
+  statusLabel: string;
+  scheduleLabel: string;
+  registeredLabel: string;
+  watchLabel: string;
+};
+
+export type ReportMessage = {
+  name: string;
+  email: string;
+  minuteLabel: string;
+  messageText: string;
+  replyKind: "ai" | "host" | "none";
+  replyText: string | null;
+};
+
+export type ReportReaction = {
+  name: string;
+  email: string;
+  emoji: string;
+  minuteLabel: string;
+};
+
 export type WebinarReportData = {
   webinarTitle: string;
   presenterName: string | null;
@@ -34,22 +60,47 @@ export type WebinarReportData = {
   retention: ReportRetentionPoint[];
   retentionCaption: string;
   scheduleBars: ReportBar[];
+  countryBars: ReportBar[];
   ctaBars: ReportBar[];
   pollGroups: ReportPollGroup[];
+  registrants: ReportRegistrant[];
+  messages: ReportMessage[];
+  reactions: ReportReaction[];
   labels: {
     funnelTitle: string;
     retentionTitle: string;
     scheduleTitle: string;
+    countryBreakdownTitle: string;
     ctaClicksTitle: string;
     pollResultsTitle: string;
+    registrantsTitle: string;
+    chatMessagesTitle: string;
+    reactionsTitle: string;
     noScheduleData: string;
+    noCountryData: string;
     noCtaData: string;
     noPollData: string;
     ctaClickersLabel: string;
-    ctaClickersMore: (count: number) => string;
     footerBrand: string;
     footerConfidential: string;
     pageOf: (page: number, total: number) => string;
+    table: {
+      name: string;
+      email: string;
+      phone: string;
+      status: string;
+      schedule: string;
+      registered: string;
+      watched: string;
+      attendee: string;
+      minute: string;
+      message: string;
+      reply: string;
+      emoji: string;
+      aiReplyBadge: string;
+      hostRepliedBadge: string;
+      noReply: string;
+    };
   };
 };
 
@@ -186,6 +237,52 @@ const styles = StyleSheet.create({
   clickersMore: { color: MUTED, fontWeight: 500 },
   pollQuestion: { fontSize: 8.5, color: INK, fontWeight: 500, marginBottom: 7 },
   emptyNote: { fontSize: 8, color: MUTED },
+  tHeadRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: RULE,
+    paddingBottom: 4,
+    marginBottom: 3,
+  },
+  tHeadCell: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    color: MUTED,
+    paddingRight: 4,
+  },
+  tRow: {
+    flexDirection: "row",
+    paddingVertical: 4,
+    borderBottomWidth: 0.5,
+    borderBottomColor: RULE,
+    alignItems: "flex-start",
+  },
+  tCell: { fontSize: 7.5, color: BODY, paddingRight: 4 },
+  tCellName: { fontSize: 7.5, color: INK, fontWeight: 500 },
+  tCellMuted: { fontSize: 6.5, color: MUTED, marginTop: 1 },
+  replyBadgeAi: {
+    fontSize: 6,
+    fontWeight: 600,
+    color: ACCENT_DEEP,
+    backgroundColor: ACCENT_10,
+    borderRadius: 5,
+    paddingVertical: 1.5,
+    paddingHorizontal: 4,
+    alignSelf: "flex-start",
+    marginBottom: 2,
+  },
+  replyBadgeHost: {
+    fontSize: 6,
+    fontWeight: 600,
+    color: INK,
+    backgroundColor: FILL,
+    borderRadius: 5,
+    paddingVertical: 1.5,
+    paddingHorizontal: 4,
+    alignSelf: "flex-start",
+  },
   footerRow: {
     marginTop: "auto",
     paddingTop: 10,
@@ -292,18 +389,14 @@ function RetentionCurve({ points, caption }: { points: ReportRetentionPoint[]; c
   );
 }
 
-const MAX_CLICKERS_SHOWN = 12;
-
 function Bars({
   bars,
   emptyLabel,
   clickersLabel,
-  moreLabel,
 }: {
   bars: ReportBar[];
   emptyLabel: string;
   clickersLabel?: string;
-  moreLabel?: (count: number) => string;
 }) {
   if (bars.length === 0) return <Text style={styles.emptyNote}>{emptyLabel}</Text>;
   const max = Math.max(...bars.map((b) => b.pct), 1);
@@ -311,8 +404,6 @@ function Bars({
     <View>
       {bars.map((bar, i) => {
         const clickers = bar.clickers ?? [];
-        const visible = clickers.slice(0, MAX_CLICKERS_SHOWN);
-        const remaining = clickers.length - visible.length;
         return (
           <View key={i} style={styles.barRow}>
             <View style={styles.barTopRow}>
@@ -325,17 +416,14 @@ function Bars({
             <View style={styles.barTrack}>
               <View style={{ ...styles.barFill, width: `${Math.max(3, (bar.pct / max) * 100)}%` }} />
             </View>
-            {visible.length > 0 && (
+            {clickers.length > 0 && (
               <View style={styles.clickersBox}>
                 <Text style={styles.clickersLabel}>{clickersLabel}</Text>
-                <Text style={styles.clickersText}>
-                  {visible.map((c) => `${c.name} (${c.email})`).join(", ")}
-                </Text>
-                {remaining > 0 && moreLabel && (
-                  <Text style={{ ...styles.clickersText, ...styles.clickersMore }}>
-                    {moreLabel(remaining)}
+                {clickers.map((c, ci) => (
+                  <Text key={ci} style={styles.clickersText}>
+                    {c.name} · {c.email}
                   </Text>
-                )}
+                ))}
               </View>
             )}
           </View>
@@ -345,8 +433,125 @@ function Bars({
   );
 }
 
+const REG_COLS = { name: 90, email: 128, phone: 54, status: 54, schedule: 92, registered: 72, watched: 46 };
+
+function RegistrantsTable({
+  rows,
+  headers,
+  emptyLabel,
+}: {
+  rows: ReportRegistrant[];
+  headers: WebinarReportData["labels"]["table"];
+  emptyLabel: string;
+}) {
+  if (rows.length === 0) return <Text style={styles.emptyNote}>{emptyLabel}</Text>;
+  return (
+    <View>
+      <View style={styles.tHeadRow}>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.name }}>{headers.name}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.email }}>{headers.email}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.phone }}>{headers.phone}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.status }}>{headers.status}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.schedule }}>{headers.schedule}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.registered }}>{headers.registered}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REG_COLS.watched }}>{headers.watched}</Text>
+      </View>
+      {rows.map((r, i) => (
+        <View key={i} style={styles.tRow} wrap={false}>
+          <Text style={{ ...styles.tCellName, width: REG_COLS.name }}>{r.name}</Text>
+          <Text style={{ ...styles.tCell, width: REG_COLS.email }}>{r.email}</Text>
+          <Text style={{ ...styles.tCell, width: REG_COLS.phone }}>{r.phone}</Text>
+          <Text style={{ ...styles.tCell, width: REG_COLS.status }}>{r.statusLabel}</Text>
+          <Text style={{ ...styles.tCell, width: REG_COLS.schedule }}>{r.scheduleLabel}</Text>
+          <Text style={{ ...styles.tCell, width: REG_COLS.registered }}>{r.registeredLabel}</Text>
+          <Text style={{ ...styles.tCell, width: REG_COLS.watched }}>{r.watchLabel}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const MSG_COLS = { attendee: 128, minute: 38, message: 264, reply: 106 };
+
+function MessagesTable({
+  rows,
+  headers,
+}: {
+  rows: ReportMessage[];
+  headers: WebinarReportData["labels"]["table"];
+}) {
+  return (
+    <View>
+      <View style={styles.tHeadRow}>
+        <Text style={{ ...styles.tHeadCell, width: MSG_COLS.attendee }}>{headers.attendee}</Text>
+        <Text style={{ ...styles.tHeadCell, width: MSG_COLS.minute }}>{headers.minute}</Text>
+        <Text style={{ ...styles.tHeadCell, width: MSG_COLS.message }}>{headers.message}</Text>
+        <Text style={{ ...styles.tHeadCell, width: MSG_COLS.reply }}>{headers.reply}</Text>
+      </View>
+      {rows.map((m, i) => (
+        <View key={i} style={styles.tRow} wrap={false}>
+          <View style={{ width: MSG_COLS.attendee }}>
+            <Text style={styles.tCellName}>{m.name}</Text>
+            <Text style={styles.tCellMuted}>{m.email}</Text>
+          </View>
+          <Text style={{ ...styles.tCell, width: MSG_COLS.minute }}>{m.minuteLabel}</Text>
+          <Text style={{ ...styles.tCell, width: MSG_COLS.message }}>{m.messageText}</Text>
+          <View style={{ width: MSG_COLS.reply }}>
+            {m.replyKind === "ai" ? (
+              <>
+                <Text style={styles.replyBadgeAi}>{headers.aiReplyBadge}</Text>
+                {m.replyText && <Text style={styles.tCellMuted}>{m.replyText}</Text>}
+              </>
+            ) : m.replyKind === "host" ? (
+              <Text style={styles.replyBadgeHost}>{headers.hostRepliedBadge}</Text>
+            ) : (
+              <Text style={styles.tCellMuted}>{headers.noReply}</Text>
+            )}
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const REACT_COLS = { attendee: 280, emoji: 150, minute: 106 };
+
+function ReactionsTable({
+  rows,
+  headers,
+}: {
+  rows: ReportReaction[];
+  headers: WebinarReportData["labels"]["table"];
+}) {
+  return (
+    <View>
+      <View style={styles.tHeadRow}>
+        <Text style={{ ...styles.tHeadCell, width: REACT_COLS.attendee }}>{headers.attendee}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REACT_COLS.emoji }}>{headers.emoji}</Text>
+        <Text style={{ ...styles.tHeadCell, width: REACT_COLS.minute }}>{headers.minute}</Text>
+      </View>
+      {rows.map((r, i) => (
+        <View key={i} style={styles.tRow} wrap={false}>
+          <View style={{ width: REACT_COLS.attendee }}>
+            <Text style={styles.tCellName}>{r.name}</Text>
+            <Text style={styles.tCellMuted}>{r.email}</Text>
+          </View>
+          <Text style={{ ...styles.tCell, width: REACT_COLS.emoji }}>{r.emoji}</Text>
+          <Text style={{ ...styles.tCell, width: REACT_COLS.minute }}>{r.minuteLabel}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
-  const hasPage2 = data.scheduleBars.length > 0 || data.ctaBars.length > 0 || data.pollGroups.length > 0;
+  const hasPage2 =
+    data.scheduleBars.length > 0 ||
+    data.countryBars.length > 0 ||
+    data.ctaBars.length > 0 ||
+    data.pollGroups.length > 0;
+  const hasPage3 =
+    data.registrants.length > 0 || data.messages.length > 0 || data.reactions.length > 0;
 
   return (
     <Document title={data.webinarTitle}>
@@ -400,12 +605,16 @@ export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
           </View>
 
           <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{data.labels.countryBreakdownTitle}</Text>
+            <Bars bars={data.countryBars} emptyLabel={data.labels.noCountryData} />
+          </View>
+
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.labels.ctaClicksTitle}</Text>
             <Bars
               bars={data.ctaBars}
               emptyLabel={data.labels.noCtaData}
               clickersLabel={data.labels.ctaClickersLabel}
-              moreLabel={data.labels.ctaClickersMore}
             />
           </View>
 
@@ -422,6 +631,39 @@ export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
               ))
             )}
           </View>
+
+          <Footer left={data.labels.footerConfidential} pageOf={data.labels.pageOf} />
+        </Page>
+      )}
+
+      {hasPage3 && (
+        <Page size="LETTER" style={styles.page}>
+          <Masthead generatedAtLabel={data.generatedAtLabel} />
+
+          {data.registrants.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{data.labels.registrantsTitle}</Text>
+              <RegistrantsTable
+                rows={data.registrants}
+                headers={data.labels.table}
+                emptyLabel=""
+              />
+            </View>
+          )}
+
+          {data.messages.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{data.labels.chatMessagesTitle}</Text>
+              <MessagesTable rows={data.messages} headers={data.labels.table} />
+            </View>
+          )}
+
+          {data.reactions.length > 0 && (
+            <View style={{ ...styles.section, marginBottom: 0 }}>
+              <Text style={styles.sectionTitle}>{data.labels.reactionsTitle}</Text>
+              <ReactionsTable rows={data.reactions} headers={data.labels.table} />
+            </View>
+          )}
 
           <Footer left={data.labels.footerConfidential} pageOf={data.labels.pageOf} />
         </Page>
