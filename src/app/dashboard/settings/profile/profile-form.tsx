@@ -7,6 +7,7 @@ import { updateProfile } from "@/lib/actions/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AvatarUrlField } from "@/components/avatar-url-field";
 
 export function ProfileForm({
   displayName,
@@ -27,7 +28,7 @@ export function ProfileForm({
       </div>
       <div className="grid gap-2">
         <Label htmlFor="avatar_url">{t("avatarLabel")}</Label>
-        <Input id="avatar_url" name="avatar_url" defaultValue={avatarUrl ?? ""} />
+        <AvatarUrlField id="avatar_url" name="avatar_url" defaultValue={avatarUrl} />
       </div>
 
       {state && "error" in state && (

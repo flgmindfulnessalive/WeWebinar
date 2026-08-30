@@ -140,12 +140,19 @@ export default async function WebinarAnalyticsPage({
   );
 
   const summary = summaryRows?.[0];
+  const visitCount = summary?.visit_count ?? 0;
   const registrantCount = summary?.registrant_count ?? 0;
   const attendeeCount = summary?.attendee_count ?? 0;
   const avgWatchSeconds = summary?.avg_watch_seconds ?? 0;
   const durationSeconds = summary?.duration_seconds ?? 0;
   const joinRatePct = registrantCount > 0 ? Math.round((attendeeCount / registrantCount) * 100) : 0;
   const watchPct = durationSeconds > 0 ? Math.round((avgWatchSeconds / durationSeconds) * 100) : 0;
+  // Visits were only tracked starting with this feature -- older webinars
+  // (or ones that ran entirely before it shipped) have registrants but
+  // visitCount === 0, so the rate is left undefined rather than shown as a
+  // misleading 0%.
+  const visitToRegistrantPct =
+    visitCount > 0 ? Math.round((registrantCount / visitCount) * 100) : null;
 
   const unsubscribedCount = (registrants ?? []).filter((r) => r.unsubscribed_at).length;
   const unsubscribeRatePct =
@@ -162,7 +169,14 @@ export default async function WebinarAnalyticsPage({
       : 0;
 
   const funnelSteps = [
-    { label: t("registrantsLabel"), sublabel: t("funnelBase"), value: registrantCount },
+    ...(visitCount > 0
+      ? [{ label: t("visitsLabel"), sublabel: t("funnelBase"), value: visitCount }]
+      : []),
+    {
+      label: t("registrantsLabel"),
+      sublabel: visitCount > 0 ? t("funnelRegistered") : t("funnelBase"),
+      value: registrantCount,
+    },
     { label: t("funnelAttended"), sublabel: t("funnelJoinedRoom"), value: attendeeCount },
     ...(durationSeconds > 0
       ? [{ label: t("funnelWatchedHalf"), sublabel: t("funnelOfVideo"), value: watchedHalfCount }]
@@ -278,7 +292,16 @@ export default async function WebinarAnalyticsPage({
 
       <DateRangeSelect />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <StatTile
+          label={t("visitsLabel")}
+          value={String(visitCount)}
+          sublabel={
+            visitToRegistrantPct !== null
+              ? t("visitConversionSublabel", { pct: visitToRegistrantPct })
+              : undefined
+          }
+        />
         <StatTile label={t("registrantsLabel")} value={String(registrantCount)} />
         <StatTile
           label={t("actualAttendeesLabel")}

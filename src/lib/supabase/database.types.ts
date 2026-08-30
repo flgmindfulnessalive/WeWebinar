@@ -454,6 +454,26 @@ export interface Database {
           },
         ];
       };
+      page_views: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          occurred_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["page_views"]["Row"]> & {
+          webinar_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["page_views"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "page_views_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       email_templates: {
         Row: {
           id: string;
@@ -755,11 +775,16 @@ export interface Database {
       get_webinar_summary: {
         Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {
+          visit_count: number;
           registrant_count: number;
           attendee_count: number;
           avg_watch_seconds: number;
           duration_seconds: number | null;
         }[];
+      };
+      record_page_view: {
+        Args: { p_webinar_id: string };
+        Returns: undefined;
       };
       get_account_summary: {
         Args: { p_account_id: string };

@@ -19,6 +19,7 @@ import { ChatSection } from "./chat-section";
 import { CtasSection } from "./ctas-section";
 import { EmailTemplatesSection } from "./email-templates-section";
 import { MarketingSection } from "./marketing-section";
+import { CopyLinkButton } from "./copy-link-button";
 import { resolveEmailBranding } from "@/lib/email-templates";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import type { Database } from "@/lib/supabase/database.types";
@@ -131,6 +132,7 @@ export default async function WebinarDetailPage({
               </Link>
             </Button>
           )}
+          <CopyLinkButton url={publicPath} />
           <Button asChild variant="outline">
             <Link href={`/dashboard/webinars/${webinar.id}/analytics`}>
               <BarChart3 className="size-4" />

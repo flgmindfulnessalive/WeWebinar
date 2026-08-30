@@ -25,6 +25,7 @@ function featureList(
     max_active_webinars: number | null;
     max_users: number | null;
     max_attendees_per_webinar: number | null;
+    max_registrants_per_month: number | null;
     features: Json;
   },
   t: Translate
@@ -38,6 +39,9 @@ function featureList(
     plan.max_attendees_per_webinar
       ? t("features.attendees", { count: plan.max_attendees_per_webinar })
       : t("features.attendeesCustom"),
+    plan.max_registrants_per_month
+      ? t("features.monthlyRegistrants", { count: plan.max_registrants_per_month })
+      : t("features.monthlyRegistrantsCustom"),
     t("features.analytics"),
   ];
   if (features.ai_chat_replies) items.push(t("features.aiChatReplies"));
