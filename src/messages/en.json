@@ -568,7 +568,11 @@
     "emptyState": "You haven't created any webinars yet.",
     "createFirstWebinar": "Create your first webinar",
     "registrantsCount": "{count, plural, one {# registrant} other {# registrants}}",
-    "view": "View"
+    "view": "View",
+    "attentionNoVideo": "No video",
+    "attentionStaleDraft": "Draft for {days} days",
+    "attentionFilter": "{count, plural, one {# needs attention} other {# need attention}}",
+    "attentionEmptyState": "No webinar needs attention right now."
   },
   "WebinarStatusLabel": {
     "draft": "Draft",
@@ -654,6 +658,11 @@
     "publishing": "Publishing...",
     "pause": "Pause",
     "pausing": "Pausing..."
+  },
+  "WebinarControlCenter": {
+    "editWebinar": "Edit webinar",
+    "performanceLabel": "Performance",
+    "shareLabel": "Share"
   },
   "WebinarWizard": {
     "openPublicPage": "Open public page",
@@ -968,6 +977,7 @@
     "hostRepliedBadge": "Replied by host",
     "noReply": "No reply",
     "viewClickers": "See who clicked \"{label}\" ({count})",
+    "noClickersYet": "No one has clicked \"{label}\" yet",
     "firstClickHeader": "First click",
     "clicksHeader": "Clicks",
     "hideAiReplies": "Hide AI replies",

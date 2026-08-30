@@ -72,7 +72,9 @@ export function WebinarRowActions({
         return;
       }
       setShowDuplicateModal(false);
-      router.push(`/dashboard/webinars/${result.id}`);
+      // Straight into the edit wizard, not the Control Center -- a fresh
+      // copy is meant to be tweaked immediately (new title, new video...).
+      router.push(`/dashboard/webinars/${result.id}/edit`);
     });
   };
 

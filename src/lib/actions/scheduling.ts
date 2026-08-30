@@ -44,6 +44,7 @@ export async function updateSchedulingMode(
   const { error } = await supabase.from("webinars").update(update).eq("id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;
@@ -78,6 +79,7 @@ export async function addSchedule(
   });
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;
@@ -94,6 +96,7 @@ export async function removeSchedule(
     .eq("id", scheduleId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   return null;

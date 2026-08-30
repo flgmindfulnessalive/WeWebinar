@@ -77,6 +77,7 @@ export async function upsertWaitingRoom(
   ]);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
 
   if (error) return { error: error.message };
   if (webinarError) return { error: webinarError.message };
