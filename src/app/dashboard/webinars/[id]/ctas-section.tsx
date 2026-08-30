@@ -118,7 +118,7 @@ export function CtasSection({
         )}
 
         {type === "overlay" && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="grid gap-1.5">
               <Label htmlFor="overlay_text">{t("overlayTextLabel")}</Label>
               <Input id="overlay_text" name="overlay_text" />
@@ -126,6 +126,10 @@ export function CtasSection({
             <div className="grid gap-1.5">
               <Label htmlFor="overlay_image_url">{t("overlayImageLabel")}</Label>
               <Input id="overlay_image_url" name="overlay_image_url" />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="overlay_link_url">{t("overlayLinkUrlLabel")}</Label>
+              <Input id="overlay_link_url" name="overlay_link_url" type="url" placeholder="https://" />
             </div>
           </div>
         )}

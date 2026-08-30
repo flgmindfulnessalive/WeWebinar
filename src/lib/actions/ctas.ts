@@ -82,10 +82,16 @@ export async function addCta(
   } else if (type === "overlay") {
     const text = String(formData.get("overlay_text") ?? "").trim();
     const imageUrl = String(formData.get("overlay_image_url") ?? "").trim();
+    const linkUrl = String(formData.get("overlay_link_url") ?? "").trim();
     if (!text && !imageUrl) {
       return { error: t("overlayNeedsContent") };
     }
-    config = { text: text || null, image_url: imageUrl || null };
+    // Same reasoning as the link CTA's URL check -- this also renders
+    // straight into an <a href> for every attendee.
+    if (linkUrl && !/^https?:\/\//i.test(linkUrl)) {
+      return { error: t("urlMustBeHttp") };
+    }
+    config = { text: text || null, image_url: imageUrl || null, url: linkUrl || null };
   } else if (type === "poll") {
     const question = String(formData.get("poll_question") ?? "").trim();
     const options = String(formData.get("poll_options") ?? "")
