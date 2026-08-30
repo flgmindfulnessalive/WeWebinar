@@ -1,6 +1,8 @@
 import { Check, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { Logo } from "@/components/logo";
+
 // Shared between the Home page and Pricing (below Enterprise) -- same
 // copy/namespace in both places, so a future edit to the comparison only
 // has to happen here once.
@@ -59,12 +61,7 @@ export async function LiveVsEvergreen() {
             {t("evergreenBadge")}
           </span>
           <div className="mb-5 flex items-center gap-3">
-            <span
-              className="flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white"
-              style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
-            >
-              W
-            </span>
+            <Logo className="size-8 rounded-lg" />
             <div>
               <p className="font-medium">{t("evergreenCardTitle")}</p>
               <p className="text-xs text-muted-foreground">{t("evergreenCardSubtitle")}</p>

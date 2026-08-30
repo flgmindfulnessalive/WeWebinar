@@ -3,18 +3,14 @@ import NextLink from "next/link";
 
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "./_components/language-switcher";
 import { MobileMenu } from "./_components/mobile-menu";
 
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <span
-        className="flex size-7 items-center justify-center rounded-lg text-sm font-bold text-white"
-        style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
-      >
-        W
-      </span>
+      <Logo className="size-7 rounded-lg" />
       <span className="text-lg font-semibold tracking-tight">WeWebinars</span>
     </Link>
   );
