@@ -8,7 +8,25 @@ import { cn } from "@/lib/utils";
 // src/app/apple-icon.png). The wrapper -- not the image -- owns the corner
 // radius/shadow so every caller's className (rounded-md, rounded-2xl,
 // shadow-*, size-*) keeps working exactly as before.
-export function Logo({ className }: { className?: string }) {
+//
+// variant "badge" (default) is the gradient rounded-square icon; "mark" is
+// the same "W" on a transparent background, no rounding/clipping needed,
+// used where a flat badge would look repetitive next to other badges.
+export function Logo({
+  className,
+  variant = "badge",
+}: {
+  className?: string;
+  variant?: "badge" | "mark";
+}) {
+  if (variant === "mark") {
+    return (
+      <div aria-hidden className={cn("relative size-6 shrink-0", className)}>
+        <Image src="/brand/w-mark.png" alt="" fill sizes="64px" className="object-contain" />
+      </div>
+    );
+  }
+
   return (
     <div
       aria-hidden

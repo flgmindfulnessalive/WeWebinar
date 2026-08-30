@@ -61,7 +61,7 @@ export async function LiveVsEvergreen() {
             {t("evergreenBadge")}
           </span>
           <div className="mb-5 flex items-center gap-3">
-            <Logo className="size-8 rounded-lg" />
+            <Logo variant="mark" className="size-9" />
             <div>
               <p className="font-medium">{t("evergreenCardTitle")}</p>
               <p className="text-xs text-muted-foreground">{t("evergreenCardSubtitle")}</p>
