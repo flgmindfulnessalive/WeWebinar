@@ -26,7 +26,7 @@ function wrapPlatformEmailShell(innerHtml: string, unsubscribeUrl?: string): str
 <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
 <tr><td style="background:${BRAND};border-radius:12px 12px 0 0;padding:28px 32px;">
   <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-    <td><table role="presentation" width="26" height="26" cellpadding="0" cellspacing="0"><tr><td style="width:26px;height:26px;background:#ffffff;border-radius:6px;text-align:center;font-size:13px;font-weight:700;color:${BRAND};line-height:26px;font-family:${FONT_STACK};">W</td></tr></table></td>
+    <td><img src="${process.env.NEXT_PUBLIC_APP_URL}/brand/w-badge.png" width="26" height="26" alt="" style="display:block;border-radius:6px;" /></td>
     <td style="padding-left:9px;font-size:14px;font-weight:600;color:#ffffff;font-family:${FONT_STACK};">WeWebinars</td>
   </tr></table>
 </td></tr>
