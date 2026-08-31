@@ -265,6 +265,7 @@ export default async function WebinarDetailPage({
                 messages={chatMessages ?? []}
                 aiChatEnabled={webinar.ai_chat_enabled}
                 aiChatAllowed={aiChatAllowed}
+                aiChatUseEmojis={webinar.ai_chat_use_emojis}
                 aiTrainingInfo={webinar.ai_agent_training_info}
               />
             ),

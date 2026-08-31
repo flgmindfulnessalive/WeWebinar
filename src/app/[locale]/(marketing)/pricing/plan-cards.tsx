@@ -35,6 +35,7 @@ function featureList(
     plan.max_active_webinars
       ? t("features.activeWebinars", { count: plan.max_active_webinars })
       : t("features.activeWebinarsCustom"),
+    t("features.unlimitedSessions"),
     plan.max_users ? t("features.users", { count: plan.max_users }) : t("features.usersCustom"),
     plan.max_attendees_per_webinar
       ? t("features.attendees", { count: plan.max_attendees_per_webinar })
@@ -132,7 +133,7 @@ export function PlanCards({ plans }: { plans: Plan[] }) {
                     </li>
                   ))}
                 </ul>
-                {/* Core is the only self-serve plan that keeps the badge --
+                {/* Starter is the only self-serve plan that keeps the badge --
                     framed here as part of the pricing model, not left as a
                     silent absence in the feature list above. */}
                 {plan.key === "core" && (

@@ -59,10 +59,10 @@
   },
   "OnboardingForm": {
     "title": "Create your host account",
-    "description": "Choose a name for your account. Start on the Core plan with a 7-day free trial, no credit card required — email us at operaciones@wewebinars.com when you want to upgrade.",
+    "description": "Choose a name for your account. Start on the Starter plan with a 7-day free trial, no credit card required — email us at operaciones@wewebinars.com when you want to upgrade.",
     "accountNameLabel": "Account / company name",
     "timezoneLabel": "Time zone",
-    "planCoreLabel": "Core plan",
+    "planCoreLabel": "Starter plan",
     "planCoreDetail": "1 active webinar · 1 user",
     "freeDays": "7 days free",
     "submitting": "Creating account...",
@@ -142,7 +142,7 @@
     "pricingTeaserTitle": "Fair price. Extraordinary value.",
     "pricingTeaserBody": "Plans start at $15/month. You don't need an enterprise plan to automate your first presentation.",
     "pricingTeaserPrice": "$15",
-    "pricingTeaserPriceUnit": "/ mo · Core plan",
+    "pricingTeaserPriceUnit": "/ mo · Starter plan",
     "pricingTeaserFine": "Unlimited Commercial Rights on every plan. Free 7-day trial, no card.",
     "pricingTeaserCta": "See plans and pricing",
     "faqTitle": "Frequently asked questions",
@@ -154,7 +154,7 @@
       { "q": "Does this work for my kind of business?", "a": "If you present the same thing more than once to sell — a demo, a talk, a pitch — it works. The industry doesn't matter." },
       { "q": "What's the difference from just sharing a recording?", "a": "A recording only plays back. WeWebinars adds registration, scheduling, chat, CTAs at just the right moment, and analytics on what's working — around that same video." },
       { "q": "Why automate instead of just presenting live?", "a": "Because your presentation can keep selling while you do anything else — without losing the feel of a real event for whoever's watching." },
-      { "q": "Which plan do I need to start?", "a": "Core is enough to automate your first presentation. Most people using it seriously end up on Pro, for the active webinars and the AI Chat Agent." },
+      { "q": "Which plan do I need to start?", "a": "Starter is enough to automate your first presentation. Most people using it seriously end up on Pro, for the active webinars and the AI Chat Agent." },
       { "q": "Can I start small and grow later?", "a": "Yes — switch plans whenever you need to, without losing anything you've already set up." },
       { "q": "What if someone wants to talk to a real person?", "a": "Your CTAs can lead to booking a call, messaging you on WhatsApp, or going straight to checkout — you decide the next step." }
     ],
@@ -234,19 +234,51 @@
       "pro": "The natural plan for running automated webinars seriously.",
       "business": "For teams that need more volume and brand control."
     },
-    "poweredByNote": "Includes the WeWebinars badge on your registration pages — that's how we keep Core at this price.",
+    "poweredByNote": "Includes the WeWebinars badge on your registration pages — that's how we keep Starter at this price.",
     "faqTitle": "Plan questions",
     "faqItems": [
       { "q": "Can I change plans later?", "a": "Yes. You can move up or down a plan whenever you need to, without losing your webinars or your data." },
       { "q": "What happens if I go over my plan's attendee limit?", "a": "We'll let you know before it happens. The limit applies per session, not cumulatively — your evergreen webinar can run infinite sessions over time." },
       { "q": "What does \"Commercial Rights Unlimited\" mean?", "a": "You can use WeWebinars to sell your own products or services, with no limit on the revenue generated." },
-      { "q": "What is \"Powered by WeWebinars\"?", "a": "On the Core plan, your registration page shows a WeWebinars watermark. From Pro up, it disappears — the experience is 100% your brand." },
+      { "q": "What is \"Powered by WeWebinars\"?", "a": "On the Starter plan, your registration page shows a WeWebinars watermark. From Pro up, it disappears — the experience is 100% your brand." },
       { "q": "Do I need a card to try it?", "a": "No. The 7-day trial doesn't ask for a credit card." },
       { "q": "Can I cancel anytime?", "a": "Yes, no minimum commitment and no penalty." }
     ],
+    "includedTitle": "All of this, on every plan",
+    "includedSubtitle": "The features that make an automated webinar feel live, included from the smallest plan up.",
+    "included": {
+      "video": {
+        "title": "Record once, present it forever",
+        "description": "Every visitor watches your webinar as if it were live, with a locked player so they can't skip ahead or download the video."
+      },
+      "scheduling": {
+        "title": "Scheduling your way",
+        "description": "Recurring fixed times, instant start (\"start now\"), or both combined in the same webinar."
+      },
+      "chat": {
+        "title": "Simulated live chat",
+        "description": "Timed messages and a viewer counter that make the event feel real, with no manual moderation."
+      },
+      "ctas": {
+        "title": "Timed CTAs",
+        "description": "Links, banners, and polls that appear at the exact second in the video to sell at just the right moment."
+      },
+      "analytics": {
+        "title": "Per-webinar analytics",
+        "description": "Registrants, real attendance, retention curve, clicks per CTA, and poll results, all in one place."
+      },
+      "branding": {
+        "title": "Your brand, not ours",
+        "description": "Your own logo and colors on registration, the room, and the automated confirmation and reminder emails."
+      }
+    },
+    "finalCtaTitle": "Try it free before you decide",
+    "finalCtaSubtitle": "7-day trial, no card. Cancel anytime.",
+    "finalCtaButton": "Start free",
     "features": {
       "activeWebinars": "{count, plural, one {# active webinar} other {# active webinars}}",
       "activeWebinarsCustom": "Custom webinar limit",
+      "unlimitedSessions": "Unlimited sessions",
       "users": "{count, plural, one {# user} other {# users}}",
       "usersCustom": "Custom user limit",
       "attendees": "{count, plural, one {# attendee per session} other {# attendees per session}}",
@@ -850,6 +882,8 @@
     "aiAgentPlanHint": "Available on the Pro and Business plans — <a>upgrade plan</a>.",
     "enabled": "Enabled",
     "disabled": "Disabled",
+    "useEmojisLabel": "Use emojis in replies",
+    "useEmojisHint": "By default the agent replies without emojis. Turn this on for a more casual tone.",
     "trainAgentLabel": "Train your AI agent",
     "trainAgentHint": "Extra info to help the agent answer better: FAQs, pricing, product or service details, policies, etc.",
     "trainAgentPlaceholder": "E.g.: \"The Pro plan costs $49/mo. Includes priority support. 30-day guarantee...\"",

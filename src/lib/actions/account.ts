@@ -13,7 +13,7 @@ import { sendEmail } from "@/lib/resend";
 
 export type CreateAccountState = { error: string } | null;
 
-// The 7-day trial is only available on Core -- Pro and Business are paid
+// The 7-day trial is only available on Starter -- Pro and Business are paid
 // upgrades a host does later from Facturación (Stripe checkout), never a
 // starting point for a new, unbilled account. Hardcoded rather than read
 // from form input so a tampered request can't create a trial on a paid tier.

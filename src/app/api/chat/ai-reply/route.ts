@@ -24,6 +24,7 @@ function buildSystemPrompt(webinar: {
   description: string | null;
   category: string | null;
   ai_agent_training_info: string | null;
+  ai_chat_use_emojis: boolean;
 }, accountName: string): string {
   return `Eres el asistente de chat del webinar "${webinar.title}"${
     webinar.category ? ` (categoría: ${webinar.category})` : ""
@@ -36,7 +37,8 @@ ${
 }
 
 Un asistente real está viendo este webinar y escribió un mensaje en el chat en vivo. Tu trabajo:
-- Si el mensaje es una pregunta genuina que necesita respuesta, respóndela de forma breve (2-4 frases), cálida y natural, como lo haría un miembro del equipo organizador.
+- Si el mensaje es una pregunta genuina que necesita respuesta, respóndela de forma muy breve (1-2 frases, nunca más), cálida y natural, como lo haría un miembro del equipo organizador escribiendo rápido en un chat en vivo -- no un párrafo, una respuesta de chat.
+- ${webinar.ai_chat_use_emojis ? "Puedes usar algún emoji si encaja de forma natural, sin abusar." : "No uses emojis."}
 - Si no sabes la respuesta con certeza (precios exactos, políticas internas, disponibilidad, o cualquier dato que no se te dio arriba), dilo honestamente en vez de inventar, y ofrece que el equipo lo va a contactar.
 - Si el mensaje NO es una pregunta que necesite respuesta (un saludo, un comentario, "gracias", una reacción), responde exactamente con la palabra ${NO_REPLY_SENTINEL} y nada más -- ninguna otra palabra.
 
@@ -70,7 +72,9 @@ export async function POST(request: Request) {
 
   const { data: webinar } = await admin
     .from("webinars")
-    .select("title, description, category, ai_chat_enabled, ai_agent_training_info, account_id")
+    .select(
+      "title, description, category, ai_chat_enabled, ai_agent_training_info, ai_chat_use_emojis, account_id"
+    )
     .eq("id", registrant.webinar_id)
     .maybeSingle();
   if (!webinar || !webinar.ai_chat_enabled) {
@@ -114,7 +118,11 @@ export async function POST(request: Request) {
   try {
     const response = await getAnthropicClient().messages.create({
       model: "claude-sonnet-5",
-      max_tokens: 1024,
+      // A live-chat reply is 1-2 sentences by design (see the system
+      // prompt) -- capped well below the old 1024 so a runaway response
+      // can't slip past the prompt instruction alone, and so replies come
+      // back faster.
+      max_tokens: 200,
       system: buildSystemPrompt(webinar, account?.name ?? "el equipo organizador"),
       output_config: { effort: "low" },
       messages: [{ role: "user", content: messageText }],

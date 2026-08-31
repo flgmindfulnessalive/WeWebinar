@@ -59,10 +59,10 @@
   },
   "OnboardingForm": {
     "title": "Crea tu cuenta de host",
-    "description": "Elige un nombre para tu cuenta. Empieza con el plan Core y 7 días de prueba gratis, sin tarjeta de crédito — escríbenos a operaciones@wewebinars.com cuando quieras subir de plan.",
+    "description": "Elige un nombre para tu cuenta. Empieza con el plan Starter y 7 días de prueba gratis, sin tarjeta de crédito — escríbenos a operaciones@wewebinars.com cuando quieras subir de plan.",
     "accountNameLabel": "Nombre de la cuenta / empresa",
     "timezoneLabel": "Zona horaria",
-    "planCoreLabel": "Plan Core",
+    "planCoreLabel": "Plan Starter",
     "planCoreDetail": "1 webinar activo · 1 usuario",
     "freeDays": "7 días gratis",
     "submitting": "Creando cuenta...",
@@ -82,7 +82,7 @@
   },
   "Home": {
     "metaTitle": "WeWebinars — Automatiza presentaciones que venden 24/7",
-    "metaDescription": "Convierte tu presentación grabada en un webinar automatizado que se registra, se programa y vende solo. Prueba gratis 7 días, sin tarjeta.",
+    "metaDescription": "Convierte tu presentación grabada en un activo: webinars que se sienten en vivo y venden por ti 24/7.",
     "badge": "Presentaciones automatizadas que venden",
     "heroTitle": "Deja de repetir <highlight>tu mejor presentación</highlight>",
     "heroSubtitle": "Grábala una vez. WeWebinars la convierte en un webinar que se siente en vivo y vende por ti 24/7.",
@@ -142,7 +142,7 @@
     "pricingTeaserTitle": "Precio justo. Valor extraordinario.",
     "pricingTeaserBody": "Planes desde $15/mes. No necesitas un plan enterprise para automatizar tu primera presentación.",
     "pricingTeaserPrice": "$15",
-    "pricingTeaserPriceUnit": "/ mes · plan Core",
+    "pricingTeaserPriceUnit": "/ mes · plan Starter",
     "pricingTeaserFine": "Commercial Rights ilimitados en todos los planes. 7 días de prueba, sin tarjeta.",
     "pricingTeaserCta": "Ver planes y precios",
     "faqTitle": "Preguntas frecuentes",
@@ -154,7 +154,7 @@
       { "q": "¿Sirve para mi tipo de negocio?", "a": "Si presentas lo mismo más de una vez para vender —una demo, una charla, una propuesta— sirve. No importa la industria." },
       { "q": "¿Cuál es la diferencia con simplemente compartir una grabación?", "a": "Una grabación solo se reproduce. WeWebinars agrega registro, programación, chat, CTAs en el momento justo y analíticas de qué está funcionando — alrededor del mismo video." },
       { "q": "¿Por qué automatizar en vez de seguir presentando en vivo?", "a": "Porque tu presentación puede seguir vendiendo mientras haces cualquier otra cosa — sin perder la sensación de un evento real para quien la mira." },
-      { "q": "¿Qué plan necesito para empezar?", "a": "Core alcanza para automatizar tu primera presentación. La mayoría de quienes lo usan en serio termina en Pro por los webinars activos y el Agente de IA." },
+      { "q": "¿Qué plan necesito para empezar?", "a": "Starter alcanza para automatizar tu primera presentación. La mayoría de quienes lo usan en serio termina en Pro por los webinars activos y el Agente de IA." },
       { "q": "¿Puedo empezar chico y crecer después?", "a": "Sí — cambias de plan cuando lo necesites, sin perder nada de lo que ya configuraste." },
       { "q": "¿Qué pasa si alguien quiere hablar con una persona real?", "a": "Tus CTAs pueden llevar a agendar una llamada, escribirte por WhatsApp o ir directo a checkout — tú decides el siguiente paso." }
     ],
@@ -234,19 +234,51 @@
       "pro": "El plan natural para operar en serio con webinars automatizados.",
       "business": "Para equipos que necesitan más volumen y control de marca."
     },
-    "poweredByNote": "Incluye la marca WeWebinars en tus páginas de registro — así es como mantenemos Core a este precio.",
+    "poweredByNote": "Incluye la marca WeWebinars en tus páginas de registro — así es como mantenemos Starter a este precio.",
     "faqTitle": "Preguntas sobre los planes",
     "faqItems": [
       { "q": "¿Puedo cambiar de plan más adelante?", "a": "Sí. Puedes subir o bajar de plan cuando lo necesites, sin perder tus webinars ni tus datos." },
       { "q": "¿Qué pasa si supero el límite de asistentes de mi plan?", "a": "Te avisamos antes de que pase. El límite es por sesión, no acumulado — tu webinar evergreen puede recibir infinitas sesiones a lo largo del tiempo." },
       { "q": "¿Qué significa \"Commercial Rights Unlimited\"?", "a": "Puedes usar WeWebinars para vender tus propios productos o servicios, sin límite de ingresos generados." },
-      { "q": "¿Qué es \"Powered by WeWebinars\"?", "a": "En el plan Core, tu página de registro muestra una marca de agua de WeWebinars. Desde Pro en adelante, desaparece — la experiencia es 100% tu marca." },
+      { "q": "¿Qué es \"Powered by WeWebinars\"?", "a": "En el plan Starter, tu página de registro muestra una marca de agua de WeWebinars. Desde Pro en adelante, desaparece — la experiencia es 100% tu marca." },
       { "q": "¿Necesito tarjeta para probarlo?", "a": "No. Los 7 días de prueba no piden tarjeta de crédito." },
       { "q": "¿Puedo cancelar cuando quiera?", "a": "Sí, sin permanencia mínima ni penalidad." }
     ],
+    "includedTitle": "Todo esto, en cualquier plan",
+    "includedSubtitle": "Las funciones que hacen que un webinar automatizado se sienta en vivo, incluidas desde el plan más chico.",
+    "included": {
+      "video": {
+        "title": "Graba una vez, preséntalo para siempre",
+        "description": "Cada visitante ve tu webinar como si fuera en vivo, con reproductor bloqueado para que no adelante ni descargue el video."
+      },
+      "scheduling": {
+        "title": "Programación a tu manera",
+        "description": "Horarios fijos recurrentes, arranque inmediato (\"empieza ahora\"), o ambos combinados en el mismo webinar."
+      },
+      "chat": {
+        "title": "Chat en vivo simulado",
+        "description": "Mensajes cronometrados y contador de espectadores que hacen sentir el evento real, sin moderación manual."
+      },
+      "ctas": {
+        "title": "CTAs cronometrados",
+        "description": "Links, banners y encuestas que aparecen en el segundo exacto del video para vender en el momento justo."
+      },
+      "analytics": {
+        "title": "Analíticas por webinar",
+        "description": "Registrados, asistencia real, curva de retención, clics por CTA y resultados de encuestas, todo en un lugar."
+      },
+      "branding": {
+        "title": "Tu marca, no la nuestra",
+        "description": "Logo y colores propios en el registro, la sala y los emails automáticos de confirmación y recordatorio."
+      }
+    },
+    "finalCtaTitle": "Pruébalo gratis antes de decidir",
+    "finalCtaSubtitle": "7 días de prueba, sin tarjeta. Cancela cuando quieras.",
+    "finalCtaButton": "Empezar gratis",
     "features": {
       "activeWebinars": "{count, plural, one {# webinar activo} other {# webinars activos}}",
       "activeWebinarsCustom": "Webinars a medida",
+      "unlimitedSessions": "Sesiones ilimitadas",
       "users": "{count, plural, one {# usuario} other {# usuarios}}",
       "usersCustom": "Usuarios a medida",
       "attendees": "{count, plural, one {# asistente por sesión} other {# asistentes por sesión}}",
@@ -850,6 +882,8 @@
     "aiAgentPlanHint": "Disponible en los planes Pro y Business — <a>actualizar plan</a>.",
     "enabled": "Activado",
     "disabled": "Desactivado",
+    "useEmojisLabel": "Usar emojis en las respuestas",
+    "useEmojisHint": "Por defecto el agente responde sin emojis. Actívalo si prefieres un tono más informal.",
     "trainAgentLabel": "Entrena a tu agente AI",
     "trainAgentHint": "Información adicional para que el agente responda mejor: preguntas frecuentes, precios, detalles del producto o servicio, políticas, etc.",
     "trainAgentPlaceholder": "Ej: \"El plan Pro cuesta $49/mes. Incluye soporte prioritario. La garantía es de 30 días...\"",

@@ -99,6 +99,26 @@ export async function updateAiChatEnabled(
   return null;
 }
 
+// Same pattern as updateAiChatEnabled -- no plan_feature_blocked check
+// needed here (this only takes effect once the AI agent itself is already
+// enabled, which is what's actually plan-gated).
+export async function updateAiChatUseEmojis(
+  webinarId: string,
+  useEmojis: boolean
+): Promise<ChatActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("webinars")
+    .update({ ai_chat_use_emojis: useEmojis })
+    .eq("id", webinarId);
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
+
+  if (error) return { error: error.message };
+  return null;
+}
+
 export async function updateAiTrainingInfo(
   _prevState: ChatActionState,
   formData: FormData
