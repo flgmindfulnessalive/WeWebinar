@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import NextLink from "next/link";
 import { getTranslations } from "next-intl/server";
+import { BarChart3, CalendarClock, MessageSquare, MousePointerClick, Palette, Video } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,6 +18,20 @@ import { LiveVsEvergreen } from "../_components/live-vs-evergreen";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Plan = Database["public"]["Tables"]["plans"]["Row"];
+
+// Same six pillars the pre-rewrite Home page used to lead with (see
+// Home.features in git history before #218) -- dropped from Home when it
+// moved to a shorter "3 pilares" framing, but the underlying detail is
+// still exactly what someone comparing plans wants confirmed: it's not
+// gated per tier, every plan gets the full product.
+const INCLUDED_ICONS = {
+  video: Video,
+  scheduling: CalendarClock,
+  chat: MessageSquare,
+  ctas: MousePointerClick,
+  analytics: BarChart3,
+  branding: Palette,
+} as const;
 
 export async function generateMetadata({
   params,
@@ -92,6 +109,35 @@ export default async function PricingPage() {
         </Card>
       )}
 
+      <div>
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <h2 className="text-2xl font-semibold tracking-tight">{t("includedTitle")}</h2>
+          <p className="mt-2 text-muted-foreground">{t("includedSubtitle")}</p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {(Object.keys(INCLUDED_ICONS) as (keyof typeof INCLUDED_ICONS)[]).map((key) => {
+            const Icon = INCLUDED_ICONS[key];
+            return (
+              <div
+                key={key}
+                className="rounded-xl border bg-card p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div
+                  className="mb-4 flex size-10 items-center justify-center rounded-lg"
+                  style={{ background: "var(--brand-light)" }}
+                >
+                  <Icon className="size-5" style={{ color: "var(--brand)" }} />
+                </div>
+                <h3 className="font-medium">{t(`included.${key}.title`)}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  {t(`included.${key}.description`)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="mx-auto w-full max-w-2xl">
         <h2 className="mb-4 text-center text-xl font-semibold tracking-tight">
           {t("faqTitle")}
@@ -115,6 +161,27 @@ export default async function PricingPage() {
           Enterprise card is a small, acceptable trade for sharing one
           component instead of forking the comparison's styling per page. */}
       <LiveVsEvergreen />
+
+      {/* Closing CTA -- the brand-gradient card the pre-rewrite Home page
+          used to end on (before #218 moved Home to a mint-accent
+          ParallaxBand for its own closer). Kept as the flat gradient card
+          here rather than following Home's newer treatment: this is the
+          page's true last word before the footer, and the direct
+          indigo-to-fuchsia brand gradient reads as a firmer close than a
+          parallax band would this far down a page that's already scrolled
+          through pricing detail. */}
+      <div
+        className="flex flex-col items-center gap-4 rounded-2xl px-6 py-16 text-center text-white"
+        style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
+      >
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t("finalCtaTitle")}
+        </h2>
+        <p className="max-w-xl text-white/80">{t("finalCtaSubtitle")}</p>
+        <Button asChild size="lg" variant="secondary" className="mt-2">
+          <NextLink href="/signup">{t("finalCtaButton")}</NextLink>
+        </Button>
+      </div>
     </div>
   );
 }

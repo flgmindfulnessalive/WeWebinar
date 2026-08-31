@@ -5,6 +5,7 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { requirePlatformAdmin } from "@/lib/data/admin";
 import { Logo } from "@/components/logo";
 import { AdminNav } from "./admin-nav";
+import { AdminMobileNav } from "./mobile-nav";
 import { UserMenu } from "@/app/dashboard/user-menu";
 import { LanguageToggle } from "@/app/dashboard/language-toggle";
 
@@ -30,7 +31,22 @@ export default async function AdminLayout({
 
         <div className="flex flex-col">
           <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
-            <div className="text-sm text-muted-foreground">{t("panelTitle")}</div>
+            <div className="flex items-center gap-2">
+              <AdminMobileNav />
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 text-lg font-semibold tracking-tight md:hidden"
+              >
+                <Logo />
+                {/* Full wordmark only from sm up, same reasoning as the
+                    dashboard header -- below that the hamburger already
+                    crowds the row, and the sidebar (desktop) carries it. */}
+                <span className="hidden sm:inline">
+                  WeWebinars <span className="text-muted-foreground">/ Admin</span>
+                </span>
+              </Link>
+              <div className="hidden text-sm text-muted-foreground md:block">{t("panelTitle")}</div>
+            </div>
             <div className="flex shrink-0 items-center gap-3">
               <LanguageToggle />
               <UserMenu email={admin.email} displayName={null} />

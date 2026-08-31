@@ -8,6 +8,7 @@ import {
   addChatMessage,
   removeChatMessage,
   updateAiChatEnabled,
+  updateAiChatUseEmojis,
   updateAiTrainingInfo,
 } from "@/lib/actions/chat";
 import { secondsToClock } from "@/lib/time";
@@ -39,12 +40,14 @@ export function ChatSection({
   messages,
   aiChatEnabled,
   aiChatAllowed,
+  aiChatUseEmojis,
   aiTrainingInfo,
 }: {
   webinarId: string;
   messages: ChatMessage[];
   aiChatEnabled: boolean;
   aiChatAllowed: boolean;
+  aiChatUseEmojis: boolean;
   aiTrainingInfo: string | null;
 }) {
   const t = useTranslations("ChatSection");
@@ -59,6 +62,8 @@ export function ChatSection({
   const [aiEnabled, setAiEnabled] = useState(aiChatEnabled);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiPending, startAiTransition] = useTransition();
+  const [useEmojis, setUseEmojis] = useState(aiChatUseEmojis);
+  const [emojisPending, startEmojisTransition] = useTransition();
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,6 +135,29 @@ export function ChatSection({
           </label>
         </div>
         {aiError && <p className="text-sm text-destructive">{aiError}</p>}
+
+        {aiEnabled && aiChatAllowed && (
+          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border p-3 text-sm">
+            <span className="flex flex-col">
+              <span className="font-medium">{t("useEmojisLabel")}</span>
+              <span className="text-xs text-muted-foreground">{t("useEmojisHint")}</span>
+            </span>
+            <input
+              type="checkbox"
+              className="h-4 w-4 shrink-0"
+              checked={useEmojis}
+              disabled={emojisPending}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setUseEmojis(next);
+                startEmojisTransition(async () => {
+                  const result = await updateAiChatUseEmojis(webinarId, next);
+                  if (result?.error) setUseEmojis(!next);
+                });
+              }}
+            />
+          </label>
+        )}
 
         {aiEnabled && aiChatAllowed && (
           <form action={trainingFormAction} className="flex flex-col gap-1.5 rounded-md border p-3">

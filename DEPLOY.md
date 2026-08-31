@@ -60,7 +60,7 @@ esto es solo pegar el HTML correcto en cada plantilla.
 1. Crear cuenta en Stripe. Mientras no esté verificada, se puede probar
    todo en modo test.
 2. Crear 3 Products/Prices recurrentes mensuales:
-   - Core — $15/mes
+   - Starter — $15/mes
    - Pro — $40/mes
    - Business — $90/mes
    (Enterprise no tiene self-serve: se asigna manualmente desde `/admin/plans`
@@ -95,7 +95,7 @@ esto es solo pegar el HTML correcto en cada plantilla.
 
 Los hosts en plan Pro, Business o Enterprise pueden activar, por webinar,
 que un agente AI responda preguntas reales del chat en vivo (se ve en el
-wizard, sección "Chat simulado") — en Core el toggle aparece bloqueado con
+wizard, sección "Chat simulado") — en Starter el toggle aparece bloqueado con
 un aviso para subir de plan. Sin esta variable configurada, la plataforma
 funciona igual pero el agente nunca responde (falla en silencio).
 
