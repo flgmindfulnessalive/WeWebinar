@@ -60,11 +60,16 @@ export default async function AdminOverviewPage() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">{t("northStarTitle")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t("northStarDescription")}</p>
-        <div className="mt-4 max-w-xs">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 sm:max-w-xl">
           <StatTile
             label={t("conversionActionsGenerated")}
             value={String(scorecard?.conversion_actions_generated ?? 0)}
             sublabel={t("conversionActionsSublabel")}
+          />
+          <StatTile
+            label={t("monthlyPresentationsDelivered")}
+            value={String(scorecard?.monthly_automated_presentations_delivered ?? 0)}
+            sublabel={t("monthlyPresentationsDeliveredSublabel")}
           />
         </div>
       </div>
