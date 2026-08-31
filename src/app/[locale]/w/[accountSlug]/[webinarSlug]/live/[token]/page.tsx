@@ -32,11 +32,14 @@ export default async function LiveRoomPage({
 
   // Same publishability gate as registration/waiting room -- a registrant
   // who already has a valid room link from before the account was
-  // canceled or suspended shouldn't still be able to watch.
-  const { data: isPublishable } = await supabase.rpc("account_is_publishable", {
-    p_account_id: webinar.account_id,
-  });
-  if (!isPublishable) notFound();
+  // canceled or suspended shouldn't still be able to watch. Only an
+  // explicit `false` blocks the room: a transient RPC error must never
+  // 404 every live room platform-wide, so it fails open.
+  const { data: isPublishable, error: publishableError } = await supabase.rpc(
+    "account_is_publishable",
+    { p_account_id: webinar.account_id }
+  );
+  if (!publishableError && isPublishable === false) notFound();
 
   const [{ data: account }, presenter, { data: chatMessages }, { data: ctas }] =
     await Promise.all([

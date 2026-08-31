@@ -25,10 +25,12 @@ export default async function WaitingRoomPage({
   // Same publishability gate as the registration page -- a suspended or
   // canceled account's waiting room stops working too, even for someone
   // who already has a valid access token from before the cancellation.
-  const isPublishable = account
-    ? (await supabase.rpc("account_is_publishable", { p_account_id: account.id })).data
-    : false;
-  if (!isPublishable) notFound();
+  // Only an explicit `false` blocks the page: a transient RPC error must
+  // never 404 every waiting room platform-wide, so it fails open.
+  const { data: isPublishable, error: publishableError } = account
+    ? await supabase.rpc("account_is_publishable", { p_account_id: account.id })
+    : { data: false, error: null };
+  if (!account || (!publishableError && isPublishable === false)) notFound();
 
   // custom_domains is locked to account members via RLS -- this visitor is
   // anonymous, so the admin client is required here (same reasoning as the
