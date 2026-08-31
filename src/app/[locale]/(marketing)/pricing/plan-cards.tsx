@@ -109,6 +109,9 @@ export function PlanCards({ plans }: { plans: Plan[] }) {
               )}
               <CardHeader>
                 <CardTitle className="text-xl capitalize">{plan.name}</CardTitle>
+                {plan.key !== "enterprise" && (
+                  <p className="text-sm text-muted-foreground">{t(`taglines.${plan.key}`)}</p>
+                )}
                 <CardDescription>
                   {price === null ? (
                     <span className="text-2xl font-semibold text-foreground">{t("custom")}</span>
@@ -129,6 +132,12 @@ export function PlanCards({ plans }: { plans: Plan[] }) {
                     </li>
                   ))}
                 </ul>
+                {/* Core is the only self-serve plan that keeps the badge --
+                    framed here as part of the pricing model, not left as a
+                    silent absence in the feature list above. */}
+                {plan.key === "core" && (
+                  <p className="mt-3 text-xs text-muted-foreground">{t("poweredByNote")}</p>
+                )}
               </CardContent>
               <CardFooter>
                 <Button

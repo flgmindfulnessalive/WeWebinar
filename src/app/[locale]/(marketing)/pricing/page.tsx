@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
@@ -14,6 +15,21 @@ import { LiveVsEvergreen } from "../_components/live-vs-evergreen";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Plan = Database["public"]["Tables"]["plans"]["Row"];
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Pricing" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    openGraph: { title: t("metaTitle"), description: t("metaDescription") },
+    twitter: { title: t("metaTitle"), description: t("metaDescription") },
+  };
+}
 
 export default async function PricingPage() {
   const t = await getTranslations("Pricing");
@@ -69,6 +85,24 @@ export default async function PricingPage() {
           </CardContent>
         </Card>
       )}
+
+      <div className="mx-auto w-full max-w-2xl">
+        <h2 className="mb-4 text-center text-xl font-semibold tracking-tight">
+          {t("faqTitle")}
+        </h2>
+        <div className="flex flex-col divide-y">
+          {(t.raw("faqItems") as { q: string; a: string }[]).map((item) => (
+            <details key={item.q} className="group py-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
+                {item.q}
+                <span className="text-muted-foreground group-open:hidden">+</span>
+                <span className="hidden text-muted-foreground group-open:inline">–</span>
+              </summary>
+              <p className="mt-2 text-sm text-muted-foreground">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
 
       {/* Self-contained (own max-w-5xl/px-6/py-20), same as on Home --
           the extra horizontal inset next to this page's plan cards/
