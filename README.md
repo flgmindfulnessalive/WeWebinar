@@ -2,6 +2,8 @@
 
 Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan como transmisiones en vivo).
 
+Convenciones de UI (color, tipografía, componentes, microcopy): ver [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md).
+
 ## Stack
 
 - **Frontend/Backend:** Next.js 14+ (App Router), TypeScript.
