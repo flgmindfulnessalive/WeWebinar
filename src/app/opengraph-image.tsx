@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt =
-  "WeWebinars — webinars evergreen, configúralos en minutos y déjalos vendiendo las 24 horas";
+  "WeWebinars — Libérate de tener que realizar sesiones en vivo repetitivas. Automatiza y vende 24/7.";
 
 const BRAND = "#4f46e5";
 const BRAND_2 = "#c026d3";
@@ -14,12 +14,12 @@ const ACCENT = "#8b7bf0";
 
 export default async function OpengraphImage() {
   const fontsDir = join(process.cwd(), "src/app/og-fonts");
-  const [bold, regular, badge] = await Promise.all([
+  const [bold, regular, mark] = await Promise.all([
     readFile(join(fontsDir, "Geist-Bold.ttf")),
     readFile(join(fontsDir, "Geist-Regular.ttf")),
-    readFile(join(process.cwd(), "public/brand/w-badge.png")),
+    readFile(join(process.cwd(), "public/brand/w-mark.png")),
   ]);
-  const badgeDataUrl = `data:image/png;base64,${badge.toString("base64")}`;
+  const markDataUrl = `data:image/png;base64,${mark.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -100,14 +100,8 @@ export default async function OpengraphImage() {
             textAlign: "center",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
-            <img
-              src={badgeDataUrl}
-              alt=""
-              width={108}
-              height={108}
-              style={{ borderRadius: 28 }}
-            />
+          <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+            <img src={markDataUrl} alt="" width={92} height={92} />
             <div
               style={{
                 display: "flex",
@@ -127,15 +121,24 @@ export default async function OpengraphImage() {
               flexDirection: "column",
               alignItems: "center",
               marginTop: 76,
-              fontSize: 34,
+              fontSize: 36,
               fontWeight: 400,
-              color: "rgba(255,255,255,0.68)",
+              color: "rgba(255,255,255,0.72)",
               lineHeight: 1.5,
             }}
           >
-            <div style={{ display: "flex" }}>Webinars evergreen,</div>
-            <div style={{ display: "flex" }}>configúralos en minutos y</div>
-            <div style={{ display: "flex" }}>déjalos vendiendo las 24 horas.</div>
+            <div style={{ display: "flex" }}>Libérate de tener que realizar</div>
+            <div style={{ display: "flex" }}>sesiones en vivo repetitivas.</div>
+            <div
+              style={{
+                display: "flex",
+                marginTop: 14,
+                fontWeight: 700,
+                color: "#ffffff",
+              }}
+            >
+              Automatiza y vende 24/7.
+            </div>
           </div>
         </div>
       </div>
