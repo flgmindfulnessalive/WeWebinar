@@ -1,6 +1,7 @@
 -- Executive Scorecard additions from the founder's Strategic Blueprint
--- (docs/strategic-blueprint.md, Sections 26-27): the North Star metric
--- (Conversion Actions Generated) and the two Product-scorecard numbers
+-- (docs/strategic-blueprint.md, North Star and Executive Scorecard
+-- sections): the North Star metric (Conversion Actions Generated) and the
+-- two Product-scorecard numbers
 -- this schema can actually answer today without new instrumentation
 -- (Activation Rate, Time to First Published Webinar). Kept as a separate
 -- RPC from get_platform_metrics() rather than widening it, since adding

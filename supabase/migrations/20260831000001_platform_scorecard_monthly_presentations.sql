@@ -1,10 +1,12 @@
--- Adds a second North Star candidate to the Executive Scorecard: Monthly
--- Automated Presentations Delivered. Conversion Actions Generated (26,
--- platform_scorecard_rpc) approximates value generated; this one measures
--- the core mechanic the Strategic Blueprint's North Star Statement (45)
--- describes directly -- "A WeWebinar continues working. Again. And again.
--- And again." -- how many times the automation actually played a webinar
--- for a real person this calendar month, platform-wide.
+-- Adds the Customer North Star tier to the Executive Scorecard: Monthly
+-- Automated Presentations Delivered. Conversion Actions Generated (the
+-- Value tier, platform_scorecard_rpc) approximates value generated; this
+-- one measures the core mechanic the Strategic Blueprint's North Star
+-- Statement describes directly -- "A WeWebinar continues working. Again.
+-- And again. And again." -- how many times the automation actually played
+-- a webinar for a real person this calendar month, platform-wide. See
+-- docs/strategic-blueprint.md's North Star section for the full
+-- Customer/Value/Growth ladder this belongs to.
 --
 -- Counted the same way "attendee" is defined everywhere else in this
 -- schema (see the header of 20260822000009_webinar_analytics_rpcs.sql):
