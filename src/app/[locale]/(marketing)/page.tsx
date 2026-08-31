@@ -41,11 +41,23 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Home" });
+  const title = t("metaTitle");
+  const description = t("metaDescription");
+  // Explicit `images`, not left for Next.js to infer from the root
+  // opengraph-image.tsx file convention -- Next does NOT auto-merge that
+  // file-convention image into a route's own openGraph/twitter object once
+  // the route defines one itself (even a partial one like this): the
+  // deepest segment's object replaces the parent's wholesale, images
+  // included. Confirmed via the rendered HTML actually missing an
+  // <meta property="og:image"> tag entirely before this fix, which is why
+  // Meta's Sharing Debugger flagged og:image as an "inferred property" --
+  // it was falling back to guessing an image from elsewhere on the page.
+  const image = { url: "/opengraph-image", width: 1200, height: 630 };
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
-    openGraph: { title: t("metaTitle"), description: t("metaDescription") },
-    twitter: { title: t("metaTitle"), description: t("metaDescription") },
+    title,
+    description,
+    openGraph: { title, description, images: [image] },
+    twitter: { title, description, images: [image] },
   };
 }
 

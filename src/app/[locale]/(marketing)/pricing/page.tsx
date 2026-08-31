@@ -23,11 +23,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Pricing" });
+  const title = t("metaTitle");
+  const description = t("metaDescription");
+  // Explicit `images` -- see the Home page's generateMetadata for why: Next
+  // does not auto-merge the root opengraph-image.tsx file convention into a
+  // route's own openGraph/twitter object once that route defines one itself.
+  const image = { url: "/opengraph-image", width: 1200, height: 630 };
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
-    openGraph: { title: t("metaTitle"), description: t("metaDescription") },
-    twitter: { title: t("metaTitle"), description: t("metaDescription") },
+    title,
+    description,
+    openGraph: { title, description, images: [image] },
+    twitter: { title, description, images: [image] },
   };
 }
 
