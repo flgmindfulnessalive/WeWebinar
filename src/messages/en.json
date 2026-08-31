@@ -81,58 +81,103 @@
     "passwordTooShort": "Password must be at least 8 characters."
   },
   "Home": {
-    "badge": "🚀 Sell while you sleep",
-    "heroTitle": "Evergreen webinars that <highlight>feel live</highlight>",
-    "heroSubtitle": "Record once, present it forever. Schedule automated sessions, simulate live chat, and sell your products with timed CTAs — with no need for a real live stream.",
-    "ctaStart": "Get started",
+    "metaTitle": "WeWebinars — Automate presentations that sell 24/7",
+    "metaDescription": "Turn your recorded presentation into an automated webinar that registers, schedules, and sells on its own. Free 7-day trial, no card.",
+    "badge": "Automated presentations that sell",
+    "heroTitle": "Stop repeating <highlight>your best presentation</highlight>",
+    "heroSubtitle": "Record it once. WeWebinars turns it into an automated webinar that registers, schedules, and sells for you — without you having to go live again.",
+    "ctaStart": "Automate your first presentation",
     "ctaPlans": "See plans",
-    "trial": "7-day free trial — no credit card required",
-    "featuresTitle": "Everything you need to sell",
-    "featuresSubtitle": "One platform, with no need to stream live every time.",
-    "features": {
-      "video": {
-        "title": "Record once, present it forever",
-        "description": "Every visitor watches your webinar as if it were live, with a locked player so they can't skip ahead or download the video."
+    "trial": "7 days free. No card.",
+    "proofCaption": "This is what it looks like — not a promise, the real product.",
+    "problemTitle": "Admit it: you're presenting the same thing over and over.",
+    "problemBody": "Another call to explain the same offer. Another schedule to coordinate. Another prospect in another time zone, waiting for you to be available. Your presentation works — the problem is it needs you there, every time.",
+    "capabilitiesTitle": "It all comes down to working without you",
+    "capabilitiesSubtitle": "It's not about having more features. It's about automating the ones that matter, well.",
+    "pillars": {
+      "automation": {
+        "title": "Automation",
+        "tagline": "Set it up once. Let it run.",
+        "points": [
+          "Let people join whenever suits them, with no meeting to coordinate.",
+          "Every visitor sees it as if it were live, without you streaming anything."
+        ]
       },
-      "scheduling": {
-        "title": "Scheduling your way",
-        "description": "Recurring fixed times, instant start (\"start now\"), or both combined in the same webinar."
+      "effectiveness": {
+        "title": "Effectiveness",
+        "tagline": "Don't let attention slip along the way.",
+        "points": [
+          "Show the next step at exactly the right moment.",
+          "Chat and reactions keep the feeling of a real event alive.",
+          "Answer the most common questions while your presentation keeps running."
+        ]
       },
-      "chat": {
-        "title": "Simulated live chat",
-        "description": "Timed messages and a viewer counter that make the event feel real, with no manual moderation."
-      },
-      "ctas": {
-        "title": "Timed CTAs",
-        "description": "Links, banners, and polls that appear at the exact second in the video to sell at just the right moment."
-      },
-      "analytics": {
-        "title": "Per-webinar analytics",
-        "description": "Registrants, real attendance, retention curve, clicks per CTA, and poll results, all in one place."
-      },
-      "branding": {
-        "title": "Your brand, not ours",
-        "description": "Your own logo and colors on registration, the room, and the automated confirmation and reminder emails."
+      "efficiency": {
+        "title": "Efficiency",
+        "tagline": "More reach, without more work.",
+        "points": [
+          "See exactly where people stay, where they leave, and when they act.",
+          "Your brand, your domain, your experience — not ours."
+        ]
       }
     },
-    "howItWorksTitle": "How it works",
-    "howItWorksSubtitle": "From recording to your first sale, in three steps.",
+    "useCasesTitle": "If you present to sell, this is for you",
+    "useCases": [
+      { "title": "Coaches and consultants", "description": "Turn your sales session into an experience that runs on its own." },
+      { "title": "Creators and course sellers", "description": "Launch your course without being awake when your audience buys." },
+      { "title": "Agencies", "description": "Deliver webinar results to clients without adding another meeting to your week." },
+      { "title": "Sales teams", "description": "The same perfect demo, in every rep's hands, without repeating it in person." },
+      { "title": "Educators", "description": "Present it once. Let every student experience it as if it were live." },
+      { "title": "Freelancers and small businesses", "description": "Sell like you have a team, without hiring one." }
+    ],
+    "differentiationTitle": "The simplest way to automate presentations that sell",
+    "differentiators": [
+      { "title": "Vs. a video call", "description": "A video call needs a person, a time, and a coordinated schedule. WeWebinars doesn't." },
+      { "title": "Vs. a plain recording", "description": "A recording only plays back. WeWebinars registers, schedules, converses, and sells around it." },
+      { "title": "Vs. an all-in-one platform", "description": "We're not competing on more features. We do one thing extremely well, and connect with the tools you already use." }
+    ],
+    "integrationsTitle": "Use the tools you already love. We'll handle the presentation.",
+    "integrationsBody": "Connect your CRM, your email marketing, or your favorite automation — WeWebinars delivers the data, you decide what to do with it.",
+    "integrationsRow": "CRM · Email marketing · Zapier, Make and n8n · Meta Pixel",
+    "pricingTeaserTitle": "Fair price. Extraordinary value.",
+    "pricingTeaserBody": "Plans start at $8/month. You don't need an enterprise plan to automate your first presentation.",
+    "pricingTeaserCta": "See plans and pricing",
+    "faqTitle": "Frequently asked questions",
+    "faqItems": [
+      { "q": "Is it hard to set up?", "a": "No. Upload your video, choose when it runs, and add your CTA — ready to publish in minutes, no technical skills needed." },
+      { "q": "Do I have to be there when someone watches it?", "a": "No. Once published, the webinar runs on its own: registration, waiting room, playback, chat, and CTAs all work without anyone on your end connected." },
+      { "q": "Can I use a presentation I already recorded?", "a": "Yes. If you already have a video (on YouTube, Vimeo, or a direct link), just connect it — no need to record again." },
+      { "q": "Can I connect my other tools?", "a": "Yes, from the Pro plan up. WeWebinars connects to your CRM, email marketing, or automation via direct integrations or webhooks." },
+      { "q": "Does this work for my kind of business?", "a": "If you present the same thing more than once to sell — a demo, a talk, a pitch — it works. The industry doesn't matter." },
+      { "q": "What's the difference from just sharing a recording?", "a": "A recording only plays back. WeWebinars adds registration, scheduling, chat, CTAs at just the right moment, and analytics on what's working — around that same video." },
+      { "q": "Why automate instead of just presenting live?", "a": "Because your presentation can keep selling while you do anything else — without losing the feel of a real event for whoever's watching." },
+      { "q": "Which plan do I need to start?", "a": "Core is enough to automate your first presentation. Most people using it seriously end up on Pro, for the active webinars and the AI Chat Agent." },
+      { "q": "Can I start small and grow later?", "a": "Yes — switch plans whenever you need to, without losing anything you've already set up." },
+      { "q": "What if someone wants to talk to a real person?", "a": "Your CTAs can lead to booking a call, messaging you on WhatsApp, or going straight to checkout — you decide the next step." }
+    ],
+    "howItWorksTitle": "As simple as recording once",
+    "howItWorksSubtitle": "From your recorded presentation to your first automated sale, in minutes.",
     "steps": {
-      "record": {
-        "title": "Record your presentation",
-        "description": "Upload your video to your favorite platform and paste the link in the wizard."
+      "upload": {
+        "title": "Upload your presentation",
+        "description": "A video you already have, or a new one."
       },
       "schedule": {
-        "title": "Schedule your sessions",
-        "description": "Choose fixed days and times, instant start, or both options together."
+        "title": "Choose when it runs",
+        "description": "Fixed times, instant start, or both at once."
       },
-      "share": {
-        "title": "Share your link and sell",
-        "description": "The CTAs and simulated chat do the work while you drive traffic."
+      "cta": {
+        "title": "Add your CTA",
+        "description": "The exact moment your presentation asks for the sale."
+      },
+      "publish": {
+        "title": "Publish",
+        "description": "From there, it works on its own."
       }
     },
-    "ctaBannerTitle": "Start selling with your first evergreen webinar",
-    "ctaBannerSubtitle": "Set it up in minutes and let it sell around the clock.",
+    "ctaBannerTitle": "Your next presentation can work on its own",
+    "ctaBannerSubtitle": "Create once. Present endlessly. Sell 24/7.",
+    "ctaBannerMicrocopy": "7 days free. No card. Cancel anytime.",
     "comparisonTitle": "Your best webinar shouldn't depend <highlight>on your calendar</highlight>",
     "comparisonSubtitle": "A live webinar depends on you being there, at that time, again. An evergreen is recorded once — and keeps selling while you do anything else. Isn't that lovely?",
     "liveCardTitle": "Live webinar",
@@ -167,9 +212,11 @@
     }
   },
   "Pricing": {
-    "title": "Plans and pricing",
-    "subtitle": "Choose annual or monthly. Create unlimited evergreen webinars to promote your own products.",
-    "trial": "7-day free trial — no credit card required",
+    "metaTitle": "Pricing — WeWebinars",
+    "metaDescription": "Plans starting at $8/month. All plans include unlimited Commercial Rights and a free 7-day trial, no card.",
+    "title": "Choose your plan. Start automating today.",
+    "subtitle": "Every plan includes unlimited Commercial Rights. 7-day trial, no card.",
+    "trial": "7 days free. No card.",
     "billingAnnual": "Annual",
     "billingMonthly": "Monthly",
     "perYear": "year",
@@ -179,6 +226,21 @@
     "getStarted": "Get started with {plan}",
     "enterpriseTitle": "Enterprise",
     "enterpriseDescription": "Custom limits and terms. No self-serve — an advisor will contact you to build your plan.",
+    "taglines": {
+      "core": "To get started and automate your first presentation.",
+      "pro": "The natural plan for running automated webinars seriously.",
+      "business": "For teams that need more volume and brand control."
+    },
+    "poweredByNote": "Includes the WeWebinars badge on your registration pages — that's how we keep Core at this price.",
+    "faqTitle": "Plan questions",
+    "faqItems": [
+      { "q": "Can I change plans later?", "a": "Yes. You can move up or down a plan whenever you need to, without losing your webinars or your data." },
+      { "q": "What happens if I go over my plan's attendee limit?", "a": "We'll let you know before it happens. The limit applies per session, not cumulatively — your evergreen webinar can run infinite sessions over time." },
+      { "q": "What does \"Commercial Rights Unlimited\" mean?", "a": "You can use WeWebinars to sell your own products or services, with no limit on the revenue generated." },
+      { "q": "What is \"Powered by WeWebinars\"?", "a": "On the Core plan, your registration page shows a WeWebinars watermark. From Pro up, it disappears — the experience is 100% your brand." },
+      { "q": "Do I need a card to try it?", "a": "No. The 7-day trial doesn't ask for a credit card." },
+      { "q": "Can I cancel anytime?", "a": "Yes, no minimum commitment and no penalty." }
+    ],
     "features": {
       "activeWebinars": "{count, plural, one {# active webinar} other {# active webinars}}",
       "activeWebinarsCustom": "Custom webinar limit",

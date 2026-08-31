@@ -81,58 +81,103 @@
     "passwordTooShort": "La contraseña debe tener al menos 8 caracteres."
   },
   "Home": {
-    "badge": "🚀 Vende mientras duermes",
-    "heroTitle": "Webinars evergreen que <highlight>se sienten en vivo</highlight>",
-    "heroSubtitle": "Graba una vez, preséntalo para siempre. Programa sesiones automáticas, simula chat en vivo y vende tus productos con CTAs cronometrados — sin depender de una transmisión real.",
-    "ctaStart": "Empezar ahora",
+    "metaTitle": "WeWebinars — Automatiza presentaciones que venden 24/7",
+    "metaDescription": "Convierte tu presentación grabada en un webinar automatizado que se registra, se programa y vende solo. Prueba gratis 7 días, sin tarjeta.",
+    "badge": "Presentaciones automatizadas que venden",
+    "heroTitle": "Deja de repetir <highlight>tu mejor presentación</highlight>",
+    "heroSubtitle": "Grábala una vez. WeWebinars la convierte en un webinar automatizado que se registra, se programa y vende por ti — sin que tengas que estar en vivo otra vez.",
+    "ctaStart": "Automatiza tu primera presentación",
     "ctaPlans": "Ver planes",
-    "trial": "7 días de prueba gratis — sin tarjeta de crédito",
-    "featuresTitle": "Todo lo que necesitas para vender",
-    "featuresSubtitle": "Una plataforma, sin depender de transmitir en vivo cada vez.",
-    "features": {
-      "video": {
-        "title": "Graba una vez, preséntalo para siempre",
-        "description": "Cada visitante ve tu webinar como si fuera en vivo, con reproductor bloqueado para que no adelante ni descargue el video."
+    "trial": "7 días gratis. Sin tarjeta.",
+    "proofCaption": "Así se ve — no es una promesa, es el producto real.",
+    "problemTitle": "Reconócelo: presentas lo mismo una y otra vez.",
+    "problemBody": "Otra llamada para explicar la misma oferta. Otro horario que coordinar. Otro prospecto en otro huso horario, esperando a que estés disponible. Tu presentación funciona — el problema es que necesita que tú estés ahí cada vez.",
+    "capabilitiesTitle": "Todo gira en torno a que trabaje sin ti",
+    "capabilitiesSubtitle": "No se trata de tener más funciones. Se trata de automatizar bien las que importan.",
+    "pillars": {
+      "automation": {
+        "title": "Automatización",
+        "tagline": "Prográmala una vez y que corra.",
+        "points": [
+          "Deja que la gente entre cuando le convenga, sin coordinar otra reunión.",
+          "Cada visitante lo ve como si fuera en vivo, sin que tú estés transmitiendo."
+        ]
       },
-      "scheduling": {
-        "title": "Programación a tu manera",
-        "description": "Horarios fijos recurrentes, arranque inmediato (\"empieza ahora\"), o ambos combinados en el mismo webinar."
+      "effectiveness": {
+        "title": "Efectividad",
+        "tagline": "Que la atención no se pierda en el camino.",
+        "points": [
+          "Muestra el siguiente paso justo en el momento correcto.",
+          "El chat y las reacciones sostienen la sensación de evento real.",
+          "Responde las preguntas más comunes mientras tu presentación sigue corriendo."
+        ]
       },
-      "chat": {
-        "title": "Chat en vivo simulado",
-        "description": "Mensajes cronometrados y contador de espectadores que hacen sentir el evento real, sin moderación manual."
-      },
-      "ctas": {
-        "title": "CTAs cronometrados",
-        "description": "Links, banners y encuestas que aparecen en el segundo exacto del video para vender en el momento justo."
-      },
-      "analytics": {
-        "title": "Analíticas por webinar",
-        "description": "Registrados, asistencia real, curva de retención, clics por CTA y resultados de encuestas, todo en un lugar."
-      },
-      "branding": {
-        "title": "Tu marca, no la nuestra",
-        "description": "Logo y colores propios en el registro, la sala y los emails automáticos de confirmación y recordatorio."
+      "efficiency": {
+        "title": "Eficiencia",
+        "tagline": "Más alcance sin más trabajo.",
+        "points": [
+          "Mira exactamente dónde se queda la gente, dónde se va y cuándo actúa.",
+          "Tu marca, tu dominio, tu experiencia — no la nuestra."
+        ]
       }
     },
-    "howItWorksTitle": "Cómo funciona",
-    "howItWorksSubtitle": "De la grabación a la primera venta, en tres pasos.",
+    "useCasesTitle": "Si presentas para vender, esto es para ti",
+    "useCases": [
+      { "title": "Coaches y consultores", "description": "Convierte tu sesión de venta en una experiencia que corre sola." },
+      { "title": "Creadores e infoproductores", "description": "Lanza tu curso sin estar despierto a la hora en que compra tu audiencia." },
+      { "title": "Agencias", "description": "Ofrece resultados de webinar a tus clientes sin sumar otra reunión a tu semana." },
+      { "title": "Equipos comerciales", "description": "La misma demo perfecta, en boca de cada vendedor, sin que la repita en persona." },
+      { "title": "Educadores", "description": "Preséntalo una vez. Que cada alumno lo viva como si fuera en vivo." },
+      { "title": "Freelancers y pequeñas empresas", "description": "Vende como si tuvieras un equipo, sin contratar uno." }
+    ],
+    "differentiationTitle": "La forma más simple de automatizar presentaciones que venden",
+    "differentiators": [
+      { "title": "Vs. videollamada", "description": "Una videollamada necesita una persona, una hora y una agenda coordinada. WeWebinars no." },
+      { "title": "Vs. una grabación", "description": "Una grabación solo se reproduce. WeWebinars registra, programa, conversa y vende alrededor de ella." },
+      { "title": "Vs. un todo-en-uno", "description": "No competimos por tener más funciones. Hacemos una cosa extremadamente bien, y se conecta con las herramientas que ya usas." }
+    ],
+    "integrationsTitle": "Usa las herramientas que ya amas. Nosotros nos encargamos de la presentación.",
+    "integrationsBody": "Conecta tu CRM, tu email marketing o tu automatización favorita — WeWebinars entrega los datos, tú decides qué hacer con ellos.",
+    "integrationsRow": "CRM · Email marketing · Zapier, Make y n8n · Meta Pixel",
+    "pricingTeaserTitle": "Precio justo. Valor extraordinario.",
+    "pricingTeaserBody": "Planes desde $8/mes. No necesitas un plan enterprise para automatizar tu primera presentación.",
+    "pricingTeaserCta": "Ver planes y precios",
+    "faqTitle": "Preguntas frecuentes",
+    "faqItems": [
+      { "q": "¿Es difícil de configurar?", "a": "No. Subís tu video, elegís cuándo funciona y agregás tu CTA — listo para publicar en minutos, sin conocimientos técnicos." },
+      { "q": "¿Tengo que estar presente cuando alguien lo ve?", "a": "No. Una vez publicado, el webinar corre solo: registro, sala de espera, reproducción, chat y CTA funcionan sin que nadie de tu lado esté conectado." },
+      { "q": "¿Puedo usar una presentación que ya grabé?", "a": "Sí. Si ya tenés un video (en YouTube, Vimeo o un link directo), lo conectás y listo — no hace falta grabar de nuevo." },
+      { "q": "¿Puedo conectar mis otras herramientas?", "a": "Sí, desde el plan Pro. WeWebinars se conecta con tu CRM, email marketing o automatización vía integraciones directas o webhooks." },
+      { "q": "¿Sirve para mi tipo de negocio?", "a": "Si presentás lo mismo más de una vez para vender —una demo, una charla, una propuesta— sirve. No importa la industria." },
+      { "q": "¿Cuál es la diferencia con simplemente compartir una grabación?", "a": "Una grabación solo se reproduce. WeWebinars agrega registro, programación, chat, CTAs en el momento justo y analíticas de qué está funcionando — alrededor del mismo video." },
+      { "q": "¿Por qué automatizar en vez de seguir presentando en vivo?", "a": "Porque tu presentación puede seguir vendiendo mientras hacés cualquier otra cosa — sin perder la sensación de un evento real para quien la mira." },
+      { "q": "¿Qué plan necesito para empezar?", "a": "Core alcanza para automatizar tu primera presentación. La mayoría de quienes lo usan en serio termina en Pro por los webinars activos y el Agente de IA." },
+      { "q": "¿Puedo empezar chico y crecer después?", "a": "Sí — cambiás de plan cuando lo necesites, sin perder nada de lo que ya configuraste." },
+      { "q": "¿Qué pasa si alguien quiere hablar con una persona real?", "a": "Tus CTAs pueden llevar a agendar una llamada, escribirte por WhatsApp o ir directo a checkout — vos decidís el siguiente paso." }
+    ],
+    "howItWorksTitle": "Tan simple como grabar una vez",
+    "howItWorksSubtitle": "De tu presentación grabada a tu primera venta automática, en minutos.",
     "steps": {
-      "record": {
-        "title": "Graba tu presentación",
-        "description": "Sube tu video a tu plataforma favorita y pega el link en el wizard."
+      "upload": {
+        "title": "Sube tu presentación",
+        "description": "Un video que ya tengas, o uno nuevo."
       },
       "schedule": {
-        "title": "Programa tus horarios",
-        "description": "Elige días y horas fijas, arranque inmediato, o las dos opciones juntas."
+        "title": "Elige cuándo funciona",
+        "description": "Horarios fijos, arranque inmediato, o ambos a la vez."
       },
-      "share": {
-        "title": "Comparte tu link y vende",
-        "description": "Los CTAs y el chat simulado hacen el trabajo mientras tú generas tráfico."
+      "cta": {
+        "title": "Agrega tu CTA",
+        "description": "El momento exacto en que tu presentación pide la venta."
+      },
+      "publish": {
+        "title": "Publica",
+        "description": "A partir de ahí, trabaja sola."
       }
     },
-    "ctaBannerTitle": "Empieza a vender con tu primer webinar evergreen",
-    "ctaBannerSubtitle": "Configúralo en minutos y déjalo vendiendo las 24 horas.",
+    "ctaBannerTitle": "Tu próxima presentación puede trabajar sola",
+    "ctaBannerSubtitle": "Create once. Present endlessly. Sell 24/7.",
+    "ctaBannerMicrocopy": "7 días gratis. Sin tarjeta. Cancela cuando quieras.",
     "comparisonTitle": "Tu mejor webinar no debería depender <highlight>de tu agenda</highlight>",
     "comparisonSubtitle": "Un webinar en vivo depende de que estés ahí, a esa hora, otra vez. Uno evergreen queda grabado una sola vez — y sigue vendiendo mientras haces cualquier otra cosa.",
     "liveCardTitle": "Webinar en vivo",
@@ -167,9 +212,11 @@
     }
   },
   "Pricing": {
-    "title": "Planes y precios",
-    "subtitle": "Elige anual o mensual. Crea webinars evergreen ilimitados para promocionar tus propios productos.",
-    "trial": "7 días de prueba gratis — sin tarjeta de crédito",
+    "metaTitle": "Precios — WeWebinars",
+    "metaDescription": "Planes desde $8/mes. Todos incluyen Commercial Rights ilimitados y 7 días de prueba gratis, sin tarjeta.",
+    "title": "Elige tu plan. Empieza a automatizar hoy.",
+    "subtitle": "Todos los planes incluyen Commercial Rights ilimitados. 7 días de prueba, sin tarjeta.",
+    "trial": "7 días gratis. Sin tarjeta.",
     "billingAnnual": "Anual",
     "billingMonthly": "Mensual",
     "perYear": "año",
@@ -179,6 +226,21 @@
     "getStarted": "Empezar con {plan}",
     "enterpriseTitle": "Enterprise",
     "enterpriseDescription": "Límites y condiciones a medida. Sin autoservicio — un asesor te contacta para armar tu plan.",
+    "taglines": {
+      "core": "Para empezar y automatizar tu primera presentación.",
+      "pro": "El plan natural para operar en serio con webinars automatizados.",
+      "business": "Para equipos que necesitan más volumen y control de marca."
+    },
+    "poweredByNote": "Incluye la marca WeWebinars en tus páginas de registro — así es como mantenemos Core a este precio.",
+    "faqTitle": "Preguntas sobre los planes",
+    "faqItems": [
+      { "q": "¿Puedo cambiar de plan más adelante?", "a": "Sí. Puedes subir o bajar de plan cuando lo necesites, sin perder tus webinars ni tus datos." },
+      { "q": "¿Qué pasa si supero el límite de asistentes de mi plan?", "a": "Te avisamos antes de que pase. El límite es por sesión, no acumulado — tu webinar evergreen puede recibir infinitas sesiones a lo largo del tiempo." },
+      { "q": "¿Qué significa \"Commercial Rights Unlimited\"?", "a": "Podés usar WeWebinars para vender tus propios productos o servicios, sin límite de ingresos generados." },
+      { "q": "¿Qué es \"Powered by WeWebinars\"?", "a": "En el plan Core, tu página de registro muestra una marca de agua de WeWebinars. Desde Pro en adelante, desaparece — la experiencia es 100% tu marca." },
+      { "q": "¿Necesito tarjeta para probarlo?", "a": "No. Los 7 días de prueba no piden tarjeta de crédito." },
+      { "q": "¿Puedo cancelar cuando quiera?", "a": "Sí, sin permanencia mínima ni penalidad." }
+    ],
     "features": {
       "activeWebinars": "{count, plural, one {# webinar activo} other {# webinars activos}}",
       "activeWebinarsCustom": "Webinars a medida",
