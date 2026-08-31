@@ -304,6 +304,8 @@
   "DashboardHome": {
     "title": "Resumen",
     "createWebinar": "Crear webinar",
+    "attentionTitle": "Necesita tu atención",
+    "attentionViewAll": "Ver todos ({count})",
     "activeWebinars": "Webinars activos",
     "currentPlan": "Plan actual",
     "subscriptionStatus": "Estado de suscripción",
@@ -569,10 +571,12 @@
     "createFirstWebinar": "Crear tu primer webinar",
     "registrantsCount": "{count, plural, one {# registrado} other {# registrados}}",
     "view": "Ver",
-    "attentionNoVideo": "Sin video",
-    "attentionStaleDraft": "Borrador hace {days} días",
     "attentionFilter": "{count, plural, one {# necesita atención} other {# necesitan atención}}",
     "attentionEmptyState": "Ningún webinar necesita atención ahora mismo."
+  },
+  "WebinarAttention": {
+    "noVideo": "Sin video",
+    "staleDraft": "Borrador hace {days} días"
   },
   "WebinarStatusLabel": {
     "draft": "Borrador",
@@ -836,6 +840,10 @@
     "adding": "Agregando...",
     "addCta": "Agregar CTA",
     "remove": "Quitar",
+    "edit": "Editar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
     "summaryLinkFormat": "\"{text}\" → {url}",
     "summaryPollFormat": "{question} ({count, plural, one {# opción} other {# opciones}})",
     "scarcityMinutesLabel": "Cierre con urgencia (min, opcional)",
@@ -893,6 +901,11 @@
     "brevoNotConnectedHint": "Necesitas conectar tu API key de Brevo primero, en <a>Configuración → Integraciones</a>."
   },
   "WebinarAnalytics": {
+    "tabRetention": "Retención",
+    "tabCtasPolls": "CTAs y encuestas",
+    "tabAudience": "Audiencia",
+    "tabRegistrants": "Registrados",
+    "audienceEmptyState": "Todavía no hay datos de audiencia para mostrar acá.",
     "exportCsv": "Exportar registrados (CSV)",
     "downloadReport": "Descargar reporte",
     "rangeToday": "Hoy",

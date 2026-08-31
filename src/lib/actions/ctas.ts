@@ -9,12 +9,21 @@ import type { CtaType, Json } from "@/lib/supabase/database.types";
 
 export type CtaActionState = { error: string } | null;
 
-export async function addCta(
-  _prevState: CtaActionState,
-  formData: FormData
-): Promise<CtaActionState> {
-  const t = await getTranslations("CtaActions");
-  const webinarId = String(formData.get("webinar_id") ?? "");
+type ParsedCta = {
+  type: CtaType;
+  timestampStart: number;
+  timestampEnd: number | null;
+  config: Json;
+};
+
+// Shared by addCta and updateCta -- same fields, same validation, the only
+// difference is insert vs. update. Keeping one copy means a validation rule
+// added for "add" can't silently go missing from "edit".
+async function parseCtaFormData(
+  formData: FormData,
+  durationSeconds: number | null,
+  t: Awaited<ReturnType<typeof getTranslations<"CtaActions">>>
+): Promise<{ error: string } | ParsedCta> {
   const type = String(formData.get("type") ?? "") as CtaType;
   const startClock = String(formData.get("timestamp_start") ?? "");
   const endClock = String(formData.get("timestamp_end") ?? "").trim();
@@ -35,23 +44,13 @@ export async function addCta(
     }
   }
 
-  const supabase = await createClient();
-
-  // Same reasoning as addChatMessage: a CTA timed past the video's own
-  // length never fires in the live room (filtered by elapsed video time),
-  // but sits in the list looking active -- easy to end up with silently
-  // after replacing the video with a shorter one.
-  const { data: webinar } = await supabase
-    .from("webinars")
-    .select("duration_seconds")
-    .eq("id", webinarId)
-    .maybeSingle();
-  if (webinar?.duration_seconds) {
+  // A CTA timed past the video's own length never fires in the live room
+  // (filtered by elapsed video time), but sits in the list looking active --
+  // easy to end up with silently after replacing the video with a shorter one.
+  if (durationSeconds) {
     const maxTimestamp = timestampEnd ?? timestampStart;
-    if (maxTimestamp > webinar.duration_seconds) {
-      return {
-        error: t("timestampBeyondVideo", { duration: secondsToClock(webinar.duration_seconds) }),
-      };
+    if (maxTimestamp > durationSeconds) {
+      return { error: t("timestampBeyondVideo", { duration: secondsToClock(durationSeconds) }) };
     }
   }
 
@@ -106,13 +105,76 @@ export async function addCta(
     return { error: t("invalidCtaType") };
   }
 
+  return { type, timestampStart, timestampEnd, config };
+}
+
+export async function addCta(
+  _prevState: CtaActionState,
+  formData: FormData
+): Promise<CtaActionState> {
+  const t = await getTranslations("CtaActions");
+  const webinarId = String(formData.get("webinar_id") ?? "");
+  const supabase = await createClient();
+
+  const { data: webinar } = await supabase
+    .from("webinars")
+    .select("duration_seconds")
+    .eq("id", webinarId)
+    .maybeSingle();
+
+  const parsed = await parseCtaFormData(formData, webinar?.duration_seconds ?? null, t);
+  if ("error" in parsed) return parsed;
+
   const { error } = await supabase.from("ctas").insert({
     webinar_id: webinarId,
-    type,
-    timestamp_start_seconds: timestampStart,
-    timestamp_end_seconds: timestampEnd,
-    config,
+    type: parsed.type,
+    timestamp_start_seconds: parsed.timestampStart,
+    timestamp_end_seconds: parsed.timestampEnd,
+    config: parsed.config,
   });
+
+  revalidatePath(`/dashboard/webinars/${webinarId}`);
+  revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
+
+  if (error) return { error: error.message };
+  return null;
+}
+
+// Updates the existing row in place (same id) instead of the old
+// delete-then-add "edit" workflow -- that path silently orphaned every past
+// click on the CTA: viewer_events stores the click against the CTA's id, so
+// a delete+recreate left the click history with no live CTA to attach to
+// (still counted in the webinar-wide funnel, invisible in the per-CTA
+// breakdown). Editing in place keeps the id, so accumulated clicks stay
+// attributed to the CTA even as its copy/timing changes.
+export async function updateCta(
+  _prevState: CtaActionState,
+  formData: FormData
+): Promise<CtaActionState> {
+  const t = await getTranslations("CtaActions");
+  const webinarId = String(formData.get("webinar_id") ?? "");
+  const ctaId = String(formData.get("cta_id") ?? "");
+  const supabase = await createClient();
+
+  const { data: webinar } = await supabase
+    .from("webinars")
+    .select("duration_seconds")
+    .eq("id", webinarId)
+    .maybeSingle();
+
+  const parsed = await parseCtaFormData(formData, webinar?.duration_seconds ?? null, t);
+  if ("error" in parsed) return parsed;
+
+  const { error } = await supabase
+    .from("ctas")
+    .update({
+      type: parsed.type,
+      timestamp_start_seconds: parsed.timestampStart,
+      timestamp_end_seconds: parsed.timestampEnd,
+      config: parsed.config,
+    })
+    .eq("id", ctaId)
+    .eq("webinar_id", webinarId);
 
   revalidatePath(`/dashboard/webinars/${webinarId}`);
   revalidatePath(`/dashboard/webinars/${webinarId}/edit`);
