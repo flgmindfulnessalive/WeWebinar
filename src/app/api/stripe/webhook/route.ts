@@ -59,7 +59,7 @@ async function syncSubscription(subscription: Stripe.Subscription) {
   const supabase = createAdminClient();
   const { data: before } = await supabase
     .from("accounts")
-    .select("name, subscription_status")
+    .select("name, subscription_status, canceled_at")
     .eq("id", accountId)
     .maybeSingle();
 
@@ -67,6 +67,18 @@ async function syncSubscription(subscription: Stripe.Subscription) {
     stripe_subscription_id: subscription.id,
     subscription_status: newStatus,
   };
+
+  // Pin canceled_at to the first time this account actually went canceled
+  // (a redelivered webhook must not keep pushing the 90-day retention
+  // clock out), and clear it -- along with the "your data is deleted
+  // soon" warning flag -- the moment a reactivation moves the account off
+  // canceled, so a later cancellation starts the clock fresh.
+  if (newStatus === "canceled") {
+    update.canceled_at = before?.canceled_at ?? new Date().toISOString();
+  } else if (before?.canceled_at) {
+    update.canceled_at = null;
+    update.deletion_warning_sent_at = null;
+  }
 
   if (planKey) {
     const { data: plan } = await supabase
@@ -145,9 +157,19 @@ export async function POST(request: Request) {
       const accountId = subscription.metadata.account_id;
       if (accountId) {
         const supabase = createAdminClient();
+        // Same canceled_at-pinning as syncSubscription: a redelivered
+        // event must not reset the 90-day retention clock.
+        const { data: before } = await supabase
+          .from("accounts")
+          .select("canceled_at")
+          .eq("id", accountId)
+          .maybeSingle();
         await supabase
           .from("accounts")
-          .update({ subscription_status: "canceled" })
+          .update({
+            subscription_status: "canceled",
+            canceled_at: before?.canceled_at ?? new Date().toISOString(),
+          })
           .eq("id", accountId);
       }
       break;
