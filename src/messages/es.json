@@ -360,6 +360,12 @@
   "DashboardLayout": {
     "accountSuspended": "Tu cuenta está suspendida",
     "contactToReactivate": "Escríbenos a <email>{supportEmail}</email> para reactivarla.",
+    "accountCanceled": "Tu suscripción está cancelada",
+    "canceledMessage": "Tu período pagado terminó. Reactiva tu plan para seguir usando WeWebinars — tus webinars y configuración siguen ahí, esperándote.",
+    "reactivatePlan": "Reactivar plan {plan}",
+    "viewPlans": "Ver todos los planes",
+    "reactivateContactSupport": "Escríbenos a <email>{supportEmail}</email> para reactivar tu cuenta.",
+    "canceledNonOwnerMessage": "El dueño de la cuenta necesita reactivar el plan para que puedas volver a entrar.",
     "signOut": "Cerrar sesión",
     "trialBanner": "Período de prueba: vence en {days, plural, one {# día} other {# días}}. Contáctanos a <email>{supportEmail}</email> para activar tu cuenta."
   },

@@ -14,6 +14,7 @@ import { MobileNav } from "./mobile-nav";
 import { UserMenu } from "./user-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageToggle } from "./language-toggle";
+import { CheckoutButton } from "./settings/billing/billing-buttons";
 
 // Sets the "dark" class on the dashboard's own wrapper (see id below) before
 // the browser paints it, straight from localStorage -- otherwise a returning
@@ -54,6 +55,62 @@ export default async function DashboardLayout({
               ),
             })}
           </p>
+          <form action={signOut}>
+            <Button type="submit" variant="outline" size="sm">
+              {t("signOut")}
+            </Button>
+          </form>
+        </div>
+      </NextIntlClientProvider>
+    );
+  }
+
+  // A canceled Stripe subscription (via the billing portal) only reaches
+  // this status once the paid period actually ends -- Stripe keeps the
+  // subscription "active" with cancel_at_period_end until then, so by the
+  // time subscription_status flips to "canceled" the account has already
+  // gotten everything it paid for. Unlike an admin suspension, this is a
+  // billing lapse the account owner can fix themselves: a one-click
+  // reactivation checkout for their previous plan, no support email
+  // required (Stripe permitting -- see billing/page.tsx's stripeConfigured
+  // comment for why that flag exists).
+  if (current.account.subscription_status === "canceled") {
+    const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
+    const isOwner = current.user.role === "owner";
+    const canSelfServeReactivate = stripeConfigured && isOwner && current.plan.is_self_serve;
+
+    return (
+      <NextIntlClientProvider messages={messages}>
+        <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
+          <CircleAlert className="size-10 text-destructive" />
+          <h1 className="text-xl font-semibold">{t("accountCanceled")}</h1>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("canceledMessage")}</p>
+
+          {canSelfServeReactivate ? (
+            <div className="flex flex-col items-center gap-2">
+              <CheckoutButton
+                planKey={current.plan.key}
+                label={t("reactivatePlan", { plan: current.plan.name })}
+              />
+              <Link href="/pricing" className="text-sm underline underline-offset-4">
+                {t("viewPlans")}
+              </Link>
+            </div>
+          ) : isOwner ? (
+            <p className="max-w-sm text-sm text-muted-foreground">
+              {t.rich("reactivateContactSupport", {
+                supportEmail: SUPPORT_EMAIL,
+                email: (chunks) => (
+                  <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
+                    {chunks}
+                  </a>
+                ),
+              })}
+            </p>
+          ) : (
+            <p className="max-w-sm text-sm text-muted-foreground">{t("canceledNonOwnerMessage")}</p>
+          )}
+
           <form action={signOut}>
             <Button type="submit" variant="outline" size="sm">
               {t("signOut")}

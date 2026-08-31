@@ -60,18 +60,26 @@ esto es solo pegar el HTML correcto en cada plantilla.
 1. Crear cuenta en Stripe. Mientras no esté verificada, se puede probar
    todo en modo test.
 2. Crear 3 Products/Prices recurrentes mensuales:
-   - Core — $60/mes
-   - Pro — $100/mes
-   - Business — $500/mes
+   - Core — $15/mes
+   - Pro — $40/mes
+   - Business — $90/mes
    (Enterprise no tiene self-serve: se asigna manualmente desde `/admin/plans`
    luego del lead de la landing.)
    Copiar los 3 `price_id` → `STRIPE_PRICE_ID_CORE` / `_PRO` / `_BUSINESS`.
 3. Developers → API keys → `STRIPE_SECRET_KEY` y
    `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
 4. Developers → Webhooks → agregar `https://<tu-dominio>/api/stripe/webhook`,
-   eventos: `checkout.session.completed`, `customer.subscription.updated`,
-   `customer.subscription.deleted`, `invoice.paid` → `STRIPE_WEBHOOK_SECRET`.
-5. **Antes de activar el modo live**: Stripe pide una URL de Términos y
+   eventos: `checkout.session.completed`, `customer.subscription.created`,
+   `customer.subscription.updated`, `customer.subscription.deleted`,
+   `invoice.payment_failed` → `STRIPE_WEBHOOK_SECRET`.
+   (No `invoice.paid` — el webhook no lo escucha.)
+5. Settings → Billing → Customer portal: habilitar "Cancel subscriptions" y
+   dejarlo en **"At the end of the billing period"**, no inmediato. La app
+   ya asume esto: una cuenta sigue teniendo acceso completo hasta que Stripe
+   marca la suscripción como cancelada (lo que solo pasa al terminar el
+   período pagado con esta configuración), y recién ahí el dashboard le pide
+   reactivar el plan.
+6. **Antes de activar el modo live**: Stripe pide una URL de Términos y
    Política de Privacidad del negocio — hay que redactarlas (decisión legal,
    no algo que yo pueda inventar) y publicarlas antes de aceptar pagos reales.
 
