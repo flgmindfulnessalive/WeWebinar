@@ -120,7 +120,6 @@ export default async function HomePage() {
 
           <div className="animate-fade-up w-full pt-10" style={{ animationDelay: "0.2s" }}>
             <ProductPreview />
-            <p className="mt-3 text-xs text-muted-foreground">{t("proofCaption")}</p>
           </div>
         </div>
       </section>
