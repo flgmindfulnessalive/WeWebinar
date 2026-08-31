@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, UserCheck, Eye, Video, Package, Activity } from "lucide-react";
+import { Users, UserCheck, Eye, Video, Package, Activity, TriangleAlert } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -7,6 +7,14 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatTile } from "./stat-tile";
+import { AttentionBadge } from "./webinars/attention-badge";
+import { attentionReason } from "@/lib/webinar-attention";
+
+// Caps how many rows the "Necesita tu atención" card lists directly before
+// pointing to the filtered webinars list instead -- a handful of drafts is
+// a glance, a few dozen is a list the dedicated (sortable, filterable)
+// screen handles better.
+const ATTENTION_DISPLAY_LIMIT = 5;
 
 // Recent-registrants feed, not a paginated full list -- the table itself
 // scrolls (see the markup below) instead of paging through, so this just
@@ -19,6 +27,7 @@ export default async function DashboardPage() {
 
   const t = await getTranslations("DashboardHome");
   const tStatus = await getTranslations("SubscriptionStatus");
+  const tAttention = await getTranslations("WebinarAttention");
   const locale = await getLocale();
 
   const supabase = await createClient();
@@ -26,6 +35,7 @@ export default async function DashboardPage() {
     { count: publishedCount },
     { data: summaryRows, error: summaryError },
     { data: recentRegistrants, error: recentError },
+    { data: attentionCandidates },
   ] = await Promise.all([
     supabase
       .from("webinars")
@@ -38,7 +48,16 @@ export default async function DashboardPage() {
       p_limit: RECENT_REGISTRANTS_LIMIT,
       p_offset: 0,
     }),
+    supabase
+      .from("webinars")
+      .select("id, title, status, video_source, created_at")
+      .eq("account_id", current.account.id)
+      .eq("status", "draft"),
   ]);
+
+  const needsAttention = (attentionCandidates ?? [])
+    .map((webinar) => ({ ...webinar, reason: attentionReason(webinar, tAttention) }))
+    .filter((webinar): webinar is typeof webinar & { reason: string } => webinar.reason !== null);
 
   // Surface RPC failures instead of silently rendering as if there were no
   // data — a missing/misnamed function (e.g. a migration that wasn't
@@ -66,6 +85,37 @@ export default async function DashboardPage() {
           <Link href="/dashboard/webinars/new">{t("createWebinar")}</Link>
         </Button>
       </div>
+
+      {needsAttention.length > 0 && (
+        <Card className="border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-300">
+              <TriangleAlert className="size-4" />
+              {t("attentionTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {needsAttention.slice(0, ATTENTION_DISPLAY_LIMIT).map((webinar) => (
+              <Link
+                key={webinar.id}
+                href={`/dashboard/webinars/${webinar.id}`}
+                className="flex flex-wrap items-center gap-2 text-sm hover:underline"
+              >
+                <span className="font-medium">{webinar.title}</span>
+                <AttentionBadge>{webinar.reason}</AttentionBadge>
+              </Link>
+            ))}
+            {needsAttention.length > ATTENTION_DISPLAY_LIMIT && (
+              <Link
+                href="/dashboard/webinars?attention=1"
+                className="text-sm font-medium text-amber-800 hover:underline dark:text-amber-300"
+              >
+                {t("attentionViewAll", { count: needsAttention.length })}
+              </Link>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile

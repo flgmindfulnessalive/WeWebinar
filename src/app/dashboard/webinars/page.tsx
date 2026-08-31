@@ -5,28 +5,12 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { WebinarRowActions } from "./webinar-row-actions";
 import { StatusBadge } from "./status-badge";
 import { AttentionFilterToggle } from "./attention-filter-toggle";
-
-const STALE_DRAFT_DAYS = 3;
-
-// A draft that's missing what it needs to go live, or has just been
-// sitting untouched -- surfaced here instead of only inside its own wizard,
-// so a host scanning the list sees what needs a decision without opening
-// each webinar one by one.
-function attentionReason(
-  webinar: { status: string; video_source: string | null; created_at: string },
-  t: Awaited<ReturnType<typeof getTranslations<"WebinarsList">>>
-): string | null {
-  if (webinar.status !== "draft") return null;
-  if (!webinar.video_source) return t("attentionNoVideo");
-  const days = Math.floor((Date.now() - new Date(webinar.created_at).getTime()) / 86_400_000);
-  if (days >= STALE_DRAFT_DAYS) return t("attentionStaleDraft", { days });
-  return null;
-}
+import { AttentionBadge } from "./attention-badge";
+import { attentionReason } from "@/lib/webinar-attention";
 
 export default async function WebinarsPage({
   searchParams,
@@ -40,6 +24,7 @@ export default async function WebinarsPage({
   const attentionOnly = attentionParam === "1";
 
   const t = await getTranslations("WebinarsList");
+  const tAttention = await getTranslations("WebinarAttention");
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from("webinars")
@@ -49,7 +34,7 @@ export default async function WebinarsPage({
 
   const withAttention = (rows ?? []).map((webinar) => ({
     ...webinar,
-    attention: attentionReason(webinar, t),
+    attention: attentionReason(webinar, tAttention),
   }));
   // Needs-attention rows float to the top; order within each group is
   // otherwise left as the query's created_at desc (stable sort).
@@ -109,14 +94,7 @@ export default async function WebinarsPage({
                     >
                       {webinar.title}
                     </Link>
-                    {webinar.attention && (
-                      <Badge
-                        variant="outline"
-                        className="border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
-                      >
-                        {webinar.attention}
-                      </Badge>
-                    )}
+                    {webinar.attention && <AttentionBadge>{webinar.attention}</AttentionBadge>}
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {t("registrantsCount", { count: webinar.attendee_count })}

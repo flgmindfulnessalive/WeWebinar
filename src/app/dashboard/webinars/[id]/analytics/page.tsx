@@ -17,6 +17,7 @@ import { MessagesTable } from "./messages-table";
 import { ReactionsTable } from "./reactions-table";
 import { Funnel } from "./funnel";
 import { ConcurrentViewersChart } from "./concurrent-viewers-chart";
+import { AnalyticsTabs } from "./analytics-tabs";
 import { DateRangeSelect } from "./date-range-select";
 import { analyticsRangeToDates, parseAnalyticsRange } from "./date-range";
 import { countryDisplayName, countryFlagEmoji } from "@/lib/country";
@@ -334,174 +335,214 @@ export default async function WebinarAnalyticsPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t("retentionTitle")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RetentionChart points={retentionPoints} />
-        </CardContent>
-      </Card>
+      <AnalyticsTabs
+        tabs={[
+          {
+            id: "retention",
+            label: t("tabRetention"),
+            content: (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {t("retentionTitle")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RetentionChart points={retentionPoints} />
+                </CardContent>
+              </Card>
+            ),
+          },
+          {
+            id: "ctas-polls",
+            label: t("tabCtasPolls"),
+            content: (
+              <div className="flex flex-col gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {t("ctaClicksTitle")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-4">
+                    <HorizontalBarChart bars={ctaBars} />
+                    {ctaBars.map((bar) => (
+                      <CtaClickersToggle
+                        key={bar.id}
+                        label={bar.label}
+                        clickers={clickersByCta.get(bar.id) ?? []}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
 
-      {scheduleBars.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("scheduleTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <HorizontalBarChart bars={scheduleBars} />
-          </CardContent>
-        </Card>
-      )}
-
-      {countryBars.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("countryBreakdownTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <HorizontalBarChart bars={countryBars} />
-          </CardContent>
-        </Card>
-      )}
-
-      {SHOW_CONCURRENT_VIEWERS && concurrentViewerPoints.length > 0 && concurrentViewerSession && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("concurrentViewersTitle")}
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              {t("concurrentViewersSublabel", {
-                date: new Date(concurrentViewerSession.session_starts_at).toLocaleString(locale),
-                count: concurrentViewerSession.session_registrant_count,
-              })}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ConcurrentViewersChart points={concurrentViewerPoints} />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t("registrantsTitle", { count: registrants?.length ?? 0 })}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {registrantsError ? (
-            <p className="text-sm text-destructive">{t("registrantsLoadError")}</p>
-          ) : !registrants || registrants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("noRegistrantsYet")}</p>
-          ) : (
-            <RegistrantsTable
-              durationSeconds={durationSeconds}
-              registrants={registrants.map((r) => ({
-                id: r.id,
-                name: r.name,
-                email: r.email,
-                phone: r.phone,
-                computedSessionStart: r.computed_session_start,
-                createdAt: r.created_at,
-                unsubscribedAt: r.unsubscribed_at,
-                lastPositionSeconds: watchPositionByRegistrant.get(r.id) ?? null,
-              }))}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t("ctaClicksTitle")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <HorizontalBarChart bars={ctaBars} />
-          {ctaBars.map((bar) => (
-            <CtaClickersToggle
-              key={bar.id}
-              label={bar.label}
-              clickers={clickersByCta.get(bar.id) ?? []}
-            />
-          ))}
-        </CardContent>
-      </Card>
-
-      {(messageRows?.length ?? 0) > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("chatMessagesTitle", { count: messageRows!.length })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MessagesTable
-              messages={messageRows!.map((m) => ({
-                id: m.id,
-                registrantId: m.registrant_id,
-                name: m.name,
-                email: m.email,
-                messageText: m.message_text,
-                videoTimestampSeconds: m.video_timestamp_seconds,
-                aiReplyText: m.ai_reply_text,
-                aiRepliedAt: m.ai_replied_at,
-                hostReplied: m.host_replied,
-                createdAt: m.created_at,
-              }))}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {(reactionRows?.length ?? 0) > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("reactionsTitle", { count: reactionRows!.length })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReactionsTable
-              reactions={reactionRows!.map((r) => ({
-                id: r.id,
-                registrantId: r.registrant_id,
-                name: r.name,
-                email: r.email,
-                emoji: r.emoji,
-                videoTimestampSeconds: r.video_timestamp_seconds,
-              }))}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {pollsByQuestion.size > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("pollResultsTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
-            {Array.from(pollsByQuestion.entries()).map(([ctaId, poll]) => (
-              <div key={ctaId} className="flex flex-col gap-2">
-                <p className="text-sm font-medium">{poll.question}</p>
-                <HorizontalBarChart bars={poll.bars} />
+                {pollsByQuestion.size > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {t("pollResultsTitle")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-6">
+                      {Array.from(pollsByQuestion.entries()).map(([ctaId, poll]) => (
+                        <div key={ctaId} className="flex flex-col gap-2">
+                          <p className="text-sm font-medium">{poll.question}</p>
+                          <HorizontalBarChart bars={poll.bars} />
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            ),
+          },
+          {
+            id: "audience",
+            label: t("tabAudience"),
+            content:
+              scheduleBars.length === 0 &&
+              countryBars.length === 0 &&
+              !(SHOW_CONCURRENT_VIEWERS && concurrentViewerPoints.length > 0 && concurrentViewerSession) ? (
+                <p className="text-sm text-muted-foreground">{t("audienceEmptyState")}</p>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {scheduleBars.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {t("scheduleTitle")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <HorizontalBarChart bars={scheduleBars} />
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {countryBars.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {t("countryBreakdownTitle")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <HorizontalBarChart bars={countryBars} />
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {SHOW_CONCURRENT_VIEWERS &&
+                    concurrentViewerPoints.length > 0 &&
+                    concurrentViewerSession && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t("concurrentViewersTitle")}
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground">
+                            {t("concurrentViewersSublabel", {
+                              date: new Date(concurrentViewerSession.session_starts_at).toLocaleString(
+                                locale
+                              ),
+                              count: concurrentViewerSession.session_registrant_count,
+                            })}
+                          </p>
+                        </CardHeader>
+                        <CardContent>
+                          <ConcurrentViewersChart points={concurrentViewerPoints} />
+                        </CardContent>
+                      </Card>
+                    )}
+                </div>
+              ),
+          },
+          {
+            id: "registrants",
+            label: t("tabRegistrants"),
+            content: (
+              <div className="flex flex-col gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {t("registrantsTitle", { count: registrants?.length ?? 0 })}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {registrantsError ? (
+                      <p className="text-sm text-destructive">{t("registrantsLoadError")}</p>
+                    ) : !registrants || registrants.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">{t("noRegistrantsYet")}</p>
+                    ) : (
+                      <RegistrantsTable
+                        durationSeconds={durationSeconds}
+                        registrants={registrants.map((r) => ({
+                          id: r.id,
+                          name: r.name,
+                          email: r.email,
+                          phone: r.phone,
+                          computedSessionStart: r.computed_session_start,
+                          createdAt: r.created_at,
+                          unsubscribedAt: r.unsubscribed_at,
+                          lastPositionSeconds: watchPositionByRegistrant.get(r.id) ?? null,
+                        }))}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+
+                {(messageRows?.length ?? 0) > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {t("chatMessagesTitle", { count: messageRows!.length })}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <MessagesTable
+                        messages={messageRows!.map((m) => ({
+                          id: m.id,
+                          registrantId: m.registrant_id,
+                          name: m.name,
+                          email: m.email,
+                          messageText: m.message_text,
+                          videoTimestampSeconds: m.video_timestamp_seconds,
+                          aiReplyText: m.ai_reply_text,
+                          aiRepliedAt: m.ai_replied_at,
+                          hostReplied: m.host_replied,
+                          createdAt: m.created_at,
+                        }))}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {(reactionRows?.length ?? 0) > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {t("reactionsTitle", { count: reactionRows!.length })}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ReactionsTable
+                        reactions={reactionRows!.map((r) => ({
+                          id: r.id,
+                          registrantId: r.registrant_id,
+                          name: r.name,
+                          email: r.email,
+                          emoji: r.emoji,
+                          videoTimestampSeconds: r.video_timestamp_seconds,
+                        }))}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -304,6 +304,8 @@
   "DashboardHome": {
     "title": "Summary",
     "createWebinar": "Create webinar",
+    "attentionTitle": "Needs your attention",
+    "attentionViewAll": "View all ({count})",
     "activeWebinars": "Active webinars",
     "currentPlan": "Current plan",
     "subscriptionStatus": "Subscription status",
@@ -569,10 +571,12 @@
     "createFirstWebinar": "Create your first webinar",
     "registrantsCount": "{count, plural, one {# registrant} other {# registrants}}",
     "view": "View",
-    "attentionNoVideo": "No video",
-    "attentionStaleDraft": "Draft for {days} days",
     "attentionFilter": "{count, plural, one {# needs attention} other {# need attention}}",
     "attentionEmptyState": "No webinar needs attention right now."
+  },
+  "WebinarAttention": {
+    "noVideo": "No video",
+    "staleDraft": "Draft for {days} days"
   },
   "WebinarStatusLabel": {
     "draft": "Draft",
@@ -897,6 +901,11 @@
     "brevoNotConnectedHint": "You need to connect your Brevo API key first, in <a>Settings → Integrations</a>."
   },
   "WebinarAnalytics": {
+    "tabRetention": "Retention",
+    "tabCtasPolls": "CTAs & polls",
+    "tabAudience": "Audience",
+    "tabRegistrants": "Registrants",
+    "audienceEmptyState": "No audience data to show here yet.",
     "exportCsv": "Export registrants (CSV)",
     "downloadReport": "Download report",
     "rangeToday": "Today",
