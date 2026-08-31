@@ -39,7 +39,19 @@ type PanelTab = "chat" | "connected" | "presenter" | "notifications";
 
 const RESYNC_INTERVAL_MS = 20_000;
 const HEARTBEAT_INTERVAL_MS = 15_000;
-const DRIFT_TOLERANCE_SECONDS = 2.5;
+// Nothing else in the room actually needs the video's real playhead to
+// match this within a couple of seconds -- the fake viewer count, CTA
+// timing, and chat all key off getElapsedSeconds() (the wall-clock anchor
+// below), never off player.currentTime. So this only has to be tight
+// enough to catch a genuine desync (a backgrounded tab, a real stall), not
+// the ordinary reporting lag of a cross-origin player -- Vimeo/YouTube's
+// currentTime arrives through postMessage-based events, not a live read,
+// and routinely lags the true position by a couple of seconds on its own.
+// Previously 2.5s: tight enough that Vimeo's normal lag alone crossed it
+// on almost every tick, forcing a corrective seek -- see
+// CORRECTION_COOLDOWN_MS below for why each one of those was a multi-
+// second blackout, repeating every cooldown window, forever.
+const DRIFT_TOLERANCE_SECONDS = 6;
 // Minimum time between corrective seeks. onTimeUpdate fires 4x/second, and
 // a seekTo() forces the player to rebuffer -- without a cooldown, any
 // sustained stall (slow network, a throttled background tab) turns into a
@@ -49,7 +61,18 @@ const DRIFT_TOLERANCE_SECONDS = 2.5;
 // real renderer OOM, not a JS memory leak) instead of just letting
 // playback catch up naturally, which it does within a few seconds once
 // left alone.
-const CORRECTION_COOLDOWN_MS = 5000;
+// Previously 5000: a corrective seek is issued *at* the drift check, before
+// the player has actually rebuffered and resumed -- by the time Vimeo
+// finishes that rebuffer (which can itself take several seconds), the
+// wall-clock anchor has moved on again, so the video comes back already
+// behind by roughly the rebuffer time. With the old 5s cooldown that
+// residual drift (often itself already past the old 2.5s tolerance) could
+// immediately queue up the next correction, producing a correction every
+// ~5-8s indefinitely -- a steady drumbeat of blackouts, not a one-off. A
+// longer cooldown paired with the wider tolerance above gives a corrected
+// video real time to settle before it's judged again, so one correction
+// resolves the desync instead of triggering another.
+const CORRECTION_COOLDOWN_MS = 12_000;
 
 export function LiveRoomClient({
   accessToken,
