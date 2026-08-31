@@ -130,6 +130,7 @@
       { "title": "Freelancers y pequeñas empresas", "description": "Vende como si tuvieras un equipo, sin contratar uno." }
     ],
     "differentiationTitle": "La forma más simple de automatizar presentaciones que venden",
+    "differentiationWinLabel": "WeWebinars gana",
     "differentiators": [
       { "title": "Vs. videollamada", "description": "Una videollamada necesita una persona, una hora y una agenda coordinada. WeWebinars no." },
       { "title": "Vs. una grabación", "description": "Una grabación solo se reproduce. WeWebinars registra, programa, conversa y vende alrededor de ella." },
@@ -137,9 +138,12 @@
     ],
     "integrationsTitle": "Usa las herramientas que ya amas. Nosotros nos encargamos de la presentación.",
     "integrationsBody": "Conecta tu CRM, tu email marketing o tu automatización favorita — WeWebinars entrega los datos, tú decides qué hacer con ellos.",
-    "integrationsRow": "CRM · Email marketing · Zapier, Make y n8n · Meta Pixel",
+    "integrationsChips": ["CRM", "Email marketing", "Zapier · Make · n8n", "Meta Pixel"],
     "pricingTeaserTitle": "Precio justo. Valor extraordinario.",
     "pricingTeaserBody": "Planes desde $8/mes. No necesitas un plan enterprise para automatizar tu primera presentación.",
+    "pricingTeaserPrice": "$8",
+    "pricingTeaserPriceUnit": "/ mes · plan Core",
+    "pricingTeaserFine": "Commercial Rights ilimitados en todos los planes. 7 días de prueba, sin tarjeta.",
     "pricingTeaserCta": "Ver planes y precios",
     "faqTitle": "Preguntas frecuentes",
     "faqItems": [

@@ -5,12 +5,24 @@ import { getTranslations } from "next-intl/server";
 import {
   ArrowRight,
   BarChart3,
+  Briefcase,
   CalendarClock,
   Check,
   Clapperboard,
+  GraduationCap,
+  HelpCircle,
+  Layers,
+  Mail,
+  Mic,
   MousePointerClick,
+  PlayCircle,
   Rocket,
-  X,
+  Server,
+  Target,
+  TrendingUp,
+  Users,
+  VideoOff,
+  Zap,
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
@@ -20,6 +32,7 @@ import { GradientBlobs } from "@/components/gradient-blobs";
 import { MouseSpotlight } from "./_components/mouse-spotlight";
 import { ProductPreview } from "./_components/product-preview";
 import { LiveVsEvergreen } from "./_components/live-vs-evergreen";
+import { ParallaxBand } from "./_components/parallax-band";
 
 export async function generateMetadata({
   params,
@@ -49,12 +62,21 @@ const STEP_ICONS = {
   publish: Rocket,
 } as const;
 
+// Index-matched to the fixed order of Home.useCases / Home.differentiators /
+// Home.integrationsChips in es.json and en.json -- both arrays keep that
+// order in both locales, so a positional map is simpler than adding a slug
+// per translation entry just to key an icon.
+const USE_CASE_ICONS = [Mic, Clapperboard, Users, TrendingUp, GraduationCap, Briefcase];
+const DIFF_ICONS = [VideoOff, PlayCircle, Layers];
+const INTEGRATION_ICONS = [Server, Mail, Zap, Target];
+
 export default async function HomePage() {
   const t = await getTranslations("Home");
 
   const useCases = t.raw("useCases") as { title: string; description: string }[];
   const differentiators = t.raw("differentiators") as { title: string; description: string }[];
   const faqItems = t.raw("faqItems") as { q: string; a: string }[];
+  const integrationsChips = t.raw("integrationsChips") as string[];
 
   return (
     <div className="marketing-theme">
@@ -203,9 +225,16 @@ export default async function HomePage() {
             const Icon = PILLAR_ICONS[key];
             const points = t.raw(`pillars.${key}.points`) as string[];
             return (
-              <div key={key} className="rounded-xl border bg-card p-6">
+              <div key={key} className="relative overflow-hidden rounded-xl border bg-card p-6">
                 <div
-                  className="mb-4 flex size-10 items-center justify-center rounded-lg"
+                  aria-hidden
+                  className="pointer-events-none absolute -top-16 -right-12 size-48 rounded-full opacity-[0.08] blur-md"
+                  style={{
+                    background: "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 55%, transparent 72%)",
+                  }}
+                />
+                <div
+                  className="relative mb-4 flex size-10 items-center justify-center rounded-lg border border-white shadow-[0_1px_2px_rgba(24,24,39,.04),0_10px_20px_-12px_rgba(79,70,229,.45)]"
                   style={{ background: "var(--brand-light)" }}
                 >
                   <Icon className="size-5" style={{ color: "var(--brand)" }} />
@@ -233,12 +262,27 @@ export default async function HomePage() {
             {t("useCasesTitle")}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {useCases.map((uc) => (
-              <div key={uc.title} className="rounded-xl border bg-card p-5">
-                <h3 className="font-medium">{uc.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{uc.description}</p>
-              </div>
-            ))}
+            {useCases.map((uc, i) => {
+              const Icon = USE_CASE_ICONS[i];
+              return (
+                <div
+                  key={uc.title}
+                  className="flex gap-4 rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-20px_rgba(79,70,229,.35)]"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <div
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-white shadow-[0_1px_2px_rgba(24,24,39,.04),0_8px_16px_-10px_rgba(79,70,229,.4)]"
+                    style={{ background: "var(--brand-light)" }}
+                  >
+                    <Icon className="size-4" style={{ color: "var(--brand)" }} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{uc.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{uc.description}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -249,17 +293,27 @@ export default async function HomePage() {
           {t("differentiationTitle")}
         </h2>
         <div className="flex flex-col gap-4">
-          {differentiators.map((d) => (
-            <div key={d.title} className="flex gap-4 rounded-xl border bg-card p-5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <X className="size-4" />
-              </span>
-              <div>
-                <p className="font-medium">{d.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{d.description}</p>
+          {differentiators.map((d, i) => {
+            const Icon = DIFF_ICONS[i];
+            return (
+              <div key={d.title} className="flex items-center gap-4 rounded-xl border bg-card p-5">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Icon className="size-[18px]" />
+                </span>
+                <div className="flex-1">
+                  <p className="font-medium">{d.title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{d.description}</p>
+                </div>
+                <span
+                  className="hidden shrink-0 items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold sm:flex"
+                  style={{ background: "var(--brand-light)", color: "var(--brand)" }}
+                >
+                  <Check className="size-3.5" />
+                  {t("differentiationWinLabel")}
+                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -270,22 +324,51 @@ export default async function HomePage() {
             {t("integrationsTitle")}
           </h2>
           <p className="mt-3 text-muted-foreground">{t("integrationsBody")}</p>
-          <p className="mt-4 text-sm font-medium" style={{ color: "var(--brand)" }}>
-            {t("integrationsRow")}
-          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            {integrationsChips.map((chip, i) => {
+              const Icon = INTEGRATION_ICONS[i];
+              return (
+                <span
+                  key={chip}
+                  className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm font-medium"
+                >
+                  <Icon className="size-4" style={{ color: "var(--brand)" }} />
+                  {chip}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* ============ 9. PRICING TEASER ============ */}
-      <section className="mx-auto max-w-3xl px-6 py-20 text-center">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {t("pricingTeaserTitle")}
-        </h2>
-        <p className="mt-3 text-muted-foreground">{t("pricingTeaserBody")}</p>
-        <Button asChild size="lg" className="mt-6" variant="outline">
-          <Link href="/pricing">{t("pricingTeaserCta")}</Link>
-        </Button>
-      </section>
+      {/* ============ 9. PRICING TEASER — parallax band ============ */}
+      <ParallaxBand accent="#ffd166">
+        <div className="mx-auto max-w-xl px-6 text-center">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {t("pricingTeaserTitle")}
+          </h2>
+          <p className="mt-3 text-white/80">{t("pricingTeaserBody")}</p>
+
+          <div className="mx-auto mt-9 max-w-sm rounded-2xl border border-white/25 bg-white/10 p-7 shadow-[0_20px_50px_-20px_rgba(0,0,0,.45)] backdrop-blur-xl">
+            <div className="flex items-baseline justify-center gap-1.5">
+              <span className="font-mono text-4xl font-extrabold">{t("pricingTeaserPrice")}</span>
+              <span className="text-sm text-white/70">{t("pricingTeaserPriceUnit")}</span>
+            </div>
+            <p className="mt-2 text-sm text-white/80">{t("pricingTeaserFine")}</p>
+            <Button
+              asChild
+              size="lg"
+              className="mt-5 w-full"
+              style={{ background: "#fff", color: "var(--brand-dark)" }}
+            >
+              <Link href="/pricing">
+                {t("pricingTeaserCta")}
+                <ArrowRight className="ml-1.5 size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </ParallaxBand>
 
       {/* ============ 10. FAQ ============ */}
       <section className="border-y bg-muted/30">
@@ -296,24 +379,24 @@ export default async function HomePage() {
           <div className="flex flex-col divide-y">
             {faqItems.map((item) => (
               <details key={item.q} className="group py-3">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
-                  {item.q}
+                <summary className="flex cursor-pointer list-none items-center gap-3 text-sm font-medium">
+                  <HelpCircle
+                    className="size-4 shrink-0 text-muted-foreground group-open:text-[color:var(--brand)]"
+                  />
+                  <span className="flex-1">{item.q}</span>
                   <span className="text-muted-foreground group-open:hidden">+</span>
                   <span className="hidden text-muted-foreground group-open:inline">–</span>
                 </summary>
-                <p className="mt-2 text-sm text-muted-foreground">{item.a}</p>
+                <p className="mt-2 ml-7 text-sm text-muted-foreground">{item.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ 11. FINAL CTA ============ */}
-      <section className="mx-auto max-w-5xl px-6 py-20">
-        <div
-          className="flex flex-col items-center gap-4 rounded-2xl px-6 py-16 text-center text-white"
-          style={{ background: "linear-gradient(135deg, var(--brand), var(--brand-2))" }}
-        >
+      {/* ============ 11. FINAL CTA — parallax band ============ */}
+      <ParallaxBand accent="#a3f7bf">
+        <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-6 text-center">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {t("ctaBannerTitle")}
           </h2>
@@ -323,7 +406,7 @@ export default async function HomePage() {
           </Button>
           <p className="text-sm text-white/70">{t("ctaBannerMicrocopy")}</p>
         </div>
-      </section>
+      </ParallaxBand>
     </div>
   );
 }
