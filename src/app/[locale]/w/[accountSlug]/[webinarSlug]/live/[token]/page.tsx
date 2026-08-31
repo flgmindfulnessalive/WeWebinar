@@ -30,6 +30,14 @@ export default async function LiveRoomPage({
     .maybeSingle();
   if (!webinar || !webinar.video_source || !webinar.video_provider) notFound();
 
+  // Same publishability gate as registration/waiting room -- a registrant
+  // who already has a valid room link from before the account was
+  // canceled or suspended shouldn't still be able to watch.
+  const { data: isPublishable } = await supabase.rpc("account_is_publishable", {
+    p_account_id: webinar.account_id,
+  });
+  if (!isPublishable) notFound();
+
   const [{ data: account }, presenter, { data: chatMessages }, { data: ctas }] =
     await Promise.all([
       supabase.from("account_public_profile").select("*").eq("id", webinar.account_id).maybeSingle(),

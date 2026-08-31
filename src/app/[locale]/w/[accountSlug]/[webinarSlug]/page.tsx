@@ -89,6 +89,15 @@ export default async function RegisterPage({
     .maybeSingle();
   if (!account) notFound();
 
+  // A suspended (admin action) or canceled (billing lapse, past its paid
+  // period) account stops serving its public pages -- the host's own
+  // preview link included, since a canceled owner needs to reactivate
+  // before touching anything again, previews too.
+  const { data: isPublishable } = await supabase.rpc("account_is_publishable", {
+    p_account_id: account.id,
+  });
+  if (!isPublishable) notFound();
+
   // Unpublished webinars are normally invisible here (no status filter
   // below would 404 them) -- draft/paused hosts had no way to see their
   // own registration page before going live. ?preview=1 lifts that, but

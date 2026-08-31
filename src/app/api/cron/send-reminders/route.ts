@@ -10,6 +10,7 @@ import {
   wrapEmailShell,
 } from "@/lib/email-templates";
 import {
+  accountDeletionWarningEmail,
   accountSuspendedEmail,
   activationNudgeEmail,
   domainVerificationFailedEmail,
@@ -411,6 +412,105 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Cancellation retention: a canceled Stripe subscription (billing
+  // lapse, self-serve) keeps its data for RETENTION_DAYS so a reactivation
+  // restores everything exactly as it was, warns the owner
+  // DELETION_WARNING_DAYS_BEFORE days out, and purges for real once the
+  // window closes without a reactivation. Deliberately scoped to
+  // subscription_status = 'canceled' only -- an admin's manual 'suspended'
+  // stays a human decision, never auto-purged by this timer. Same
+  // claim-before-act idempotency as the trial lifecycle above.
+  const RETENTION_DAYS = 90;
+  const DELETION_WARNING_DAYS_BEFORE = 7;
+  let deletionWarningsSent = 0;
+  let accountsPurged = 0;
+
+  const warningCutoff = new Date(
+    now.getTime() - (RETENTION_DAYS - DELETION_WARNING_DAYS_BEFORE) * DAY_MS
+  ).toISOString();
+
+  const { data: dueForWarning } = await admin
+    .from("accounts")
+    .select("id, name, canceled_at")
+    .eq("subscription_status", "canceled")
+    .is("deletion_warning_sent_at", null)
+    .not("canceled_at", "is", null)
+    .lte("canceled_at", warningCutoff);
+
+  for (const account of dueForWarning ?? []) {
+    const { data: claimed, error: claimError } = await admin
+      .from("accounts")
+      .update({ deletion_warning_sent_at: now.toISOString() })
+      .eq("id", account.id)
+      .is("deletion_warning_sent_at", null)
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`deletion warning ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const daysLeft = Math.max(
+          0,
+          Math.ceil(
+            (new Date(account.canceled_at!).getTime() + RETENTION_DAYS * DAY_MS - now.getTime()) /
+              DAY_MS
+          )
+        );
+        const { subject, html } = accountDeletionWarningEmail(account.name, daysLeft);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      deletionWarningsSent++;
+    } catch (err) {
+      await admin.from("accounts").update({ deletion_warning_sent_at: null }).eq("id", account.id);
+      errors.push(`deletion warning ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  const purgeCutoff = new Date(now.getTime() - RETENTION_DAYS * DAY_MS).toISOString();
+
+  const { data: dueForPurge } = await admin
+    .from("accounts")
+    .select("id")
+    .eq("subscription_status", "canceled")
+    .not("canceled_at", "is", null)
+    .lte("canceled_at", purgeCutoff);
+
+  for (const account of dueForPurge ?? []) {
+    try {
+      // Re-check status + age in the delete's own filter, not just the
+      // select above -- a webhook could have reactivated this account in
+      // the moments between building this list and reaching it here, and
+      // this way the delete just silently matches zero rows instead.
+      // Cascades to every table with account_id references.accounts(id)
+      // on delete cascade (webinars and everything under them); users
+      // keeps its on delete set null, so team members lose the account
+      // link but never their login.
+      const { error: deleteError, count } = await admin
+        .from("accounts")
+        .delete({ count: "exact" })
+        .eq("id", account.id)
+        .eq("subscription_status", "canceled")
+        .lte("canceled_at", purgeCutoff);
+      if (deleteError) {
+        errors.push(`purge ${account.id}: ${deleteError.message}`);
+        continue;
+      }
+      if (count) accountsPurged++;
+    } catch (err) {
+      errors.push(`purge ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   // --- Custom domain health: unlike the initial setup (which the owner
   // manually re-checks from "Verificar" until it goes active), nothing
   // else re-checks an already-active domain -- so a DNS record changed or
@@ -468,6 +568,8 @@ export async function GET(request: Request) {
     trialsSuspended,
     digestsSent,
     activationNudgesSent,
+    deletionWarningsSent,
+    accountsPurged,
     domainAlertsSent,
     errors,
   });
