@@ -110,7 +110,7 @@ export default async function WebinarDetailPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="icon">
-            <Link href={`/dashboard/webinars/${webinar.id}`}>
+            <Link href={`/dashboard/webinars/${webinar.id}`} aria-label={t("backToOverview")}>
               <ArrowLeft className="size-4" />
             </Link>
           </Button>

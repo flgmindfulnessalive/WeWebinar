@@ -128,6 +128,7 @@ export function WizardShell({
                   <button
                     type="button"
                     onClick={() => setAdvancedOpen((open) => !open)}
+                    aria-expanded={isOpen}
                     className="flex items-center justify-between rounded-lg px-3 py-1 text-left"
                   >
                     <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
