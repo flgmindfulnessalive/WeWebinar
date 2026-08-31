@@ -759,7 +759,7 @@
   },
   "ScheduleSection": {
     "modeLabel": "Modo",
-    "modeJustInTime": "Just-in-time",
+    "modeJustInTime": "Arranque inmediato",
     "modeFixed": "Horarios fijos",
     "modeBoth": "Ambos",
     "offsetsLabel": "Opciones de inicio (minutos desde ahora, separados por coma)",
@@ -813,7 +813,7 @@
     "remove": "Quitar"
   },
   "ChatActions": {
-    "invalidTimestamp": "El timestamp debe tener formato mm:ss.",
+    "invalidTimestamp": "El minuto debe tener formato mm:ss.",
     "nameAndMessageRequired": "Nombre y mensaje son obligatorios.",
     "timestampBeyondVideo": "El video dura {duration} -- elige un momento dentro de ese rango.",
     "aiAgentPlanBlocked": "El agente AI de respuestas está disponible en los planes Pro y Business. Actualiza tu plan desde Facturación para activarlo."

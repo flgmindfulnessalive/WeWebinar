@@ -759,7 +759,7 @@
   },
   "ScheduleSection": {
     "modeLabel": "Mode",
-    "modeJustInTime": "Just-in-time",
+    "modeJustInTime": "Instant start",
     "modeFixed": "Fixed time slots",
     "modeBoth": "Both",
     "offsetsLabel": "Start options (minutes from now, comma-separated)",
@@ -813,7 +813,7 @@
     "remove": "Remove"
   },
   "ChatActions": {
-    "invalidTimestamp": "The timestamp must be in mm:ss format.",
+    "invalidTimestamp": "The minute must be in mm:ss format.",
     "nameAndMessageRequired": "Name and message are required.",
     "timestampBeyondVideo": "The video is {duration} long -- pick a moment within that range.",
     "aiAgentPlanBlocked": "The AI reply agent is available on the Pro and Business plans. Upgrade your plan from Billing to enable it."
