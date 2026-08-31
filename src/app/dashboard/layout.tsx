@@ -162,8 +162,14 @@ export default async function DashboardLayout({
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-3">
-              <LanguageToggle />
-              <ThemeToggle />
+              {/* Mobile carries these inside the hamburger panel instead
+                  (see MobileNav) -- crowded otherwise next to the
+                  hamburger, "Salir", and a possible trial banner all in
+                  the same 56px row. */}
+              <div className="hidden items-center gap-3 md:flex">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
               <UserMenu
                 email={current.user.email}
                 displayName={current.user.display_name}
