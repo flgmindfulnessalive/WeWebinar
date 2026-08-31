@@ -22,11 +22,16 @@ export function AnalyticsTabs({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-1 border-b">
+      <div role="tablist" className="flex flex-wrap gap-1 border-b">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            role="tab"
+            id={`analytics-tab-${tab.id}`}
+            aria-selected={tab.id === active.id}
+            aria-controls={`analytics-tabpanel-${tab.id}`}
+            tabIndex={tab.id === active.id ? 0 : -1}
             onClick={() => setActiveId(tab.id)}
             className={cn(
               "border-b-2 px-3 py-2 text-sm font-medium transition-colors",
@@ -39,7 +44,14 @@ export function AnalyticsTabs({
           </button>
         ))}
       </div>
-      {active.content}
+      <div
+        role="tabpanel"
+        id={`analytics-tabpanel-${active.id}`}
+        aria-labelledby={`analytics-tab-${active.id}`}
+        tabIndex={0}
+      >
+        {active.content}
+      </div>
     </div>
   );
 }

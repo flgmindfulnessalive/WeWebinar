@@ -669,6 +669,7 @@
     "shareLabel": "Compartir"
   },
   "WebinarWizard": {
+    "backToOverview": "Volver al resumen del webinar",
     "openPublicPage": "Abrir página pública",
     "copyLink": "Copiar link",
     "linkCopied": "Link copiado",
@@ -901,6 +902,7 @@
     "brevoNotConnectedHint": "Necesitas conectar tu API key de Brevo primero, en <a>Configuración → Integraciones</a>."
   },
   "WebinarAnalytics": {
+    "backToOverview": "Volver al resumen del webinar",
     "tabRetention": "Retención",
     "tabCtasPolls": "CTAs y encuestas",
     "tabAudience": "Audiencia",

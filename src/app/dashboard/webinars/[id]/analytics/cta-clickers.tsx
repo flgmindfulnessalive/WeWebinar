@@ -29,6 +29,7 @@ export function CtaClickersToggle({ label, clickers }: { label: string; clickers
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
         className="flex items-center gap-1 self-start text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
       >
         {open ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
