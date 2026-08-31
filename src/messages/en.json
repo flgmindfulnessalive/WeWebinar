@@ -360,6 +360,12 @@
   "DashboardLayout": {
     "accountSuspended": "Your account is suspended",
     "contactToReactivate": "Email us at <email>{supportEmail}</email> to reactivate it.",
+    "accountCanceled": "Your subscription is canceled",
+    "canceledMessage": "Your paid period ended. Reactivate your plan to keep using WeWebinars — your webinars and settings are still there, waiting for you.",
+    "reactivatePlan": "Reactivate {plan} plan",
+    "viewPlans": "See all plans",
+    "reactivateContactSupport": "Email us at <email>{supportEmail}</email> to reactivate your account.",
+    "canceledNonOwnerMessage": "The account owner needs to reactivate the plan before you can sign back in.",
     "signOut": "Sign out",
     "trialBanner": "Free trial: expires in {days, plural, one {# day} other {# days}}. Contact us at <email>{supportEmail}</email> to activate your account."
   },
