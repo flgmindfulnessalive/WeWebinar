@@ -20,7 +20,7 @@ export default function DomainPendingPage() {
       <p className="text-sm font-medium text-muted-foreground">Dominio en configuración</p>
       <h1 className="text-2xl font-semibold tracking-tight">Este sitio todavía se está preparando</h1>
       <p className="text-sm text-muted-foreground">
-        Estamos verificando el DNS de este dominio -- puede tardar unos minutos después de apuntarlo. Si sos
+        Estamos verificando el DNS de este dominio -- puede tardar unos minutos después de apuntarlo. Si eres
         el organizador, revisa el estado desde tu panel de WeWebinars.
       </p>
       <a

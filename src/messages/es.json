@@ -147,16 +147,16 @@
     "pricingTeaserCta": "Ver planes y precios",
     "faqTitle": "Preguntas frecuentes",
     "faqItems": [
-      { "q": "¿Es difícil de configurar?", "a": "No. Subís tu video, elegís cuándo funciona y agregás tu CTA — listo para publicar en minutos, sin conocimientos técnicos." },
+      { "q": "¿Es difícil de configurar?", "a": "No. Subes tu video, eliges cuándo funciona y agregas tu CTA — listo para publicar en minutos, sin conocimientos técnicos." },
       { "q": "¿Tengo que estar presente cuando alguien lo ve?", "a": "No. Una vez publicado, el webinar corre solo: registro, sala de espera, reproducción, chat y CTA funcionan sin que nadie de tu lado esté conectado." },
-      { "q": "¿Puedo usar una presentación que ya grabé?", "a": "Sí. Si ya tenés un video (en YouTube, Vimeo o un link directo), lo conectás y listo — no hace falta grabar de nuevo." },
+      { "q": "¿Puedo usar una presentación que ya grabé?", "a": "Sí. Si ya tienes un video (en YouTube, Vimeo o un link directo), lo conectas y listo — no hace falta grabar de nuevo." },
       { "q": "¿Puedo conectar mis otras herramientas?", "a": "Sí, desde el plan Pro. WeWebinars se conecta con tu CRM, email marketing o automatización vía integraciones directas o webhooks." },
-      { "q": "¿Sirve para mi tipo de negocio?", "a": "Si presentás lo mismo más de una vez para vender —una demo, una charla, una propuesta— sirve. No importa la industria." },
+      { "q": "¿Sirve para mi tipo de negocio?", "a": "Si presentas lo mismo más de una vez para vender —una demo, una charla, una propuesta— sirve. No importa la industria." },
       { "q": "¿Cuál es la diferencia con simplemente compartir una grabación?", "a": "Una grabación solo se reproduce. WeWebinars agrega registro, programación, chat, CTAs en el momento justo y analíticas de qué está funcionando — alrededor del mismo video." },
-      { "q": "¿Por qué automatizar en vez de seguir presentando en vivo?", "a": "Porque tu presentación puede seguir vendiendo mientras hacés cualquier otra cosa — sin perder la sensación de un evento real para quien la mira." },
+      { "q": "¿Por qué automatizar en vez de seguir presentando en vivo?", "a": "Porque tu presentación puede seguir vendiendo mientras haces cualquier otra cosa — sin perder la sensación de un evento real para quien la mira." },
       { "q": "¿Qué plan necesito para empezar?", "a": "Core alcanza para automatizar tu primera presentación. La mayoría de quienes lo usan en serio termina en Pro por los webinars activos y el Agente de IA." },
-      { "q": "¿Puedo empezar chico y crecer después?", "a": "Sí — cambiás de plan cuando lo necesites, sin perder nada de lo que ya configuraste." },
-      { "q": "¿Qué pasa si alguien quiere hablar con una persona real?", "a": "Tus CTAs pueden llevar a agendar una llamada, escribirte por WhatsApp o ir directo a checkout — vos decidís el siguiente paso." }
+      { "q": "¿Puedo empezar chico y crecer después?", "a": "Sí — cambias de plan cuando lo necesites, sin perder nada de lo que ya configuraste." },
+      { "q": "¿Qué pasa si alguien quiere hablar con una persona real?", "a": "Tus CTAs pueden llevar a agendar una llamada, escribirte por WhatsApp o ir directo a checkout — tú decides el siguiente paso." }
     ],
     "howItWorksTitle": "Tan simple como grabar una vez",
     "howItWorksSubtitle": "De tu presentación grabada a tu primera venta automática, en minutos.",
@@ -239,7 +239,7 @@
     "faqItems": [
       { "q": "¿Puedo cambiar de plan más adelante?", "a": "Sí. Puedes subir o bajar de plan cuando lo necesites, sin perder tus webinars ni tus datos." },
       { "q": "¿Qué pasa si supero el límite de asistentes de mi plan?", "a": "Te avisamos antes de que pase. El límite es por sesión, no acumulado — tu webinar evergreen puede recibir infinitas sesiones a lo largo del tiempo." },
-      { "q": "¿Qué significa \"Commercial Rights Unlimited\"?", "a": "Podés usar WeWebinars para vender tus propios productos o servicios, sin límite de ingresos generados." },
+      { "q": "¿Qué significa \"Commercial Rights Unlimited\"?", "a": "Puedes usar WeWebinars para vender tus propios productos o servicios, sin límite de ingresos generados." },
       { "q": "¿Qué es \"Powered by WeWebinars\"?", "a": "En el plan Core, tu página de registro muestra una marca de agua de WeWebinars. Desde Pro en adelante, desaparece — la experiencia es 100% tu marca." },
       { "q": "¿Necesito tarjeta para probarlo?", "a": "No. Los 7 días de prueba no piden tarjeta de crédito." },
       { "q": "¿Puedo cancelar cuando quiera?", "a": "Sí, sin permanencia mínima ni penalidad." }
@@ -293,7 +293,7 @@
     "localTime": "(hora local)",
     "whatYouWillLearn": "Lo que vas a aprender",
     "waitingCount": "{count} personas ya están esperando",
-    "icsDescription": "Accede al webinar acá: {url}"
+    "icsDescription": "Accede al webinar aquí: {url}"
   },
   "LiveRoom": {
     "hidePanel": "Ocultar panel",
@@ -444,7 +444,7 @@
     "changePassword": "Cambiar contraseña",
     "diagnosticsTitle": "Diagnóstico de emails",
     "diagnosticsDescription": "Prueba el envío de emails (confirmación, recordatorios) sin tener que registrarte a un webinar.",
-    "diagnosticsIntro": "Envía un email real a <email>{diagnosticEmail}</email> para confirmar que el envío de emails está funcionando. Si falla, el error exacto aparece acá abajo.",
+    "diagnosticsIntro": "Envía un email real a <email>{diagnosticEmail}</email> para confirmar que el envío de emails está funcionando. Si falla, el error exacto aparece aquí abajo.",
     "diagnosticsSuccess": "Enviado. Revisa la bandeja de entrada (y spam) de {email}.",
     "sendTestEmail": "Enviar email de prueba"
   },
@@ -511,16 +511,16 @@
     "dnsTypeLabel": "Tipo",
     "dnsNameLabel": "Nombre",
     "dnsValueLabel": "Valor",
-    "dnsRootHint": "¿Querés usar el dominio raíz (sin subdominio)? Escribinos y te pasamos el registro A correspondiente.",
+    "dnsRootHint": "¿Quieres usar el dominio raíz (sin subdominio)? Escríbenos y te pasamos el registro A correspondiente.",
     "lastCheckLabel": "Último chequeo:",
     "nowActive": "¡Tu dominio ya está activo!"
   },
   "CustomDomainActions": {
-    "notAllowed": "No tenés permiso para hacer esto.",
-    "invalidHostname": "Ingresá un dominio válido, por ejemplo webinars.tuempresa.com.",
+    "notAllowed": "No tienes permiso para hacer esto.",
+    "invalidHostname": "Ingresa un dominio válido, por ejemplo webinars.tuempresa.com.",
     "hostnameTaken": "Ese dominio ya está en uso, o tu cuenta ya tiene un dominio configurado.",
-    "verifyFailed": "No pudimos registrar el dominio. Intentá de nuevo en unos minutos.",
-    "notVerifiedYet": "Todavía no detectamos el registro DNS. Puede tardar unos minutos en propagarse — probá de nuevo más tarde."
+    "verifyFailed": "No pudimos registrar el dominio. Intenta de nuevo en unos minutos.",
+    "notVerifiedYet": "Todavía no detectamos el registro DNS. Puede tardar unos minutos en propagarse — prueba de nuevo más tarde."
   },
   "WebhookForm": {
     "urlLabel": "URL de destino",
@@ -706,28 +706,13 @@
   },
   "PublishBar": {
     "readyTitle": "Listo para publicar",
-    "readyBody": "Ya tenés lo esencial configurado. Podés publicarlo ahora o seguir personalizando.",
+    "readyBody": "Ya tienes lo esencial configurado. Puedes publicarlo ahora o seguir personalizando.",
     "notReadyTitle": "Todavía no está listo",
-    "notReadyBody": "Cargá un video para poder publicarlo — sin video, la sala en vivo no funciona.",
+    "notReadyBody": "Carga un video para poder publicarlo — sin video, la sala en vivo no funciona.",
     "publishedTitle": "Publicado",
     "publishedBody": "Tu webinar está en vivo y disponible para que la gente se registre.",
     "pausedTitle": "En pausa",
-    "pausedBody": "El registro y el acceso a la sala están cortados. Podés reactivarlo cuando quieras.",
-    "publish": "Publicar webinar",
-    "republish": "Reactivar webinar",
-    "publishing": "Publicando...",
-    "pause": "Pausar",
-    "pausing": "Pausando..."
-  },
-  "PublishBar": {
-    "readyTitle": "Listo para publicar",
-    "readyBody": "Ya tenés lo esencial configurado. Podés publicarlo ahora o seguir personalizando.",
-    "notReadyTitle": "Todavía no está listo",
-    "notReadyBody": "Cargá un video para poder publicarlo — sin video, la sala en vivo no funciona.",
-    "publishedTitle": "Publicado",
-    "publishedBody": "Tu webinar está en vivo y disponible para que la gente se registre.",
-    "pausedTitle": "En pausa",
-    "pausedBody": "El registro y el acceso a la sala están cortados. Podés reactivarlo cuando quieras.",
+    "pausedBody": "El registro y el acceso a la sala están cortados. Puedes reactivarlo cuando quieras.",
     "publish": "Publicar webinar",
     "republish": "Reactivar webinar",
     "publishing": "Publicando...",
@@ -803,11 +788,11 @@
     "custom": "Personalizado",
     "presenterLabel": "Presentador",
     "noPresenter": "Sin presentador",
-    "memberHint": "Se muestra el nombre de esa persona en la sala de espera y en el link público del webinar. La foto no se toma de su Perfil -- cargala abajo si querés mostrar una.",
+    "memberHint": "Se muestra el nombre de esa persona en la sala de espera y en el link público del webinar. La foto no se toma de su Perfil -- cárgala abajo si quieres mostrar una.",
     "nameLabel": "Nombre",
     "namePlaceholder": "Nombre del presentador",
     "avatarLabel": "Foto del presentador (URL)",
-    "avatarHint": "Independiente de la foto de Perfil de la cuenta -- si la dejás vacía, no se muestra ninguna foto en la sala.",
+    "avatarHint": "Independiente de la foto de Perfil de la cuenta -- si la dejas vacía, no se muestra ninguna foto en la sala.",
     "bioLabel": "Bio",
     "customHint": "Útil cuando quien presenta no tiene cuenta en la plataforma."
   },
@@ -823,10 +808,10 @@
     "providerVimeo": "Vimeo",
     "providerDirectUrl": "Video propio",
     "directUrlLabel": "URL directa del video (MP4)",
-    "directUrlHint": "Pega el link directo a un video alojado por vos (tu propio servidor, S3, Cloudflare R2, Bunny, etc.). Tiene que ser un link público en HTTPS que termine cargando el archivo de video, no una página -- nosotros no alojamos ni transmitimos el video, solo lo reproducimos desde tu link.",
+    "directUrlHint": "Pega el link directo a un video alojado por ti (tu propio servidor, S3, Cloudflare R2, Bunny, etc.). Tiene que ser un link público en HTTPS que termine cargando el archivo de video, no una página -- nosotros no alojamos ni transmitimos el video, solo lo reproducimos desde tu link.",
     "invalidDirectUrl": "Ese link no parece una URL válida en HTTPS. Prueba pegando la URL completa del archivo de video.",
     "vimeoLinkLabel": "Link de Vimeo",
-    "vimeoHint": "Pega el link de tu video de Vimeo. Si el video es privado con \"Ocultar de Vimeo\", pega el link completo tal cual te lo da Vimeo (incluye el código de acceso) -- sin eso, el video no va a poder reproducirse acá.",
+    "vimeoHint": "Pega el link de tu video de Vimeo. Si el video es privado con \"Ocultar de Vimeo\", pega el link completo tal cual te lo da Vimeo (incluye el código de acceso) -- sin eso, el video no va a poder reproducirse aquí.",
     "invalidVimeoLink": "No pude reconocer ese link de Vimeo. Prueba pegando la URL completa."
   },
   "ScheduleSection": {
@@ -935,7 +920,7 @@
     "invalidCtaType": "Tipo de CTA inválido."
   },
   "EmailTemplatesSection": {
-    "variableHint": "Variables disponibles: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}, {{marca_color}}. El logo y el color de tu marca (Configuración → Marca) ya se agregan automáticamente arriba y abajo del email — acá solo va el mensaje.",
+    "variableHint": "Variables disponibles: {{nombre}}, {{webinar_titulo}}, {{hora_webinar}}, {{link_acceso}}, {{marca_color}}. El logo y el color de tu marca (Configuración → Marca) ya se agregan automáticamente arriba y abajo del email — aquí solo va el mensaje.",
     "bodyLabel": "Cuerpo del email",
     "preview": "Vista previa",
     "htmlCode": "Código HTML",
@@ -978,7 +963,7 @@
     "tabCtasPolls": "CTAs y encuestas",
     "tabAudience": "Audiencia",
     "tabRegistrants": "Registrados",
-    "audienceEmptyState": "Todavía no hay datos de audiencia para mostrar acá.",
+    "audienceEmptyState": "Todavía no hay datos de audiencia para mostrar aquí.",
     "exportCsv": "Exportar registrados (CSV)",
     "downloadReport": "Descargar reporte",
     "rangeToday": "Hoy",
@@ -1190,7 +1175,7 @@
   },
   "WaitingRoomSection": {
     "headlineLabel": "Mensaje superior",
-    "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo acá.",
+    "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo aquí.",
     "headlinePlaceholder": "Tu webinar está por comenzar",
     "subheadlineLabel": "Subtítulo",
     "backgroundUrlLabel": "Imagen o video de fondo (URL)",

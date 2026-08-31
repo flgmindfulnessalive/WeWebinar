@@ -81,9 +81,22 @@ function loadVimeoPlayerApi(): Promise<VimeoNamespace> {
 // same reasoning as locked-youtube-player.tsx's REVEAL_HOLD_MS: Vimeo's own
 // chrome (a pause/buffering flash) can linger past the moment the SDK
 // reports playback resumed, since it's a cross-origin iframe we have no
-// visibility into beyond its event stream.
-const REVEAL_HOLD_MS = 3000;
+// visibility into beyond its event stream. Kept short: this is a fixed
+// tax paid on every reveal (initial start, every corrective seek, every
+// unmute), so this masks that flash without adding avoidable dead time on
+// top of it -- the bulk of what used to make a correction feel like an
+// interruption was the wider drift tolerance/cooldown in live-room-client
+// forcing far fewer corrections in the first place, not this hold.
+const REVEAL_HOLD_MS = 1500;
 const STUCK_INITIAL_MS = 10000;
+// How long the cover can stay up, continuously, once playback has already
+// started successfully at least once, before giving up on it recovering by
+// itself and offering a manual tap instead -- same escape hatch as the
+// YouTube player's STUCK_RESUME_MS, and deliberately its own constant
+// rather than a multiple of REVEAL_HOLD_MS above: "how long to mask a
+// chrome flash" and "how long before assuming playback is genuinely stuck"
+// are unrelated questions that happened to share a formula before.
+const STUCK_RESUME_MS = 8000;
 
 export type LockedVimeoPlayerHandle = {
   currentTime: number;
@@ -310,7 +323,7 @@ export const LockedVimeoPlayer = forwardRef<
         if (!gaveUpRef.current) setCoverVisible(true);
         if (hasPlayedOnceRef.current) {
           if (stuckSinceRef.current === null) stuckSinceRef.current = Date.now();
-          else if (Date.now() - stuckSinceRef.current >= REVEAL_HOLD_MS * 2) setShowResumePrompt(true);
+          else if (Date.now() - stuckSinceRef.current >= STUCK_RESUME_MS) setShowResumePrompt(true);
         }
         return;
       }
