@@ -989,6 +989,7 @@ export interface Database {
           conversion_actions_generated: number;
           activation_rate_pct: number | null;
           avg_hours_to_first_webinar: number | null;
+          monthly_automated_presentations_delivered: number;
         }[];
       };
     };
