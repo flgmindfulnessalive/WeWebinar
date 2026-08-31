@@ -60,13 +60,31 @@ export async function generateMetadata({
   // client is required here (the caller is an anonymous visitor).
   const customDomainHostname = await getActiveCustomDomainHostname(createAdminClient(), account.id);
   const url = webinarPublicUrl(accountSlug, webinarSlug, customDomainHostname, locale);
+  // Always platform-hosted (the image-generation route only exists there,
+  // never mirrored on a custom domain -- see the platform-vs-custom-domain
+  // note on webinarPublicUrl above), so this is built with customDomainHostname
+  // forced to null regardless of the canonical `url` above.
+  const image = {
+    url: `${webinarPublicUrl(accountSlug, webinarSlug, null, locale)}/opengraph-image`,
+    width: 1200,
+    height: 630,
+  };
 
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url },
-    twitter: { title, description },
+    // Explicit `images` here, not left for Next.js to infer from the nested
+    // opengraph-image.tsx file convention -- confirmed (via the same bug on
+    // the Home/Pricing pages) that Next does NOT auto-merge a route's file-
+    // convention image into a page's own openGraph/twitter object once that
+    // page defines one itself, even a partial one: the deepest segment's
+    // object replaces the parent's wholesale, images included, and file-
+    // convention resolution only fires when nothing on the route already
+    // defines that field. Without this, the tag is silently absent and
+    // Meta/WhatsApp/etc. fall back to guessing an image from elsewhere.
+    openGraph: { title, description, url, images: [image] },
+    twitter: { title, description, images: [image] },
   };
 }
 
