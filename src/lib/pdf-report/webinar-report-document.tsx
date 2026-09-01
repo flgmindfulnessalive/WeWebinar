@@ -31,6 +31,9 @@ export type ReportRegistrant = {
   scheduleLabel: string;
   registeredLabel: string;
   watchLabel: string;
+  // Only set for accounts on a plan with the lead_scoring feature -- when
+  // absent for every row, the table renders without the Score column at all.
+  scoreLabel?: string;
 };
 
 export type ReportMessage = {
@@ -92,6 +95,7 @@ export type WebinarReportData = {
       schedule: string;
       registered: string;
       watched: string;
+      score: string;
       attendee: string;
       minute: string;
       message: string;
@@ -434,6 +438,11 @@ function Bars({
 }
 
 const REG_COLS = { name: 90, email: 128, phone: 54, status: 54, schedule: 92, registered: 72, watched: 46 };
+// Same total width (536pt, the LETTER page minus its 38pt margins) as
+// REG_COLS, just shaved down to make room for the extra Score column --
+// used only when at least one row carries a scoreLabel (lead_scoring plan
+// feature), so accounts without it keep the wider, unmodified layout.
+const REG_COLS_SCORED = { name: 80, email: 110, phone: 52, status: 54, schedule: 80, registered: 64, watched: 46, score: 50 };
 
 function RegistrantsTable({
   rows,
@@ -445,26 +454,34 @@ function RegistrantsTable({
   emptyLabel: string;
 }) {
   if (rows.length === 0) return <Text style={styles.emptyNote}>{emptyLabel}</Text>;
+  const showScore = rows.some((r) => r.scoreLabel !== undefined);
+  const cols = showScore ? REG_COLS_SCORED : REG_COLS;
   return (
     <View>
       <View style={styles.tHeadRow}>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.name }}>{headers.name}</Text>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.email }}>{headers.email}</Text>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.phone }}>{headers.phone}</Text>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.status }}>{headers.status}</Text>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.schedule }}>{headers.schedule}</Text>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.registered }}>{headers.registered}</Text>
-        <Text style={{ ...styles.tHeadCell, width: REG_COLS.watched }}>{headers.watched}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.name }}>{headers.name}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.email }}>{headers.email}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.phone }}>{headers.phone}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.status }}>{headers.status}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.schedule }}>{headers.schedule}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.registered }}>{headers.registered}</Text>
+        <Text style={{ ...styles.tHeadCell, width: cols.watched }}>{headers.watched}</Text>
+        {showScore && (
+          <Text style={{ ...styles.tHeadCell, width: REG_COLS_SCORED.score }}>{headers.score}</Text>
+        )}
       </View>
       {rows.map((r, i) => (
         <View key={i} style={styles.tRow} wrap={false}>
-          <Text style={{ ...styles.tCellName, width: REG_COLS.name }}>{r.name}</Text>
-          <Text style={{ ...styles.tCell, width: REG_COLS.email }}>{r.email}</Text>
-          <Text style={{ ...styles.tCell, width: REG_COLS.phone }}>{r.phone}</Text>
-          <Text style={{ ...styles.tCell, width: REG_COLS.status }}>{r.statusLabel}</Text>
-          <Text style={{ ...styles.tCell, width: REG_COLS.schedule }}>{r.scheduleLabel}</Text>
-          <Text style={{ ...styles.tCell, width: REG_COLS.registered }}>{r.registeredLabel}</Text>
-          <Text style={{ ...styles.tCell, width: REG_COLS.watched }}>{r.watchLabel}</Text>
+          <Text style={{ ...styles.tCellName, width: cols.name }}>{r.name}</Text>
+          <Text style={{ ...styles.tCell, width: cols.email }}>{r.email}</Text>
+          <Text style={{ ...styles.tCell, width: cols.phone }}>{r.phone}</Text>
+          <Text style={{ ...styles.tCell, width: cols.status }}>{r.statusLabel}</Text>
+          <Text style={{ ...styles.tCell, width: cols.schedule }}>{r.scheduleLabel}</Text>
+          <Text style={{ ...styles.tCell, width: cols.registered }}>{r.registeredLabel}</Text>
+          <Text style={{ ...styles.tCell, width: cols.watched }}>{r.watchLabel}</Text>
+          {showScore && (
+            <Text style={{ ...styles.tCell, width: REG_COLS_SCORED.score }}>{r.scoreLabel ?? "—"}</Text>
+          )}
         </View>
       ))}
     </View>

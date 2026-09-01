@@ -54,6 +54,10 @@ export async function GET(
     return NextResponse.json({ error: "webinar not found" }, { status: 404 });
   }
 
+  const leadScoringAllowed = Boolean(
+    (current.plan.features as Record<string, boolean> | null)?.lead_scoring
+  );
+
   const [
     { data: summaryRows },
     { data: retentionRows },
@@ -66,6 +70,7 @@ export async function GET(
     { data: countryRows },
     { data: messageRows },
     { data: reactionRows },
+    { data: leadScoreRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
@@ -78,6 +83,9 @@ export async function GET(
     supabase.rpc("get_webinar_country_breakdown", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId }),
+    leadScoringAllowed
+      ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId })
+      : Promise.resolve({ data: null }),
   ]);
 
   const watchPositionByRegistrant = new Map(
@@ -172,6 +180,15 @@ export async function GET(
     };
   });
 
+  const TIER_LABELS: Record<string, string> = {
+    caliente: tTables("tierCaliente"),
+    tibio: tTables("tierTibio"),
+    frio: tTables("tierFrio"),
+  };
+  const leadScoreByRegistrant = new Map(
+    (leadScoreRows ?? []).map((row) => [row.registrant_id, { score: row.score, tier: row.tier }])
+  );
+
   const reportRegistrants: ReportRegistrant[] = (registrants ?? []).map((r) => {
     const pos = watchPositionByRegistrant.get(r.id) ?? null;
     const watchLabel =
@@ -180,6 +197,7 @@ export async function GET(
         : durationSeconds > 0
           ? `${secondsToClock(pos)} (${Math.round((pos / durationSeconds) * 100)}%)`
           : secondsToClock(pos);
+    const lead = leadScoreByRegistrant.get(r.id);
     return {
       name: r.name,
       email: r.email,
@@ -188,6 +206,7 @@ export async function GET(
       scheduleLabel: new Date(r.computed_session_start).toLocaleString(locale),
       registeredLabel: new Date(r.created_at).toLocaleString(locale),
       watchLabel,
+      scoreLabel: leadScoringAllowed && lead ? `${lead.score} · ${TIER_LABELS[lead.tier] ?? lead.tier}` : undefined,
     };
   });
 
@@ -327,6 +346,7 @@ export async function GET(
             schedule: tTables("scheduleHeader"),
             registered: tTables("registeredHeader"),
             watched: tTables("lastMinuteWatchedHeader"),
+            score: tTables("scoreHeader"),
             attendee: tTables("attendeeHeader"),
             minute: tTables("minuteHeader"),
             message: tTables("messageHeader"),

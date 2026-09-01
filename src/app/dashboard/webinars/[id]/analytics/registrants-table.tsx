@@ -15,38 +15,65 @@ type Registrant = {
   createdAt: string;
   unsubscribedAt: string | null;
   lastPositionSeconds: number | null;
+  score: number | null;
+  tier: string | null;
 };
+
+const TIER_CLASSES: Record<string, string> = {
+  caliente:
+    "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
+  tibio:
+    "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+  frio: "border-sky-300 bg-sky-50 text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300",
+};
+
+const TIER_LABEL_KEYS: Record<string, "tierCaliente" | "tierTibio" | "tierFrio"> = {
+  caliente: "tierCaliente",
+  tibio: "tierTibio",
+  frio: "tierFrio",
+};
+
+// null = default order; "watch"/"score" = sorted by that column, direction
+// tracked separately. Clicking the same header cycles desc -> asc -> off.
+type SortColumn = "watch" | "score";
 
 export function RegistrantsTable({
   registrants,
   durationSeconds,
+  leadScoringAllowed,
 }: {
   registrants: Registrant[];
   durationSeconds: number;
+  leadScoringAllowed: boolean;
 }) {
   const t = useTranslations("AnalyticsTables");
   const locale = useLocale();
-  // null = default order (as fetched, newest registration first); true/false
-  // = sorted by watch position. Cycles null -> desc -> asc -> null on click.
-  const [sortDesc, setSortDesc] = useState<boolean | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
+  const [sortDesc, setSortDesc] = useState(true);
 
   const sorted = useMemo(() => {
-    if (sortDesc === null) return registrants;
+    if (sortColumn === null) return registrants;
     return [...registrants].sort((a, b) => {
-      const av = a.lastPositionSeconds;
-      const bv = b.lastPositionSeconds;
-      // Registrants who never attended have no position -- keep them at
-      // the bottom regardless of sort direction, they're not part of the
-      // "who watched how much" ranking either way.
+      const av = sortColumn === "watch" ? a.lastPositionSeconds : a.score;
+      const bv = sortColumn === "watch" ? b.lastPositionSeconds : b.score;
+      // Registrants with no value for the sorted column (didn't attend, or
+      // no score yet) stay at the bottom regardless of direction.
       if (av === null && bv === null) return 0;
       if (av === null) return 1;
       if (bv === null) return -1;
       return sortDesc ? bv - av : av - bv;
     });
-  }, [registrants, sortDesc]);
+  }, [registrants, sortColumn, sortDesc]);
 
-  function toggleSort() {
-    setSortDesc((prev) => (prev === null ? true : prev === true ? false : null));
+  function toggleSort(column: SortColumn) {
+    if (sortColumn !== column) {
+      setSortColumn(column);
+      setSortDesc(true);
+    } else if (sortDesc) {
+      setSortDesc(false);
+    } else {
+      setSortColumn(null);
+    }
   }
 
   return (
@@ -63,13 +90,25 @@ export function RegistrantsTable({
             <th className="p-2 text-left font-medium">
               <button
                 type="button"
-                onClick={toggleSort}
+                onClick={() => toggleSort("watch")}
                 className="flex items-center gap-1 hover:text-foreground"
               >
                 {t("lastMinuteWatchedHeader")}
                 <ArrowUpDown className="size-3.5" />
               </button>
             </th>
+            {leadScoringAllowed && (
+              <th className="p-2 text-left font-medium">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("score")}
+                  className="flex items-center gap-1 hover:text-foreground"
+                >
+                  {t("scoreHeader")}
+                  <ArrowUpDown className="size-3.5" />
+                </button>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -109,6 +148,24 @@ export function RegistrantsTable({
                   </>
                 )}
               </td>
+              {leadScoringAllowed && (
+                <td className="p-2">
+                  {r.score === null ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="tabular-nums">{r.score}</span>
+                      {r.tier && (
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-xs font-medium ${TIER_CLASSES[r.tier] ?? ""}`}
+                        >
+                          {t(TIER_LABEL_KEYS[r.tier] ?? "tierFrio")}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

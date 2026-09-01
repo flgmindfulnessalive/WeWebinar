@@ -45,16 +45,24 @@ export async function GET(
     return NextResponse.json({ error: "webinar not found" }, { status: 404 });
   }
 
-  const [{ data: registrants, error }, { data: watchPositionRows }] = await Promise.all([
-    supabase
-      .from("registrants")
-      .select(
-        "id, name, email, phone, custom_fields, computed_session_start, visitor_timezone, created_at"
-      )
-      .eq("webinar_id", webinarId)
-      .order("created_at", { ascending: true }),
-    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
-  ]);
+  const leadScoringAllowed = Boolean(
+    (current.plan.features as Record<string, boolean> | null)?.lead_scoring
+  );
+
+  const [{ data: registrants, error }, { data: watchPositionRows }, { data: leadScoreRows }] =
+    await Promise.all([
+      supabase
+        .from("registrants")
+        .select(
+          "id, name, email, phone, custom_fields, computed_session_start, visitor_timezone, created_at"
+        )
+        .eq("webinar_id", webinarId)
+        .order("created_at", { ascending: true }),
+      supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
+      leadScoringAllowed
+        ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId })
+        : Promise.resolve({ data: null }),
+    ]);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -62,6 +70,9 @@ export async function GET(
 
   const watchPositionByRegistrant = new Map(
     (watchPositionRows ?? []).map((row) => [row.registrant_id, row.last_position_seconds])
+  );
+  const leadScoreByRegistrant = new Map(
+    (leadScoreRows ?? []).map((row) => [row.registrant_id, row.score])
   );
 
   let csv = toCsvRow([
@@ -73,6 +84,7 @@ export async function GET(
     "Campos personalizados",
     "Registrado el",
     "Último minuto visto",
+    ...(leadScoringAllowed ? ["Puntaje de lead"] : []),
   ]);
 
   for (const r of registrants ?? []) {
@@ -88,6 +100,7 @@ export async function GET(
         : "",
       r.created_at,
       lastPositionSeconds === null ? "No asistió" : secondsToClock(lastPositionSeconds),
+      ...(leadScoringAllowed ? [String(leadScoreByRegistrant.get(r.id) ?? "")] : []),
     ]);
   }
 

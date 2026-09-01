@@ -933,6 +933,20 @@ export interface Database {
         Args: { p_registrant_id: string };
         Returns: number;
       };
+      get_webinar_lead_scores: {
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
+        Returns: {
+          registrant_id: string;
+          attended: boolean;
+          watch_pct: number;
+          clicked_cta: boolean;
+          answered_poll: boolean;
+          sent_message: boolean;
+          reacted: boolean;
+          score: number;
+          tier: string;
+        }[];
+      };
       count_account_ai_replies_this_month: {
         Args: { p_account_id: string };
         Returns: number;
