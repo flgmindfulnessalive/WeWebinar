@@ -3,6 +3,7 @@
     "pricing": "Precios",
     "login": "Ingresar",
     "signup": "Empezar ahora",
+    "language": "Idioma",
     "footer": "© {year} WeWebinars. Todos los derechos reservados.",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú"
@@ -384,7 +385,10 @@
   },
   "MobileNav": {
     "openMenu": "Abrir menú",
-    "closeMenu": "Cerrar menú"
+    "closeMenu": "Cerrar menú",
+    "preferences": "Preferencias",
+    "theme": "Tema",
+    "language": "Idioma"
   },
   "UserMenu": {
     "signOut": "Salir"
