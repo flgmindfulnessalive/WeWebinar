@@ -101,6 +101,10 @@ export default async function WebinarAnalyticsPage({
     current.account.timezone_default
   );
 
+  const leadScoringAllowed = Boolean(
+    (current.plan.features as Record<string, boolean> | null)?.lead_scoring
+  );
+
   const [
     { data: summaryRows },
     { data: retentionRows },
@@ -114,6 +118,7 @@ export default async function WebinarAnalyticsPage({
     { data: schedulePerformanceRows },
     { data: concurrentViewerRows },
     { data: countryRows },
+    { data: leadScoreRows },
   ] = await Promise.all([
     supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId, p_start_date, p_end_date }),
@@ -127,6 +132,9 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_concurrent_viewers", { p_webinar_id: webinarId }),
     supabase.rpc("get_webinar_country_breakdown", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    leadScoringAllowed
+      ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId, p_start_date, p_end_date })
+      : Promise.resolve({ data: null }),
   ]);
 
   if (registrantsError) {
@@ -139,6 +147,11 @@ export default async function WebinarAnalyticsPage({
   const watchPositionByRegistrant = new Map(
     (watchPositionRows ?? []).map((row) => [row.registrant_id, row.last_position_seconds])
   );
+
+  const leadScoreByRegistrant = new Map(
+    (leadScoreRows ?? []).map((row) => [row.registrant_id, { score: row.score, tier: row.tier }])
+  );
+  const hotLeadCount = (leadScoreRows ?? []).filter((row) => row.tier === "caliente").length;
 
   const summary = summaryRows?.[0];
   const visitCount = summary?.visit_count ?? 0;
@@ -322,6 +335,9 @@ export default async function WebinarAnalyticsPage({
             total: registrantCount,
           })}
         />
+        {leadScoringAllowed && (
+          <StatTile label={t("hotLeadsLabel")} value={String(hotLeadCount)} sublabel={t("hotLeadsSublabel")} />
+        )}
       </div>
 
       <Card>
@@ -476,6 +492,7 @@ export default async function WebinarAnalyticsPage({
                     ) : (
                       <RegistrantsTable
                         durationSeconds={durationSeconds}
+                        leadScoringAllowed={leadScoringAllowed}
                         registrants={registrants.map((r) => ({
                           id: r.id,
                           name: r.name,
@@ -485,6 +502,8 @@ export default async function WebinarAnalyticsPage({
                           createdAt: r.created_at,
                           unsubscribedAt: r.unsubscribed_at,
                           lastPositionSeconds: watchPositionByRegistrant.get(r.id) ?? null,
+                          score: leadScoreByRegistrant.get(r.id)?.score ?? null,
+                          tier: leadScoreByRegistrant.get(r.id)?.tier ?? null,
                         }))}
                       />
                     )}
