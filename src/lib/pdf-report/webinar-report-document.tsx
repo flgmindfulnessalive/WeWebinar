@@ -616,38 +616,47 @@ export function WebinarReportDocument({ data }: { data: WebinarReportData }) {
         <Page size="LETTER" style={styles.page}>
           <Masthead generatedAtLabel={data.generatedAtLabel} />
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.labels.scheduleTitle}</Text>
-            <Bars bars={data.scheduleBars} emptyLabel={data.labels.noScheduleData} />
-          </View>
+          {/* Each section only renders when it has real data -- previously
+              all four always rendered (schedule/country/CTAs/polls), so a
+              webinar missing two or three of them produced a page mostly
+              made of one-line "no data" notes and their surrounding
+              margins, reading as disorganized/empty rather than dense. */}
+          {data.scheduleBars.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{data.labels.scheduleTitle}</Text>
+              <Bars bars={data.scheduleBars} emptyLabel={data.labels.noScheduleData} />
+            </View>
+          )}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.labels.countryBreakdownTitle}</Text>
-            <Bars bars={data.countryBars} emptyLabel={data.labels.noCountryData} />
-          </View>
+          {data.countryBars.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{data.labels.countryBreakdownTitle}</Text>
+              <Bars bars={data.countryBars} emptyLabel={data.labels.noCountryData} />
+            </View>
+          )}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.labels.ctaClicksTitle}</Text>
-            <Bars
-              bars={data.ctaBars}
-              emptyLabel={data.labels.noCtaData}
-              clickersLabel={data.labels.ctaClickersLabel}
-            />
-          </View>
+          {data.ctaBars.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{data.labels.ctaClicksTitle}</Text>
+              <Bars
+                bars={data.ctaBars}
+                emptyLabel={data.labels.noCtaData}
+                clickersLabel={data.labels.ctaClickersLabel}
+              />
+            </View>
+          )}
 
-          <View style={{ ...styles.section, marginBottom: 0 }}>
-            <Text style={styles.sectionTitle}>{data.labels.pollResultsTitle}</Text>
-            {data.pollGroups.length === 0 ? (
-              <Text style={styles.emptyNote}>{data.labels.noPollData}</Text>
-            ) : (
-              data.pollGroups.map((group, i) => (
+          {data.pollGroups.length > 0 && (
+            <View style={{ ...styles.section, marginBottom: 0 }}>
+              <Text style={styles.sectionTitle}>{data.labels.pollResultsTitle}</Text>
+              {data.pollGroups.map((group, i) => (
                 <View key={i} style={{ marginBottom: i === data.pollGroups.length - 1 ? 0 : 10 }}>
                   <Text style={styles.pollQuestion}>{group.question}</Text>
                   <Bars bars={group.bars} emptyLabel={data.labels.noPollData} />
                 </View>
-              ))
-            )}
-          </View>
+              ))}
+            </View>
+          )}
 
           <Footer left={data.labels.footerConfidential} pageOf={data.labels.pageOf} />
         </Page>

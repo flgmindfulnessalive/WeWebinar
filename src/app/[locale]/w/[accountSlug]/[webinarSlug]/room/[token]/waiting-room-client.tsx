@@ -136,7 +136,6 @@ export function WaitingRoomClient({
         href={buildIcsDataUri({
           title: webinarTitle,
           startsAt: startDate,
-          url: roomUrl,
           description: t("icsDescription", { url: roomUrl }),
         })}
         download={`${webinarTitle}.ics`}
@@ -160,27 +159,24 @@ export function WaitingRoomClient({
     </div>
   );
 
-  const accountBadge = (
+  // No initials-square fallback when there's no logo -- with a plain "W"
+  // or the first two letters of the account name in a colored box, it read
+  // as a broken favicon rather than a deliberate brand mark. Plain text is
+  // the better default until the host uploads a real logo.
+  const accountBadge = accountLogoUrl ? (
     <div className="flex items-center gap-2">
-      {accountLogoUrl ? (
-        <Image
-          src={accountLogoUrl}
-          alt={accountName ?? ""}
-          width={24}
-          height={24}
-          className="size-6 rounded-md object-contain"
-          unoptimized
-        />
-      ) : (
-        <span
-          className="flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
-          style={{ background: gradientBadge }}
-        >
-          {(accountName ?? "W").slice(0, 2).toUpperCase()}
-        </span>
-      )}
+      <Image
+        src={accountLogoUrl}
+        alt={accountName ?? ""}
+        width={24}
+        height={24}
+        className="size-6 rounded-md object-contain"
+        unoptimized
+      />
       {accountName && <span className="text-xs text-white/55">{accountName}</span>}
     </div>
+  ) : (
+    accountName && <span className="text-xs text-white/55">{accountName}</span>
   );
 
   const presenterRow = presenter && (presenter.display_name || presenter.avatar_url) && (

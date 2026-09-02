@@ -1,6 +1,8 @@
 import { Check, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { ComparisonGlowTrace } from "./comparison-glow-trace";
+
 // Shared between the Home page and Pricing (below Enterprise) -- same
 // copy/namespace in both places, so a future edit to the comparison only
 // has to happen here once.
@@ -52,6 +54,7 @@ export async function LiveVsEvergreen() {
           className="relative rounded-xl bg-card p-7 shadow-lg"
           style={{ borderColor: "var(--brand)", borderWidth: 2 }}
         >
+          <ComparisonGlowTrace />
           <span
             className="absolute -top-3 left-1/2 w-fit -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium text-white"
             style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Bell, MessageSquare, User, Users } from "lucide-react";
+import { Bell, MessageSquare, User, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -134,6 +134,9 @@ export function LiveRoomClient({
   const [pollResults, setPollResults] = useState<Record<string, { option: string; votes: number }[]>>(
     {}
   );
+  // Polls closed early via the overlay's X -- only hides the on-video
+  // overlay, the poll (and its results) stays reachable in the Avisos tab.
+  const [dismissedPollIds, setDismissedPollIds] = useState<Set<string>>(new Set());
   // Ticks once a second so the fake counter/CTAs stay current; computed
   // inside the effect (an event-handler-like context), not during render.
   const [elapsedSeconds, setElapsedSeconds] = useState(initialElapsedSeconds);
@@ -302,11 +305,20 @@ export function LiveRoomClient({
   );
 
   const elapsed = elapsedSeconds;
-  const activeCtas = ctas.filter(
-    (c) =>
-      c.timestamp_start_seconds <= elapsed &&
-      (c.timestamp_end_seconds === null || elapsed <= c.timestamp_end_seconds)
-  );
+  // On-video overlay: only CTAs currently inside their configured window,
+  // minus any poll the viewer closed early via the overlay's X.
+  const activeCtas = ctas
+    .filter(
+      (c) =>
+        c.timestamp_start_seconds <= elapsed &&
+        (c.timestamp_end_seconds === null || elapsed <= c.timestamp_end_seconds)
+    )
+    .filter((c) => !(c.type === "poll" && dismissedPollIds.has(c.id)));
+  // Avisos tab: every CTA that has appeared so far this session, regardless
+  // of its on-video window or whether it was dismissed early -- a running
+  // history so a poll's results, or a banner/link that already closed,
+  // stay reachable instead of vanishing once the overlay is gone.
+  const notificationCtas = ctas.filter((c) => c.timestamp_start_seconds <= elapsed);
 
   function handleReaction(emoji: string) {
     recordViewerEvent("reaction", {
@@ -432,6 +444,11 @@ export function LiveRoomClient({
                   answeredOption={pollAnswers[cta.id]}
                   results={pollResults[cta.id]}
                   getElapsedSeconds={getElapsedSeconds}
+                  onClose={
+                    cta.type === "poll"
+                      ? () => setDismissedPollIds((prev) => new Set(prev).add(cta.id))
+                      : undefined
+                  }
                 />
               ))}
               <LiveReactions onReact={handleReaction} />
@@ -469,7 +486,7 @@ export function LiveRoomClient({
                   icon={Bell}
                   active={activeTab === "notifications"}
                   onClick={() => setActiveTab("notifications")}
-                  badge={activeCtas.length || undefined}
+                  badge={notificationCtas.length || undefined}
                 />
               )}
             </div>
@@ -499,7 +516,7 @@ export function LiveRoomClient({
               {activeTab === "presenter" && presenter && <PresenterTab presenter={presenter} />}
               {activeTab === "notifications" && (
                 <NotificationsTab
-                  ctas={activeCtas}
+                  ctas={notificationCtas}
                   onLinkClick={recordCtaClick}
                   onPollAnswer={recordPollResponse}
                   pollAnswers={pollAnswers}
@@ -955,6 +972,7 @@ function CtaOverlay({
   answeredOption,
   results,
   getElapsedSeconds,
+  onClose,
 }: {
   cta: Cta;
   onLinkClick: () => void;
@@ -962,6 +980,7 @@ function CtaOverlay({
   answeredOption?: string;
   results?: { option: string; votes: number }[];
   getElapsedSeconds: () => number;
+  onClose?: () => void;
 }) {
   const config = (cta.config ?? {}) as Record<string, unknown>;
   const t = useTranslations("LiveRoom");
@@ -1101,10 +1120,22 @@ function CtaOverlay({
     const question = String(config.question ?? "");
     const options = Array.isArray(config.options) ? (config.options as string[]) : [];
 
+    const closeButton = onClose && (
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={t("closePoll")}
+        className="absolute right-2 top-2 rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white"
+      >
+        <X className="size-3.5" />
+      </button>
+    );
+
     if (answeredOption) {
       return (
         <div className="absolute bottom-16 left-1/2 z-10 flex w-80 -translate-x-1/2 flex-col gap-2 rounded-md bg-black/85 p-4 text-white shadow-lg">
-          <p className="text-sm font-medium">📊 {question}</p>
+          {closeButton}
+          <p className="pr-4 text-sm font-medium">📊 {question}</p>
           <PollResultBars
             options={options}
             results={results}
@@ -1118,7 +1149,8 @@ function CtaOverlay({
 
     return (
       <div className="absolute bottom-16 left-1/2 z-10 flex w-80 -translate-x-1/2 flex-col gap-2 rounded-md bg-black/85 p-4 text-white shadow-lg">
-        <p className="text-sm font-medium">📊 {question}</p>
+        {closeButton}
+        <p className="pr-4 text-sm font-medium">📊 {question}</p>
         <div className="flex flex-col gap-1.5">
           {options.map((option) => (
             <button

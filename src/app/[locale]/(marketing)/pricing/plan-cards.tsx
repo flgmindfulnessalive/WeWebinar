@@ -46,6 +46,7 @@ function featureList(
     t("features.analytics"),
   ];
   if (features.ai_chat_replies) items.push(t("features.aiChatReplies"));
+  if (features.lead_scoring) items.push(t("features.leadScoring"));
   if (features.integrations) items.push(t("features.integrations"));
   if (features.remove_branding) items.push(t("features.removeBranding"));
   if (features.custom_domain) items.push(t("features.customDomain"));
@@ -60,29 +61,40 @@ export function PlanCards({ plans }: { plans: Plan[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="mx-auto flex items-center gap-1 rounded-full border p-1 text-sm">
-        <button
-          type="button"
-          onClick={() => setBilling("annual")}
-          className={cn(
-            "rounded-full px-4 py-1.5 font-medium transition-colors",
-            billing === "annual" ? "text-white" : "text-muted-foreground"
-          )}
-          style={billing === "annual" ? { background: "var(--brand)" } : undefined}
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex items-center gap-1 rounded-full border p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setBilling("annual")}
+            className={cn(
+              "rounded-full px-4 py-1.5 font-medium transition-colors",
+              billing === "annual" ? "text-white" : "text-muted-foreground"
+            )}
+            style={billing === "annual" ? { background: "var(--brand)" } : undefined}
+          >
+            {t("billingAnnual")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setBilling("monthly")}
+            className={cn(
+              "rounded-full px-4 py-1.5 font-medium transition-colors",
+              billing === "monthly" ? "text-white" : "text-muted-foreground"
+            )}
+            style={billing === "monthly" ? { background: "var(--brand)" } : undefined}
+          >
+            {t("billingMonthly")}
+          </button>
+        </div>
+        {/* Always shown, not just when Anual is selected -- someone
+            currently looking at Mensual is exactly who most needs to see
+            what switching would save them. */}
+        <span
+          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+          style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
         >
-          {t("billingAnnual")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setBilling("monthly")}
-          className={cn(
-            "rounded-full px-4 py-1.5 font-medium transition-colors",
-            billing === "monthly" ? "text-white" : "text-muted-foreground"
-          )}
-          style={billing === "monthly" ? { background: "var(--brand)" } : undefined}
-        >
-          {t("billingMonthly")}
-        </button>
+          {t("saveAnnualBadge")}
+        </span>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-3">
