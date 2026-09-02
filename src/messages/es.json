@@ -1153,7 +1153,14 @@
     "notYetInstrumentedTitle": "Todavía sin instrumentar",
     "notYetInstrumentedBody": "El resto del Executive Scorecard del blueprint (CAC, adquisición orgánica/referral, churn de logos e ingresos, NRR, LTV, gross margin, tickets de soporte, costo de infraestructura, uptime, horas del founder) necesita datos que hoy no vive en este producto — atribución de marketing, historial de suscripciones/pagos, o herramientas externas de soporte e infraestructura. Se puede agregar cuando esas fuentes existan.",
     "hoursUnit": "{hours} h",
-    "daysUnit": "{days} días"
+    "daysUnit": "{days} días",
+    "dailyBriefTitle": "Brief diario",
+    "dailyBriefDescription": "Snapshot automático (una vez al día) con una lectura corta de qué cambió, escrita por IA solo a partir de los números reales de abajo.",
+    "dailyBriefDate": "Al {date}",
+    "dailyBriefNoSnapshot": "Todavía no se generó ningún snapshot. Corre una vez al día -- volvé a revisar mañana.",
+    "dailyBriefNoSummary": "El snapshot de hoy se generó, pero el resumen de IA todavía no está listo.",
+    "dailyBriefNoCompareNote": "Primer snapshot con historial -- todavía no hay uno de hace {days} días para comparar.",
+    "dailyBriefVsCompare": "vs. hace {days} días ({date})"
   },
   "AdminAccounts": {
     "title": "Cuentas",

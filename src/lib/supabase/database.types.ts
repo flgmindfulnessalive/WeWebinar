@@ -650,6 +650,39 @@ export interface Database {
           },
         ];
       };
+      platform_metrics_snapshots: {
+        Row: {
+          id: string;
+          snapshot_date: string;
+          total_accounts: number;
+          active_accounts: number;
+          trial_accounts: number;
+          mrr_usd: number;
+          arr_usd: number;
+          active_webinars: number;
+          total_attendees: number;
+          activation_rate_pct: number | null;
+          avg_hours_to_first_webinar: number | null;
+          conversion_actions_generated: number;
+          monthly_automated_presentations_delivered: number;
+          ai_summary: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["platform_metrics_snapshots"]["Row"]> & {
+          snapshot_date: string;
+          total_accounts: number;
+          active_accounts: number;
+          trial_accounts: number;
+          mrr_usd: number;
+          arr_usd: number;
+          active_webinars: number;
+          total_attendees: number;
+          conversion_actions_generated: number;
+          monthly_automated_presentations_delivered: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["platform_metrics_snapshots"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -1011,6 +1044,31 @@ export interface Database {
           activation_rate_pct: number | null;
           avg_hours_to_first_webinar: number | null;
           monthly_automated_presentations_delivered: number;
+        }[];
+      };
+      snapshot_platform_metrics: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      get_platform_metrics_brief: {
+        Args: { p_compare_days?: number };
+        Returns: {
+          snapshot_date: string;
+          total_accounts: number;
+          active_accounts: number;
+          trial_accounts: number;
+          mrr_usd: number;
+          arr_usd: number;
+          active_webinars: number;
+          total_attendees: number;
+          activation_rate_pct: number | null;
+          conversion_actions_generated: number;
+          ai_summary: string | null;
+          compare_snapshot_date: string | null;
+          compare_total_accounts: number | null;
+          compare_active_accounts: number | null;
+          compare_mrr_usd: number | null;
+          compare_activation_rate_pct: number | null;
         }[];
       };
     };

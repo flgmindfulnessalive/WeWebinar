@@ -13,21 +13,54 @@ function formatTimeToFirstWebinar(
   return t("daysUnit", { days: (hours / 24).toFixed(1) });
 }
 
+// Delta text lives in StatTile's sublabel, in the same neutral
+// muted-foreground styling as every other sublabel on this page -- no
+// green/red semaphore (see stat-tile.tsx's own note on why).
+function formatDelta(current: number, previous: number | null): string | null {
+  if (previous === null) return null;
+  const diff = current - previous;
+  if (previous === 0) return diff === 0 ? "=" : diff > 0 ? "+∞%" : "-∞%";
+  const pct = (diff / previous) * 100;
+  const sign = diff > 0 ? "+" : diff < 0 ? "" : "±";
+  return `${sign}${pct.toFixed(1)}%`;
+}
+
 export default async function AdminOverviewPage() {
   const t = await getTranslations("AdminOverview");
   const locale = await getLocale();
+  const COMPARE_DAYS = 7;
   const supabase = await createClient();
-  const [{ data: metricsRows }, { data: scorecardRows }] = await Promise.all([
+  const [{ data: metricsRows }, { data: scorecardRows }, { data: briefRows }] = await Promise.all([
     supabase.rpc("get_platform_metrics"),
     supabase.rpc("get_platform_scorecard"),
+    supabase.rpc("get_platform_metrics_brief", { p_compare_days: COMPARE_DAYS }),
   ]);
   const metrics = metricsRows?.[0];
   const scorecard = scorecardRows?.[0];
+  const brief = briefRows?.[0];
 
   const activeAccounts = metrics?.active_accounts ?? 0;
   const arpa = activeAccounts > 0 ? (metrics?.arr_usd ?? 0) / activeAccounts : null;
   const attendeesPerAccount =
     activeAccounts > 0 ? (metrics?.total_attendees ?? 0) / activeAccounts : null;
+
+  const formatSnapshotDate = (date: string) =>
+    new Date(`${date}T00:00:00Z`).toLocaleDateString(locale, {
+      day: "numeric",
+      month: "short",
+    });
+
+  function deltaSublabel(current: number, compareValue: number | null): string | undefined {
+    if (!brief) return undefined;
+    if (compareValue === null || !brief.compare_snapshot_date) {
+      return t("dailyBriefNoCompareNote", { days: COMPARE_DAYS });
+    }
+    const delta = formatDelta(current, compareValue);
+    return `${delta} ${t("dailyBriefVsCompare", {
+      days: COMPARE_DAYS,
+      date: formatSnapshotDate(brief.compare_snapshot_date),
+    })}`;
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -55,6 +88,63 @@ export default async function AdminOverviewPage() {
           <StatTile label={t("activeWebinars")} value={String(metrics?.active_webinars ?? 0)} />
           <StatTile label={t("totalAttendees")} value={String(metrics?.total_attendees ?? 0)} />
         </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight">{t("dailyBriefTitle")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("dailyBriefDescription")}</p>
+        {!brief ? (
+          <Card className="mt-4">
+            <CardContent className="pt-6 text-sm text-muted-foreground">
+              {t("dailyBriefNoSnapshot")}
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {t("dailyBriefDate", {
+                    date: new Date(`${brief.snapshot_date}T00:00:00Z`).toLocaleDateString(locale, {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }),
+                  })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">
+                {brief.ai_summary ?? t("dailyBriefNoSummary")}
+              </CardContent>
+            </Card>
+            <div className="mt-4 grid gap-4 sm:grid-cols-4">
+              <StatTile
+                label={t("totalAccounts")}
+                value={String(brief.total_accounts)}
+                sublabel={deltaSublabel(brief.total_accounts, brief.compare_total_accounts)}
+              />
+              <StatTile
+                label={t("activeAccounts")}
+                value={String(brief.active_accounts)}
+                sublabel={deltaSublabel(brief.active_accounts, brief.compare_active_accounts)}
+              />
+              <StatTile
+                label={t("mrrLabel")}
+                value={`$${brief.mrr_usd.toLocaleString(locale, { maximumFractionDigits: 0 })}`}
+                sublabel={deltaSublabel(brief.mrr_usd, brief.compare_mrr_usd)}
+              />
+              <StatTile
+                label={t("activationRate")}
+                value={brief.activation_rate_pct !== null ? `${brief.activation_rate_pct}%` : "—"}
+                sublabel={
+                  brief.activation_rate_pct !== null
+                    ? deltaSublabel(brief.activation_rate_pct, brief.compare_activation_rate_pct)
+                    : undefined
+                }
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div>
