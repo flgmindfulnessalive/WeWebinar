@@ -154,6 +154,30 @@
   }
 }
 
+/* Home/Pricing comparison card (ComparisonGlowTrace) -- a comet of light
+   traces the WeWebinars card's border clockwise twice, then fades and
+   stays off. Two full laps of the 1000-unit path (dashoffset 0 -> -2000)
+   inside one animation, not an infinite loop with an iteration count, so
+   it can fade out on its own last frame instead of snapping off mid-lap. */
+@keyframes comparison-glow-trace {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  92% {
+    stroke-dashoffset: -2000;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -2000;
+    opacity: 0;
+  }
+}
+
+.animate-comparison-glow-trace {
+  animation: comparison-glow-trace 3.2s ease-in-out forwards;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

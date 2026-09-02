@@ -7,6 +7,7 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../../status-badge";
+import { PublishBar } from "../publish-bar";
 import { WizardShell, type WizardStep } from "../wizard-shell";
 import { DetailSection } from "../detail-section";
 import { PresenterSection } from "../presenter-section";
@@ -326,7 +327,18 @@ export default async function WebinarDetailPage({
           },
         ];
 
-        return <WizardShell steps={steps} />;
+        return (
+          <WizardShell
+            steps={steps}
+            footer={
+              <PublishBar
+                webinarId={webinar.id}
+                status={webinar.status}
+                hasVideo={Boolean(webinar.video_source)}
+              />
+            }
+          />
+        );
       })()}
     </div>
   );
