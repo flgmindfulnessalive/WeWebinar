@@ -160,7 +160,7 @@ export default async function HomePage() {
       </section>
 
       {/* ============ 2. PROBLEM ============ */}
-      <ImageParallaxSection src="/marketing/problem-parallax.webp" alt="">
+      <ImageParallaxSection src="/marketing/problem-parallax.webp">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             {t("problemTitle")}
