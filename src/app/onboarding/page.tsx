@@ -1,9 +1,16 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { isUpgradePlanKey } from "@/lib/stripe";
 import { OnboardingForm } from "./onboarding-form";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const { plan } = await searchParams;
+  const upgradePlan = plan && isUpgradePlanKey(plan) ? plan : undefined;
   const supabase = await createClient();
   const {
     data: { user },
@@ -26,7 +33,7 @@ export default async function OnboardingPage() {
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
       <div className="w-full max-w-md">
-        <OnboardingForm />
+        <OnboardingForm plan={upgradePlan} />
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
+import { createSelfServeCheckoutSession, isUpgradePlanKey } from "@/lib/stripe";
 
 export type CreateAccountState = { error: string } | null;
 
@@ -26,6 +27,8 @@ export async function createAccount(
   const name = String(formData.get("name") ?? "").trim();
   const planKey = TRIAL_PLAN_KEY;
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
+  const rawUpgradePlan = String(formData.get("plan") ?? "");
+  const upgradePlanKey = isUpgradePlanKey(rawUpgradePlan) ? rawUpgradePlan : null;
 
   if (!name) {
     const t = await getTranslations("AccountActions");
@@ -81,6 +84,32 @@ export async function createAccount(
             await sendEmail({ to: user.email!, subject, html });
           } catch (err) {
             console.error("[account] welcome email failed:", err);
+          }
+
+          // The trial itself is always Starter (see TRIAL_PLAN_KEY above),
+          // but if this host clicked "Empezar con Pro/Business" on
+          // Pricing, honor that intent now that the account exists --
+          // send them straight to Stripe Checkout for that plan instead of
+          // silently leaving them on the free trial with no indication
+          // their original choice was ignored. A failure here still lands
+          // them on the new-webinar screen; the trial account is valid
+          // either way and they can upgrade later from Facturación.
+          if (upgradePlanKey) {
+            try {
+              const fresh = await getCurrentAccount();
+              if (fresh) {
+                const checkoutUrl = await createSelfServeCheckoutSession({
+                  planKey: upgradePlanKey,
+                  accountId: fresh.account.id,
+                  accountName: fresh.account.name,
+                  stripeCustomerId: fresh.account.stripe_customer_id,
+                  ownerEmail: fresh.user.email,
+                });
+                if (checkoutUrl) redirectTo = checkoutUrl;
+              }
+            } catch (err) {
+              console.error("[account] upgrade checkout redirect failed:", err);
+            }
           }
         } else if (error.code === "23505") {
           attempt += 1;

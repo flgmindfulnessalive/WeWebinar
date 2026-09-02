@@ -39,7 +39,8 @@
     "submitting": "Creando cuenta...",
     "submit": "Crear cuenta",
     "haveAccount": "¿Ya tienes cuenta?",
-    "loginLink": "Ingresa"
+    "loginLink": "Ingresa",
+    "planNote": "Después de crear tu cuenta te llevamos a pagar el plan {plan}."
   },
   "ForgotPasswordForm": {
     "successTitle": "Revisa tu email",
@@ -66,6 +67,7 @@
     "planCoreLabel": "Plan Starter",
     "planCoreDetail": "1 webinar activo · 1 usuario",
     "freeDays": "7 días gratis",
+    "planNote": "Al continuar creamos primero tu prueba gratis de 7 días y te llevamos a pagar el plan {plan}.",
     "submitting": "Creando cuenta...",
     "submit": "Crear cuenta y continuar"
   },
