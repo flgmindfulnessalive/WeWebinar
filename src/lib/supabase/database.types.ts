@@ -980,6 +980,18 @@ export interface Database {
           tier: string;
         }[];
       };
+      get_account_health_scores: {
+        Args: Record<string, never>;
+        Returns: {
+          account_id: string;
+          published_webinar: boolean;
+          ever_had_registrant: boolean;
+          registrants_last_30_days: number;
+          active_recently: boolean;
+          score: number;
+          tier: string;
+        }[];
+      };
       count_account_ai_replies_this_month: {
         Args: { p_account_id: string };
         Returns: number;

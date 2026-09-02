@@ -1174,7 +1174,11 @@
     "usersTitle": "Usuarios",
     "noUsers": "Sin usuarios.",
     "webinarsTitle": "Webinars",
-    "noWebinars": "Sin webinars."
+    "noWebinars": "Sin webinars.",
+    "healthRiesgo": "Riesgo",
+    "healthAtencion": "Atención",
+    "healthSaludable": "Saludable",
+    "healthScoreTitle": "Customer Health Score: {score}/100"
   },
   "AdminWebinarStatus": {
     "draft": "Borrador",
