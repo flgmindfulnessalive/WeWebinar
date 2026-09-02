@@ -39,7 +39,8 @@
     "submitting": "Creating account...",
     "submit": "Create account",
     "haveAccount": "Already have an account?",
-    "loginLink": "Log in"
+    "loginLink": "Log in",
+    "planNote": "After creating your account, we'll take you to pay for the {plan} plan."
   },
   "ForgotPasswordForm": {
     "successTitle": "Check your email",
@@ -66,6 +67,7 @@
     "planCoreLabel": "Starter plan",
     "planCoreDetail": "1 active webinar · 1 user",
     "freeDays": "7 days free",
+    "planNote": "When you continue, we'll first set up your 7-day free trial, then take you to pay for the {plan} plan.",
     "submitting": "Creating account...",
     "submit": "Create account and continue"
   },

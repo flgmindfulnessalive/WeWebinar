@@ -7,6 +7,7 @@ import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { signUpWithPassword } from "@/lib/actions/auth";
+import type { UpgradePlanKey } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -22,7 +23,15 @@ import { GoogleButton } from "@/components/google-button";
 
 const CHECK_EMAIL_REDIRECT_MS = 15_000;
 
-export function SignupForm({ initialEmail }: { initialEmail?: string }) {
+const PLAN_LABEL: Record<UpgradePlanKey, string> = { pro: "Pro", business: "Business" };
+
+export function SignupForm({
+  initialEmail,
+  plan,
+}: {
+  initialEmail?: string;
+  plan?: UpgradePlanKey;
+}) {
   const t = useTranslations("SignupForm");
   const [state, formAction, isPending] = useActionState(
     signUpWithPassword,
@@ -30,6 +39,7 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
   );
   const router = useRouter();
   const showCheckEmail = Boolean(state && "checkEmail" in state);
+  const onboardingNext = plan ? `/onboarding?plan=${plan}` : "/onboarding";
 
   useEffect(() => {
     if (!showCheckEmail) return;
@@ -61,7 +71,13 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
           </div>
         ) : (
           <>
-            <GoogleButton next="/onboarding" />
+            {plan && (
+              <p className="rounded-md border bg-accent px-3 py-2 text-xs text-muted-foreground">
+                {t("planNote", { plan: PLAN_LABEL[plan] })}
+              </p>
+            )}
+
+            <GoogleButton next={onboardingNext} />
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -73,6 +89,7 @@ export function SignupForm({ initialEmail }: { initialEmail?: string }) {
             </div>
 
             <form action={formAction} className="flex flex-col gap-4">
+              {plan && <input type="hidden" name="plan" value={plan} />}
               <div className="grid gap-2">
                 <Label htmlFor="full_name">{t("nameLabel")}</Label>
                 <Input id="full_name" name="full_name" type="text" required autoComplete="name" />

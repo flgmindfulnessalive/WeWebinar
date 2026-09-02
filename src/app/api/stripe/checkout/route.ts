@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
-import { stripe, STRIPE_PRICE_BY_PLAN_KEY, type SelfServePlanKey } from "@/lib/stripe";
-
-function isSelfServePlanKey(value: string): value is SelfServePlanKey {
-  return value in STRIPE_PRICE_BY_PLAN_KEY;
-}
+import { createSelfServeCheckoutSession, isSelfServePlanKey } from "@/lib/stripe";
 
 export async function POST(request: Request) {
   const { plan_key: rawPlanKey } = (await request.json()) as { plan_key?: string };
@@ -15,11 +10,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid plan" }, { status: 400 });
   }
   const planKey = rawPlanKey;
-  const priceId = STRIPE_PRICE_BY_PLAN_KEY[planKey];
-
-  if (!priceId) {
-    return NextResponse.json({ error: "invalid plan" }, { status: 400 });
-  }
 
   const current = await getCurrentAccount();
   if (!current) {
@@ -32,37 +22,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = await createClient();
-  let customerId = current.account.stripe_customer_id;
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: current.user.email,
-      name: current.account.name,
-      metadata: { account_id: current.account.id },
+  try {
+    const url = await createSelfServeCheckoutSession({
+      planKey,
+      accountId: current.account.id,
+      accountName: current.account.name,
+      stripeCustomerId: current.account.stripe_customer_id,
+      ownerEmail: current.user.email,
     });
-    customerId = customer.id;
-
-    const { error } = await supabase
-      .from("accounts")
-      .update({ stripe_customer_id: customerId })
-      .eq("id", current.account.id);
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!url) {
+      return NextResponse.json({ error: "invalid plan" }, { status: 400 });
     }
+    return NextResponse.json({ url });
+  } catch (err) {
+    console.error("[stripe/checkout] createSelfServeCheckoutSession failed:", err);
+    return NextResponse.json({ error: "checkout failed" }, { status: 500 });
   }
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?checkout=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?checkout=canceled`,
-    metadata: { account_id: current.account.id, plan_key: planKey },
-    subscription_data: {
-      metadata: { account_id: current.account.id, plan_key: planKey },
-    },
-  });
-
-  return NextResponse.json({ url: session.url });
 }

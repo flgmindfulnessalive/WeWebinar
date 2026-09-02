@@ -4,6 +4,7 @@ import { useActionState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import { createAccount } from "@/lib/actions/account";
+import type { UpgradePlanKey } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,9 @@ import {
 } from "@/components/ui/card";
 import { useTimezones } from "@/hooks/use-timezones";
 
-export function OnboardingForm() {
+const PLAN_LABEL: Record<UpgradePlanKey, string> = { pro: "Pro", business: "Business" };
+
+export function OnboardingForm({ plan }: { plan?: UpgradePlanKey }) {
   const t = useTranslations("OnboardingForm");
   const [state, formAction, isPending] = useActionState(createAccount, null);
   const timezones = useTimezones();
@@ -36,6 +39,12 @@ export function OnboardingForm() {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-6">
+          {plan && <input type="hidden" name="plan" value={plan} />}
+          {plan && (
+            <p className="rounded-lg border bg-accent p-4 text-sm text-muted-foreground">
+              {t("planNote", { plan: PLAN_LABEL[plan] })}
+            </p>
+          )}
           <div className="grid gap-2">
             <Label htmlFor="name">{t("accountNameLabel")}</Label>
             <Input id="name" name="name" type="text" required placeholder="Acme Webinars" />

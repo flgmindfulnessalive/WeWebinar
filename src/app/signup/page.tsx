@@ -3,14 +3,16 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/logo";
 import { ParticleNetwork } from "@/components/particle-network";
+import { isUpgradePlanKey } from "@/lib/stripe";
 import { SignupForm } from "./signup-form";
 
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; plan?: string }>;
 }) {
-  const { email } = await searchParams;
+  const { email, plan } = await searchParams;
+  const upgradePlan = plan && isUpgradePlanKey(plan) ? plan : undefined;
   const t = await getTranslations("AuthLayout");
   return (
     <div className="grid min-h-svh md:grid-cols-2">
@@ -42,7 +44,7 @@ export default async function SignupPage({
             <Logo />
             WeWebinars
           </Link>
-          <SignupForm initialEmail={email} />
+          <SignupForm initialEmail={email} plan={upgradePlan} />
         </div>
       </div>
     </div>

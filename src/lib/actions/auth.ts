@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isUpgradePlanKey } from "@/lib/stripe";
 
 export type AuthActionState = { error: string } | null;
 
@@ -39,6 +40,12 @@ export async function signUpWithPassword(
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
+  const rawPlan = String(formData.get("plan") ?? "");
+  // Carries the plan a host clicked "Get started" on from Pricing through
+  // to onboarding -- as a query string on `next` rather than a separate
+  // param, since that's the one value every redirect path here (email
+  // confirm, Google OAuth callback) already forwards verbatim.
+  const next = isUpgradePlanKey(rawPlan) ? `/onboarding?plan=${rawPlan}` : "/onboarding";
 
   let hasSession: boolean;
   try {
@@ -48,7 +55,7 @@ export async function signUpWithPassword(
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=/onboarding`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=${encodeURIComponent(next)}`,
       },
     });
     if (error) return { error: error.message };
@@ -64,7 +71,7 @@ export async function signUpWithPassword(
   }
 
   if (!hasSession) return { checkEmail: true };
-  redirect("/onboarding");
+  redirect(next);
 }
 
 export async function signInWithGoogle(next: string = "/dashboard") {
