@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AccountRowActions } from "./account-row-actions";
-import { STATUS_VARIANT } from "./status-labels";
+import { STATUS_VARIANT, HEALTH_TIER_CLASSES, HEALTH_TIER_LABEL_KEYS } from "./status-labels";
 
 export default async function AdminAccountsPage({
   searchParams,
@@ -19,7 +19,7 @@ export default async function AdminAccountsPage({
   const locale = await getLocale();
   const supabase = await createClient();
 
-  const [{ data: accounts }, { data: plans }] = await Promise.all([
+  const [{ data: accounts }, { data: plans }, { data: healthScores }] = await Promise.all([
     (() => {
       let query = supabase
         .from("accounts")
@@ -29,7 +29,9 @@ export default async function AdminAccountsPage({
       return query;
     })(),
     supabase.from("plans").select("id, key, name").order("price_annual_usd", { ascending: true, nullsFirst: true }),
+    supabase.rpc("get_account_health_scores"),
   ]);
+  const healthByAccount = new Map((healthScores ?? []).map((h) => [h.account_id, h]));
 
   const accountIds = accounts?.map((a) => a.id) ?? [];
   const { data: owners } = accountIds.length
@@ -79,6 +81,16 @@ export default async function AdminAccountsPage({
                 </span>
               </div>
               <div className="flex items-center gap-3">
+                {healthByAccount.get(account.id) && (
+                  <span
+                    title={t("healthScoreTitle", { score: healthByAccount.get(account.id)!.score })}
+                    className={`rounded-full border px-2 py-0.5 text-xs font-medium ${
+                      HEALTH_TIER_CLASSES[healthByAccount.get(account.id)!.tier] ?? ""
+                    }`}
+                  >
+                    {t(HEALTH_TIER_LABEL_KEYS[healthByAccount.get(account.id)!.tier] ?? "healthRiesgo")}
+                  </span>
+                )}
                 <Badge variant={STATUS_VARIANT[account.subscription_status]}>
                   {tStatus(account.subscription_status)}
                 </Badge>
