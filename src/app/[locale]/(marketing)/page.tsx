@@ -303,34 +303,39 @@ export default async function HomePage() {
       </section>
 
       {/* ============ 7. DIFFERENTIATION ============ */}
-      <section className="mx-auto max-w-4xl px-6 py-20">
-        <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight text-balance">
-          {t("differentiationTitle")}
-        </h2>
-        <div className="flex flex-col gap-4">
-          {differentiators.map((d, i) => {
-            const Icon = DIFF_ICONS[i];
-            return (
-              <div key={d.title} className="flex items-center gap-4 rounded-xl border bg-card p-5">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Icon className="size-[18px]" />
-                </span>
-                <div className="flex-1">
-                  <p className="font-medium">{d.title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{d.description}</p>
-                </div>
-                <span
-                  className="hidden shrink-0 items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold sm:flex"
-                  style={{ background: "var(--brand-light)", color: "var(--brand)" }}
+      <ImageParallaxSection src="/marketing/differentiation-fixed.webp">
+        <div className="mx-auto max-w-4xl px-6">
+          <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight text-balance text-white">
+            {t("differentiationTitle")}
+          </h2>
+          <div className="flex flex-col gap-4">
+            {differentiators.map((d, i) => {
+              const Icon = DIFF_ICONS[i];
+              return (
+                <div
+                  key={d.title}
+                  className="flex items-center gap-4 rounded-xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl"
                 >
-                  <Check className="size-3.5" />
-                  {t("differentiationWinLabel")}
-                </span>
-              </div>
-            );
-          })}
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white">
+                    <Icon className="size-[18px]" />
+                  </span>
+                  <div className="flex-1">
+                    <p className="font-medium text-white">{d.title}</p>
+                    <p className="mt-1 text-sm text-white/70">{d.description}</p>
+                  </div>
+                  <span
+                    className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 font-mono text-[11px] font-semibold sm:flex"
+                    style={{ color: "var(--brand-dark)" }}
+                  >
+                    <Check className="size-3.5" />
+                    {t("differentiationWinLabel")}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </section>
+      </ImageParallaxSection>
 
       {/* ============ 8. INTEGRATIONS ============ */}
       <section className="border-y bg-muted/30">
