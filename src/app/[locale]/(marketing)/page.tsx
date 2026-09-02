@@ -33,6 +33,7 @@ import { MouseSpotlight } from "./_components/mouse-spotlight";
 import { ProductPreview } from "./_components/product-preview";
 import { LiveVsEvergreen } from "./_components/live-vs-evergreen";
 import { ParallaxBand } from "./_components/parallax-band";
+import { ImageParallaxSection } from "./_components/image-parallax-section";
 
 export async function generateMetadata({
   params,
@@ -159,12 +160,14 @@ export default async function HomePage() {
       </section>
 
       {/* ============ 2. PROBLEM ============ */}
-      <section className="border-y bg-muted/30">
-        <div className="mx-auto max-w-2xl px-6 py-16 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("problemTitle")}</h2>
-          <p className="mt-3 text-muted-foreground">{t("problemBody")}</p>
+      <ImageParallaxSection src="/marketing/problem-parallax.webp" alt="">
+        <div className="mx-auto max-w-2xl px-6 text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            {t("problemTitle")}
+          </h2>
+          <p className="mt-3 text-white/85">{t("problemBody")}</p>
         </div>
-      </section>
+      </ImageParallaxSection>
 
       {/* ============ 3. TRANSFORMATION (Live vs Evergreen, moved up) ============ */}
       <LiveVsEvergreen />
