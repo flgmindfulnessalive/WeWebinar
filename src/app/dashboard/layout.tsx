@@ -65,19 +65,19 @@ export default async function DashboardLayout({
     );
   }
 
-  // A canceled Stripe subscription (via the billing portal) only reaches
-  // this status once the paid period actually ends -- Stripe keeps the
-  // subscription "active" with cancel_at_period_end until then, so by the
-  // time subscription_status flips to "canceled" the account has already
+  // A canceled Lemon Squeezy subscription (via the billing portal) only
+  // reaches this status once the paid period actually ends -- Lemon
+  // Squeezy keeps the subscription active until then, so by the time
+  // subscription_status flips to "canceled" the account has already
   // gotten everything it paid for. Unlike an admin suspension, this is a
   // billing lapse the account owner can fix themselves: a one-click
   // reactivation checkout for their previous plan, no support email
-  // required (Stripe permitting -- see billing/page.tsx's stripeConfigured
-  // comment for why that flag exists).
+  // required (Lemon Squeezy permitting -- see billing/page.tsx's
+  // billingConfigured comment for why that flag exists).
   if (current.account.subscription_status === "canceled") {
-    const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
+    const billingConfigured = Boolean(process.env.LEMONSQUEEZY_API_KEY);
     const isOwner = current.user.role === "owner";
-    const canSelfServeReactivate = stripeConfigured && isOwner && current.plan.is_self_serve;
+    const canSelfServeReactivate = billingConfigured && isOwner && current.plan.is_self_serve;
 
     return (
       <NextIntlClientProvider messages={messages}>

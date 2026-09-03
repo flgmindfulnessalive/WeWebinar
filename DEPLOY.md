@@ -55,33 +55,48 @@ esto es solo pegar el HTML correcto en cada plantilla.
    falta confirmar desde la casilla nueva — más simple si la vieja ya no la
    revisás.
 
-## 2. Stripe (cobro de las suscripciones de los hosts)
+## 2. Lemon Squeezy (cobro de las suscripciones de los hosts)
 
-1. Crear cuenta en Stripe. Mientras no esté verificada, se puede probar
-   todo en modo test.
-2. Crear 3 Products/Prices recurrentes mensuales:
+1. Crear cuenta y store en Lemon Squeezy. Mientras la store no esté en modo
+   live se puede probar todo en test mode.
+2. Crear 3 productos con variante recurrente mensual cada uno:
    - Starter — $15/mes
    - Pro — $40/mes
    - Business — $90/mes
    (Enterprise no tiene self-serve: se asigna manualmente desde `/admin/plans`
    luego del lead de la landing.)
-   Copiar los 3 `price_id` → `STRIPE_PRICE_ID_CORE` / `_PRO` / `_BUSINESS`.
-3. Developers → API keys → `STRIPE_SECRET_KEY` y
-   `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
-4. Developers → Webhooks → agregar `https://<tu-dominio>/api/stripe/webhook`,
-   eventos: `checkout.session.completed`, `customer.subscription.created`,
-   `customer.subscription.updated`, `customer.subscription.deleted`,
-   `invoice.payment_failed` → `STRIPE_WEBHOOK_SECRET`.
-   (No `invoice.paid` — el webhook no lo escucha.)
-5. Settings → Billing → Customer portal: habilitar "Cancel subscriptions" y
-   dejarlo en **"At the end of the billing period"**, no inmediato. La app
-   ya asume esto: una cuenta sigue teniendo acceso completo hasta que Stripe
-   marca la suscripción como cancelada (lo que solo pasa al terminar el
-   período pagado con esta configuración), y recién ahí el dashboard le pide
-   reactivar el plan.
-6. **Antes de activar el modo live**: Stripe pide una URL de Términos y
-   Política de Privacidad del negocio — hay que redactarlas (decisión legal,
-   no algo que yo pueda inventar) y publicarlas antes de aceptar pagos reales.
+   Copiar los 3 `variant_id` (Products → el producto → la variante) →
+   `LEMONSQUEEZY_VARIANT_ID_CORE` / `_PRO` / `_BUSINESS`.
+3. Settings → API → crear un API key → `LEMONSQUEEZY_API_KEY`. El `store_id`
+   está en la misma sección o en la URL del dashboard de la store →
+   `LEMONSQUEEZY_STORE_ID`.
+4. Settings → Webhooks → agregar `https://<tu-dominio>/api/lemonsqueezy/webhook`,
+   eventos: `subscription_created`, `subscription_updated`,
+   `subscription_cancelled`, `subscription_resumed`, `subscription_expired`,
+   `subscription_paused`, `subscription_unpaused`,
+   `subscription_payment_failed`, `subscription_payment_success` →
+   copiar el signing secret → `LEMONSQUEEZY_WEBHOOK_SECRET`.
+5. Verificar el comportamiento de cancelación en el dashboard de Lemon
+   Squeezy: la app asume que una cuenta sigue teniendo acceso completo hasta
+   que la suscripción llega efectivamente a estado `cancelled`/`expired`
+   (fin del período pagado), no en el momento en que el host pide cancelar
+   — mismo supuesto que tenía con Stripe. Confirmar que el comportamiento
+   por defecto de Lemon Squeezy coincide antes de aceptar pagos reales; si
+   no, ajustar en su configuración de cancelación.
+6. **Antes de activar el modo live**: Lemon Squeezy (como merchant of
+   record) pide una URL de Términos y Política de Privacidad del negocio —
+   hay que redactarlas (decisión legal, no algo que yo pueda inventar) y
+   publicarlas antes de aceptar pagos reales.
+
+**Nota sobre esta integración**: el código (checkout, webhook, resolución
+del portal de cliente) está escrito contra la API pública documentada de
+Lemon Squeezy, pero no se probó de punta a punta contra una store real
+todavía — no había ninguna creada al migrar desde Stripe. Al configurar la
+store por primera vez, conviene hacer una compra de prueba en test mode y
+confirmar en los logs que el webhook resuelve bien la cuenta (`account_id`
+vía `custom_data`, con fallback por `billing_customer_id` si `custom_data`
+no llega en algún evento posterior al checkout original — ver el comentario
+en `src/app/api/lemonsqueezy/webhook/route.ts`).
 
 ## 3. Resend (emails transaccionales)
 
@@ -165,15 +180,16 @@ error de OAuth; el login con email/contraseña sigue funcionando igual.
 3. Actualizar `NEXT_PUBLIC_APP_URL` en Vercel → Settings → Environment
    Variables a `https://wewebinars.com` y volver a deployar (Deployments
    → Redeploy) — todos los links generados por la app (emails de
-   confirmación/recordatorio, links mágicos de login, checkout de Stripe,
-   acceso a la sala) se arman con esta variable.
+   confirmación/recordatorio, links mágicos de login, checkout de Lemon
+   Squeezy, acceso a la sala) se arman con esta variable.
 4. Supabase → Authentication → URL Configuration: cambiar **Site URL** a
    `https://wewebinars.com` y agregar `https://wewebinars.com/**` a
    **Redirect URLs** (si no se hace esto, los emails de login
    mágico/reset de contraseña van a redirigir al dominio viejo o Supabase
    va a rechazar el redirect).
-5. Stripe → Developers → Webhooks: editar el endpoint existente (o crear
-   uno nuevo) para que apunte a `https://wewebinars.com/api/stripe/webhook`.
+5. Lemon Squeezy → Settings → Webhooks: editar el endpoint existente (o
+   crear uno nuevo) para que apunte a
+   `https://wewebinars.com/api/lemonsqueezy/webhook`.
 6. Resend → Domains: verificar `wewebinars.com` (agrega los registros
    SPF/DKIM que te da Resend) y actualizar `RESEND_FROM_EMAIL` a una
    dirección de ese dominio (ej. `noreply@wewebinars.com`).

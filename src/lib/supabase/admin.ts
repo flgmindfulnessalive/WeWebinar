@@ -4,7 +4,7 @@ import type { Database } from "./database.types";
 
 // Service-role client: bypasses RLS entirely. Never import this into
 // client-side code or expose SUPABASE_SERVICE_ROLE_KEY to the browser.
-// Reserved for trusted server-only contexts: Stripe webhooks, cron
+// Reserved for trusted server-only contexts: Lemon Squeezy webhooks, cron
 // jobs, and the Super Admin panel.
 export function createAdminClient() {
   return createSupabaseClient<Database>(

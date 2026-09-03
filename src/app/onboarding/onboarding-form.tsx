@@ -4,7 +4,7 @@ import { useActionState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import { createAccount } from "@/lib/actions/account";
-import type { UpgradePlanKey } from "@/lib/stripe";
+import type { UpgradePlanKey } from "@/lib/billing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

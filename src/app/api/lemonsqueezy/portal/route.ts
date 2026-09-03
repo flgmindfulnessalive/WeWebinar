@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
-import { stripe } from "@/lib/stripe";
+import { getBillingPortalUrl } from "@/lib/billing";
 
 export async function POST() {
   const current = await getCurrentAccount();
@@ -14,14 +14,13 @@ export async function POST() {
       { status: 403 }
     );
   }
-  if (!current.account.stripe_customer_id) {
+  if (!current.account.billing_subscription_id) {
     return NextResponse.json({ error: "no billing account yet" }, { status: 400 });
   }
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: current.account.stripe_customer_id,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
-  });
-
-  return NextResponse.json({ url: session.url });
+  const url = await getBillingPortalUrl(current.account.billing_subscription_id);
+  if (!url) {
+    return NextResponse.json({ error: "portal failed" }, { status: 500 });
+  }
+  return NextResponse.json({ url });
 }

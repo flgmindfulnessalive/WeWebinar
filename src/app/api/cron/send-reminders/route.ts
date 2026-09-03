@@ -412,7 +412,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // --- Cancellation retention: a canceled Stripe subscription (billing
+  // --- Cancellation retention: a canceled Lemon Squeezy subscription (billing
   // lapse, self-serve) keeps its data for RETENTION_DAYS so a reactivation
   // restores everything exactly as it was, warns the owner
   // DELETION_WARNING_DAYS_BEFORE days out, and purges for real once the

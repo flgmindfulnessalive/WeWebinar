@@ -10,13 +10,13 @@ import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
-import { createSelfServeCheckoutSession, isUpgradePlanKey } from "@/lib/stripe";
+import { createSelfServeCheckoutUrl, isUpgradePlanKey } from "@/lib/billing";
 
 export type CreateAccountState = { error: string } | null;
 
 // The 7-day trial is only available on Starter -- Pro and Business are paid
-// upgrades a host does later from Facturación (Stripe checkout), never a
-// starting point for a new, unbilled account. Hardcoded rather than read
+// upgrades a host does later from Facturación (Lemon Squeezy checkout),
+// never a starting point for a new, unbilled account. Hardcoded rather than read
 // from form input so a tampered request can't create a trial on a paid tier.
 const TRIAL_PLAN_KEY = "core";
 
@@ -89,7 +89,7 @@ export async function createAccount(
           // The trial itself is always Starter (see TRIAL_PLAN_KEY above),
           // but if this host clicked "Empezar con Pro/Business" on
           // Pricing, honor that intent now that the account exists --
-          // send them straight to Stripe Checkout for that plan instead of
+          // send them straight to checkout for that plan instead of
           // silently leaving them on the free trial with no indication
           // their original choice was ignored. A failure here still lands
           // them on the new-webinar screen; the trial account is valid
@@ -98,11 +98,9 @@ export async function createAccount(
             try {
               const fresh = await getCurrentAccount();
               if (fresh) {
-                const checkoutUrl = await createSelfServeCheckoutSession({
+                const checkoutUrl = await createSelfServeCheckoutUrl({
                   planKey: upgradePlanKey,
                   accountId: fresh.account.id,
-                  accountName: fresh.account.name,
-                  stripeCustomerId: fresh.account.stripe_customer_id,
                   ownerEmail: fresh.user.email,
                 });
                 if (checkoutUrl) redirectTo = checkoutUrl;
