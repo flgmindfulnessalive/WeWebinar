@@ -739,13 +739,25 @@
   "NewWebinar": {
     "title": "New webinar",
     "description": "General details. It's saved as a draft — it doesn't count against your plan limit until you publish it.",
+    "pageHeading": "Create your webinar",
+    "pageSubheading": "The essentials first — you'll be able to upload the video, pick times, and customize everything else afterward.",
     "titleLabel": "Title",
+    "titleHint": "This is how your future registrants will see it.",
     "titlePlaceholder": "How to double your sales in 90 days",
     "categoryLabel": "Category",
     "categoryPlaceholder": "Marketing",
+    "categoryChips": ["Marketing", "Sales", "Coaching", "Finance", "Health & wellness", "Education"],
     "descriptionLabel": "Description",
+    "descriptionHint": "Optional — one line summarizing the promise.",
+    "descriptionPlaceholder": "In this webinar you'll learn...",
     "creating": "Creating...",
-    "createDraft": "Create draft"
+    "createDraft": "Create draft",
+    "previewLabel": "Here's how it'll look, live",
+    "previewCaption": "This is the same card anyone opening the registration link will see — you'll be able to add video, a photo and a background image in the next step.",
+    "previewAccountPresents": "{name} presents",
+    "previewDefaultBadge": "FREE WEBINAR",
+    "previewPresenterPlaceholder": "Feature your name",
+    "previewTitlePlaceholder": "Your webinar's title will show up here"
   },
   "WebinarActions": {
     "titleRequired": "Title is required.",
