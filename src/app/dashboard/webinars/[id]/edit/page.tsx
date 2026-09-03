@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BarChart3 } from "lucide-react";
+import { ArrowLeft, BarChart3, ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../../status-badge";
 import { PublishBar } from "../publish-bar";
+import { CopyLinkButton } from "../copy-link-button";
 import { WizardShell, type WizardStep } from "../wizard-shell";
 import { DetailSection } from "../detail-section";
 import { PresenterSection } from "../presenter-section";
@@ -70,8 +72,11 @@ export default async function WebinarDetailPage({
   >[] = [];
   let members: Pick<Database["public"]["Tables"]["users"]["Row"], "id" | "display_name" | "email">[] = [];
 
+  let customDomainHostname: string | null = null;
+
   if (canManage) {
-    const [schedulesRes, waitingRoomRes, chatRes, ctasRes, emailTemplatesRes, membersRes] = await Promise.all([
+    const [schedulesRes, waitingRoomRes, chatRes, ctasRes, emailTemplatesRes, membersRes, resolvedHostname] =
+      await Promise.all([
       supabase
         .from("webinar_schedules")
         .select("id, day_of_week, time_of_day, timezone, exclude_weekends")
@@ -97,14 +102,18 @@ export default async function WebinarDetailPage({
         .select("id, display_name, email")
         .eq("account_id", current.account.id)
         .order("display_name", { ascending: true, nullsFirst: false }),
+      getActiveCustomDomainHostname(supabase, current.account.id),
     ]);
     schedules = schedulesRes.data ?? [];
     waitingRoom = waitingRoomRes.data;
     chatMessages = chatRes.data ?? [];
+    customDomainHostname = resolvedHostname;
     ctas = ctasRes.data ?? [];
     emailTemplates = emailTemplatesRes.data ?? [];
     members = membersRes.data ?? [];
   }
+
+  const publicPath = webinarPublicUrl(current.account.slug, webinar.slug, customDomainHostname);
 
   return (
     <div className="flex flex-col gap-6">
@@ -119,6 +128,17 @@ export default async function WebinarDetailPage({
           <StatusBadge status={webinar.status} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline">
+            <Link
+              href={webinar.status === "published" ? publicPath : `${publicPath}?preview=1`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <ExternalLink className="size-4" />
+              {webinar.status === "published" ? t("openPublicPage") : t("preview")}
+            </Link>
+          </Button>
+          <CopyLinkButton url={publicPath} />
           <Button asChild variant="outline">
             <Link href={`/dashboard/webinars/${webinar.id}/analytics`}>
               <BarChart3 className="size-4" />
