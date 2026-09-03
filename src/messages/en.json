@@ -749,7 +749,6 @@
     "categoryChips": ["Marketing", "Sales", "Coaching", "Finance", "Health & wellness", "Education"],
     "descriptionLabel": "Description",
     "descriptionHint": "Optional — one line summarizing the promise.",
-    "descriptionPlaceholder": "In this webinar you'll learn...",
     "creating": "Creating...",
     "createDraft": "Create draft",
     "previewLabel": "Here's how it'll look, live",

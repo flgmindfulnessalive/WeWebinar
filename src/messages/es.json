@@ -739,7 +739,7 @@
   "NewWebinar": {
     "title": "Nuevo webinar",
     "description": "Datos generales. Se guarda como borrador — no cuenta contra tu límite de plan hasta que lo publiques.",
-    "pageHeading": "Creá tu webinar",
+    "pageHeading": "Crea tu webinar",
     "pageSubheading": "Lo esencial primero — vas a poder cargar el video, elegir horarios y personalizar todo lo demás después.",
     "titleLabel": "Título",
     "titleHint": "Así lo van a ver tus futuros registrados.",
@@ -749,7 +749,6 @@
     "categoryChips": ["Marketing", "Ventas", "Coaching", "Finanzas", "Salud y bienestar", "Educación"],
     "descriptionLabel": "Descripción",
     "descriptionHint": "Opcional — una línea que resuma la promesa.",
-    "descriptionPlaceholder": "En este webinar vas a aprender...",
     "creating": "Creando...",
     "createDraft": "Crear borrador",
     "previewLabel": "Así se va a ver, en vivo",
