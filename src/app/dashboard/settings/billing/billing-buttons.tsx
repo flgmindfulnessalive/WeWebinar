@@ -28,7 +28,7 @@ export function CheckoutButton({
         onClick={() =>
           startTransition(async () => {
             setError(null);
-            const res = await fetch("/api/stripe/checkout", {
+            const res = await fetch("/api/lemonsqueezy/checkout", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ plan_key: planKey }),
@@ -61,7 +61,7 @@ export function BillingPortalButton() {
         onClick={() =>
           startTransition(async () => {
             setError(null);
-            const res = await fetch("/api/stripe/portal", { method: "POST" });
+            const res = await fetch("/api/lemonsqueezy/portal", { method: "POST" });
             const data = await res.json();
             if (!res.ok) {
               setError(data.error ?? t("portalFailed"));

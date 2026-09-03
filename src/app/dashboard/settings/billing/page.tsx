@@ -21,11 +21,11 @@ export default async function BillingPage() {
   const t = await getTranslations("BillingSettings");
   const tStatus = await getTranslations("SubscriptionStatus");
 
-  // Self-serve checkout is off until Stripe is actually set up (see
+  // Self-serve checkout is off until Lemon Squeezy is actually set up (see
   // DEPLOY.md step 2) -- without this, the plan-change buttons would hit
-  // /api/stripe/checkout and show a raw "invalid plan" error, since
-  // STRIPE_PRICE_BY_PLAN_KEY resolves to undefined for every plan.
-  const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
+  // /api/lemonsqueezy/checkout and show a raw "invalid plan" error, since
+  // LEMONSQUEEZY_VARIANT_ID_BY_PLAN_KEY resolves to undefined for every plan.
+  const billingConfigured = Boolean(process.env.LEMONSQUEEZY_API_KEY);
 
   const supabase = await createClient();
   const now = new Date();
@@ -90,7 +90,7 @@ export default async function BillingPage() {
               max: current.plan.max_registrants_per_month ?? "∞",
             })}
           </p>
-          {current.account.stripe_customer_id ? (
+          {current.account.billing_customer_id ? (
             <BillingPortalButton />
           ) : (
             <p>{t("billingNotActivated")}</p>
@@ -103,7 +103,7 @@ export default async function BillingPage() {
           <CardTitle className="text-sm font-medium">{t("changePlanTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          {stripeConfigured ? (
+          {billingConfigured ? (
             changeablePlans.filter((p) => p.key !== current.plan.key).map((p) => (
               <CheckoutButton key={p.key} planKey={p.key} label={p.label} />
             ))

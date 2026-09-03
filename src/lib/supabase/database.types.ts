@@ -53,7 +53,6 @@ export interface Database {
           max_registrants_per_month: number | null;
           features: Json;
           is_self_serve: boolean;
-          stripe_price_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -67,8 +66,8 @@ export interface Database {
           name: string;
           slug: string;
           branding: Json;
-          stripe_customer_id: string | null;
-          stripe_subscription_id: string | null;
+          billing_customer_id: string | null;
+          billing_subscription_id: string | null;
           subscription_status: SubscriptionStatus;
           plan_id: string | null;
           timezone_default: string;
