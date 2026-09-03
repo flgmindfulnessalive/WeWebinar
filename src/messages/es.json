@@ -306,6 +306,7 @@
     "reserveTitle": "Reserva tu lugar",
     "reserveSubtitle": "Elige un horario y guarda tu cupo gratis.",
     "presentedBy": "Presenta {name}",
+    "whatYouWillLearn": "Lo que vas a aprender",
     "form": {
       "tabFixed": "Elegir horario",
       "tabJit": "Empezar ahora",
@@ -381,8 +382,7 @@
     "summary": "Resumen",
     "webinars": "Webinars",
     "team": "Equipo",
-    "settings": "Configuración",
-    "support": "Soporte"
+    "settings": "Configuración"
   },
   "AdminNav": {
     "summary": "Resumen",
@@ -670,6 +670,17 @@
     "escalateFailed": "No pudimos enviar tu consulta. Escribinos directamente a operaciones@wewebinars.com.",
     "questionRequired": "Escribí tu pregunta antes de escalar.",
     "notAuthenticated": "Tu sesión expiró, volvé a ingresar."
+  },
+  "SupportChat": {
+    "panelTitle": "Wewe",
+    "panelSubtitle": "Agente de Soporte",
+    "greeting": "¡Hola! Soy Wewe 🤖 ¿En qué te puedo ayudar hoy?",
+    "openAria": "Abrir chat de soporte",
+    "minimizeAria": "Minimizar",
+    "inputPlaceholder": "Escribí tu consulta...",
+    "noAnswer": "No tengo información suficiente para responder esto con certeza. Probá reformular la pregunta.",
+    "askFailed": "No pudimos procesar tu pregunta. Probá de nuevo en un momento.",
+    "rateLimited": "Wewe llegó a su límite de preguntas por hoy. Probá de nuevo mañana, o escribinos a operaciones@wewebinars.com."
   },
   "InviteForm": {
     "emailLabel": "Email",
@@ -1261,6 +1272,7 @@
     "subheadlineLabel": "Subtítulo",
     "promoVideoLabel": "Video promocional (opcional)",
     "promoVideoHint": "Se muestra en la página pública de registro (no en la sala de espera). Pega un link de YouTube, Vimeo o un archivo de video (.mp4). Si lo dejas vacío, la página queda igual que ahora.",
+    "promoVideoUrlInvalid": "Ese link de video no es válido. Verificá que sea una URL completa (por ejemplo, https://youtu.be/...).",
     "backgroundUrlLabel": "Imagen o video de fondo (URL)",
     "typeLabel": "Tipo",
     "typeImage": "Imagen",

@@ -306,6 +306,7 @@
     "reserveTitle": "Reserve your spot",
     "reserveSubtitle": "Choose a time and save your free spot.",
     "presentedBy": "Presented by {name}",
+    "whatYouWillLearn": "What you'll learn",
     "form": {
       "tabFixed": "Choose a time",
       "tabJit": "Start now",
@@ -381,8 +382,7 @@
     "summary": "Summary",
     "webinars": "Webinars",
     "team": "Team",
-    "settings": "Settings",
-    "support": "Support"
+    "settings": "Settings"
   },
   "AdminNav": {
     "summary": "Summary",
@@ -670,6 +670,17 @@
     "escalateFailed": "We couldn't send your question. Email us directly at operaciones@wewebinars.com.",
     "questionRequired": "Write your question before escalating.",
     "notAuthenticated": "Your session expired, log in again."
+  },
+  "SupportChat": {
+    "panelTitle": "Wewe",
+    "panelSubtitle": "Support Agent",
+    "greeting": "Hi! I'm Wewe 🤖 What can I help you with today?",
+    "openAria": "Open support chat",
+    "minimizeAria": "Minimize",
+    "inputPlaceholder": "Type your question...",
+    "noAnswer": "I don't have enough information to answer that with confidence. Try rephrasing your question.",
+    "askFailed": "We couldn't process your question. Please try again in a moment.",
+    "rateLimited": "Wewe hit its daily question limit. Try again tomorrow, or email us at operaciones@wewebinars.com."
   },
   "InviteForm": {
     "emailLabel": "Email",
@@ -1261,6 +1272,7 @@
     "subheadlineLabel": "Subheadline",
     "promoVideoLabel": "Promo video (optional)",
     "promoVideoHint": "Shown on the public registration page (not the waiting room). Paste a YouTube, Vimeo, or direct video file (.mp4) link. Leave it blank and the page stays exactly as it is now.",
+    "promoVideoUrlInvalid": "That video link isn't valid. Make sure it's a full URL (for example, https://youtu.be/...).",
     "backgroundUrlLabel": "Background image or video (URL)",
     "typeLabel": "Type",
     "typeImage": "Image",
