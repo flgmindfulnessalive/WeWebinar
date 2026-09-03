@@ -9,15 +9,24 @@ import { cn } from "@/lib/utils";
 // -- it silently falls back to scroll behavior there anyway, so bg-scroll
 // on mobile is the correct, deliberate default rather than a broken fixed
 // attempt.
+// Darkens the photo just enough for white text to stay legible over it --
+// the multiplier below (applied to the three stops) is how each call site
+// tunes that tradeoff without every section having to redo the gradient.
+const BASE_OVERLAY_STOPS = [0.72, 0.8, 0.72] as const;
+
 export function ImageParallaxSection({
   children,
   src,
   className,
+  overlayOpacity = 1,
 }: {
   children: React.ReactNode;
   src: string;
   className?: string;
+  /** Multiplier (0-1) on the default overlay darkness -- lower shows more of the photo through. Defaults to 1 (unchanged). */
+  overlayOpacity?: number;
 }) {
+  const [top, mid, bottom] = BASE_OVERLAY_STOPS.map((stop) => stop * overlayOpacity);
   return (
     <section
       className={cn(
@@ -30,8 +39,7 @@ export function ImageParallaxSection({
         aria-hidden
         className="absolute inset-0"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(11,10,26,.72) 0%, rgba(15,13,33,.8) 55%, rgba(11,10,26,.72) 100%)",
+          background: `linear-gradient(180deg, rgba(11,10,26,${top}) 0%, rgba(15,13,33,${mid}) 55%, rgba(11,10,26,${bottom}) 100%)`,
         }}
       />
       <div className="relative z-10">{children}</div>
