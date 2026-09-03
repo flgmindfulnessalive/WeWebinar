@@ -380,7 +380,8 @@
     "summary": "Resumen",
     "webinars": "Webinars",
     "team": "Equipo",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "support": "Soporte"
   },
   "AdminNav": {
     "summary": "Resumen",
@@ -649,6 +650,25 @@
     "confirmRemove": "¿Quitar a este miembro de la cuenta? Perderá acceso de inmediato.",
     "revoke": "Revocar",
     "confirmRevoke": "¿Revocar esta invitación?"
+  },
+  "SupportWidget": {
+    "pageTitle": "Soporte",
+    "pageDescription": "Preguntá lo que necesites sobre tu cuenta. El asistente responde con el estado real de tus webinars, plan y configuración.",
+    "cardTitle": "Hacer una pregunta",
+    "cardDescription": "Por ejemplo: \"¿por qué no aparece mi CTA?\" o \"¿cuántos webinars activos puedo tener?\"",
+    "questionLabel": "Tu pregunta",
+    "questionPlaceholder": "Escribí tu pregunta acá...",
+    "ask": "Preguntar",
+    "asking": "Consultando...",
+    "askFailed": "No pudimos procesar la pregunta. Probá de nuevo o escalá a soporte humano.",
+    "noAnswer": "El asistente no tiene información suficiente para responder esto con certeza.",
+    "escalatePrompt": "¿No te resolvió la duda?",
+    "escalate": "Escalar a soporte humano",
+    "escalating": "Enviando...",
+    "escalated": "Listo, le avisamos al equipo. Te van a responder directo a tu email.",
+    "escalateFailed": "No pudimos enviar tu consulta. Escribinos directamente a operaciones@wewebinars.com.",
+    "questionRequired": "Escribí tu pregunta antes de escalar.",
+    "notAuthenticated": "Tu sesión expiró, volvé a ingresar."
   },
   "InviteForm": {
     "emailLabel": "Email",
