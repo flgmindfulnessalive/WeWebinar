@@ -739,13 +739,25 @@
   "NewWebinar": {
     "title": "Nuevo webinar",
     "description": "Datos generales. Se guarda como borrador — no cuenta contra tu límite de plan hasta que lo publiques.",
+    "pageHeading": "Creá tu webinar",
+    "pageSubheading": "Lo esencial primero — vas a poder cargar el video, elegir horarios y personalizar todo lo demás después.",
     "titleLabel": "Título",
+    "titleHint": "Así lo van a ver tus futuros registrados.",
     "titlePlaceholder": "Cómo duplicar tus ventas en 90 días",
     "categoryLabel": "Categoría",
     "categoryPlaceholder": "Marketing",
+    "categoryChips": ["Marketing", "Ventas", "Coaching", "Finanzas", "Salud y bienestar", "Educación"],
     "descriptionLabel": "Descripción",
+    "descriptionHint": "Opcional — una línea que resuma la promesa.",
+    "descriptionPlaceholder": "En este webinar vas a aprender...",
     "creating": "Creando...",
-    "createDraft": "Crear borrador"
+    "createDraft": "Crear borrador",
+    "previewLabel": "Así se va a ver, en vivo",
+    "previewCaption": "Es la misma tarjeta que ve cualquiera que abra el link de registro — vas a poder sumarle video, foto e imagen de fondo en el siguiente paso.",
+    "previewAccountPresents": "{name} presenta",
+    "previewDefaultBadge": "WEBINAR GRATUITO",
+    "previewPresenterPlaceholder": "Presenta tu nombre",
+    "previewTitlePlaceholder": "El título de tu webinar va a aparecer acá"
   },
   "WebinarActions": {
     "titleRequired": "El título es obligatorio.",
