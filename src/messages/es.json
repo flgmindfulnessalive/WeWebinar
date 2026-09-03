@@ -9,7 +9,7 @@
     "closeMenu": "Cerrar menú"
   },
   "AuthLayout": {
-    "tagline": "Webinars evergreen que se sienten en vivo."
+    "tagline": "Webinars evergreen con el pulso de un evento real."
   },
   "GoogleButton": {
     "continueWithGoogle": "Continuar con Google"
@@ -85,10 +85,10 @@
   },
   "Home": {
     "metaTitle": "WeWebinars — Automatiza presentaciones que venden 24/7",
-    "metaDescription": "Convierte tu presentación grabada en un activo: webinars que se sienten en vivo y venden por ti 24/7.",
+    "metaDescription": "Convierte tu presentación grabada en un activo que agenda, interactúa y vende por ti 24/7.",
     "badge": "Presentaciones automatizadas que venden",
     "heroTitle": "Convierte tu presentación en <highlight>un sistema</highlight>",
-    "heroSubtitle": "Grábala una vez. WeWebinars la transforma en un webinar que se siente en vivo y vende por ti 24/7.",
+    "heroSubtitle": "Grábala una vez. WeWebinars la transforma en un evento que corre solo y vende por ti 24/7.",
     "ctaStart": "Automatiza tu primera presentación",
     "ctaPlans": "Ver planes",
     "trial": "7 días gratis. Sin tarjeta.",
@@ -102,7 +102,7 @@
         "tagline": "Prográmala una vez y que corra.",
         "points": [
           "Deja que la gente entre cuando le convenga, sin coordinar otra reunión.",
-          "Cada visitante lo ve como si fuera en vivo, sin que tú estés transmitiendo."
+          "Cada visitante entra a un evento ya en marcha, sin que tú estés transmitiendo."
         ]
       },
       "effectiveness": {
@@ -110,7 +110,7 @@
         "tagline": "Que la atención no se pierda en el camino.",
         "points": [
           "Muestra el siguiente paso justo en el momento correcto.",
-          "El chat y las reacciones sostienen la sensación de evento real.",
+          "El chat y las reacciones sostienen la energía del evento.",
           "Responde las preguntas más comunes mientras tu presentación sigue corriendo."
         ]
       },
@@ -129,7 +129,7 @@
       { "title": "Creadores e infoproductores", "description": "Lanza tu curso sin estar despierto a la hora en que compra tu audiencia." },
       { "title": "Agencias", "description": "Ofrece resultados de webinar a tus clientes sin sumar otra reunión a tu semana." },
       { "title": "Equipos comerciales", "description": "La misma demo perfecta, en boca de cada vendedor, sin que la repita en persona." },
-      { "title": "Educadores", "description": "Preséntalo una vez. Que cada alumno lo viva como si fuera en vivo." },
+      { "title": "Educadores", "description": "Preséntalo una vez. Que cada alumno curse la clase a su propio horario." },
       { "title": "Freelancers y pequeñas empresas", "description": "Vende como si tuvieras un equipo, sin contratar uno." }
     ],
     "differentiationTitle": "La forma más simple de automatizar presentaciones que venden",
@@ -156,7 +156,7 @@
       { "q": "¿Puedo conectar mis otras herramientas?", "a": "Sí, desde el plan Pro. WeWebinars se conecta con tu CRM, email marketing o automatización vía integraciones directas o webhooks." },
       { "q": "¿Sirve para mi tipo de negocio?", "a": "Si presentas lo mismo más de una vez para vender —una demo, una charla, una propuesta— sirve. No importa la industria." },
       { "q": "¿Cuál es la diferencia con simplemente compartir una grabación?", "a": "Una grabación solo se reproduce. WeWebinars agrega registro, programación, chat, CTAs en el momento justo y analíticas de qué está funcionando — alrededor del mismo video." },
-      { "q": "¿Por qué automatizar en vez de seguir presentando en vivo?", "a": "Porque tu presentación puede seguir vendiendo mientras haces cualquier otra cosa — sin perder la sensación de un evento real para quien la mira." },
+      { "q": "¿Por qué automatizar en vez de seguir presentando en vivo?", "a": "Porque tu presentación sigue vendiendo mientras haces cualquier otra cosa — y quien la mira vive una experiencia con ritmo y respuesta, no una grabación suelta." },
       { "q": "¿Qué plan necesito para empezar?", "a": "Starter alcanza para automatizar tu primera presentación. La mayoría de quienes lo usan en serio termina en Pro por los webinars activos y el Agente de IA." },
       { "q": "¿Puedo empezar chico y crecer después?", "a": "Sí — cambias de plan cuando lo necesites, sin perder nada de lo que ya configuraste." },
       { "q": "¿Qué pasa si alguien quiere hablar con una persona real?", "a": "Tus CTAs pueden llevar a agendar una llamada, escribirte por WhatsApp o ir directo a checkout — tú decides el siguiente paso." }
@@ -249,19 +249,19 @@
       { "q": "¿Puedo cancelar cuando quiera?", "a": "Sí, sin permanencia mínima ni penalidad." }
     ],
     "includedTitle": "Todo esto, en cualquier plan",
-    "includedSubtitle": "Las funciones que hacen que un webinar automatizado se sienta en vivo, incluidas desde el plan más chico.",
+    "includedSubtitle": "Las funciones que convierten una grabación en un webinar con agenda, interacción y resultados — incluidas desde el plan más chico.",
     "included": {
       "video": {
         "title": "Graba una vez, preséntalo para siempre",
-        "description": "Cada visitante ve tu webinar como si fuera en vivo, con reproductor bloqueado para que no adelante ni descargue el video."
+        "description": "Reproductor bloqueado para que cada visitante siga el video sin adelantarlo ni descargarlo."
       },
       "scheduling": {
         "title": "Programación a tu manera",
         "description": "Horarios fijos recurrentes, arranque inmediato (\"empieza ahora\"), o ambos combinados en el mismo webinar."
       },
       "chat": {
-        "title": "Chat en vivo simulado",
-        "description": "Mensajes cronometrados y contador de espectadores que hacen sentir el evento real, sin moderación manual."
+        "title": "Chat cronometrado",
+        "description": "Mensajes al segundo exacto y contador de conectados, para que el chat mantenga la energía de un evento real, sin moderación manual."
       },
       "ctas": {
         "title": "CTAs cronometrados",
