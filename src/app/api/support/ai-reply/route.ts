@@ -6,6 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 
 const NO_ANSWER_SENTINEL = "SIN_RESPUESTA";
 const MAX_QUESTION_LENGTH = 800;
+// This endpoint is reachable on every plan, the free trial included --
+// unlike the webinar attendee AI chat (Pro+ only, its own per-registrant
+// and per-account-per-month caps), there was no ceiling here at all before
+// this. Generous enough that no real host should ever hit it; just high
+// enough above real usage to make looping this endpoint from scripted
+// signups pointless.
+const MAX_SUPPORT_AI_REPLIES_PER_DAY = 50;
 
 let anthropicClient: Anthropic | null = null;
 function getAnthropicClient() {
@@ -99,6 +106,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
   }
 
+  const supabase = await createClient();
+  const { data: usedToday } = await supabase.rpc("count_account_support_ai_replies_today", {
+    p_account_id: current.account.id,
+  });
+  if ((usedToday ?? 0) >= MAX_SUPPORT_AI_REPLIES_PER_DAY) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const context = await buildContext(current.account.id);
 
   let answer: string | null = null;
@@ -135,6 +150,14 @@ export async function POST(request: Request) {
     console.error("[support/ai-reply] Claude request failed:", err);
     return NextResponse.json({ error: "ai_failed" }, { status: 500 });
   }
+
+  // Logged after a completed Claude call regardless of outcome (including
+  // NO_ANSWER_SENTINEL) -- the cost was incurred either way. Best-effort:
+  // a logging failure should never surface as a failed support answer.
+  const { error: logError } = await supabase
+    .from("support_ai_replies")
+    .insert({ account_id: current.account.id });
+  if (logError) console.error("[support/ai-reply] usage log insert failed:", logError);
 
   return NextResponse.json({ answer });
 }
