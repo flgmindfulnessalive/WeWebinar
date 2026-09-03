@@ -83,6 +83,33 @@ export const LockedVideoPlayer = forwardRef<
     []
   );
 
+  // Chrome (and other browsers) surface an OS-level "now playing" widget for
+  // any playing <video>, independent of controls={false}/controlsList above
+  // -- it reads/writes the element directly, so left alone it leaks a
+  // default title and lets a viewer scrub via its own seek bar, bypassing
+  // the restricted-player, no-seeking design entirely. Registering no-op
+  // seek handlers blocks that; explicit metadata keeps the widget branded
+  // instead of falling back to whatever the page title happens to be.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "WeWebinars",
+      artwork: [{ src: "/brand/w-badge.png", sizes: "192x192", type: "image/png" }],
+    });
+    const blockSeek = () => {};
+    navigator.mediaSession.setActionHandler("seekto", blockSeek);
+    navigator.mediaSession.setActionHandler("seekforward", blockSeek);
+    navigator.mediaSession.setActionHandler("seekbackward", blockSeek);
+
+    return () => {
+      navigator.mediaSession.setActionHandler("seekto", null);
+      navigator.mediaSession.setActionHandler("seekforward", null);
+      navigator.mediaSession.setActionHandler("seekbackward", null);
+      navigator.mediaSession.metadata = null;
+    };
+  }, []);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !autoPlay) return;
