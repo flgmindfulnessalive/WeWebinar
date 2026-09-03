@@ -624,6 +624,26 @@ export interface Database {
           },
         ];
       };
+      support_ai_replies: {
+        Row: {
+          id: string;
+          account_id: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["support_ai_replies"]["Row"]> & {
+          account_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["support_ai_replies"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "support_ai_replies_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       custom_domains: {
         Row: {
           id: string;
@@ -993,6 +1013,10 @@ export interface Database {
         }[];
       };
       count_account_ai_replies_this_month: {
+        Args: { p_account_id: string };
+        Returns: number;
+      };
+      count_account_support_ai_replies_today: {
         Args: { p_account_id: string };
         Returns: number;
       };

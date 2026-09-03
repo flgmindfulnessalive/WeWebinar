@@ -9,7 +9,7 @@
     "closeMenu": "Close menu"
   },
   "AuthLayout": {
-    "tagline": "Evergreen webinars that feel live."
+    "tagline": "Evergreen webinars with the pulse of a real event."
   },
   "GoogleButton": {
     "continueWithGoogle": "Continue with Google"
@@ -81,14 +81,15 @@
     "connectionError": "We couldn't connect to the authentication server. Try again in a moment.",
     "emailRequired": "Email is required.",
     "sendEmailFailed": "We couldn't send the email. Try again in a moment.",
-    "passwordTooShort": "Password must be at least 8 characters."
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "captchaFailed": "We couldn't verify you're human. Reload the page and try again."
   },
   "Home": {
     "metaTitle": "WeWebinars — Automate presentations that sell 24/7",
     "metaDescription": "Turn your recorded presentation into an automated webinar that registers, schedules, and sells on its own. Free 7-day trial, no card.",
     "badge": "Automated presentations that sell",
     "heroTitle": "Stop repeating <highlight>your best presentation</highlight>",
-    "heroSubtitle": "Record it once. WeWebinars turns it into a webinar that feels live and sells for you 24/7.",
+    "heroSubtitle": "Record it once. WeWebinars turns it into an event that runs on its own and sells for you 24/7.",
     "ctaStart": "Automate your first presentation",
     "ctaPlans": "See plans",
     "trial": "7 days free. No card.",
@@ -102,7 +103,7 @@
         "tagline": "Set it up once. Let it run.",
         "points": [
           "Let people join whenever suits them, with no meeting to coordinate.",
-          "Every visitor sees it as if it were live, without you streaming anything."
+          "Every visitor walks into an event already underway, without you streaming a thing."
         ]
       },
       "effectiveness": {
@@ -110,7 +111,7 @@
         "tagline": "Don't let attention slip along the way.",
         "points": [
           "Show the next step at exactly the right moment.",
-          "Chat and reactions keep the feeling of a real event alive.",
+          "Chat and reactions keep the event's energy up.",
           "Answer the most common questions while your presentation keeps running."
         ]
       },
@@ -129,7 +130,7 @@
       { "title": "Creators and course sellers", "description": "Launch your course without being awake when your audience buys." },
       { "title": "Agencies", "description": "Deliver webinar results to clients without adding another meeting to your week." },
       { "title": "Sales teams", "description": "The same perfect demo, in every rep's hands, without repeating it in person." },
-      { "title": "Educators", "description": "Present it once. Let every student experience it as if it were live." },
+      { "title": "Educators", "description": "Present it once. Let every student take the class on their own schedule." },
       { "title": "Freelancers and small businesses", "description": "Sell like you have a team, without hiring one." }
     ],
     "differentiationTitle": "The simplest way to automate presentations that sell",
@@ -156,7 +157,7 @@
       { "q": "Can I connect my other tools?", "a": "Yes, from the Pro plan up. WeWebinars connects to your CRM, email marketing, or automation via direct integrations or webhooks." },
       { "q": "Does this work for my kind of business?", "a": "If you present the same thing more than once to sell — a demo, a talk, a pitch — it works. The industry doesn't matter." },
       { "q": "What's the difference from just sharing a recording?", "a": "A recording only plays back. WeWebinars adds registration, scheduling, chat, CTAs at just the right moment, and analytics on what's working — around that same video." },
-      { "q": "Why automate instead of just presenting live?", "a": "Because your presentation can keep selling while you do anything else — without losing the feel of a real event for whoever's watching." },
+      { "q": "Why automate instead of just presenting live?", "a": "Because your presentation keeps selling while you do anything else — and whoever's watching still gets an experience with real pacing and response, not a loose recording." },
       { "q": "Which plan do I need to start?", "a": "Starter is enough to automate your first presentation. Most people using it seriously end up on Pro, for the active webinars and the AI Chat Agent." },
       { "q": "Can I start small and grow later?", "a": "Yes — switch plans whenever you need to, without losing anything you've already set up." },
       { "q": "What if someone wants to talk to a real person?", "a": "Your CTAs can lead to booking a call, messaging you on WhatsApp, or going straight to checkout — you decide the next step." }
@@ -249,19 +250,19 @@
       { "q": "Can I cancel anytime?", "a": "Yes, no minimum commitment and no penalty." }
     ],
     "includedTitle": "All of this, on every plan",
-    "includedSubtitle": "The features that make an automated webinar feel live, included from the smallest plan up.",
+    "includedSubtitle": "The features that turn a recording into a webinar with scheduling, interaction, and results — included from the smallest plan up.",
     "included": {
       "video": {
         "title": "Record once, present it forever",
-        "description": "Every visitor watches your webinar as if it were live, with a locked player so they can't skip ahead or download the video."
+        "description": "Locked player so every visitor follows the video without skipping ahead or downloading it."
       },
       "scheduling": {
         "title": "Scheduling your way",
         "description": "Recurring fixed times, instant start (\"start now\"), or both combined in the same webinar."
       },
       "chat": {
-        "title": "Simulated live chat",
-        "description": "Timed messages and a viewer counter that make the event feel real, with no manual moderation."
+        "title": "Timed chat",
+        "description": "Messages that land on the exact second, plus a live viewer count, so the chat keeps the energy of a real event — no manual moderation."
       },
       "ctas": {
         "title": "Timed CTAs",

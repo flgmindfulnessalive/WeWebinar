@@ -41,6 +41,14 @@ export async function signUpWithPassword(
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
   const rawPlan = String(formData.get("plan") ?? "");
+  // Populated by the Cloudflare Turnstile widget's own hidden input (see
+  // signup-form.tsx) once it's solved -- Supabase Auth verifies it
+  // server-side against the secret key configured in its own dashboard
+  // (Authentication -> Attack Protection), not against anything in this
+  // codebase. Omitted entirely when there's no token so a signup attempt
+  // before the widget finishes still gets Supabase's own rejection message
+  // rather than us silently letting it through.
+  const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
   // Carries the plan a host clicked "Get started" on from Pricing through
   // to onboarding -- as a query string on `next` rather than a separate
   // param, since that's the one value every redirect path here (email
@@ -56,9 +64,16 @@ export async function signUpWithPassword(
       options: {
         data: { full_name: fullName },
         emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=${encodeURIComponent(next)}`,
+        ...(captchaToken ? { captchaToken } : {}),
       },
     });
-    if (error) return { error: error.message };
+    if (error) {
+      if (error.message.toLowerCase().includes("captcha")) {
+        const t = await getTranslations("AuthActions");
+        return { error: t("captchaFailed") };
+      }
+      return { error: error.message };
+    }
     // Email confirmation is required, so signUp doesn't return an active
     // session -- redirecting to /onboarding (a protected route) here would
     // just bounce them straight to /login with no explanation, since
