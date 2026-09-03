@@ -81,7 +81,8 @@
     "connectionError": "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento.",
     "emailRequired": "El email es obligatorio.",
     "sendEmailFailed": "No pudimos enviar el email. Prueba de nuevo en un momento.",
-    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres."
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "captchaFailed": "No pudimos verificar que sos una persona. Recarga la página e intenta de nuevo."
   },
   "Home": {
     "metaTitle": "WeWebinars — Automatiza presentaciones que venden 24/7",
