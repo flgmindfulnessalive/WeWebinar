@@ -85,64 +85,119 @@
   animation: marketing-blob 16s ease-in-out infinite;
 }
 
-/* Capabilities section (3 pillar cards) -- each card's corner glow gets its
-   own drift path and rhythm so the row doesn't read as one blob copy-pasted
-   three times: a diagonal drift, a looping orbit, and a vertical sway. */
-@keyframes pillar-blob-drift {
+/* Capabilities section (3 pillar cards) -- each card gets two corner blobs
+   that move as mirrors of each other (same duration, opposite translate at
+   every step -- true "opposite sync", not just offset timing), and each
+   card's pair has its own path/rhythm so the row doesn't read as one blob
+   copy-pasted three times: a diagonal drift, a looping orbit, a vertical
+   sway. Faster than the marketing hero's blob (7-8s vs 16s) since these
+   live inside a small card, not a full-bleed background. */
+@keyframes pillar-blob-drift-pos {
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
   40% {
-    transform: translate(-22px, 20px) scale(1.08);
+    transform: translate(-30px, 26px) scale(1.14);
   }
   75% {
-    transform: translate(14px, -16px) scale(0.94);
+    transform: translate(20px, -22px) scale(0.9);
   }
 }
 
-@keyframes pillar-blob-orbit {
+@keyframes pillar-blob-drift-neg {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    transform: translate(30px, -26px) scale(0.9);
+  }
+  75% {
+    transform: translate(-20px, 22px) scale(1.14);
+  }
+}
+
+@keyframes pillar-blob-orbit-pos {
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
   25% {
-    transform: translate(18px, 14px) scale(1.05);
+    transform: translate(24px, 18px) scale(1.1);
   }
   50% {
-    transform: translate(2px, 26px) scale(0.95);
+    transform: translate(4px, 34px) scale(0.9);
   }
   75% {
-    transform: translate(-16px, 10px) scale(1.03);
+    transform: translate(-22px, 14px) scale(1.05);
   }
 }
 
-@keyframes pillar-blob-sway {
+@keyframes pillar-blob-orbit-neg {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-24px, -18px) scale(0.9);
+  }
+  50% {
+    transform: translate(-4px, -34px) scale(1.1);
+  }
+  75% {
+    transform: translate(22px, -14px) scale(0.95);
+  }
+}
+
+@keyframes pillar-blob-sway-pos {
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(-10px, -26px) scale(1.1);
+    transform: translate(-16px, -36px) scale(1.16);
   }
 }
 
-.animate-pillar-blob-a {
-  animation: pillar-blob-drift 15s ease-in-out infinite;
+@keyframes pillar-blob-sway-neg {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(16px, 36px) scale(0.86);
+  }
 }
 
-.animate-pillar-blob-b {
-  animation: pillar-blob-orbit 19s ease-in-out infinite;
+.animate-pillar-blob-a-pos {
+  animation: pillar-blob-drift-pos 7s ease-in-out infinite;
+}
+.animate-pillar-blob-a-neg {
+  animation: pillar-blob-drift-neg 7s ease-in-out infinite;
 }
 
-.animate-pillar-blob-c {
-  animation: pillar-blob-sway 13s ease-in-out infinite;
+.animate-pillar-blob-b-pos {
+  animation: pillar-blob-orbit-pos 8s ease-in-out infinite;
+}
+.animate-pillar-blob-b-neg {
+  animation: pillar-blob-orbit-neg 8s ease-in-out infinite;
+}
+
+.animate-pillar-blob-c-pos {
+  animation: pillar-blob-sway-pos 6s ease-in-out infinite;
+}
+.animate-pillar-blob-c-neg {
+  animation: pillar-blob-sway-neg 6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-pillar-blob-a,
-  .animate-pillar-blob-b,
-  .animate-pillar-blob-c {
+  .animate-pillar-blob-a-pos,
+  .animate-pillar-blob-a-neg,
+  .animate-pillar-blob-b-pos,
+  .animate-pillar-blob-b-neg,
+  .animate-pillar-blob-c-pos,
+  .animate-pillar-blob-c-neg {
     animation: none;
   }
 }
