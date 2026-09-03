@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Bell, MessageSquare, User, Users, X } from "lucide-react";
+import { Bell, MessageSquare, User, Users, Volume2, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -430,8 +430,9 @@ export function LiveRoomClient({
                 <button
                   type="button"
                   onClick={handleUnmute}
-                  className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg"
+                  className="absolute bottom-24 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/80 px-6 py-3 text-base font-medium text-white shadow-lg"
                 >
+                  <Volume2 className="size-5" />
                   {t("clickToUnmute")}
                 </button>
               )}
