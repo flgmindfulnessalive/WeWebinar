@@ -184,6 +184,10 @@ export default async function WebinarAnalyticsPage({
           (pos) => (pos ?? 0) >= durationSeconds * 0.5
         ).length
       : 0;
+  const ctaClickRatePct =
+    attendeeCount > 0 ? Math.round((uniqueClickerCount / attendeeCount) * 100) : 0;
+  const watchedHalfRatePct =
+    attendeeCount > 0 ? Math.round((watchedHalfCount / attendeeCount) * 100) : 0;
 
   const funnelSteps = [
     ...(visitCount > 0
@@ -324,7 +328,7 @@ export default async function WebinarAnalyticsPage({
 
       <DateRangeSelect />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
           label={t("visitsLabel")}
           value={String(visitCount)}
@@ -344,6 +348,16 @@ export default async function WebinarAnalyticsPage({
           label={t("avgWatchTimeLabel")}
           value={secondsToClock(avgWatchSeconds)}
           sublabel={durationSeconds > 0 ? t("pctOfVideoSublabel", { pct: watchPct }) : undefined}
+        />
+        <StatTile
+          label={t("ctaClicksLabel")}
+          value={String(uniqueClickerCount)}
+          sublabel={attendeeCount > 0 ? t("pctOfAttendeesSublabel", { pct: ctaClickRatePct }) : undefined}
+        />
+        <StatTile
+          label={t("watchedHalfLabel")}
+          value={String(watchedHalfCount)}
+          sublabel={attendeeCount > 0 ? t("pctOfAttendeesSublabel", { pct: watchedHalfRatePct }) : undefined}
         />
         <StatTile
           label={t("unsubscribeRateLabel")}
@@ -366,6 +380,38 @@ export default async function WebinarAnalyticsPage({
         </CardHeader>
         <CardContent>
           <Funnel steps={funnelSteps} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {t("registrantsTitle", { count: registrants?.length ?? 0 })}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {registrantsError ? (
+            <p className="text-sm text-destructive">{t("registrantsLoadError")}</p>
+          ) : !registrants || registrants.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("noRegistrantsYet")}</p>
+          ) : (
+            <RegistrantsTable
+              durationSeconds={durationSeconds}
+              leadScoringAllowed={leadScoringAllowed}
+              registrants={registrants.map((r) => ({
+                id: r.id,
+                name: r.name,
+                email: r.email,
+                phone: r.phone,
+                computedSessionStart: r.computed_session_start,
+                createdAt: r.created_at,
+                unsubscribedAt: r.unsubscribed_at,
+                lastPositionSeconds: watchPositionByRegistrant.get(r.id) ?? null,
+                score: leadScoreByRegistrant.get(r.id)?.score ?? null,
+                tier: leadScoreByRegistrant.get(r.id)?.tier ?? null,
+              }))}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -503,91 +549,62 @@ export default async function WebinarAnalyticsPage({
               ),
           },
           {
-            id: "registrants",
-            label: t("tabRegistrants"),
-            content: (
-              <div className="flex flex-col gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t("registrantsTitle", { count: registrants?.length ?? 0 })}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {registrantsError ? (
-                      <p className="text-sm text-destructive">{t("registrantsLoadError")}</p>
-                    ) : !registrants || registrants.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">{t("noRegistrantsYet")}</p>
-                    ) : (
-                      <RegistrantsTable
-                        durationSeconds={durationSeconds}
-                        leadScoringAllowed={leadScoringAllowed}
-                        registrants={registrants.map((r) => ({
-                          id: r.id,
-                          name: r.name,
-                          email: r.email,
-                          phone: r.phone,
-                          computedSessionStart: r.computed_session_start,
-                          createdAt: r.created_at,
-                          unsubscribedAt: r.unsubscribed_at,
-                          lastPositionSeconds: watchPositionByRegistrant.get(r.id) ?? null,
-                          score: leadScoreByRegistrant.get(r.id)?.score ?? null,
-                          tier: leadScoreByRegistrant.get(r.id)?.tier ?? null,
-                        }))}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
+            id: "activity",
+            label: t("tabActivity"),
+            content:
+              (messageRows?.length ?? 0) === 0 && (reactionRows?.length ?? 0) === 0 ? (
+                <p className="text-sm text-muted-foreground">{t("activityEmptyState")}</p>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {(messageRows?.length ?? 0) > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {t("chatMessagesTitle", { count: messageRows!.length })}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <MessagesTable
+                          messages={messageRows!.map((m) => ({
+                            id: m.id,
+                            registrantId: m.registrant_id,
+                            name: m.name,
+                            email: m.email,
+                            messageText: m.message_text,
+                            videoTimestampSeconds: m.video_timestamp_seconds,
+                            aiReplyText: m.ai_reply_text,
+                            aiRepliedAt: m.ai_replied_at,
+                            hostReplied: m.host_replied,
+                            createdAt: m.created_at,
+                          }))}
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
 
-                {(messageRows?.length ?? 0) > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {t("chatMessagesTitle", { count: messageRows!.length })}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <MessagesTable
-                        messages={messageRows!.map((m) => ({
-                          id: m.id,
-                          registrantId: m.registrant_id,
-                          name: m.name,
-                          email: m.email,
-                          messageText: m.message_text,
-                          videoTimestampSeconds: m.video_timestamp_seconds,
-                          aiReplyText: m.ai_reply_text,
-                          aiRepliedAt: m.ai_replied_at,
-                          hostReplied: m.host_replied,
-                          createdAt: m.created_at,
-                        }))}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-
-                {(reactionRows?.length ?? 0) > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {t("reactionsTitle", { count: reactionRows!.length })}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ReactionsTable
-                        reactions={reactionRows!.map((r) => ({
-                          id: r.id,
-                          registrantId: r.registrant_id,
-                          name: r.name,
-                          email: r.email,
-                          emoji: r.emoji,
-                          videoTimestampSeconds: r.video_timestamp_seconds,
-                        }))}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ),
+                  {(reactionRows?.length ?? 0) > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {t("reactionsTitle", { count: reactionRows!.length })}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ReactionsTable
+                          reactions={reactionRows!.map((r) => ({
+                            id: r.id,
+                            registrantId: r.registrant_id,
+                            name: r.name,
+                            email: r.email,
+                            emoji: r.emoji,
+                            videoTimestampSeconds: r.video_timestamp_seconds,
+                          }))}
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              ),
           },
         ]}
       />
