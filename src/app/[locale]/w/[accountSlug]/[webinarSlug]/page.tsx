@@ -314,13 +314,6 @@ export default async function RegisterPage({
               <span className="text-sm text-white/70">{t("presents", { name: account.name })}</span>
             </div>
 
-            {waitingRoom?.promo_video_url && (
-              <PromoVideoEmbed
-                url={waitingRoom.promo_video_url}
-                className="aspect-video w-full max-w-sm overflow-hidden rounded-xl"
-              />
-            )}
-
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5">
                 <Sparkles className="size-3.5 text-indigo-200" />
@@ -365,8 +358,18 @@ export default async function RegisterPage({
               </div>
             )}
 
+            {waitingRoom?.promo_video_url && (
+              <PromoVideoEmbed
+                url={waitingRoom.promo_video_url}
+                className="aspect-video w-full max-w-sm overflow-hidden rounded-xl"
+              />
+            )}
+
             {bullets.length > 0 && (
               <div className="flex flex-col gap-3 border-t border-white/10 pt-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
+                  {t("whatYouWillLearn")}
+                </p>
                 {bullets.map((bullet, i) => (
                   <div key={i} className="flex items-start gap-2.5">
                     <svg
@@ -405,12 +408,6 @@ export default async function RegisterPage({
         <div className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${brandColorA}, ${brandColorB})` }} />
           <div className="flex flex-col gap-6 p-7">
-            {waitingRoom?.promo_video_url && (
-              <PromoVideoEmbed
-                url={waitingRoom.promo_video_url}
-                className="aspect-video w-full overflow-hidden rounded-xl"
-              />
-            )}
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 {accountBadge}
@@ -439,6 +436,40 @@ export default async function RegisterPage({
                 </p>
               )}
             </div>
+
+            {waitingRoom?.promo_video_url && (
+              <PromoVideoEmbed
+                url={waitingRoom.promo_video_url}
+                className="aspect-video w-full overflow-hidden rounded-xl"
+              />
+            )}
+
+            {bullets.length > 0 && (
+              <div className="flex flex-col gap-3 border-t border-gray-100 pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  {t("whatYouWillLearn")}
+                </p>
+                {bullets.map((bullet, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <svg
+                      className="mt-0.5 size-[18px] shrink-0"
+                      style={{ color: brandColorA }}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    <span className="text-sm leading-relaxed text-gray-600">{bullet}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {registrationForm}
             {!removeBranding && (
               <PoweredByBadge className="mx-auto text-gray-400" />

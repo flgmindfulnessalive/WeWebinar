@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Video, Users, Settings, LifeBuoy } from "lucide-react";
+import { LayoutDashboard, Video, Users, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ import type { UserRole } from "@/lib/supabase/database.types";
 
 const NAV_ITEMS: {
   href: string;
-  labelKey: "summary" | "webinars" | "team" | "settings" | "support";
+  labelKey: "summary" | "webinars" | "team" | "settings";
   icon: typeof LayoutDashboard;
   minRole?: UserRole[];
 }[] = [
@@ -27,7 +27,6 @@ const NAV_ITEMS: {
     labelKey: "settings",
     icon: Settings,
   },
-  { href: "/dashboard/support", labelKey: "support", icon: LifeBuoy },
 ];
 
 export function DashboardNav({ role }: { role: UserRole }) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,6 +10,28 @@ export type WaitingRoomActionState = { error: string } | null;
 // Sane guardrails on the manual override -- not the DB check constraint's
 // job to also cap the upper end, since 0..N is otherwise a valid range.
 const FAKE_VIEWER_HARD_CAP = 5000;
+
+// Same light-validation philosophy as parseDirectVideoUrl (direct-video.ts):
+// the real check is whether PromoVideoEmbed can render it, not this. Unlike
+// the old `/^https:\/\//` prefix test this replaced, a bare paste without a
+// scheme (e.g. "youtu.be/xyz", common when copying from a share sheet) is
+// auto-upgraded to https instead of being silently discarded -- that old
+// behavior saved `null` with no error shown, so the host had no idea their
+// video had quietly vanished from the config.
+function parsePromoVideoUrl(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  let url: URL;
+  try {
+    url = new URL(withScheme);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:") return null;
+  return url.toString();
+}
 
 export async function upsertWaitingRoom(
   _prevState: WaitingRoomActionState,
@@ -21,11 +44,12 @@ export async function upsertWaitingRoom(
   const backgroundTypeRaw = String(formData.get("background_type") ?? "image");
   const backgroundType: "image" | "video" =
     backgroundTypeRaw === "video" ? "video" : "image";
-  // Deliberately light validation, same reasoning as parseDirectVideoUrl --
-  // any https URL is accepted here, and PromoVideoEmbed sorts out at render
-  // time whether it's YouTube, Vimeo, or a direct file.
   const promoVideoUrlRaw = String(formData.get("promo_video_url") ?? "").trim();
-  const promoVideoUrl = /^https:\/\//.test(promoVideoUrlRaw) ? promoVideoUrlRaw : "";
+  const promoVideoUrl = parsePromoVideoUrl(promoVideoUrlRaw);
+  if (promoVideoUrlRaw && !promoVideoUrl) {
+    const t = await getTranslations("WaitingRoomSection");
+    return { error: t("promoVideoUrlInvalid") };
+  }
   const showCalendarButton = formData.get("show_calendar_button") === "on";
   const showFakeCounter = formData.get("show_fake_counter") === "on";
 
@@ -68,7 +92,7 @@ export async function upsertWaitingRoom(
         subheadline: subheadline || null,
         background_url: backgroundUrl || null,
         background_type: backgroundUrl ? backgroundType : null,
-        promo_video_url: promoVideoUrl || null,
+        promo_video_url: promoVideoUrl,
         show_calendar_button: showCalendarButton,
         show_fake_counter: showFakeCounter,
         bullets,

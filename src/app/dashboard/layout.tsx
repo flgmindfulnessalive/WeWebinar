@@ -15,6 +15,7 @@ import { UserMenu } from "./user-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageToggle } from "./language-toggle";
 import { CheckoutButton } from "./settings/billing/billing-buttons";
+import { SupportChatWidget } from "./support-chat-widget";
 
 // Sets the "dark" class on the dashboard's own wrapper (see id below) before
 // the browser paints it, straight from localStorage -- otherwise a returning
@@ -195,6 +196,7 @@ export default async function DashboardLayout({
           )}
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </div>
+        <SupportChatWidget />
       </div>
     </NextIntlClientProvider>
   );

@@ -178,6 +178,108 @@
   animation: comparison-glow-trace 3.2s ease-in-out forwards;
 }
 
+/* Wewe (Support Agent mascot, support-chat-widget.tsx) -- blink and antenna
+   glow run infinitely; the three body gestures (breathe/tilt/hop) are
+   single-play (`1 both`, not infinite) so wewe-mascot.tsx's JS can pick one
+   at random and let it land back at rest before scheduling the next. */
+@keyframes wewe-blink {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes wewe-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes wewe-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-6px) scale(0.985, 1.03);
+  }
+}
+
+@keyframes wewe-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-9deg) translateY(-1px);
+  }
+  75% {
+    transform: rotate(9deg) translateY(-1px);
+  }
+}
+
+@keyframes wewe-hop {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1, 1);
+  }
+  28% {
+    transform: translateY(-14px) rotate(190deg) scale(1.05, 0.94);
+  }
+  50% {
+    transform: translateY(-16px) rotate(360deg) scale(1, 1);
+  }
+  70% {
+    transform: translateY(0) rotate(360deg) scale(0.95, 1.06);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg) scale(1, 1);
+  }
+}
+
+.wewe-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wewe-blink 4.6s ease-in-out infinite;
+}
+
+.wewe-antenna-tip {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wewe-pulse 2.3s ease-in-out infinite;
+}
+
+.wewe-move-breathe {
+  animation: wewe-breathe 2.8s ease-in-out 1 both;
+}
+
+.wewe-move-tilt {
+  animation: wewe-tilt 2.4s ease-in-out 1 both;
+}
+
+.wewe-move-hop {
+  animation: wewe-hop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wewe-eye,
+  .wewe-antenna-tip,
+  .wewe-move-breathe,
+  .wewe-move-tilt,
+  .wewe-move-hop {
+    animation: none;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
