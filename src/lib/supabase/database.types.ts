@@ -250,6 +250,7 @@ export interface Database {
           template_id: string;
           background_url: string | null;
           background_type: "image" | "video" | null;
+          promo_video_url: string | null;
           headline: string | null;
           subheadline: string | null;
           bullets: Json;

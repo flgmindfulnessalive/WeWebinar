@@ -87,7 +87,7 @@
     "metaTitle": "WeWebinars — Automatiza presentaciones que venden 24/7",
     "metaDescription": "Convierte tu presentación grabada en un activo: webinars que se sienten en vivo y venden por ti 24/7.",
     "badge": "Presentaciones automatizadas que venden",
-    "heroTitle": "Deja de repetir <highlight>tu mejor presentación</highlight>",
+    "heroTitle": "Convierte tu presentación en <highlight>un sistema</highlight>, no en un autoempleo.",
     "heroSubtitle": "Grábala una vez. WeWebinars la convierte en un webinar que se siente en vivo y vende por ti 24/7.",
     "ctaStart": "Automatiza tu primera presentación",
     "ctaPlans": "Ver planes",
@@ -817,8 +817,8 @@
     "scheduleNoSlots": "Sin horarios configurados",
     "scheduleBoth": "{count} horario(s) + arranque inmediato",
     "scheduleFixed": "{count} horario(s) fijo(s)",
-    "waitingRoomTitle": "Sala de espera",
-    "waitingRoomDescription": "Lo que ve el registrado mientras espera que empiece.",
+    "waitingRoomTitle": "Registro y sala de espera",
+    "waitingRoomDescription": "Lo que ve tu visitante en la página de registro y mientras espera que empiece.",
     "waitingRoomSummaryConfigured": "{count} bullets configurados",
     "waitingRoomSummaryPending": "Config pendiente",
     "chatTitle": "Chat simulado",
@@ -1258,6 +1258,8 @@
     "headlineHint": "Aparece arriba del título del webinar (que ya se muestra automáticamente) — no hace falta repetirlo aquí.",
     "headlinePlaceholder": "Tu webinar está por comenzar",
     "subheadlineLabel": "Subtítulo",
+    "promoVideoLabel": "Video promocional (opcional)",
+    "promoVideoHint": "Se muestra en la página pública de registro (no en la sala de espera). Pega un link de YouTube, Vimeo o un archivo de video (.mp4). Si lo dejas vacío, la página queda igual que ahora.",
     "backgroundUrlLabel": "Imagen o video de fondo (URL)",
     "typeLabel": "Tipo",
     "typeImage": "Imagen",
@@ -1271,6 +1273,6 @@
     "fakeViewerMinLabel": "Mínimo de conectados",
     "fakeViewerMaxLabel": "Máximo de conectados",
     "fakeViewerRangeSeparator": "a",
-    "saveWaitingRoom": "Guardar sala de espera"
+    "saveWaitingRoom": "Guardar"
   }
 }
