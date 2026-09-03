@@ -95,7 +95,6 @@ export function NewWebinarForm({
                 id="description"
                 name="description"
                 rows={3}
-                placeholder={t("descriptionPlaceholder")}
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
               />
             </div>
