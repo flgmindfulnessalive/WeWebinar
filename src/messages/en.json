@@ -380,7 +380,8 @@
     "summary": "Summary",
     "webinars": "Webinars",
     "team": "Team",
-    "settings": "Settings"
+    "settings": "Settings",
+    "support": "Support"
   },
   "AdminNav": {
     "summary": "Summary",
@@ -649,6 +650,25 @@
     "confirmRemove": "Remove this member from the account? They'll lose access immediately.",
     "revoke": "Revoke",
     "confirmRevoke": "Revoke this invitation?"
+  },
+  "SupportWidget": {
+    "pageTitle": "Support",
+    "pageDescription": "Ask anything about your account. The assistant answers using the real state of your webinars, plan, and configuration.",
+    "cardTitle": "Ask a question",
+    "cardDescription": "For example: \"why isn't my CTA showing up?\" or \"how many active webinars can I have?\"",
+    "questionLabel": "Your question",
+    "questionPlaceholder": "Type your question here...",
+    "ask": "Ask",
+    "asking": "Asking...",
+    "askFailed": "We couldn't process the question. Try again or escalate to human support.",
+    "noAnswer": "The assistant doesn't have enough information to answer this with confidence.",
+    "escalatePrompt": "Didn't get what you needed?",
+    "escalate": "Escalate to human support",
+    "escalating": "Sending...",
+    "escalated": "Done, the team's been notified. They'll reply directly to your email.",
+    "escalateFailed": "We couldn't send your question. Email us directly at operaciones@wewebinars.com.",
+    "questionRequired": "Write your question before escalating.",
+    "notAuthenticated": "Your session expired, log in again."
   },
   "InviteForm": {
     "emailLabel": "Email",
