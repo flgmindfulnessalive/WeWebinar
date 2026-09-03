@@ -161,11 +161,11 @@ export default async function HomePage() {
 
       {/* ============ 2. PROBLEM ============ */}
       <ImageParallaxSection src="/marketing/problem-parallax.webp">
-        <div className="mx-auto max-w-2xl px-6 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl lg:text-nowrap">
             {t("problemTitle")}
           </h2>
-          <p className="mt-3 text-white/85">{t("problemBody")}</p>
+          <p className="mx-auto mt-3 max-w-2xl text-pretty text-white/85">{t("problemBody")}</p>
         </div>
       </ImageParallaxSection>
 
