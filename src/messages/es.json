@@ -668,6 +668,17 @@
     "askFailed": "No pudimos procesar tu pregunta. Intenta de nuevo en un momento.",
     "rateLimited": "Wewe llegó a su límite de preguntas por hoy. Intenta de nuevo mañana, o escríbenos a operaciones@wewebinars.com."
   },
+  "SupportChat": {
+    "panelTitle": "Wewe",
+    "panelSubtitle": "Agente de Soporte",
+    "greeting": "¡Hola! Soy Wewe 🤖 ¿En qué te puedo ayudar hoy?",
+    "openAria": "Abrir chat de soporte",
+    "minimizeAria": "Minimizar",
+    "inputPlaceholder": "Escribí tu consulta...",
+    "noAnswer": "No tengo información suficiente para responder esto con certeza. Probá reformular la pregunta.",
+    "askFailed": "No pudimos procesar tu pregunta. Probá de nuevo en un momento.",
+    "rateLimited": "Wewe llegó a su límite de preguntas por hoy. Probá de nuevo mañana, o escribinos a operaciones@wewebinars.com."
+  },
   "InviteForm": {
     "emailLabel": "Email",
     "roleLabel": "Rol",
