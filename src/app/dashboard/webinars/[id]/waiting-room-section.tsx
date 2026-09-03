@@ -14,6 +14,7 @@ type WaitingRoomConfig = {
   subheadline: string | null;
   background_url: string | null;
   background_type: "image" | "video" | null;
+  promo_video_url: string | null;
   show_calendar_button: boolean;
   show_fake_counter: boolean;
   bullets: Json;
@@ -61,6 +62,17 @@ export function WaitingRoomSection({
           id="subheadline"
           name="subheadline"
           defaultValue={config?.subheadline ?? ""}
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="promo_video_url">{t("promoVideoLabel")}</Label>
+        <p className="text-xs text-muted-foreground">{t("promoVideoHint")}</p>
+        <Input
+          id="promo_video_url"
+          name="promo_video_url"
+          defaultValue={config?.promo_video_url ?? ""}
+          placeholder="https://youtu.be/..."
         />
       </div>
 

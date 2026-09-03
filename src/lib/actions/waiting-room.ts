@@ -21,6 +21,11 @@ export async function upsertWaitingRoom(
   const backgroundTypeRaw = String(formData.get("background_type") ?? "image");
   const backgroundType: "image" | "video" =
     backgroundTypeRaw === "video" ? "video" : "image";
+  // Deliberately light validation, same reasoning as parseDirectVideoUrl --
+  // any https URL is accepted here, and PromoVideoEmbed sorts out at render
+  // time whether it's YouTube, Vimeo, or a direct file.
+  const promoVideoUrlRaw = String(formData.get("promo_video_url") ?? "").trim();
+  const promoVideoUrl = /^https:\/\//.test(promoVideoUrlRaw) ? promoVideoUrlRaw : "";
   const showCalendarButton = formData.get("show_calendar_button") === "on";
   const showFakeCounter = formData.get("show_fake_counter") === "on";
 
@@ -63,6 +68,7 @@ export async function upsertWaitingRoom(
         subheadline: subheadline || null,
         background_url: backgroundUrl || null,
         background_type: backgroundUrl ? backgroundType : null,
+        promo_video_url: promoVideoUrl || null,
         show_calendar_button: showCalendarButton,
         show_fake_counter: showFakeCounter,
         bullets,

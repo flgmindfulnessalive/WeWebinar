@@ -817,8 +817,8 @@
     "scheduleNoSlots": "No time slots configured",
     "scheduleBoth": "{count} time slot(s) + instant start",
     "scheduleFixed": "{count} fixed time slot(s)",
-    "waitingRoomTitle": "Waiting room",
-    "waitingRoomDescription": "What the registrant sees while waiting for it to start.",
+    "waitingRoomTitle": "Registration & waiting room",
+    "waitingRoomDescription": "What your visitor sees on the registration page and while waiting for it to start.",
     "waitingRoomSummaryConfigured": "{count} bullets configured",
     "waitingRoomSummaryPending": "Setup pending",
     "chatTitle": "Simulated chat",
@@ -1258,6 +1258,8 @@
     "headlineHint": "Appears above the webinar title (which is already shown automatically) — no need to repeat it here.",
     "headlinePlaceholder": "Your webinar is about to start",
     "subheadlineLabel": "Subheadline",
+    "promoVideoLabel": "Promo video (optional)",
+    "promoVideoHint": "Shown on the public registration page (not the waiting room). Paste a YouTube, Vimeo, or direct video file (.mp4) link. Leave it blank and the page stays exactly as it is now.",
     "backgroundUrlLabel": "Background image or video (URL)",
     "typeLabel": "Type",
     "typeImage": "Image",
@@ -1271,6 +1273,6 @@
     "fakeViewerMinLabel": "Minimum viewers",
     "fakeViewerMaxLabel": "Maximum viewers",
     "fakeViewerRangeSeparator": "to",
-    "saveWaitingRoom": "Save waiting room"
+    "saveWaitingRoom": "Save"
   }
 }
