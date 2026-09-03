@@ -205,7 +205,7 @@ export function WaitingRoomClient({
   const bulletsList = bullets.length > 0 && (
     <div className="flex flex-col gap-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
-        {t("whatYouWillLearn")}
+        {t("audienceHeading")}
       </p>
       {bullets.map((bullet, i) => (
         <div key={i} className="flex items-start gap-2.5">
