@@ -948,6 +948,17 @@ export interface Database {
           click_count: number;
         }[];
       };
+      get_webinar_poll_voters: {
+        Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
+        Returns: {
+          cta_id: string;
+          option: string | null;
+          registrant_id: string;
+          name: string;
+          email: string;
+          voted_at: string;
+        }[];
+      };
       get_webinar_watch_positions: {
         Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };
         Returns: {

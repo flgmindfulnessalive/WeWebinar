@@ -101,6 +101,7 @@ export function WaitingRoomSection({
 
       <div className="grid gap-2">
         <Label htmlFor="bullets">{t("bulletsLabel")}</Label>
+        <p className="text-xs text-muted-foreground">{t("bulletsHint")}</p>
         <textarea
           id="bullets"
           name="bullets"

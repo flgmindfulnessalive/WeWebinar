@@ -12,6 +12,7 @@ import { StatTile } from "./stat-tile";
 import { RetentionChart } from "./retention-chart";
 import { HorizontalBarChart } from "./bar-chart";
 import { CtaClickersToggle } from "./cta-clickers";
+import { PollVotersToggle } from "./poll-voters";
 import { RegistrantsTable } from "./registrants-table";
 import { MessagesTable } from "./messages-table";
 import { ReactionsTable } from "./reactions-table";
@@ -112,6 +113,7 @@ export default async function WebinarAnalyticsPage({
     { data: pollRows },
     { data: registrants, error: registrantsError },
     { data: clickerRows },
+    { data: pollVoterRows },
     { data: watchPositionRows },
     { data: messageRows },
     { data: reactionRows },
@@ -126,6 +128,7 @@ export default async function WebinarAnalyticsPage({
     supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_registrants", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_poll_voters", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
@@ -275,6 +278,21 @@ export default async function WebinarAnalyticsPage({
     });
   }
 
+  const votersByPollOption = new Map<
+    string,
+    { registrantId: string; name: string; email: string; votedAt: string }[]
+  >();
+  for (const row of pollVoterRows ?? []) {
+    const key = `${row.cta_id}-${row.option}`;
+    if (!votersByPollOption.has(key)) votersByPollOption.set(key, []);
+    votersByPollOption.get(key)!.push({
+      registrantId: row.registrant_id,
+      name: row.name,
+      email: row.email,
+      votedAt: row.voted_at,
+    });
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -370,47 +388,58 @@ export default async function WebinarAnalyticsPage({
             ),
           },
           {
-            id: "ctas-polls",
-            label: t("tabCtasPolls"),
+            id: "ctas",
+            label: t("tabCtas"),
             content: (
-              <div className="flex flex-col gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {t("ctaClicksTitle")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  <HorizontalBarChart bars={ctaBars} />
+                  {ctaBars.map((bar) => (
+                    <CtaClickersToggle
+                      key={bar.id}
+                      label={bar.label}
+                      clickers={clickersByCta.get(bar.id) ?? []}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+            ),
+          },
+          {
+            id: "polls",
+            label: t("tabPolls"),
+            content:
+              pollsByQuestion.size === 0 ? (
+                <p className="text-sm text-muted-foreground">{t("pollsEmptyState")}</p>
+              ) : (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t("ctaClicksTitle")}
+                      {t("pollResultsTitle")}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-4">
-                    <HorizontalBarChart bars={ctaBars} />
-                    {ctaBars.map((bar) => (
-                      <CtaClickersToggle
-                        key={bar.id}
-                        label={bar.label}
-                        clickers={clickersByCta.get(bar.id) ?? []}
-                      />
+                  <CardContent className="flex flex-col gap-6">
+                    {Array.from(pollsByQuestion.entries()).map(([ctaId, poll]) => (
+                      <div key={ctaId} className="flex flex-col gap-3">
+                        <p className="text-sm font-medium">{poll.question}</p>
+                        <HorizontalBarChart bars={poll.bars} />
+                        {poll.bars.map((bar) => (
+                          <PollVotersToggle
+                            key={bar.id}
+                            label={bar.label}
+                            voters={votersByPollOption.get(bar.id) ?? []}
+                          />
+                        ))}
+                      </div>
                     ))}
                   </CardContent>
                 </Card>
-
-                {pollsByQuestion.size > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {t("pollResultsTitle")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-6">
-                      {Array.from(pollsByQuestion.entries()).map(([ctaId, poll]) => (
-                        <div key={ctaId} className="flex flex-col gap-2">
-                          <p className="text-sm font-medium">{poll.question}</p>
-                          <HorizontalBarChart bars={poll.bars} />
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ),
+              ),
           },
           {
             id: "audience",

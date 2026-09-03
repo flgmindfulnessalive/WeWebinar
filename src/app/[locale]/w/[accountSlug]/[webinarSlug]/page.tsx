@@ -368,7 +368,7 @@ export default async function RegisterPage({
             {bullets.length > 0 && (
               <div className="flex flex-col gap-3 border-t border-white/10 pt-6">
                 <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
-                  {t("whatYouWillLearn")}
+                  {t("audienceHeading")}
                 </p>
                 {bullets.map((bullet, i) => (
                   <div key={i} className="flex items-start gap-2.5">
@@ -447,7 +447,7 @@ export default async function RegisterPage({
             {bullets.length > 0 && (
               <div className="flex flex-col gap-3 border-t border-gray-100 pt-5">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  {t("whatYouWillLearn")}
+                  {t("audienceHeading")}
                 </p>
                 {bullets.map((bullet, i) => (
                   <div key={i} className="flex items-start gap-2.5">
