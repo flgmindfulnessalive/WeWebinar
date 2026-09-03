@@ -68,6 +68,25 @@ const PILLAR_ICONS = {
   efficiency: BarChart3,
 } as const;
 
+// Same brand-blob DNA as GradientBlobs (the marketing hero's two drifting
+// circles), scaled down to one per pillar card -- each gets its own motion
+// path and a different indigo/fuchsia mix so the row doesn't read as one
+// blob copy-pasted three times.
+const PILLAR_BLOBS = [
+  {
+    animationClass: "animate-pillar-blob-a",
+    gradient: "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 70%, transparent 85%)",
+  },
+  {
+    animationClass: "animate-pillar-blob-b",
+    gradient: "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 55%, transparent 72%)",
+  },
+  {
+    animationClass: "animate-pillar-blob-c",
+    gradient: "radial-gradient(circle, var(--brand-2) 0%, var(--brand) 60%, transparent 78%)",
+  },
+] as const;
+
 const STEP_ICONS = {
   upload: Clapperboard,
   schedule: CalendarClock,
@@ -240,17 +259,16 @@ export default async function HomePage() {
           <p className="mt-2 text-muted-foreground">{t("capabilitiesSubtitle")}</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-3">
-          {(Object.keys(PILLAR_ICONS) as (keyof typeof PILLAR_ICONS)[]).map((key) => {
+          {(Object.keys(PILLAR_ICONS) as (keyof typeof PILLAR_ICONS)[]).map((key, i) => {
             const Icon = PILLAR_ICONS[key];
             const points = t.raw(`pillars.${key}.points`) as string[];
+            const blob = PILLAR_BLOBS[i];
             return (
               <div key={key} className="relative overflow-hidden rounded-xl border bg-card p-6">
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute -top-16 -right-12 size-48 rounded-full opacity-[0.08] blur-md"
-                  style={{
-                    background: "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 55%, transparent 72%)",
-                  }}
+                  className={`pointer-events-none absolute -top-16 -right-12 size-48 rounded-full opacity-[0.12] blur-md ${blob.animationClass}`}
+                  style={{ background: blob.gradient }}
                 />
                 <div
                   className="relative mb-4 flex size-10 items-center justify-center rounded-lg border border-white shadow-[0_1px_2px_rgba(24,24,39,.04),0_10px_20px_-12px_rgba(79,70,229,.45)]"

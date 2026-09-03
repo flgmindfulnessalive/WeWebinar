@@ -85,6 +85,68 @@
   animation: marketing-blob 16s ease-in-out infinite;
 }
 
+/* Capabilities section (3 pillar cards) -- each card's corner glow gets its
+   own drift path and rhythm so the row doesn't read as one blob copy-pasted
+   three times: a diagonal drift, a looping orbit, and a vertical sway. */
+@keyframes pillar-blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    transform: translate(-22px, 20px) scale(1.08);
+  }
+  75% {
+    transform: translate(14px, -16px) scale(0.94);
+  }
+}
+
+@keyframes pillar-blob-orbit {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(18px, 14px) scale(1.05);
+  }
+  50% {
+    transform: translate(2px, 26px) scale(0.95);
+  }
+  75% {
+    transform: translate(-16px, 10px) scale(1.03);
+  }
+}
+
+@keyframes pillar-blob-sway {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-10px, -26px) scale(1.1);
+  }
+}
+
+.animate-pillar-blob-a {
+  animation: pillar-blob-drift 15s ease-in-out infinite;
+}
+
+.animate-pillar-blob-b {
+  animation: pillar-blob-orbit 19s ease-in-out infinite;
+}
+
+.animate-pillar-blob-c {
+  animation: pillar-blob-sway 13s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pillar-blob-a,
+  .animate-pillar-blob-b,
+  .animate-pillar-blob-c {
+    animation: none;
+  }
+}
+
 .animate-fade-up {
   animation: marketing-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
