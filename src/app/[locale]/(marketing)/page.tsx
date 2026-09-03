@@ -69,23 +69,43 @@ const PILLAR_ICONS = {
 } as const;
 
 // Same brand-blob DNA as GradientBlobs (the marketing hero's two drifting
-// circles), scaled down to one per pillar card -- each gets its own motion
-// path and a different indigo/fuchsia mix so the row doesn't read as one
-// blob copy-pasted three times.
+// circles), one pair per pillar card. Each pair moves as true mirrors of
+// each other (identical duration, opposite translate at every step) and
+// starts from a different pair of corners per card so the row doesn't read
+// as one blob copy-pasted three times. Colors step across the brand's
+// indigo-to-fuchsia range instead of just re-mixing the same two hues, so
+// each card reads as genuinely its own color, not a shade of its neighbor.
+const CORNER_CLASS = {
+  topLeft: "-top-14 -left-10",
+  topRight: "-top-14 -right-10",
+  bottomLeft: "-bottom-14 -left-10",
+  bottomRight: "-bottom-14 -right-10",
+} as const;
+
 const PILLAR_BLOBS = [
   {
-    animationClass: "animate-pillar-blob-a",
-    gradient: "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 70%, transparent 85%)",
+    // Automatización: cool blue-indigo
+    colors: ["#2563eb", "#4338ca"],
+    corners: ["topLeft", "bottomRight"],
+    animClasses: ["animate-pillar-blob-a-pos", "animate-pillar-blob-a-neg"],
   },
   {
-    animationClass: "animate-pillar-blob-b",
-    gradient: "radial-gradient(circle, var(--brand) 0%, var(--brand-2) 55%, transparent 72%)",
+    // Efectividad: the site's signature indigo-fuchsia
+    colors: ["#4f46e5", "#c026d3"],
+    corners: ["topRight", "bottomLeft"],
+    animClasses: ["animate-pillar-blob-b-pos", "animate-pillar-blob-b-neg"],
   },
   {
-    animationClass: "animate-pillar-blob-c",
-    gradient: "radial-gradient(circle, var(--brand-2) 0%, var(--brand) 60%, transparent 78%)",
+    // Eficiencia: warm fuchsia-rose
+    colors: ["#c026d3", "#e11d48"],
+    corners: ["bottomRight", "topLeft"],
+    animClasses: ["animate-pillar-blob-c-pos", "animate-pillar-blob-c-neg"],
   },
-] as const;
+] as const satisfies {
+  colors: [string, string];
+  corners: [keyof typeof CORNER_CLASS, keyof typeof CORNER_CLASS];
+  animClasses: [string, string];
+}[];
 
 const STEP_ICONS = {
   upload: Clapperboard,
@@ -265,11 +285,14 @@ export default async function HomePage() {
             const blob = PILLAR_BLOBS[i];
             return (
               <div key={key} className="relative overflow-hidden rounded-xl border bg-card p-6">
-                <div
-                  aria-hidden
-                  className={`pointer-events-none absolute -top-16 -right-12 size-48 rounded-full opacity-[0.12] blur-md ${blob.animationClass}`}
-                  style={{ background: blob.gradient }}
-                />
+                {blob.colors.map((color, blobIndex) => (
+                  <div
+                    key={color}
+                    aria-hidden
+                    className={`pointer-events-none absolute ${CORNER_CLASS[blob.corners[blobIndex]]} size-44 rounded-full opacity-[0.16] blur-md ${blob.animClasses[blobIndex]}`}
+                    style={{ background: `radial-gradient(circle, ${color} 0%, transparent 72%)` }}
+                  />
+                ))}
                 <div
                   className="relative mb-4 flex size-10 items-center justify-center rounded-lg border border-white shadow-[0_1px_2px_rgba(24,24,39,.04),0_10px_20px_-12px_rgba(79,70,229,.45)]"
                   style={{ background: "var(--brand-light)" }}
