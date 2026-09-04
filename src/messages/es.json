@@ -420,6 +420,7 @@
     "createWebinar": "Crear webinar",
     "attentionTitle": "Necesita tu atención",
     "attentionViewAll": "Ver todos ({count})",
+    "attentionDismiss": "Descartar aviso",
     "activeWebinars": "Webinars activos",
     "currentPlan": "Plan actual",
     "subscriptionStatus": "Estado de suscripción",
