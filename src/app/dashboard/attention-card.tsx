@@ -96,7 +96,7 @@ export function AttentionCard({ webinars }: { webinars: AttentionWebinar[] }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {visible.slice(0, DISPLAY_LIMIT).map((webinar) => (
-          <div key={webinar.id} className="flex items-center justify-between gap-2">
+          <div key={webinar.id} className="flex items-start justify-between gap-2">
             <Link
               href={
                 webinar.videoSource
