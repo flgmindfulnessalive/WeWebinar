@@ -15,12 +15,27 @@ export async function signInWithPassword(
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/dashboard");
+  // Supabase's captcha protection (Authentication -> Attack Protection) is
+  // a single project-wide toggle covering every password/OTP grant, sign-in
+  // included, not just sign-up -- see the matching comment in
+  // signUpWithPassword. Populated by the Turnstile widget in login-form.tsx.
+  const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
 
   let redirectTo: string;
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { ...(captchaToken ? { captchaToken } : {}) },
+    });
+    if (error) {
+      if (error.message.toLowerCase().includes("captcha")) {
+        const t = await getTranslations("AuthActions");
+        return { error: t("captchaFailed") };
+      }
+      return { error: error.message };
+    }
     redirectTo = next;
   } catch (err) {
     console.error("[auth] signInWithPassword failed:", err);
@@ -123,6 +138,10 @@ export async function requestPasswordReset(
   formData: FormData
 ): Promise<ForgotPasswordState> {
   const email = String(formData.get("email") ?? "").trim();
+  // Same project-wide captcha requirement as signInWithPassword/signUp --
+  // see the comment there. Populated by the Turnstile widget in
+  // forgot-password-form.tsx.
+  const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
   const t = await getTranslations("AuthActions");
   if (!email) return { error: t("emailRequired") };
 
@@ -130,10 +149,14 @@ export async function requestPasswordReset(
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=/reset-password`,
+      ...(captchaToken ? { captchaToken } : {}),
     });
     // Never reveal whether the email exists -- always report success from
     // the caller's point of view, but still surface a real infra failure.
     if (error) {
+      if (error.message.toLowerCase().includes("captcha")) {
+        return { error: t("captchaFailed") };
+      }
       console.error("[auth] requestPasswordReset failed:", error);
       return { error: t("sendEmailFailed") };
     }
