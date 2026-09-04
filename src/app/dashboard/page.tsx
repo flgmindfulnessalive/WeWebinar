@@ -98,7 +98,11 @@ export default async function DashboardPage() {
             {needsAttention.slice(0, ATTENTION_DISPLAY_LIMIT).map((webinar) => (
               <Link
                 key={webinar.id}
-                href={`/dashboard/webinars/${webinar.id}`}
+                href={
+                  webinar.video_source
+                    ? `/dashboard/webinars/${webinar.id}`
+                    : `/dashboard/webinars/${webinar.id}/edit?step=video`
+                }
                 className="flex flex-wrap items-center gap-2 text-sm hover:underline"
               >
                 <span className="font-medium">{webinar.title}</span>
