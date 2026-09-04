@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useTranslations } from "next-intl";
 
 import { signInWithPassword } from "@/lib/actions/auth";
@@ -18,12 +19,34 @@ import {
 } from "@/components/ui/card";
 import { GoogleButton } from "@/components/google-button";
 
+// Same Cloudflare Turnstile setup as signup-form.tsx -- Supabase's captcha
+// protection (Authentication -> Attack Protection) is one project-wide
+// toggle covering every password/OTP grant, sign-in included, so this needs
+// the identical widget or every login gets rejected with "captcha
+// protection: request disallowed (no captcha_token found)".
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+declare global {
+  interface Window {
+    onTurnstileVerified?: (token: string) => void;
+  }
+}
+
 export function LoginForm({ next }: { next: string }) {
   const t = useTranslations("LoginForm");
   const [state, formAction, isPending] = useActionState(
     signInWithPassword,
     null
   );
+  const [captchaToken, setCaptchaToken] = useState("");
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    window.onTurnstileVerified = (token: string) => setCaptchaToken(token);
+    return () => {
+      delete window.onTurnstileVerified;
+    };
+  }, []);
 
   return (
     <Card>
@@ -32,6 +55,14 @@ export function LoginForm({ next }: { next: string }) {
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        {TURNSTILE_SITE_KEY && (
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+            strategy="afterInteractive"
+            async
+            defer
+          />
+        )}
         <GoogleButton next={next} />
 
         <div className="relative">
@@ -66,10 +97,21 @@ export function LoginForm({ next }: { next: string }) {
               autoComplete="current-password"
             />
           </div>
+          {TURNSTILE_SITE_KEY && (
+            <div
+              className="cf-turnstile"
+              data-sitekey={TURNSTILE_SITE_KEY}
+              data-callback="onTurnstileVerified"
+            />
+          )}
           {state?.error && (
             <p className="text-sm text-destructive">{state.error}</p>
           )}
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isPending || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}
+          >
             {isPending ? t("submitting") : t("submit")}
           </Button>
         </form>
