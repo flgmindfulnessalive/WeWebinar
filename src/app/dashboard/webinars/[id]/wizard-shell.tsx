@@ -65,13 +65,22 @@ const GROUP_ORDER: WizardStepGroup[] = ["essential", "customize", "advanced"];
 export function WizardShell({
   steps,
   footer,
+  initialStepId,
 }: {
   steps: WizardStep[];
   footer?: ReactNode;
+  // Deep-link target (e.g. the dashboard's "needs attention" card sending a
+  // host straight to the video step) -- takes priority over the usual
+  // first-incomplete-step default, but only when it actually names a step
+  // that exists, so a stale/bad query param can't blank the wizard.
+  initialStepId?: string;
 }) {
   const t = useTranslations("WizardShell");
+  const requestedStep = initialStepId
+    ? steps.find((step) => step.id === initialStepId)
+    : undefined;
   const firstIncomplete = steps.find((step) => !step.completed);
-  const initialActiveId = firstIncomplete?.id ?? steps[0]?.id;
+  const initialActiveId = requestedStep?.id ?? firstIncomplete?.id ?? steps[0]?.id;
   const [activeId, setActiveId] = useState(initialActiveId);
   // Collapsed unless it already holds the step the wizard opened on (e.g. a
   // returning host who left off mid-way through an advanced setting).

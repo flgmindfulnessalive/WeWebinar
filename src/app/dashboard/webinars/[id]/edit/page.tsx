@@ -25,10 +25,13 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export default async function WebinarDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ step?: string }>;
 }) {
   const { id } = await params;
+  const { step } = await searchParams;
   const current = await getCurrentAccount();
   if (!current) return null;
 
@@ -350,6 +353,7 @@ export default async function WebinarDetailPage({
         return (
           <WizardShell
             steps={steps}
+            initialStepId={step}
             footer={
               <PublishBar
                 webinarId={webinar.id}
