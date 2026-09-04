@@ -171,24 +171,24 @@
 }
 
 .animate-pillar-blob-a-pos {
-  animation: pillar-blob-drift-pos 7s ease-in-out infinite;
+  animation: pillar-blob-drift-pos 4s ease-in-out infinite;
 }
 .animate-pillar-blob-a-neg {
-  animation: pillar-blob-drift-neg 7s ease-in-out infinite;
+  animation: pillar-blob-drift-neg 4s ease-in-out infinite;
 }
 
 .animate-pillar-blob-b-pos {
-  animation: pillar-blob-orbit-pos 8s ease-in-out infinite;
+  animation: pillar-blob-orbit-pos 4.5s ease-in-out infinite;
 }
 .animate-pillar-blob-b-neg {
-  animation: pillar-blob-orbit-neg 8s ease-in-out infinite;
+  animation: pillar-blob-orbit-neg 4.5s ease-in-out infinite;
 }
 
 .animate-pillar-blob-c-pos {
-  animation: pillar-blob-sway-pos 6s ease-in-out infinite;
+  animation: pillar-blob-sway-pos 3.5s ease-in-out infinite;
 }
 .animate-pillar-blob-c-neg {
-  animation: pillar-blob-sway-neg 6s ease-in-out infinite;
+  animation: pillar-blob-sway-neg 3.5s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
