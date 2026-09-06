@@ -1,26 +1,25 @@
-"use client";
+import { createSelfServeCheckoutConfig, type SelfServePlanKey } from "@/lib/whop";
+import { CheckoutEmbed } from "./checkout-embed";
 
-import { WhopCheckoutEmbed } from "@whop/checkout/react";
+// Server component: creates the account-scoped checkout configuration
+// (needs the secret Whop API key, so it can't happen client-side) and
+// hands the resulting configuration id to the client embed as
+// `sessionId`. See lib/whop.ts for why this replaces a bare `planId`
+// checkout -- without the account_id attached as metadata here, the
+// webhook has no reliable way to know which WeWebinars account to
+// activate.
+export async function Checkout({
+  plan,
+  accountId,
+}: {
+  plan: SelfServePlanKey;
+  accountId: string;
+}) {
+  const config = await createSelfServeCheckoutConfig({ planKey: plan, accountId });
 
-const PLANS = {
-  starter: "plan_9Nf3PA2c7lQTV",
-  pro: "plan_ZDBLDt5YsFiIt",
-  business: "plan_bUuLhj5nMqxAn",
-} as const;
+  if (!config) {
+    return <p>No se pudo iniciar el checkout. Intenta de nuevo en unos minutos.</p>;
+  }
 
-export function Checkout({ plan }: { plan: keyof typeof PLANS }) {
-  return (
-    <WhopCheckoutEmbed
-      planId={PLANS[plan]}
-      returnUrl="https://wewebinars.com/checkout/complete"
-      theme="light"
-      fallback={<>Cargando checkout…</>}
-      onComplete={(planId, receiptId) => {
-        window.location.href = `/checkout/complete?status=success&receipt=${receiptId}`;
-      }}
-      onPaymentError={(error) => {
-        console.error(error.message, error.code);
-      }}
-    />
-  );
+  return <CheckoutEmbed sessionId={config.configId} />;
 }
