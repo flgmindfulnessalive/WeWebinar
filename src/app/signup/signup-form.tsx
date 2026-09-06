@@ -8,7 +8,7 @@ import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { signUpWithPassword } from "@/lib/actions/auth";
-import type { UpgradePlanKey } from "@/lib/whop";
+import type { SelfServePlanKey } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -24,7 +24,11 @@ import { GoogleButton } from "@/components/google-button";
 
 const CHECK_EMAIL_REDIRECT_MS = 15_000;
 
-const PLAN_LABEL: Record<UpgradePlanKey, string> = { pro: "Pro", business: "Business" };
+const PLAN_LABEL: Record<SelfServePlanKey, string> = {
+  core: "Starter",
+  pro: "Pro",
+  business: "Business",
+};
 
 // Public by design (this is what ships in the page's own JS bundle) --
 // the matching secret lives in the Supabase dashboard, not here. Unset in
@@ -43,7 +47,7 @@ export function SignupForm({
   plan,
 }: {
   initialEmail?: string;
-  plan?: UpgradePlanKey;
+  plan?: SelfServePlanKey;
 }) {
   const t = useTranslations("SignupForm");
   const [state, formAction, isPending] = useActionState(

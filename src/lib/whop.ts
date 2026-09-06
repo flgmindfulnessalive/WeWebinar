@@ -38,16 +38,6 @@ export function isSelfServePlanKey(value: string): value is SelfServePlanKey {
   return value in WHOP_PLAN_ID_BY_PLAN_KEY;
 }
 
-// The trial is always created on Starter (see TRIAL_PLAN_KEY in
-// actions/account.ts) -- "core" is never a meaningful upgrade target, so
-// this narrower type/guard is what the signup -> onboarding -> checkout
-// hand-off actually needs, as opposed to isSelfServePlanKey above.
-export type UpgradePlanKey = Exclude<SelfServePlanKey, "core">;
-
-export function isUpgradePlanKey(value: string): value is UpgradePlanKey {
-  return value === "pro" || value === "business";
-}
-
 function whopConfigured(): boolean {
   return Boolean(process.env.WHOP_API_KEY);
 }

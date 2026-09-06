@@ -64,6 +64,14 @@ esto es solo pegar el HTML correcto en cada plantilla.
    - Business
    (Enterprise no tiene self-serve: se asigna manualmente desde `/admin/plans`
    luego del lead de la landing.)
+   **Configurar cada uno con `trial_period_days: 8`** (free trial antes del
+   primer cobro) — es el mecanismo real detrás de "quien elige un plan
+   específico en Pricing paga recién a los 8 días de registrarse". Esto se
+   configura en el plan mismo desde el dashboard de Whop: nuestro código
+   referencia un `plan_id` ya existente al crear el checkout
+   (`checkoutConfigurations.create` con `plan_id`), y ese campo solo se puede
+   fijar al crear el plan inline vía API — no hay forma de overridearlo por
+   checkout individual referenciando un plan existente.
    Copiar los 3 `plan_id` (prefijo `plan_`) →
    `WHOP_PLAN_ID_CORE` / `_PRO` / `_BUSINESS` (la clave interna del plan
    Starter sigue siendo `core` en la base — ver
@@ -98,6 +106,14 @@ API key (ver el comentario en `src/lib/whop.ts`). No hay portal de cliente
 hosteado como el de Lemon Squeezy: cancelar la suscripción es una llamada
 directa a la API (`memberships.cancel`, con `cancel_at_period_end: true`),
 implementada en el botón "Cancelar suscripción" de Facturación.
+
+**Dos caminos de alta, por diseño**: registrarse desde un CTA genérico
+("Comenzá gratis", sin plan elegido) crea la cuenta en el trial de Starter
+de 7 días, sin pedir tarjeta. Registrarse desde el botón de un plan
+específico en Pricing (Starter, Pro o Business) crea la misma cuenta trial,
+pero además manda al comprador al checkout embebido de ese plan (ver
+`src/app/checkout/page.tsx`) — con el `trial_period_days: 8` del plan, el
+cobro real recién ocurre 8 días después del registro.
 
 ## 3. Resend (emails transaccionales)
 

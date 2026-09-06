@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { isUpgradePlanKey } from "@/lib/whop";
+import { isSelfServePlanKey } from "@/lib/whop";
 
 export type AuthActionState = { error: string } | null;
 
@@ -68,7 +68,7 @@ export async function signUpWithPassword(
   // to onboarding -- as a query string on `next` rather than a separate
   // param, since that's the one value every redirect path here (email
   // confirm, Google OAuth callback) already forwards verbatim.
-  const next = isUpgradePlanKey(rawPlan) ? `/onboarding?plan=${rawPlan}` : "/onboarding";
+  const next = isSelfServePlanKey(rawPlan) ? `/onboarding?plan=${rawPlan}` : "/onboarding";
 
   let hasSession: boolean;
   try {
