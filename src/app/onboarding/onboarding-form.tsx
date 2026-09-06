@@ -4,7 +4,7 @@ import { useActionState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import { createAccount } from "@/lib/actions/account";
-import type { SelfServePlanKey } from "@/lib/whop";
+import type { BillingPeriod, SelfServePlanKey } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,13 @@ const PLAN_LABEL: Record<SelfServePlanKey, string> = {
   business: "Business",
 };
 
-export function OnboardingForm({ plan }: { plan?: SelfServePlanKey }) {
+export function OnboardingForm({
+  plan,
+  billing,
+}: {
+  plan?: SelfServePlanKey;
+  billing: BillingPeriod;
+}) {
   const t = useTranslations("OnboardingForm");
   const [state, formAction, isPending] = useActionState(createAccount, null);
   const timezones = useTimezones();
@@ -43,7 +49,12 @@ export function OnboardingForm({ plan }: { plan?: SelfServePlanKey }) {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-6">
-          {plan && <input type="hidden" name="plan" value={plan} />}
+          {plan && (
+            <>
+              <input type="hidden" name="plan" value={plan} />
+              <input type="hidden" name="billing" value={billing} />
+            </>
+          )}
           {plan && (
             <p className="rounded-lg border bg-accent p-4 text-sm text-muted-foreground">
               {t("planNote", { plan: PLAN_LABEL[plan] })}

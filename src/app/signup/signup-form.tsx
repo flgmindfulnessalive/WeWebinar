@@ -8,7 +8,7 @@ import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { signUpWithPassword } from "@/lib/actions/auth";
-import type { SelfServePlanKey } from "@/lib/whop";
+import type { BillingPeriod, SelfServePlanKey } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -45,9 +45,11 @@ declare global {
 export function SignupForm({
   initialEmail,
   plan,
+  billing,
 }: {
   initialEmail?: string;
   plan?: SelfServePlanKey;
+  billing: BillingPeriod;
 }) {
   const t = useTranslations("SignupForm");
   const [state, formAction, isPending] = useActionState(
@@ -56,7 +58,7 @@ export function SignupForm({
   );
   const router = useRouter();
   const showCheckEmail = Boolean(state && "checkEmail" in state);
-  const onboardingNext = plan ? `/onboarding?plan=${plan}` : "/onboarding";
+  const onboardingNext = plan ? `/onboarding?plan=${plan}&billing=${billing}` : "/onboarding";
   const [captchaToken, setCaptchaToken] = useState("");
 
   useEffect(() => {
@@ -127,7 +129,12 @@ export function SignupForm({
             </div>
 
             <form action={formAction} className="flex flex-col gap-4">
-              {plan && <input type="hidden" name="plan" value={plan} />}
+              {plan && (
+                <>
+                  <input type="hidden" name="plan" value={plan} />
+                  <input type="hidden" name="billing" value={billing} />
+                </>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="full_name">{t("nameLabel")}</Label>
                 <Input id="full_name" name="full_name" type="text" required autoComplete="name" />

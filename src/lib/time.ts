@@ -35,3 +35,9 @@ export function daysUntil(isoDate: string): number {
   const diffMs = new Date(isoDate).getTime() - Date.now();
   return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
 }
+
+// Same Date.now() rule as daysUntil above -- callers in render bodies
+// should reach for this instead of comparing against `new Date()` inline.
+export function isPast(isoDate: string): boolean {
+  return new Date(isoDate).getTime() < Date.now();
+}

@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
-import { createSelfServeCheckoutUrl, isSelfServePlanKey } from "@/lib/whop";
+import { createUpgradeCheckoutUrl, isSelfServePlanKey } from "@/lib/whop";
 
+// Every caller of this route already has an account in our system --
+// Facturación's "cambiar de plan", the day-8 hard paywall's "seguir con
+// este plan" buttons, and reactivating a canceled subscription. None of
+// them get a fresh trial (see createUpgradeCheckoutUrl): the trial is a
+// one-time thing that only happens via /checkout, right after a
+// Pricing-driven signup.
 export async function POST(request: Request) {
   const { plan_key: rawPlanKey } = (await request.json()) as { plan_key?: string };
 
@@ -22,7 +28,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const url = await createSelfServeCheckoutUrl({ planKey, accountId: current.account.id });
+  const url = await createUpgradeCheckoutUrl({ planKey, accountId: current.account.id });
   if (!url) {
     return NextResponse.json({ error: "checkout failed" }, { status: 500 });
   }

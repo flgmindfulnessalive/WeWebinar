@@ -92,7 +92,7 @@
     "heroSubtitle": "Grábala una vez. WeWebinars la transforma en un evento que corre solo y vende por ti 24/7.",
     "ctaStart": "Automatiza tu primera presentación",
     "ctaPlans": "Ver planes",
-    "trial": "7 días gratis. Sin tarjeta.",
+    "trial": "7 días gratis. Sin tarjeta. Plan Starter.",
     "problemTitle": "Reconócelo: presentas lo mismo una y otra vez.",
     "problemBody": "Otra llamada para explicar lo mismo. Horarios que coordinar. Prospectos en otro huso horario, esperando que estés disponible. Tu presentación funciona — el problema es que necesita que tú estés ahí siempre.",
     "capabilitiesTitle": "Todo gira en torno a que trabaje sin ti",
@@ -147,7 +147,7 @@
     "pricingTeaserBody": "Planes desde $15/mes. No necesitas un plan enterprise para automatizar tu primera presentación.",
     "pricingTeaserPrice": "$15",
     "pricingTeaserPriceUnit": "/ mes · plan Starter",
-    "pricingTeaserFine": "Commercial Rights ilimitados en todos los planes. 7 días de prueba, sin tarjeta.",
+    "pricingTeaserFine": "Commercial Rights ilimitados en todos los planes. Empieza gratis con Starter, sin tarjeta.",
     "pricingTeaserCta": "Ver planes y precios",
     "faqTitle": "Preguntas frecuentes",
     "faqItems": [
@@ -184,7 +184,7 @@
     },
     "ctaBannerTitle": "Tu próxima presentación puede trabajar sola",
     "ctaBannerSubtitle": "Create once. Present endlessly. Sell 24/7.",
-    "ctaBannerMicrocopy": "7 días gratis. Sin tarjeta. Cancela cuando quieras.",
+    "ctaBannerMicrocopy": "7 días gratis. Sin tarjeta. Plan Starter.",
     "comparisonTitle": "Tu mejor webinar no debería depender <highlight>de tu agenda</highlight>",
     "comparisonSubtitle": "Un webinar en vivo depende de que estés ahí, a esa hora, otra vez. Uno evergreen queda grabado una sola vez — y sigue vendiendo mientras haces cualquier otra cosa.",
     "liveCardTitle": "Webinar en vivo",
@@ -220,10 +220,10 @@
   },
   "Pricing": {
     "metaTitle": "Precios — WeWebinars",
-    "metaDescription": "Planes desde $15/mes. Todos incluyen Commercial Rights ilimitados y 7 días de prueba gratis, sin tarjeta.",
+    "metaDescription": "Planes desde $15/mes. Todos incluyen Commercial Rights ilimitados. Empieza gratis con Starter o prueba cualquier plan 7 días antes del primer cobro.",
     "title": "Elige tu plan. Empieza a automatizar hoy.",
-    "subtitle": "Todos los planes incluyen Commercial Rights ilimitados. 7 días de prueba, sin tarjeta.",
-    "trial": "7 días gratis. Sin tarjeta.",
+    "subtitle": "Todos los planes incluyen Commercial Rights ilimitados.",
+    "trial": "Prueba 7 días. Pedimos tarjeta. Primer cobro el día 8. Cancela antes y no pagas.",
     "billingAnnual": "Anual",
     "billingMonthly": "Mensual",
     "saveAnnualBadge": "Ahorra 20% con el plan anual",
@@ -246,7 +246,7 @@
       { "q": "¿Qué pasa si supero el límite de asistentes de mi plan?", "a": "Te avisamos antes de que pase. El límite es por sesión, no acumulado — tu webinar evergreen puede recibir infinitas sesiones a lo largo del tiempo." },
       { "q": "¿Qué significa \"Commercial Rights Unlimited\"?", "a": "Puedes usar WeWebinars para vender tus propios productos o servicios, sin límite de ingresos generados." },
       { "q": "¿Qué es \"Powered by WeWebinars\"?", "a": "En el plan Starter, tu página de registro muestra una marca de agua de WeWebinars. Desde Pro en adelante, desaparece — la experiencia es 100% tu marca." },
-      { "q": "¿Necesito tarjeta para probarlo?", "a": "No. Los 7 días de prueba no piden tarjeta de crédito." },
+      { "q": "¿Necesito tarjeta para probarlo?", "a": "Depende de cómo empieces. Si usas \"Empezar ahora\", no — arrancas 7 días gratis en Starter sin tarjeta. Si eliges un plan desde esta página, sí: la prueba de 7 días pide tarjeta y el primer cobro es el día 8, pero puedes cancelar antes y no pagas nada." },
       { "q": "¿Puedo cancelar cuando quiera?", "a": "Sí, sin permanencia mínima ni penalidad." }
     ],
     "includedTitle": "Todo esto, en cualquier plan",
@@ -278,7 +278,7 @@
       }
     },
     "finalCtaTitle": "Pruébalo gratis antes de decidir",
-    "finalCtaSubtitle": "7 días de prueba, sin tarjeta. Cancela cuando quieras.",
+    "finalCtaSubtitle": "7 días gratis. Sin tarjeta. Plan Starter.",
     "finalCtaButton": "Empezar gratis",
     "features": {
       "activeWebinars": "{count, plural, one {# webinar activo} other {# webinars activos}}",
@@ -410,7 +410,12 @@
     "reactivateContactSupport": "Escríbenos a <email>{supportEmail}</email> para reactivar tu cuenta.",
     "canceledNonOwnerMessage": "El dueño de la cuenta necesita reactivar el plan para que puedas volver a entrar.",
     "signOut": "Cerrar sesión",
-    "trialBanner": "Período de prueba: vence en {days, plural, one {# día} other {# días}}. Contáctanos a <email>{supportEmail}</email> para activar tu cuenta."
+    "trialBanner": "Prueba gratis: {days, plural, one {vence en # día} other {vencen en # días}}. Después de eso, elige un plan en Facturación para seguir usando tu cuenta.",
+    "trialExpiredTitle": "Tu prueba gratis terminó",
+    "trialExpiredMessage": "Elige un plan para seguir usando WeWebinars. Tus webinars y tu configuración siguen ahí, esperándote.",
+    "continueOnPlan": "Seguir con {plan} — ${price}/mes",
+    "trialExpiredContactSupport": "Escríbenos a <email>{supportEmail}</email> para elegir un plan.",
+    "trialExpiredNonOwnerMessage": "El dueño de la cuenta necesita elegir un plan para que puedas volver a entrar."
   },
   "AdminLayout": {
     "panelTitle": "Panel de Super Admin"
