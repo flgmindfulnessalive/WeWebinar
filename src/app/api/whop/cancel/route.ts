@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
-import { getBillingPortalUrl } from "@/lib/billing";
+import { cancelSelfServeMembership } from "@/lib/whop";
 
+// Replaces the old /api/lemonsqueezy/portal redirect -- Whop has no
+// hosted "manage subscription" page, so cancellation happens directly
+// through the API instead of a portal link. Access continues until the
+// end of the current billing period (see cancelSelfServeMembership).
 export async function POST() {
   const current = await getCurrentAccount();
   if (!current) {
@@ -18,9 +22,9 @@ export async function POST() {
     return NextResponse.json({ error: "no billing account yet" }, { status: 400 });
   }
 
-  const url = await getBillingPortalUrl(current.account.billing_subscription_id);
-  if (!url) {
-    return NextResponse.json({ error: "portal failed" }, { status: 500 });
+  const canceled = await cancelSelfServeMembership(current.account.billing_subscription_id);
+  if (!canceled) {
+    return NextResponse.json({ error: "cancel failed" }, { status: 500 });
   }
-  return NextResponse.json({ url });
+  return NextResponse.json({ success: true });
 }

@@ -4,7 +4,7 @@ import { useActionState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import { createAccount } from "@/lib/actions/account";
-import type { UpgradePlanKey } from "@/lib/billing";
+import type { SelfServePlanKey } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,9 +17,13 @@ import {
 } from "@/components/ui/card";
 import { useTimezones } from "@/hooks/use-timezones";
 
-const PLAN_LABEL: Record<UpgradePlanKey, string> = { pro: "Pro", business: "Business" };
+const PLAN_LABEL: Record<SelfServePlanKey, string> = {
+  core: "Starter",
+  pro: "Pro",
+  business: "Business",
+};
 
-export function OnboardingForm({ plan }: { plan?: UpgradePlanKey }) {
+export function OnboardingForm({ plan }: { plan?: SelfServePlanKey }) {
   const t = useTranslations("OnboardingForm");
   const [state, formAction, isPending] = useActionState(createAccount, null);
   const timezones = useTimezones();

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckoutButton, BillingPortalButton } from "./billing-buttons";
+import { CheckoutButton, CancelSubscriptionButton } from "./billing-buttons";
 
 const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 
@@ -21,11 +21,11 @@ export default async function BillingPage() {
   const t = await getTranslations("BillingSettings");
   const tStatus = await getTranslations("SubscriptionStatus");
 
-  // Self-serve checkout is off until Lemon Squeezy is actually set up (see
+  // Self-serve checkout is off until Whop is actually set up (see
   // DEPLOY.md step 2) -- without this, the plan-change buttons would hit
-  // /api/lemonsqueezy/checkout and show a raw "invalid plan" error, since
-  // LEMONSQUEEZY_VARIANT_ID_BY_PLAN_KEY resolves to undefined for every plan.
-  const billingConfigured = Boolean(process.env.LEMONSQUEEZY_API_KEY);
+  // /api/whop/checkout and show a raw "invalid plan" error, since
+  // WHOP_PLAN_ID_BY_PLAN_KEY resolves to undefined for every plan.
+  const billingConfigured = Boolean(process.env.WHOP_API_KEY);
 
   const supabase = await createClient();
   const now = new Date();
@@ -91,7 +91,7 @@ export default async function BillingPage() {
             })}
           </p>
           {current.account.billing_customer_id ? (
-            <BillingPortalButton />
+            <CancelSubscriptionButton />
           ) : (
             <p>{t("billingNotActivated")}</p>
           )}

@@ -55,48 +55,65 @@ esto es solo pegar el HTML correcto en cada plantilla.
    falta confirmar desde la casilla nueva — más simple si la vieja ya no la
    revisás.
 
-## 2. Lemon Squeezy (cobro de las suscripciones de los hosts)
+## 2. Whop (cobro de las suscripciones de los hosts)
 
-1. Crear cuenta y store en Lemon Squeezy. Mientras la store no esté en modo
-   live se puede probar todo en test mode.
-2. Crear 3 productos con variante recurrente mensual cada uno:
-   - Starter — $15/mes
-   - Pro — $40/mes
-   - Business — $90/mes
+1. Crear cuenta/negocio en [whop.com](https://whop.com).
+2. Crear 3 planes recurrentes mensuales, uno por tier self-serve:
+   - Starter
+   - Pro
+   - Business
    (Enterprise no tiene self-serve: se asigna manualmente desde `/admin/plans`
    luego del lead de la landing.)
-   Copiar los 3 `variant_id` (Products → el producto → la variante) →
-   `LEMONSQUEEZY_VARIANT_ID_CORE` / `_PRO` / `_BUSINESS`.
-3. Settings → API → crear un API key → `LEMONSQUEEZY_API_KEY`. El `store_id`
-   está en la misma sección o en la URL del dashboard de la store →
-   `LEMONSQUEEZY_STORE_ID`.
-4. Settings → Webhooks → agregar `https://<tu-dominio>/api/lemonsqueezy/webhook`,
-   eventos: `subscription_created`, `subscription_updated`,
-   `subscription_cancelled`, `subscription_resumed`, `subscription_expired`,
-   `subscription_paused`, `subscription_unpaused`,
-   `subscription_payment_failed`, `subscription_payment_success` →
-   copiar el signing secret → `LEMONSQUEEZY_WEBHOOK_SECRET`.
-5. Verificar el comportamiento de cancelación en el dashboard de Lemon
-   Squeezy: la app asume que una cuenta sigue teniendo acceso completo hasta
-   que la suscripción llega efectivamente a estado `cancelled`/`expired`
-   (fin del período pagado), no en el momento en que el host pide cancelar
-   — mismo supuesto que tenía con Stripe. Confirmar que el comportamiento
-   por defecto de Lemon Squeezy coincide antes de aceptar pagos reales; si
-   no, ajustar en su configuración de cancelación.
-6. **Antes de activar el modo live**: Lemon Squeezy (como merchant of
-   record) pide una URL de Términos y Política de Privacidad del negocio —
-   hay que redactarlas (decisión legal, no algo que yo pueda inventar) y
+   **Configurar cada uno con `trial_period_days: 8`** (free trial antes del
+   primer cobro) — es el mecanismo real detrás de "quien elige un plan
+   específico en Pricing paga recién a los 8 días de registrarse". Esto se
+   configura en el plan mismo desde el dashboard de Whop: nuestro código
+   referencia un `plan_id` ya existente al crear el checkout
+   (`checkoutConfigurations.create` con `plan_id`), y ese campo solo se puede
+   fijar al crear el plan inline vía API — no hay forma de overridearlo por
+   checkout individual referenciando un plan existente.
+   Copiar los 3 `plan_id` (prefijo `plan_`) →
+   `WHOP_PLAN_ID_CORE` / `_PRO` / `_BUSINESS` (la clave interna del plan
+   Starter sigue siendo `core` en la base — ver
+   `20260831000004_rename_core_plan_adjust_business_users.sql` — solo cambió
+   el nombre visible).
+3. Crear un API key con permisos de checkout configurations, memberships y
+   webhooks → `WHOP_API_KEY`.
+4. Dashboard → Webhooks → agregar `https://<tu-dominio>/api/webhooks/whop`,
+   eventos: `membership.activated`, `membership.deactivated` → copiar el
+   signing secret (empieza con `ws_`) → `WHOP_WEBHOOK_SECRET`.
+5. **Importante, verificar antes de aceptar pagos reales**: el nombre exacto
+   del campo de tipo de evento en el payload crudo del webhook
+   (`unwrapWebhook` de `@whop/sdk` no lo tipa — ver el comentario en
+   `src/app/api/webhooks/whop/route.ts`) se asumió como `type` por
+   convención de Standard Webhooks, pero no se pudo confirmar contra una
+   entrega real desde este entorno (docs.whop.com no era accesible). Usar
+   el botón "Send test event" del dashboard de Whop sobre el webhook recién
+   creado y revisar los logs de la función antes de aceptar pagos reales —
+   si el campo real es otro, ajustar `WhopWebhookPayload`/la lectura de
+   `event.type` en ese archivo.
+6. **Antes de activar el modo live**: Whop (como merchant of record) pide
+   una URL de Términos y Política de Privacidad del negocio — hay que
+   redactarlas (decisión legal, no algo que yo pueda inventar) y
    publicarlas antes de aceptar pagos reales.
 
-**Nota sobre esta integración**: el código (checkout, webhook, resolución
-del portal de cliente) está escrito contra la API pública documentada de
-Lemon Squeezy, pero no se probó de punta a punta contra una store real
-todavía — no había ninguna creada al migrar desde Stripe. Al configurar la
-store por primera vez, conviene hacer una compra de prueba en test mode y
-confirmar en los logs que el webhook resuelve bien la cuenta (`account_id`
-vía `custom_data`, con fallback por `billing_customer_id` si `custom_data`
-no llega en algún evento posterior al checkout original — ver el comentario
-en `src/app/api/lemonsqueezy/webhook/route.ts`).
+**Nota sobre esta integración**: el checkout crea una "checkout
+configuration" scoped a cuenta+plan (con `account_id` en `metadata`) en vez
+de un checkout genérico por `plan_id` — es la única forma de que el webhook
+sepa a qué cuenta de WeWebinars activar, ya que la API de Users de Whop solo
+devuelve email en el self-view `me`, nunca para un `user_id` arbitrario vía
+API key (ver el comentario en `src/lib/whop.ts`). No hay portal de cliente
+hosteado como el de Lemon Squeezy: cancelar la suscripción es una llamada
+directa a la API (`memberships.cancel`, con `cancel_at_period_end: true`),
+implementada en el botón "Cancelar suscripción" de Facturación.
+
+**Dos caminos de alta, por diseño**: registrarse desde un CTA genérico
+("Comenzá gratis", sin plan elegido) crea la cuenta en el trial de Starter
+de 7 días, sin pedir tarjeta. Registrarse desde el botón de un plan
+específico en Pricing (Starter, Pro o Business) crea la misma cuenta trial,
+pero además manda al comprador al checkout embebido de ese plan (ver
+`src/app/checkout/page.tsx`) — con el `trial_period_days: 8` del plan, el
+cobro real recién ocurre 8 días después del registro.
 
 ## 3. Resend (emails transaccionales)
 
@@ -180,16 +197,15 @@ error de OAuth; el login con email/contraseña sigue funcionando igual.
 3. Actualizar `NEXT_PUBLIC_APP_URL` en Vercel → Settings → Environment
    Variables a `https://wewebinars.com` y volver a deployar (Deployments
    → Redeploy) — todos los links generados por la app (emails de
-   confirmación/recordatorio, links mágicos de login, checkout de Lemon
-   Squeezy, acceso a la sala) se arman con esta variable.
+   confirmación/recordatorio, links mágicos de login, checkout de Whop,
+   acceso a la sala) se arman con esta variable.
 4. Supabase → Authentication → URL Configuration: cambiar **Site URL** a
    `https://wewebinars.com` y agregar `https://wewebinars.com/**` a
    **Redirect URLs** (si no se hace esto, los emails de login
    mágico/reset de contraseña van a redirigir al dominio viejo o Supabase
    va a rechazar el redirect).
-5. Lemon Squeezy → Settings → Webhooks: editar el endpoint existente (o
-   crear uno nuevo) para que apunte a
-   `https://wewebinars.com/api/lemonsqueezy/webhook`.
+5. Whop → Dashboard → Webhooks: editar el endpoint existente (o crear uno
+   nuevo) para que apunte a `https://wewebinars.com/api/webhooks/whop`.
 6. Resend → Domains: verificar `wewebinars.com` (agrega los registros
    SPF/DKIM que te da Resend) y actualizar `RESEND_FROM_EMAIL` a una
    dirección de ese dominio (ej. `noreply@wewebinars.com`).

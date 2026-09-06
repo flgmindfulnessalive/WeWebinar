@@ -10,12 +10,12 @@ import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
-import { createSelfServeCheckoutUrl, isUpgradePlanKey } from "@/lib/billing";
+import { isSelfServePlanKey } from "@/lib/whop";
 
 export type CreateAccountState = { error: string } | null;
 
 // The 7-day trial is only available on Starter -- Pro and Business are paid
-// upgrades a host does later from Facturación (Lemon Squeezy checkout),
+// upgrades a host does later from Facturación (Whop checkout),
 // never a starting point for a new, unbilled account. Hardcoded rather than read
 // from form input so a tampered request can't create a trial on a paid tier.
 const TRIAL_PLAN_KEY = "core";
@@ -27,8 +27,8 @@ export async function createAccount(
   const name = String(formData.get("name") ?? "").trim();
   const planKey = TRIAL_PLAN_KEY;
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
-  const rawUpgradePlan = String(formData.get("plan") ?? "");
-  const upgradePlanKey = isUpgradePlanKey(rawUpgradePlan) ? rawUpgradePlan : null;
+  const rawSelectedPlan = String(formData.get("plan") ?? "");
+  const selectedPlanKey = isSelfServePlanKey(rawSelectedPlan) ? rawSelectedPlan : null;
 
   if (!name) {
     const t = await getTranslations("AccountActions");
@@ -86,28 +86,21 @@ export async function createAccount(
             console.error("[account] welcome email failed:", err);
           }
 
-          // The trial itself is always Starter (see TRIAL_PLAN_KEY above),
-          // but if this host clicked "Empezar con Pro/Business" on
-          // Pricing, honor that intent now that the account exists --
-          // send them straight to checkout for that plan instead of
-          // silently leaving them on the free trial with no indication
-          // their original choice was ignored. A failure here still lands
-          // them on the new-webinar screen; the trial account is valid
-          // either way and they can upgrade later from Facturación.
-          if (upgradePlanKey) {
-            try {
-              const fresh = await getCurrentAccount();
-              if (fresh) {
-                const checkoutUrl = await createSelfServeCheckoutUrl({
-                  planKey: upgradePlanKey,
-                  accountId: fresh.account.id,
-                  ownerEmail: fresh.user.email,
-                });
-                if (checkoutUrl) redirectTo = checkoutUrl;
-              }
-            } catch (err) {
-              console.error("[account] upgrade checkout redirect failed:", err);
-            }
+          // The account itself is always created on the Starter trial
+          // (see TRIAL_PLAN_KEY above) regardless of which plan they
+          // picked -- but if this host clicked a specific plan's "Empezar"
+          // on Pricing (Starter, Pro, or Business), honor that intent now
+          // that the account exists: send them straight to checkout for
+          // that plan instead of silently leaving them on the trial with
+          // no indication their choice was registered. Someone who signed
+          // up from a generic, plan-less "start free" CTA has no
+          // selectedPlanKey and skips this entirely -- they just get the
+          // 7-day Starter trial, no card required. /checkout renders the
+          // embedded Whop checkout itself (it creates the account-scoped
+          // checkout configuration when it loads -- see lib/whop.ts), so
+          // this is just an on-site redirect, no Whop API call here.
+          if (selectedPlanKey) {
+            redirectTo = `/checkout?plan=${selectedPlanKey}`;
           }
         } else if (error.code === "23505") {
           attempt += 1;

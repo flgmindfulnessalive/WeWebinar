@@ -637,10 +637,12 @@
     "selfServeDisabled": "Automatic plan changes aren't enabled yet.",
     "contactToUpgrade": "Email us to upgrade your plan",
     "upgradeEmailSubject": "I want to upgrade my plan",
-    "manageSubscription": "Manage subscription",
+    "cancelSubscription": "Cancel subscription",
+    "confirmCancel": "Are you sure you want to cancel your subscription? You'll keep access until the end of the period you already paid for.",
+    "cancelScheduled": "Your subscription will cancel at the end of the current period.",
     "redirecting": "Redirecting...",
     "checkoutFailed": "Couldn't start checkout.",
-    "portalFailed": "Couldn't open the portal."
+    "cancelFailed": "Couldn't cancel the subscription."
   },
   "TeamSettings": {
     "title": "Team",

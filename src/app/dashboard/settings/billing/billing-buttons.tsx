@@ -28,7 +28,7 @@ export function CheckoutButton({
         onClick={() =>
           startTransition(async () => {
             setError(null);
-            const res = await fetch("/api/lemonsqueezy/checkout", {
+            const res = await fetch("/api/whop/checkout", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ plan_key: planKey }),
@@ -49,29 +49,39 @@ export function CheckoutButton({
   );
 }
 
-export function BillingPortalButton() {
+// Replaces the old BillingPortalButton (Lemon Squeezy had a hosted portal
+// URL to redirect to; Whop doesn't -- cancellation is a direct API call,
+// so this confirms in place instead of navigating away).
+export function CancelSubscriptionButton() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [canceled, setCanceled] = useState(false);
   const t = useTranslations("BillingSettings");
+
+  if (canceled) {
+    return <p className="text-sm text-muted-foreground">{t("cancelScheduled")}</p>;
+  }
 
   return (
     <div className="flex flex-col gap-1">
       <Button
+        variant="outline"
         disabled={isPending}
-        onClick={() =>
+        onClick={() => {
+          if (!window.confirm(t("confirmCancel"))) return;
           startTransition(async () => {
             setError(null);
-            const res = await fetch("/api/lemonsqueezy/portal", { method: "POST" });
+            const res = await fetch("/api/whop/cancel", { method: "POST" });
             const data = await res.json();
             if (!res.ok) {
-              setError(data.error ?? t("portalFailed"));
+              setError(data.error ?? t("cancelFailed"));
               return;
             }
-            await goTo(data.url);
-          })
-        }
+            setCanceled(true);
+          });
+        }}
       >
-        {isPending ? t("redirecting") : t("manageSubscription")}
+        {isPending ? t("redirecting") : t("cancelSubscription")}
       </Button>
       {error && <span className="text-xs text-destructive">{error}</span>}
     </div>
