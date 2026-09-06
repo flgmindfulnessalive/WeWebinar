@@ -10,12 +10,12 @@ import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
-import { createSelfServeCheckoutUrl, isUpgradePlanKey } from "@/lib/billing";
+import { createSelfServeCheckoutUrl, isUpgradePlanKey } from "@/lib/whop";
 
 export type CreateAccountState = { error: string } | null;
 
 // The 7-day trial is only available on Starter -- Pro and Business are paid
-// upgrades a host does later from Facturación (Lemon Squeezy checkout),
+// upgrades a host does later from Facturación (Whop checkout),
 // never a starting point for a new, unbilled account. Hardcoded rather than read
 // from form input so a tampered request can't create a trial on a paid tier.
 const TRIAL_PLAN_KEY = "core";
@@ -101,7 +101,6 @@ export async function createAccount(
                 const checkoutUrl = await createSelfServeCheckoutUrl({
                   planKey: upgradePlanKey,
                   accountId: fresh.account.id,
-                  ownerEmail: fresh.user.email,
                 });
                 if (checkoutUrl) redirectTo = checkoutUrl;
               }

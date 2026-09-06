@@ -66,17 +66,17 @@ export default async function DashboardLayout({
     );
   }
 
-  // A canceled Lemon Squeezy subscription (via the billing portal) only
-  // reaches this status once the paid period actually ends -- Lemon
-  // Squeezy keeps the subscription active until then, so by the time
-  // subscription_status flips to "canceled" the account has already
-  // gotten everything it paid for. Unlike an admin suspension, this is a
-  // billing lapse the account owner can fix themselves: a one-click
-  // reactivation checkout for their previous plan, no support email
-  // required (Lemon Squeezy permitting -- see billing/page.tsx's
-  // billingConfigured comment for why that flag exists).
+  // A canceled Whop subscription only reaches this status once the paid
+  // period actually ends -- cancel_at_period_end keeps the membership
+  // active until then, so by the time subscription_status flips to
+  // "canceled" the account has already gotten everything it paid for.
+  // Unlike an admin suspension, this is a billing lapse the account owner
+  // can fix themselves: a one-click reactivation checkout for their
+  // previous plan, no support email required (Whop permitting -- see
+  // billing/page.tsx's billingConfigured comment for why that flag
+  // exists).
   if (current.account.subscription_status === "canceled") {
-    const billingConfigured = Boolean(process.env.LEMONSQUEEZY_API_KEY);
+    const billingConfigured = Boolean(process.env.WHOP_API_KEY);
     const isOwner = current.user.role === "owner";
     const canSelfServeReactivate = billingConfigured && isOwner && current.plan.is_self_serve;
 

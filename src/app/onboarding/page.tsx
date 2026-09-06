@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { isUpgradePlanKey } from "@/lib/billing";
+import { isUpgradePlanKey } from "@/lib/whop";
 import { OnboardingForm } from "./onboarding-form";
 
 export default async function OnboardingPage({

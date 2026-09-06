@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/logo";
 import { ParticleNetwork } from "@/components/particle-network";
-import { isUpgradePlanKey } from "@/lib/billing";
+import { isUpgradePlanKey } from "@/lib/whop";
 import { SignupForm } from "./signup-form";
 
 export default async function SignupPage({

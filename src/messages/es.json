@@ -637,10 +637,12 @@
     "selfServeDisabled": "Todavía no habilitamos el cambio de plan automático.",
     "contactToUpgrade": "Escríbenos para subir de plan",
     "upgradeEmailSubject": "Quiero subir de plan",
-    "manageSubscription": "Gestionar suscripción",
+    "cancelSubscription": "Cancelar suscripción",
+    "confirmCancel": "¿Seguro que querés cancelar tu suscripción? Vas a mantener acceso hasta el final del período que ya pagaste.",
+    "cancelScheduled": "Tu suscripción se cancela al final del período actual.",
     "redirecting": "Redirigiendo...",
     "checkoutFailed": "No se pudo iniciar el checkout.",
-    "portalFailed": "No se pudo abrir el portal."
+    "cancelFailed": "No se pudo cancelar la suscripción."
   },
   "TeamSettings": {
     "title": "Equipo",

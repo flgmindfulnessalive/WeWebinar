@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { isUpgradePlanKey } from "@/lib/billing";
+import { isUpgradePlanKey } from "@/lib/whop";
 
 export type AuthActionState = { error: string } | null;
 

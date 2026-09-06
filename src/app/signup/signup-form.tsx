@@ -8,7 +8,7 @@ import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { signUpWithPassword } from "@/lib/actions/auth";
-import type { UpgradePlanKey } from "@/lib/billing";
+import type { UpgradePlanKey } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";

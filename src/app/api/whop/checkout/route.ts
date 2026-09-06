@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
-import { createSelfServeCheckoutUrl, isSelfServePlanKey } from "@/lib/billing";
+import { createSelfServeCheckoutUrl, isSelfServePlanKey } from "@/lib/whop";
 
 export async function POST(request: Request) {
   const { plan_key: rawPlanKey } = (await request.json()) as { plan_key?: string };
@@ -22,11 +22,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const url = await createSelfServeCheckoutUrl({
-    planKey,
-    accountId: current.account.id,
-    ownerEmail: current.user.email,
-  });
+  const url = await createSelfServeCheckoutUrl({ planKey, accountId: current.account.id });
   if (!url) {
     return NextResponse.json({ error: "checkout failed" }, { status: 500 });
   }

@@ -38,6 +38,16 @@ export function isSelfServePlanKey(value: string): value is SelfServePlanKey {
   return value in WHOP_PLAN_ID_BY_PLAN_KEY;
 }
 
+// The trial is always created on Starter (see TRIAL_PLAN_KEY in
+// actions/account.ts) -- "core" is never a meaningful upgrade target, so
+// this narrower type/guard is what the signup -> onboarding -> checkout
+// hand-off actually needs, as opposed to isSelfServePlanKey above.
+export type UpgradePlanKey = Exclude<SelfServePlanKey, "core">;
+
+export function isUpgradePlanKey(value: string): value is UpgradePlanKey {
+  return value === "pro" || value === "business";
+}
+
 function whopConfigured(): boolean {
   return Boolean(process.env.WHOP_API_KEY);
 }
@@ -72,5 +82,40 @@ export async function createSelfServeCheckoutConfig({
   } catch (err) {
     console.error("[whop] createSelfServeCheckoutConfig failed:", err);
     return null;
+  }
+}
+
+// Convenience wrapper for the redirect-based checkout flow (signup
+// upgrade hand-off, Facturación's "change plan" buttons): same account-
+// scoped config as above, but returns just the hosted purchase_url to
+// redirect the browser to, matching the shape billing.ts's
+// createSelfServeCheckoutUrl used to have. Unlike that function, there's
+// no ownerEmail param -- CreateCheckoutConfigurationsRequest has no
+// email/prefill field, so there's nothing to do with it.
+export async function createSelfServeCheckoutUrl({
+  planKey,
+  accountId,
+}: {
+  planKey: SelfServePlanKey;
+  accountId: string;
+}): Promise<string | null> {
+  const config = await createSelfServeCheckoutConfig({ planKey, accountId });
+  return config?.purchaseUrl ?? null;
+}
+
+// Replaces billing.ts's getBillingPortalUrl: Whop has no hosted "manage
+// subscription" portal to redirect to (no portal URL field anywhere in
+// @whop/sdk's Membership/CheckoutConfiguration types) -- cancellation is
+// a direct API call instead. cancel_at_period_end: true keeps access
+// until the period the customer already paid for ends, same behavior
+// Lemon Squeezy's portal cancellation had.
+export async function cancelSelfServeMembership(membershipId: string): Promise<boolean> {
+  if (!whopConfigured()) return false;
+  try {
+    await whopClient().memberships.cancel({ id: membershipId, cancel_at_period_end: true });
+    return true;
+  } catch (err) {
+    console.error("[whop] cancelSelfServeMembership failed:", err);
+    return false;
   }
 }
