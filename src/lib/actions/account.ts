@@ -10,7 +10,7 @@ import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
-import { createSelfServeCheckoutUrl, isUpgradePlanKey } from "@/lib/whop";
+import { isUpgradePlanKey } from "@/lib/whop";
 
 export type CreateAccountState = { error: string } | null;
 
@@ -91,22 +91,12 @@ export async function createAccount(
           // Pricing, honor that intent now that the account exists --
           // send them straight to checkout for that plan instead of
           // silently leaving them on the free trial with no indication
-          // their original choice was ignored. A failure here still lands
-          // them on the new-webinar screen; the trial account is valid
-          // either way and they can upgrade later from Facturación.
+          // their original choice was ignored. /checkout renders the
+          // embedded Whop checkout itself (it creates the account-scoped
+          // checkout configuration when it loads -- see lib/whop.ts), so
+          // this is just an on-site redirect, no Whop API call here.
           if (upgradePlanKey) {
-            try {
-              const fresh = await getCurrentAccount();
-              if (fresh) {
-                const checkoutUrl = await createSelfServeCheckoutUrl({
-                  planKey: upgradePlanKey,
-                  accountId: fresh.account.id,
-                });
-                if (checkoutUrl) redirectTo = checkoutUrl;
-              }
-            } catch (err) {
-              console.error("[account] upgrade checkout redirect failed:", err);
-            }
+            redirectTo = `/checkout?plan=${upgradePlanKey}`;
           }
         } else if (error.code === "23505") {
           attempt += 1;
