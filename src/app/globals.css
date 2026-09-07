@@ -484,6 +484,24 @@
   border-radius: var(--radius-lg);
 }
 
+.prose-blog table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.prose-blog th,
+.prose-blog td {
+  border: 1px solid var(--border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.prose-blog th {
+  background: var(--muted);
+  font-weight: 600;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
