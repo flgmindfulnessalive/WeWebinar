@@ -45,7 +45,11 @@ export function OnboardingForm({
     <Card>
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
+        <CardDescription>
+          {plan
+            ? t("descriptionWithPlan", { plan: PLAN_LABEL[plan] })
+            : t("description")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-6">
