@@ -4,3 +4,5 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /onboarding
 Disallow: /api
+
+Sitemap: https://wewebinars.com/sitemap.xml

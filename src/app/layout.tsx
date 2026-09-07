@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://wewebinars.com"),
   title: "WeWebinars",
   description: siteDescription,
+  // Renders <meta name="google-site-verification"> only once the token
+  // from Google Search Console (Settings -> Ownership verification -> HTML
+  // tag) is set -- omitted entirely otherwise rather than rendering an
+  // empty tag. Public by design, same as the Whop pixel's business id:
+  // this value is meant to ship in the page's own HTML.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
   openGraph: {
     title: "WeWebinars",
     description: siteDescription,
