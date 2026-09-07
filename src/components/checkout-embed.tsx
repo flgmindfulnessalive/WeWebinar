@@ -11,10 +11,14 @@ function goToComplete(receiptOrSetupIntentId?: string) {
 
 export function CheckoutEmbed({ sessionId }: { sessionId: string }) {
   // The express button resolves to "none" on any device/browser without
-  // Apple Pay available (desktop Chrome/Firefox, Android, even Safari with
-  // no card in Wallet) -- shown only once we know it actually rendered a
-  // button, so there's never an empty divider sitting above the card form
-  // on its own.
+  // Apple Pay or Google Pay available (desktop Firefox, Safari/Chrome with
+  // no card saved to Wallet/Google Pay, etc.) -- shown only once we know it
+  // actually rendered a button, so there's never an empty divider sitting
+  // above the card form on its own. Whop's own iframe decides which of the
+  // two to show based on the buyer's browser (Safari -> Apple Pay, Chrome
+  // on Android/desktop with a saved card -> Google Pay); both ride the same
+  // checkout configuration, so there's nothing plan- or webhook-side to add
+  // per method.
   const [showsExpressButton, setShowsExpressButton] = useState(false);
 
   return (
@@ -23,7 +27,7 @@ export function CheckoutEmbed({ sessionId }: { sessionId: string }) {
         checkoutConfigurationId={sessionId}
         returnUrl={RETURN_URL}
         theme="light"
-        methods={["apple-pay"]}
+        methods={["apple-pay", "google-pay"]}
         fallback={null}
         onExpressMethodResolved={({ rendered }) => setShowsExpressButton(rendered !== "none")}
         onComplete={(_planId, receiptOrSetupIntentId) => goToComplete(receiptOrSetupIntentId)}

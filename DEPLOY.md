@@ -128,17 +128,27 @@ servir para ambos caminos.
    una URL de Términos y Política de Privacidad del negocio — hay que
    redactarlas (decisión legal, no algo que yo pueda inventar) y
    publicarlas antes de aceptar pagos reales.
-7. **Apple Pay**: el checkout embebido (`src/components/checkout-embed.tsx`)
-   ya muestra el botón de Apple Pay (`WhopExpressCheckoutButton`) arriba del
-   formulario de tarjeta -- no hace falta configurar nada más en Whop para
-   esto: corre dentro del iframe de Whop, que Apple ya tiene verificado
-   como dominio de primera parte, y Apple Pay va incluido en la misma
-   capability de pagos con tarjeta de la cuenta (`accept_card_payments`),
-   que ya está activa porque el checkout normal con tarjeta funciona. Antes
-   de darlo por probado: abrir `/checkout?plan=...` desde Safari en un
-   iPhone o Mac con una tarjeta cargada en Wallet y confirmar que el botón
-   aparece y completa el pago con Face ID/Touch ID -- no se puede simular
-   desde este entorno (sin Safari, sin dispositivo Apple, sin
+7. **Apple Pay / Google Pay**: el checkout embebido
+   (`src/components/checkout-embed.tsx`) ya muestra el botón express
+   (`WhopExpressCheckoutButton`, `methods={["apple-pay", "google-pay"]}`)
+   arriba del formulario de tarjeta -- no hace falta configurar nada más en
+   Whop para esto: corre dentro del iframe de Whop (dominio de primera
+   parte ya verificado ante Apple/Google), y ambos van incluidos en la
+   misma capability de pagos con tarjeta de la cuenta
+   (`accept_card_payments`), que ya está activa porque el checkout normal
+   con tarjeta funciona. El propio embed decide cuál mostrar según el
+   navegador del comprador (Safari → Apple Pay; Chrome con una tarjeta
+   guardada en Google Pay → Google Pay) -- nunca los dos a la vez. Antes de
+   darlo por probado:
+   - Apple Pay: abrir `/checkout?plan=...` desde Safari en un iPhone o Mac
+     con una tarjeta cargada en Wallet y confirmar que el botón aparece y
+     completa el pago con Face ID/Touch ID.
+   - Google Pay: abrir la misma URL desde Chrome (Android o desktop) con
+     una tarjeta guardada en Google Pay y confirmar que el botón aparece y
+     completa el pago.
+
+   Ninguno de los dos se puede simular desde este entorno (sin Safari, sin
+   Chrome con Google Pay configurado, sin dispositivo real, sin
    `WHOP_API_KEY` real).
 
 **Nota sobre esta integración**: el checkout crea una "checkout
