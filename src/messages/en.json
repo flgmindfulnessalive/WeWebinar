@@ -300,6 +300,15 @@
       "commercialRights": "Commercial Rights (Unlimited)"
     }
   },
+  "Blog": {
+    "navLabel": "Blog",
+    "metaTitle": "Blog — WeWebinars",
+    "metaDescription": "Guides and tactics on evergreen webinars: how to automate your presentations, convert more, and sell without going live.",
+    "title": "Blog",
+    "subtitle": "Guides and tactics on evergreen webinars.",
+    "emptyState": "No articles published yet. Check back soon.",
+    "backToBlog": "← Back to blog"
+  },
   "Register": {
     "preview": "Preview — this webinar isn't published yet. Only you can see this page.",
     "presents": "{name} presents",
