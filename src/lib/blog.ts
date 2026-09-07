@@ -61,7 +61,14 @@ export function getAllPosts(locale: Locale): (BlogFrontmatter & { slug: string }
       return frontmatter ? { ...frontmatter, slug } : null;
     })
     .filter((post): post is BlogFrontmatter & { slug: string } => post !== null)
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+    .sort((a, b) => {
+      // A proper 3-way comparator -- the previous version returned -1 for
+      // equal dates too, which is not a valid comparator and made the sort
+      // order of same-day posts effectively undefined.
+      if (a.date < b.date) return 1;
+      if (a.date > b.date) return -1;
+      return 0;
+    });
 }
 
 const WORDS_PER_MINUTE = 200;
