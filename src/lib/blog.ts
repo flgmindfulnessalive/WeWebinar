@@ -64,6 +64,13 @@ export function getAllPosts(locale: Locale): (BlogFrontmatter & { slug: string }
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
+const WORDS_PER_MINUTE = 200;
+
+export function readingTimeMinutes(content: string): number {
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(wordCount / WORDS_PER_MINUTE));
+}
+
 // Finds the slug of the post in `targetLocale` sharing `translationKey`,
 // for building this post's hreflang alternate in that locale. Returns
 // null when no counterpart has been written yet.
