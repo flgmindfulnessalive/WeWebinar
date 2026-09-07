@@ -307,7 +307,17 @@
     "title": "Blog",
     "subtitle": "Guías y tácticas sobre webinars evergreen.",
     "emptyState": "Todavía no hay artículos publicados. Vuelve pronto.",
-    "backToBlog": "← Volver al blog"
+    "backToBlog": "← Volver al blog",
+    "latestLabel": "Último artículo",
+    "moreLabel": "Más artículos",
+    "minRead": "{count} min de lectura",
+    "share": "Compartir",
+    "shareOnX": "Compartir en X",
+    "shareOnLinkedin": "Compartir en LinkedIn",
+    "shareOnFacebook": "Compartir en Facebook",
+    "shareOnWhatsapp": "Compartir en WhatsApp",
+    "copyLink": "Copiar enlace",
+    "linkCopied": "¡Enlace copiado!"
   },
   "Register": {
     "preview": "Vista previa — este webinar todavía no está publicado. Solo tú puedes ver esta página.",

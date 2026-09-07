@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { MDXRemote } from "next-mdx-remote/rsc";
 
-import { Link } from "@/i18n/navigation";
+import { getPathname, Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { findTranslationSlug, getAllSlugs, getPost } from "@/lib/blog";
+import { findTranslationSlug, getAllSlugs, getPost, readingTimeMinutes } from "@/lib/blog";
 import { localeAlternatesForPaths } from "@/lib/seo";
+import { ShareButtons } from "../share-buttons";
 
 type Locale = (typeof routing.locales)[number];
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wewebinars.com";
 
 export function generateStaticParams() {
   return routing.locales.flatMap((locale) =>
@@ -38,7 +41,7 @@ export async function generateMetadata({
     }
   }
 
-  const image = { url: "/opengraph-image", width: 1200, height: 630 };
+  const image = { url: `/blog/${slug}/cover`, width: 1200, height: 630 };
   return {
     title: post.title,
     description: post.description,
@@ -46,6 +49,10 @@ export async function generateMetadata({
     openGraph: { title: post.title, description: post.description, type: "article", images: [image] },
     twitter: { title: post.title, description: post.description, images: [image] },
   };
+}
+
+function formatDate(date: string, locale: string) {
+  return new Date(date).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
 }
 
 export default async function BlogPostPage({
@@ -58,6 +65,18 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   const t = await getTranslations("Blog");
+  const coverSrc = getPathname({ href: `/blog/${slug}/cover`, locale });
+  const postUrl = `${SITE_URL}${getPathname({ href: `/blog/${slug}`, locale })}`;
+  const minutes = readingTimeMinutes(post.content);
+
+  const shareLabels = {
+    x: t("shareOnX"),
+    linkedin: t("shareOnLinkedin"),
+    facebook: t("shareOnFacebook"),
+    whatsapp: t("shareOnWhatsapp"),
+    copy: t("copyLink"),
+    copied: t("linkCopied"),
+  };
 
   return (
     <article className="marketing-theme mx-auto flex max-w-2xl flex-col gap-8 px-6 py-16 sm:py-24">
@@ -65,15 +84,40 @@ export default async function BlogPostPage({
         <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
           {t("backToBlog")}
         </Link>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl text-balance">
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           {post.title}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {new Date(post.date).toLocaleDateString(locale)}
-        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <span>{formatDate(post.date, locale)}</span>
+          <span aria-hidden>·</span>
+          <span>{t("minRead", { count: minutes })}</span>
+        </div>
       </div>
+
+      <img
+        src={coverSrc}
+        alt=""
+        width={1200}
+        height={630}
+        className="aspect-video w-full rounded-xl border object-cover shadow-sm"
+      />
+
+      <div className="flex items-center justify-between border-y py-3">
+        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {t("share")}
+        </span>
+        <ShareButtons url={postUrl} title={post.title} labels={shareLabels} />
+      </div>
+
       <div className="prose-blog">
         <MDXRemote source={post.content} />
+      </div>
+
+      <div className="flex items-center justify-between border-t pt-6">
+        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {t("share")}
+        </span>
+        <ShareButtons url={postUrl} title={post.title} labels={shareLabels} />
       </div>
     </article>
   );
