@@ -128,6 +128,18 @@ servir para ambos caminos.
    una URL de Términos y Política de Privacidad del negocio — hay que
    redactarlas (decisión legal, no algo que yo pueda inventar) y
    publicarlas antes de aceptar pagos reales.
+7. **Apple Pay**: el checkout embebido (`src/components/checkout-embed.tsx`)
+   ya muestra el botón de Apple Pay (`WhopExpressCheckoutButton`) arriba del
+   formulario de tarjeta -- no hace falta configurar nada más en Whop para
+   esto: corre dentro del iframe de Whop, que Apple ya tiene verificado
+   como dominio de primera parte, y Apple Pay va incluido en la misma
+   capability de pagos con tarjeta de la cuenta (`accept_card_payments`),
+   que ya está activa porque el checkout normal con tarjeta funciona. Antes
+   de darlo por probado: abrir `/checkout?plan=...` desde Safari en un
+   iPhone o Mac con una tarjeta cargada en Wallet y confirmar que el botón
+   aparece y completa el pago con Face ID/Touch ID -- no se puede simular
+   desde este entorno (sin Safari, sin dispositivo Apple, sin
+   `WHOP_API_KEY` real).
 
 **Nota sobre esta integración**: el checkout crea una "checkout
 configuration" scoped a cuenta+plan (con `account_id` en `metadata`) en vez
