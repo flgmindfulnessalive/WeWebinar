@@ -105,7 +105,12 @@ export default async function BillingPage() {
         <CardContent className="flex flex-wrap gap-3">
           {billingConfigured ? (
             changeablePlans.filter((p) => p.key !== current.plan.key).map((p) => (
-              <CheckoutButton key={p.key} planKey={p.key} label={p.label} />
+              <CheckoutButton
+                key={p.key}
+                planKey={p.key}
+                billingPeriod="annual"
+                label={p.label}
+              />
             ))
           ) : (
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">

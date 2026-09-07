@@ -164,6 +164,7 @@ export default async function DashboardLayout({
                   <CheckoutButton
                     key={p.key}
                     planKey={p.key}
+                    billingPeriod="monthly"
                     label={t("continueOnPlan", { plan: p.name, price: p.price_monthly_usd ?? 0 })}
                   />
                 ))}

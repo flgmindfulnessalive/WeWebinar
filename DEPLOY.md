@@ -57,8 +57,8 @@ esto es solo pegar el HTML correcto en cada plantilla.
 
 ## 2. Whop (cobro de las suscripciones de los hosts)
 
-**Dos caminos de alta, por diseño** (importante entender esto antes de crear
-los planes, porque determina cuántos hacen falta):
+**Dos caminos de alta, por diseño** (importante entender esto para saber
+qué plan se usa en cada lugar del código):
 
 - **Camino A — "Empezar ahora" (PLG)**: un CTA genérico, sin plan elegido.
   Crea la cuenta en Starter, trial de 7 días, sin pedir tarjeta, sin tocar
@@ -78,27 +78,26 @@ individual — ver la nota técnica más abajo), así que un mismo plan no puede
 servir para ambos caminos.
 
 1. Crear cuenta/negocio en [whop.com](https://whop.com).
-2. Crear **9 planes** en total:
+2. Los **12 planes ya están creados en Whop y sus `plan_id` están
+   commiteados en `src/lib/whop.ts`** (`PRICING_PLANS` y `CONVERT_PLANS`)
+   — no hay que crear nada nuevo ni configurar env vars para esto. Son ids
+   de plan, no secretos (misma categoría que un price id de Stripe), por
+   eso viven en el código en vez de en variables de entorno:
 
-   **A. 6 planes "trial"** (Camino B — Pricing, tarjeta obligatoria) — uno
-   por tier × período de facturación, con **`trial_period_days: 8`**
-   cada uno:
-   - Starter mensual / Starter anual
-   - Pro mensual / Pro anual
-   - Business mensual / Business anual
+   - **`PRICING_PLANS`** (Camino B — Pricing, tarjeta obligatoria): 6
+     planes, uno por tier × período de facturación, cada uno con
+     **`trial_period_days: 8`** configurado en el dashboard de Whop.
+   - **`CONVERT_PLANS`** (Camino A + cambios de plan de un cliente ya
+     existente + reactivación): 6 planes más, uno por tier × período, con
+     **`trial_period_days: 0`** (primer cobro inmediato al confirmar).
+     Facturación (cambio de plan) usa el período anual, matching el precio
+     que muestra el botón; el paywall del día 8 y la reactivación usan el
+     período mensual, el más simple de mostrar sin selector.
 
-   Copiar los 6 `plan_id` (prefijo `plan_`) →
-   `WHOP_PLAN_ID_CORE_MONTHLY_TRIAL` / `_CORE_ANNUAL_TRIAL` /
-   `_PRO_MONTHLY_TRIAL` / `_PRO_ANNUAL_TRIAL` /
-   `_BUSINESS_MONTHLY_TRIAL` / `_BUSINESS_ANNUAL_TRIAL`.
-
-   **B. 3 planes "upgrade"** (Camino A + cambios de plan de un cliente ya
-   existente + reactivación) — uno por tier, mensual únicamente, con
-   **`trial_period_days: 0`** (primer cobro inmediato al confirmar):
-   - Starter / Pro / Business
-
-   Copiar los 3 `plan_id` →
-   `WHOP_PLAN_ID_CORE_UPGRADE` / `_PRO_UPGRADE` / `_BUSINESS_UPGRADE`.
+   Si en algún momento hay que rotar o agregar un plan (nuevo tier, nueva
+   moneda, etc.), se edita directamente `PRICING_PLANS`/`CONVERT_PLANS` en
+   `src/lib/whop.ts` con el `plan_id` nuevo del dashboard de Whop — no
+   hace falta tocar Vercel.
 
    (La clave interna del plan Starter sigue siendo `core` en la base — ver
    `20260831000004_rename_core_plan_adjust_business_users.sql` — solo
