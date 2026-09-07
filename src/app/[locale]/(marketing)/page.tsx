@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
+import { localeAlternates, organizationJsonLd, faqJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 import { ParticleNetwork } from "@/components/particle-network";
 import { GradientBlobs } from "@/components/gradient-blobs";
@@ -57,6 +59,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: localeAlternates("/", locale),
     openGraph: { title, description, images: [image] },
     twitter: { title, description, images: [image] },
   };
@@ -132,6 +135,8 @@ export default async function HomePage() {
 
   return (
     <div className="marketing-theme">
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={faqJsonLd(faqItems)} />
       {/* ============ 1. HERO ============ */}
       <section className="relative overflow-hidden">
         <div className="bg-grid-pattern absolute inset-0 -z-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />

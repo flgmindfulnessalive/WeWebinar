@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { BarChart3, CalendarClock, MessageSquare, MousePointerClick, Palette, Video } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { localeAlternates, faqJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,6 +51,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: localeAlternates("/pricing", locale),
     openGraph: { title, description, images: [image] },
     twitter: { title, description, images: [image] },
   };
@@ -81,9 +84,11 @@ export default async function PricingPage() {
 
   const selfServe = (plans ?? []).filter((p) => p.is_self_serve);
   const enterprise = (plans ?? []).find((p) => p.key === "enterprise");
+  const faqItems = t.raw("faqItems") as { q: string; a: string }[];
 
   return (
     <div className="marketing-theme mx-auto flex max-w-5xl flex-col gap-12 px-6 py-16 sm:py-24">
+      <JsonLd data={faqJsonLd(faqItems)} />
       <div className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
         <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
@@ -143,7 +148,7 @@ export default async function PricingPage() {
           {t("faqTitle")}
         </h2>
         <div className="flex flex-col divide-y">
-          {(t.raw("faqItems") as { q: string; a: string }[]).map((item) => (
+          {faqItems.map((item) => (
             <details key={item.q} className="group py-3">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
                 {item.q}
