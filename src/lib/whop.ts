@@ -18,24 +18,59 @@ export type SelfServePlanKey = Exclude<
   "enterprise"
 >;
 
-// Self-serve plans only -- Enterprise has no Whop plan, it's assigned
-// manually by a platform admin after a sales conversation (same as Lemon
-// Squeezy). Keyed by the DB's actual plan key ("core"), not the
-// display name ("Starter") -- see 20260831000004_rename_core_plan.
-export const WHOP_PLAN_ID_BY_PLAN_KEY: Record<SelfServePlanKey, string | undefined> = {
-  core: process.env.WHOP_PLAN_ID_CORE,
-  pro: process.env.WHOP_PLAN_ID_PRO,
-  business: process.env.WHOP_PLAN_ID_BUSINESS,
+export type BillingPeriod = "monthly" | "annual";
+
+export function isBillingPeriod(value: string): value is BillingPeriod {
+  return value === "monthly" || value === "annual";
+}
+
+type PlanIdMap = Record<SelfServePlanKey, Record<BillingPeriod, string>>;
+
+// Two entirely separate sets of Whop plans, because trial_period_days is
+// only settable when Whop creates a plan inline (see
+// CreateCheckoutConfigurationsRequest.Plan in @whop/sdk) -- it can NOT be
+// overridden per checkout configuration when referencing an existing
+// plan_id. So a trial-length decision has to be baked into which plan_id
+// we reference, not something we can toggle at checkout time:
+//
+// - PRICING_PLANS: only ever used by the fresh, Pricing-driven signup
+//   checkout (see createTrialCheckoutConfig / app/checkout). 7-day trial,
+//   card required, first charge on day 8.
+// - CONVERT_PLANS: everything else that creates a Whop checkout for an
+//   account that already exists in our system -- Facturación's "cambiar
+//   de plan", reactivating a canceled subscription, and the day-8 hard
+//   paywall's "seguir con este plan" buttons for a Starter trial that
+//   never went through Pricing. No trial, first charge is immediate on
+//   confirm.
+//
+// Real plan ids from the Whop dashboard, not secrets (same category as a
+// Stripe/Lemon Squeezy price id) -- committed here rather than read from
+// env vars so there's one source of truth for which id maps to which
+// tier + billing period. Keyed by the DB's actual plan key ("core"), not
+// the display name ("Starter") -- see 20260831000004_rename_core_plan.
+const PRICING_PLANS: PlanIdMap = {
+  core: { monthly: "plan_dLbT2Tkkwy8bl", annual: "plan_9Nf3PA2c7lQTV" },
+  pro: { monthly: "plan_FcRXqhuvgFw94", annual: "plan_ZDBLDt5YsFiIt" },
+  business: { monthly: "plan_U0QQBJm98XJHT", annual: "plan_bUuLhj5nMqxAn" },
+};
+
+const CONVERT_PLANS: PlanIdMap = {
+  core: { monthly: "plan_KjYMdLHzxow6F", annual: "plan_gkZODvhpLNr6F" },
+  pro: { monthly: "plan_CulbKEpewbSGC", annual: "plan_uGZmsnOBapjFv" },
+  business: { monthly: "plan_kXJANREGprAIS", annual: "plan_YETvkZmMp8iuR" },
 };
 
 export function planKeyForWhopPlanId(planId: string): SelfServePlanKey | undefined {
-  return (
-    Object.entries(WHOP_PLAN_ID_BY_PLAN_KEY) as [SelfServePlanKey, string | undefined][]
-  ).find(([, id]) => id === planId)?.[0];
+  const inMap = (map: PlanIdMap) =>
+    (Object.entries(map) as [SelfServePlanKey, Record<BillingPeriod, string>][]).find(
+      ([, byPeriod]) => byPeriod.monthly === planId || byPeriod.annual === planId
+    )?.[0];
+
+  return inMap(PRICING_PLANS) ?? inMap(CONVERT_PLANS);
 }
 
 export function isSelfServePlanKey(value: string): value is SelfServePlanKey {
-  return value in WHOP_PLAN_ID_BY_PLAN_KEY;
+  return value in PRICING_PLANS;
 }
 
 function whopConfigured(): boolean {
@@ -51,16 +86,16 @@ function whopClient(): WhopClient {
 // which WeWebinars account to activate -- see the module comment above.
 // Returns the configuration id to pass as WhopCheckoutEmbed's `sessionId`
 // prop (not `planId`).
-export async function createSelfServeCheckoutConfig({
+async function createCheckoutConfig({
+  planId,
   planKey,
   accountId,
 }: {
+  planId: string;
   planKey: SelfServePlanKey;
   accountId: string;
 }): Promise<{ configId: string; purchaseUrl: string | null } | null> {
   if (!whopConfigured()) return null;
-  const planId = WHOP_PLAN_ID_BY_PLAN_KEY[planKey];
-  if (!planId) return null;
 
   try {
     const config = await whopClient().checkoutConfigurations.create({
@@ -70,26 +105,52 @@ export async function createSelfServeCheckoutConfig({
     });
     return { configId: config.id, purchaseUrl: config.purchase_url ?? null };
   } catch (err) {
-    console.error("[whop] createSelfServeCheckoutConfig failed:", err);
+    console.error("[whop] createCheckoutConfig failed:", err);
     return null;
   }
 }
 
-// Convenience wrapper for the redirect-based checkout flow (signup
-// upgrade hand-off, Facturación's "change plan" buttons): same account-
-// scoped config as above, but returns just the hosted purchase_url to
-// redirect the browser to, matching the shape billing.ts's
-// createSelfServeCheckoutUrl used to have. Unlike that function, there's
-// no ownerEmail param -- CreateCheckoutConfigurationsRequest has no
-// email/prefill field, so there's nothing to do with it.
-export async function createSelfServeCheckoutUrl({
+// Camino B: a host arriving straight from Pricing with a specific plan +
+// billing period in mind. Card required, 7-day trial, first charge on
+// day 8 -- see PRICING_PLANS above. Used only by /checkout, right after
+// signup, never from inside the dashboard.
+export async function createTrialCheckoutConfig({
   planKey,
+  billingPeriod,
   accountId,
 }: {
   planKey: SelfServePlanKey;
+  billingPeriod: BillingPeriod;
+  accountId: string;
+}): Promise<{ configId: string; purchaseUrl: string | null } | null> {
+  return createCheckoutConfig({
+    planId: PRICING_PLANS[planKey][billingPeriod],
+    planKey,
+    accountId,
+  });
+}
+
+// Camino A and everything else in-app: a Starter trial upgrading (before
+// or after its own 7 days run out), an existing paying customer changing
+// plans from Facturación, or a canceled subscription reactivating. None
+// of these get a second trial -- see CONVERT_PLANS above. Returns just
+// the hosted purchase_url (no embed for this path): unlike the
+// fresh-signup flow, the host is already inside the product and
+// comfortable navigating to Whop to confirm a real, immediate charge.
+export async function createUpgradeCheckoutUrl({
+  planKey,
+  billingPeriod,
+  accountId,
+}: {
+  planKey: SelfServePlanKey;
+  billingPeriod: BillingPeriod;
   accountId: string;
 }): Promise<string | null> {
-  const config = await createSelfServeCheckoutConfig({ planKey, accountId });
+  const config = await createCheckoutConfig({
+    planId: CONVERT_PLANS[planKey][billingPeriod],
+    planKey,
+    accountId,
+  });
   return config?.purchaseUrl ?? null;
 }
 

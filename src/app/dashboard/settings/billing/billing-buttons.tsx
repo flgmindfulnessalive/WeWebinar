@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 
+import type { BillingPeriod } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 
 async function goTo(url: string) {
@@ -11,9 +12,11 @@ async function goTo(url: string) {
 
 export function CheckoutButton({
   planKey,
+  billingPeriod = "monthly",
   label,
 }: {
   planKey: string;
+  billingPeriod?: BillingPeriod;
   label: string;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -31,7 +34,7 @@ export function CheckoutButton({
             const res = await fetch("/api/whop/checkout", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ plan_key: planKey }),
+              body: JSON.stringify({ plan_key: planKey, billing_period: billingPeriod }),
             });
             const data = await res.json();
             if (!res.ok) {

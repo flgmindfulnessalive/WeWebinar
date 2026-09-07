@@ -85,7 +85,7 @@ async function syncMembership(payload: WhopWebhookPayload) {
   const accountId = resolveAccountId(payload);
   if (!accountId) {
     console.error(
-      `[whop webhook] membership ${payload.data.id} has no metadata.account_id -- was it created outside createSelfServeCheckoutConfig?`
+      `[whop webhook] membership ${payload.data.id} has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl?`
     );
     return;
   }

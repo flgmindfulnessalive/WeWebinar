@@ -57,26 +57,58 @@ esto es solo pegar el HTML correcto en cada plantilla.
 
 ## 2. Whop (cobro de las suscripciones de los hosts)
 
+**Dos caminos de alta, por diseño** (importante entender esto para saber
+qué plan se usa en cada lugar del código):
+
+- **Camino A — "Empezar ahora" (PLG)**: un CTA genérico, sin plan elegido.
+  Crea la cuenta en Starter, trial de 7 días, sin pedir tarjeta, sin tocar
+  Whop para nada. Al día 8, si no pagó, el dashboard bloquea el acceso
+  (paywall duro — ver `src/app/dashboard/layout.tsx`, `trialExpired`) y
+  ofrece pagar cualquiera de los 3 planes de una vez, sin un segundo trial.
+- **Camino B — Pricing (intención alta)**: el host elige Starter, Pro o
+  Business, mensual o anual, desde `/pricing`. Tarjeta obligatoria desde el
+  inicio, trial de 7 días, primer cobro el día 8 (si cancela antes, no paga
+  nada).
+
+Esto evita que se apilen dos pruebas gratis (7 días sin tarjeta + 7 días de
+trial de Whop = 14 días) para quien entra por "Empezar ahora" y después
+sube de plan. Por eso hacen falta **dos familias de planes en Whop, no
+una**: `trial_period_days` es una propiedad del plan (no del checkout
+individual — ver la nota técnica más abajo), así que un mismo plan no puede
+servir para ambos caminos.
+
 1. Crear cuenta/negocio en [whop.com](https://whop.com).
-2. Crear 3 planes recurrentes mensuales, uno por tier self-serve:
-   - Starter
-   - Pro
-   - Business
-   (Enterprise no tiene self-serve: se asigna manualmente desde `/admin/plans`
-   luego del lead de la landing.)
-   **Configurar cada uno con `trial_period_days: 8`** (free trial antes del
-   primer cobro) — es el mecanismo real detrás de "quien elige un plan
-   específico en Pricing paga recién a los 8 días de registrarse". Esto se
-   configura en el plan mismo desde el dashboard de Whop: nuestro código
-   referencia un `plan_id` ya existente al crear el checkout
-   (`checkoutConfigurations.create` con `plan_id`), y ese campo solo se puede
-   fijar al crear el plan inline vía API — no hay forma de overridearlo por
-   checkout individual referenciando un plan existente.
-   Copiar los 3 `plan_id` (prefijo `plan_`) →
-   `WHOP_PLAN_ID_CORE` / `_PRO` / `_BUSINESS` (la clave interna del plan
-   Starter sigue siendo `core` en la base — ver
-   `20260831000004_rename_core_plan_adjust_business_users.sql` — solo cambió
-   el nombre visible).
+2. Los **12 planes ya están creados en Whop y sus `plan_id` están
+   commiteados en `src/lib/whop.ts`** (`PRICING_PLANS` y `CONVERT_PLANS`)
+   — no hay que crear nada nuevo ni configurar env vars para esto. Son ids
+   de plan, no secretos (misma categoría que un price id de Stripe), por
+   eso viven en el código en vez de en variables de entorno:
+
+   - **`PRICING_PLANS`** (Camino B — Pricing, tarjeta obligatoria): 6
+     planes, uno por tier × período de facturación, cada uno con
+     **`trial_period_days: 8`** configurado en el dashboard de Whop.
+   - **`CONVERT_PLANS`** (Camino A + cambios de plan de un cliente ya
+     existente + reactivación): 6 planes más, uno por tier × período, con
+     **`trial_period_days: 0`** (primer cobro inmediato al confirmar).
+     Facturación (cambio de plan) usa el período anual, matching el precio
+     que muestra el botón; el paywall del día 8 y la reactivación usan el
+     período mensual, el más simple de mostrar sin selector.
+
+   Si en algún momento hay que rotar o agregar un plan (nuevo tier, nueva
+   moneda, etc.), se edita directamente `PRICING_PLANS`/`CONVERT_PLANS` en
+   `src/lib/whop.ts` con el `plan_id` nuevo del dashboard de Whop — no
+   hace falta tocar Vercel.
+
+   (La clave interna del plan Starter sigue siendo `core` en la base — ver
+   `20260831000004_rename_core_plan_adjust_business_users.sql` — solo
+   cambió el nombre visible. Enterprise no tiene self-serve: se asigna
+   manualmente desde `/admin/plans` luego del lead de la landing.)
+
+   **Nota técnica**: nuestro código referencia un `plan_id` ya existente al
+   crear el checkout (`checkoutConfigurations.create` con `plan_id`), y
+   `trial_period_days` solo se puede fijar al crear el plan (inline, vía
+   API) — no hay forma de overridearlo por checkout individual referenciando
+   un plan existente. De ahí las dos familias en vez de una con un flag.
 3. Crear un API key con permisos de checkout configurations, memberships y
    webhooks → `WHOP_API_KEY`.
 4. Dashboard → Webhooks → agregar `https://<tu-dominio>/api/webhooks/whop`,
@@ -96,6 +128,28 @@ esto es solo pegar el HTML correcto en cada plantilla.
    una URL de Términos y Política de Privacidad del negocio — hay que
    redactarlas (decisión legal, no algo que yo pueda inventar) y
    publicarlas antes de aceptar pagos reales.
+7. **Apple Pay / Google Pay**: el checkout embebido
+   (`src/components/checkout-embed.tsx`) ya muestra el botón express
+   (`WhopExpressCheckoutButton`, `methods={["apple-pay", "google-pay"]}`)
+   arriba del formulario de tarjeta -- no hace falta configurar nada más en
+   Whop para esto: corre dentro del iframe de Whop (dominio de primera
+   parte ya verificado ante Apple/Google), y ambos van incluidos en la
+   misma capability de pagos con tarjeta de la cuenta
+   (`accept_card_payments`), que ya está activa porque el checkout normal
+   con tarjeta funciona. El propio embed decide cuál mostrar según el
+   navegador del comprador (Safari → Apple Pay; Chrome con una tarjeta
+   guardada en Google Pay → Google Pay) -- nunca los dos a la vez. Antes de
+   darlo por probado:
+   - Apple Pay: abrir `/checkout?plan=...` desde Safari en un iPhone o Mac
+     con una tarjeta cargada en Wallet y confirmar que el botón aparece y
+     completa el pago con Face ID/Touch ID.
+   - Google Pay: abrir la misma URL desde Chrome (Android o desktop) con
+     una tarjeta guardada en Google Pay y confirmar que el botón aparece y
+     completa el pago.
+
+   Ninguno de los dos se puede simular desde este entorno (sin Safari, sin
+   Chrome con Google Pay configurado, sin dispositivo real, sin
+   `WHOP_API_KEY` real).
 
 **Nota sobre esta integración**: el checkout crea una "checkout
 configuration" scoped a cuenta+plan (con `account_id` en `metadata`) en vez
@@ -106,14 +160,6 @@ API key (ver el comentario en `src/lib/whop.ts`). No hay portal de cliente
 hosteado como el de Lemon Squeezy: cancelar la suscripción es una llamada
 directa a la API (`memberships.cancel`, con `cancel_at_period_end: true`),
 implementada en el botón "Cancelar suscripción" de Facturación.
-
-**Dos caminos de alta, por diseño**: registrarse desde un CTA genérico
-("Comenzá gratis", sin plan elegido) crea la cuenta en el trial de Starter
-de 7 días, sin pedir tarjeta. Registrarse desde el botón de un plan
-específico en Pricing (Starter, Pro o Business) crea la misma cuenta trial,
-pero además manda al comprador al checkout embebido de ese plan (ver
-`src/app/checkout/page.tsx`) — con el `trial_period_days: 8` del plan, el
-cobro real recién ocurre 8 días después del registro.
 
 ## 3. Resend (emails transaccionales)
 

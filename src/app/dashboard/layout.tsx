@@ -6,7 +6,8 @@ import { getMessages, getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
 import { signOut } from "@/lib/actions/auth";
-import { daysUntil } from "@/lib/time";
+import { createClient } from "@/lib/supabase/server";
+import { daysUntil, isPast } from "@/lib/time";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { DashboardNav } from "./dashboard-nav";
@@ -110,6 +111,80 @@ export default async function DashboardLayout({
             </p>
           ) : (
             <p className="max-w-sm text-sm text-muted-foreground">{t("canceledNonOwnerMessage")}</p>
+          )}
+
+          <form action={signOut}>
+            <Button type="submit" variant="outline" size="sm">
+              {t("signOut")}
+            </Button>
+          </form>
+        </div>
+      </NextIntlClientProvider>
+    );
+  }
+
+  // Day 8: the 7-day Starter trial (Camino A -- signed up with no plan
+  // selected on Pricing, no card on file) is over and nothing charged.
+  // Unlike Camino B (Pricing -> checkout, card already on file, Whop
+  // itself moves the account past "trialing" via the webhook once it
+  // charges on day 8), a Camino A account has no Whop membership yet, so
+  // nothing else flips this status -- it has to be enforced here, on
+  // every dashboard load. Hard block, not a banner: no free second week
+  // just for having exercised the product during the first one.
+  const trialExpired =
+    current.account.subscription_status === "trialing" &&
+    isPast(current.account.trial_ends_at);
+
+  if (trialExpired) {
+    const billingConfigured = Boolean(process.env.WHOP_API_KEY);
+    const isOwner = current.user.role === "owner";
+    let selfServePlans: { key: string; name: string; price_monthly_usd: number | null }[] = [];
+
+    if (billingConfigured && isOwner) {
+      const supabase = await createClient();
+      const { data } = await supabase
+        .from("plans")
+        .select("key, name, price_monthly_usd")
+        .eq("is_self_serve", true)
+        .order("price_monthly_usd", { ascending: true, nullsFirst: false });
+      selfServePlans = data ?? [];
+    }
+
+    return (
+      <NextIntlClientProvider messages={messages}>
+        <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
+          <CircleAlert className="size-10 text-destructive" />
+          <h1 className="text-xl font-semibold">{t("trialExpiredTitle")}</h1>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("trialExpiredMessage")}</p>
+
+          {isOwner ? (
+            billingConfigured ? (
+              <div className="flex flex-wrap justify-center gap-3">
+                {selfServePlans.map((p) => (
+                  <CheckoutButton
+                    key={p.key}
+                    planKey={p.key}
+                    billingPeriod="monthly"
+                    label={t("continueOnPlan", { plan: p.name, price: p.price_monthly_usd ?? 0 })}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="max-w-sm text-sm text-muted-foreground">
+                {t.rich("trialExpiredContactSupport", {
+                  supportEmail: SUPPORT_EMAIL,
+                  email: (chunks) => (
+                    <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
+                      {chunks}
+                    </a>
+                  ),
+                })}
+              </p>
+            )
+          ) : (
+            <p className="max-w-sm text-sm text-muted-foreground">
+              {t("trialExpiredNonOwnerMessage")}
+            </p>
           )}
 
           <form action={signOut}>

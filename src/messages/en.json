@@ -86,13 +86,13 @@
   },
   "Home": {
     "metaTitle": "WeWebinars — Automate presentations that sell 24/7",
-    "metaDescription": "Turn your recorded presentation into an automated webinar that registers, schedules, and sells on its own. Free 7-day trial, no card.",
+    "metaDescription": "Turn your recorded presentation into an automated webinar that registers, schedules, and sells on its own. Start free on Starter, no card.",
     "badge": "Automated presentations that sell",
     "heroTitle": "Stop repeating <highlight>your best presentation</highlight>",
     "heroSubtitle": "Record it once. WeWebinars turns it into an event that runs on its own and sells for you 24/7.",
     "ctaStart": "Automate your first presentation",
     "ctaPlans": "See plans",
-    "trial": "7 days free. No card.",
+    "trial": "7 days free. No card. Starter plan.",
     "problemTitle": "Admit it: you're presenting the same thing over and over.",
     "problemBody": "Another call to explain the same offer. Another schedule to coordinate. Another prospect in another time zone, waiting for you to be available. Your presentation works — the problem is it needs you there, every time.",
     "capabilitiesTitle": "It all comes down to working without you",
@@ -147,7 +147,7 @@
     "pricingTeaserBody": "Plans start at $15/month. You don't need an enterprise plan to automate your first presentation.",
     "pricingTeaserPrice": "$15",
     "pricingTeaserPriceUnit": "/ mo · Starter plan",
-    "pricingTeaserFine": "Unlimited Commercial Rights on every plan. Free 7-day trial, no card.",
+    "pricingTeaserFine": "Unlimited Commercial Rights on every plan. Start free on Starter, no card.",
     "pricingTeaserCta": "See plans and pricing",
     "faqTitle": "Frequently asked questions",
     "faqItems": [
@@ -184,7 +184,7 @@
     },
     "ctaBannerTitle": "Your next presentation can work on its own",
     "ctaBannerSubtitle": "Create once. Present endlessly. Sell 24/7.",
-    "ctaBannerMicrocopy": "7 days free. No card. Cancel anytime.",
+    "ctaBannerMicrocopy": "7 days free. No card. Starter plan.",
     "comparisonTitle": "Your best webinar shouldn't depend <highlight>on your calendar</highlight>",
     "comparisonSubtitle": "A live webinar depends on you being there, at that time, again. An evergreen is recorded once — and keeps selling while you do anything else. Isn't that lovely?",
     "liveCardTitle": "Live webinar",
@@ -220,10 +220,10 @@
   },
   "Pricing": {
     "metaTitle": "Pricing — WeWebinars",
-    "metaDescription": "Plans starting at $15/month. All plans include unlimited Commercial Rights and a free 7-day trial, no card.",
+    "metaDescription": "Plans starting at $15/month. All include unlimited Commercial Rights. Start free on Starter or try any plan for 7 days before the first charge.",
     "title": "Choose your plan. Start automating today.",
-    "subtitle": "Every plan includes unlimited Commercial Rights. 7-day trial, no card.",
-    "trial": "7 days free. No card.",
+    "subtitle": "Every plan includes unlimited Commercial Rights.",
+    "trial": "Try free for 7 days. We ask for a card. First charge on day 8. Cancel before then and you pay nothing.",
     "billingAnnual": "Annual",
     "billingMonthly": "Monthly",
     "saveAnnualBadge": "Save 20% with annual billing",
@@ -246,7 +246,7 @@
       { "q": "What happens if I go over my plan's attendee limit?", "a": "We'll let you know before it happens. The limit applies per session, not cumulatively — your evergreen webinar can run infinite sessions over time." },
       { "q": "What does \"Commercial Rights Unlimited\" mean?", "a": "You can use WeWebinars to sell your own products or services, with no limit on the revenue generated." },
       { "q": "What is \"Powered by WeWebinars\"?", "a": "On the Starter plan, your registration page shows a WeWebinars watermark. From Pro up, it disappears — the experience is 100% your brand." },
-      { "q": "Do I need a card to try it?", "a": "No. The 7-day trial doesn't ask for a credit card." },
+      { "q": "Do I need a card to try it?", "a": "Depends how you start. With \"Get started\" (top nav), no -- you get 7 days on Starter with no card. If you pick a plan from this page, yes: the 7-day trial asks for a card and the first charge is on day 8, but you can cancel before then and pay nothing." },
       { "q": "Can I cancel anytime?", "a": "Yes, no minimum commitment and no penalty." }
     ],
     "includedTitle": "All of this, on every plan",
@@ -278,7 +278,7 @@
       }
     },
     "finalCtaTitle": "Try it free before you decide",
-    "finalCtaSubtitle": "7-day trial, no card. Cancel anytime.",
+    "finalCtaSubtitle": "7 days free. No card. Starter plan.",
     "finalCtaButton": "Start free",
     "features": {
       "activeWebinars": "{count, plural, one {# active webinar} other {# active webinars}}",
@@ -410,7 +410,12 @@
     "reactivateContactSupport": "Email us at <email>{supportEmail}</email> to reactivate your account.",
     "canceledNonOwnerMessage": "The account owner needs to reactivate the plan before you can sign back in.",
     "signOut": "Sign out",
-    "trialBanner": "Free trial: expires in {days, plural, one {# day} other {# days}}. Contact us at <email>{supportEmail}</email> to activate your account."
+    "trialBanner": "Free trial: {days, plural, one {expires in # day} other {expires in # days}}. After that, pick a plan in Billing to keep using your account.",
+    "trialExpiredTitle": "Your free trial ended",
+    "trialExpiredMessage": "Pick a plan to keep using WeWebinars. Your webinars and settings are still there, waiting for you.",
+    "continueOnPlan": "Continue on {plan} — ${price}/mo",
+    "trialExpiredContactSupport": "Email us at <email>{supportEmail}</email> to pick a plan.",
+    "trialExpiredNonOwnerMessage": "The account owner needs to pick a plan before you can sign back in."
   },
   "AdminLayout": {
     "panelTitle": "Super Admin Panel"

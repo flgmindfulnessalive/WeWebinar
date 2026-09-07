@@ -24,7 +24,7 @@ export default async function BillingPage() {
   // Self-serve checkout is off until Whop is actually set up (see
   // DEPLOY.md step 2) -- without this, the plan-change buttons would hit
   // /api/whop/checkout and show a raw "invalid plan" error, since
-  // WHOP_PLAN_ID_BY_PLAN_KEY resolves to undefined for every plan.
+  // WHOP_UPGRADE_PLAN_ID resolves to undefined for every plan.
   const billingConfigured = Boolean(process.env.WHOP_API_KEY);
 
   const supabase = await createClient();
@@ -105,7 +105,12 @@ export default async function BillingPage() {
         <CardContent className="flex flex-wrap gap-3">
           {billingConfigured ? (
             changeablePlans.filter((p) => p.key !== current.plan.key).map((p) => (
-              <CheckoutButton key={p.key} planKey={p.key} label={p.label} />
+              <CheckoutButton
+                key={p.key}
+                planKey={p.key}
+                billingPeriod="annual"
+                label={p.label}
+              />
             ))
           ) : (
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">

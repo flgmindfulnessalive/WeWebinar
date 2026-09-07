@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { isSelfServePlanKey } from "@/lib/whop";
+import { isBillingPeriod, isSelfServePlanKey } from "@/lib/whop";
 
 export type AuthActionState = { error: string } | null;
 
@@ -56,6 +56,7 @@ export async function signUpWithPassword(
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
   const rawPlan = String(formData.get("plan") ?? "");
+  const rawBilling = String(formData.get("billing") ?? "");
   // Populated by the Cloudflare Turnstile widget's own hidden input (see
   // signup-form.tsx) once it's solved -- Supabase Auth verifies it
   // server-side against the secret key configured in its own dashboard
@@ -64,11 +65,14 @@ export async function signUpWithPassword(
   // before the widget finishes still gets Supabase's own rejection message
   // rather than us silently letting it through.
   const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
-  // Carries the plan a host clicked "Get started" on from Pricing through
-  // to onboarding -- as a query string on `next` rather than a separate
-  // param, since that's the one value every redirect path here (email
-  // confirm, Google OAuth callback) already forwards verbatim.
-  const next = isSelfServePlanKey(rawPlan) ? `/onboarding?plan=${rawPlan}` : "/onboarding";
+  // Carries the plan (+ billing period) a host chose on Pricing through to
+  // onboarding -- as a query string on `next` rather than separate params,
+  // since that's the one value every redirect path here (email confirm,
+  // Google OAuth callback) already forwards verbatim.
+  const billingPeriod = isBillingPeriod(rawBilling) ? rawBilling : "monthly";
+  const next = isSelfServePlanKey(rawPlan)
+    ? `/onboarding?plan=${rawPlan}&billing=${billingPeriod}`
+    : "/onboarding";
 
   let hasSession: boolean;
   try {

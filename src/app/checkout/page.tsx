@@ -1,26 +1,30 @@
 import { redirect } from "next/navigation";
 
 import { getCurrentAccount } from "@/lib/data/account";
-import { isSelfServePlanKey } from "@/lib/whop";
+import { isBillingPeriod, isSelfServePlanKey } from "@/lib/whop";
 import { Checkout } from "@/components/checkout";
 
 // Reached after signup when the host picked a specific plan's "Empezar"
-// on Pricing -- Starter, Pro, or Business (see actions/account.ts) --
-// renders the embedded Whop checkout in place of a redirect to a hosted
-// purchase_url, so payment happens without leaving the site. Requires an
+// on Pricing -- Starter, Pro, or Business, mensual o anual (see
+// actions/account.ts) -- renders the embedded Whop checkout in place of a
+// redirect to a hosted purchase_url, so payment happens without leaving
+// the site. This is Camino B: card required, 7-day trial, first charge
+// on day 8 (see createTrialCheckoutConfig in lib/whop.ts). Requires an
 // existing account: Checkout needs an accountId to scope the checkout
-// configuration to (see lib/whop.ts), which only exists once signup has
-// actually run.
+// configuration to, which only exists once signup has actually run.
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; billing?: string }>;
 }) {
-  const { plan } = await searchParams;
+  const { plan, billing } = await searchParams;
+  const billingPeriod = billing && isBillingPeriod(billing) ? billing : "monthly";
 
   const current = await getCurrentAccount();
   if (!current) {
-    redirect(`/login?next=/checkout${plan ? `?plan=${plan}` : ""}`);
+    redirect(
+      `/login?next=/checkout${plan ? `?plan=${plan}&billing=${billingPeriod}` : ""}`
+    );
   }
 
   if (!plan || !isSelfServePlanKey(plan)) {
@@ -40,7 +44,7 @@ export default async function CheckoutPage({
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
       <div className="w-full max-w-md">
-        <Checkout plan={plan} accountId={current.account.id} />
+        <Checkout plan={plan} billingPeriod={billingPeriod} accountId={current.account.id} />
       </div>
     </div>
   );

@@ -158,7 +158,7 @@ export function PlanCards({ plans }: { plans: Plan[] }) {
                   className={featured ? "w-full text-white" : "w-full"}
                   style={featured ? { background: "var(--brand)" } : undefined}
                 >
-                  <NextLink href={`/signup?plan=${plan.key}`}>
+                  <NextLink href={`/signup?plan=${plan.key}&billing=${billing}`}>
                     {t("getStarted", { plan: plan.name })}
                   </NextLink>
                 </Button>

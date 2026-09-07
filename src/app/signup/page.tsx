@@ -3,16 +3,17 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/logo";
 import { ParticleNetwork } from "@/components/particle-network";
-import { isSelfServePlanKey } from "@/lib/whop";
+import { isBillingPeriod, isSelfServePlanKey } from "@/lib/whop";
 import { SignupForm } from "./signup-form";
 
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string; plan?: string }>;
+  searchParams: Promise<{ email?: string; plan?: string; billing?: string }>;
 }) {
-  const { email, plan } = await searchParams;
+  const { email, plan, billing } = await searchParams;
   const selectedPlan = plan && isSelfServePlanKey(plan) ? plan : undefined;
+  const billingPeriod = billing && isBillingPeriod(billing) ? billing : "monthly";
   const t = await getTranslations("AuthLayout");
   return (
     <div className="grid min-h-svh md:grid-cols-2">
@@ -44,7 +45,7 @@ export default async function SignupPage({
             <Logo />
             WeWebinars
           </Link>
-          <SignupForm initialEmail={email} plan={selectedPlan} />
+          <SignupForm initialEmail={email} plan={selectedPlan} billing={billingPeriod} />
         </div>
       </div>
     </div>

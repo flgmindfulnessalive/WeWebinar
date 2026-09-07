@@ -10,7 +10,7 @@ import { slugify } from "@/lib/slug";
 import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
-import { isSelfServePlanKey } from "@/lib/whop";
+import { isBillingPeriod, isSelfServePlanKey } from "@/lib/whop";
 
 export type CreateAccountState = { error: string } | null;
 
@@ -29,6 +29,8 @@ export async function createAccount(
   const timezone = String(formData.get("timezone") ?? "").trim() || "UTC";
   const rawSelectedPlan = String(formData.get("plan") ?? "");
   const selectedPlanKey = isSelfServePlanKey(rawSelectedPlan) ? rawSelectedPlan : null;
+  const rawBilling = String(formData.get("billing") ?? "");
+  const billingPeriod = isBillingPeriod(rawBilling) ? rawBilling : "monthly";
 
   if (!name) {
     const t = await getTranslations("AccountActions");
@@ -100,7 +102,7 @@ export async function createAccount(
           // checkout configuration when it loads -- see lib/whop.ts), so
           // this is just an on-site redirect, no Whop API call here.
           if (selectedPlanKey) {
-            redirectTo = `/checkout?plan=${selectedPlanKey}`;
+            redirectTo = `/checkout?plan=${selectedPlanKey}&billing=${billingPeriod}`;
           }
         } else if (error.code === "23505") {
           attempt += 1;
