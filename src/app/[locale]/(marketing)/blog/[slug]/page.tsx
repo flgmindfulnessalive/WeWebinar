@@ -123,13 +123,6 @@ export default async function BlogPostPage({
         </span>
         <ShareButtons url={postUrl} title={post.title} labels={shareLabels} />
       </div>
-
-      <div className="flex items-center justify-between border-t pt-6">
-        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          {t("share")}
-        </span>
-        <ShareButtons url={postUrl} title={post.title} labels={shareLabels} />
-      </div>
     </article>
   );
 }
