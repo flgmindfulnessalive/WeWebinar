@@ -4,7 +4,7 @@ import { hasLocale } from "next-intl";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
-type MarketingHref = "/" | "/pricing";
+type MarketingHref = "/" | "/pricing" | "/blog";
 
 // Self-referencing canonical + hreflang alternates for the marketing
 // routes that exist in both locales, so Google reads the es/en pages as
@@ -26,6 +26,31 @@ export function localeAlternates(href: MarketingHref, locale: string): Metadata[
   return {
     canonical: getPathname({ href, locale: current }),
     languages,
+  };
+}
+
+// Same job as localeAlternates() above, generalized for routes whose path
+// genuinely differs per locale (a blog post's Spanish and English slugs
+// are almost never the same string, unlike Home/Pricing). Only locales
+// present in `pathsByLocale` get a hreflang entry -- a post with no
+// translation yet simply gets none for that locale, rather than pointing
+// at a page that doesn't exist.
+export function localeAlternatesForPaths(
+  locale: string,
+  pathsByLocale: Partial<Record<string, string>>
+): Metadata["alternates"] {
+  const current = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
+
+  const languages: Record<string, string> = {};
+  for (const l of routing.locales) {
+    const href = pathsByLocale[l];
+    if (href) languages[l] = getPathname({ href, locale: l });
+  }
+
+  const currentHref = pathsByLocale[current];
+  return {
+    canonical: currentHref ? getPathname({ href: currentHref, locale: current }) : undefined,
+    languages: Object.keys(languages).length > 0 ? languages : undefined,
   };
 }
 

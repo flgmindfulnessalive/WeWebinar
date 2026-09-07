@@ -26,7 +26,15 @@ const LOCALES = ["es", "en"] as const;
 // plain nav row. "Empezar" (signup) still doesn't need a spot in here:
 // it's already the one button that stays visible outside the hamburger
 // at every width.
-export function MobileMenu({ pricingLabel, loginLabel }: { pricingLabel: string; loginLabel: string }) {
+export function MobileMenu({
+  pricingLabel,
+  blogLabel,
+  loginLabel,
+}: {
+  pricingLabel: string;
+  blogLabel: string;
+  loginLabel: string;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -63,6 +71,12 @@ export function MobileMenu({ pricingLabel, loginLabel }: { pricingLabel: string;
               className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
             >
               {pricingLabel}
+            </Link>
+            <Link
+              href="/blog"
+              className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              {blogLabel}
             </Link>
 
             <div className="flex items-center justify-between px-3">

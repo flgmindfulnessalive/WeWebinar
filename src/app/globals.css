@@ -397,6 +397,93 @@
   }
 }
 
+/* Blog post body (MDXRemote output in blog/[slug]/page.tsx). No
+   typography plugin installed -- scoped by hand instead of pulling one in
+   for a single content type. Targets raw MDX-rendered elements directly
+   since MDX has no class hooks of its own by default. */
+.prose-blog {
+  max-width: 65ch;
+  color: var(--foreground);
+  line-height: 1.75;
+}
+
+.prose-blog > * + * {
+  margin-top: 1.25em;
+}
+
+.prose-blog h2 {
+  margin-top: 2em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.prose-blog h3 {
+  margin-top: 1.75em;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.prose-blog p {
+  color: var(--foreground);
+}
+
+.prose-blog a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-blog ul,
+.prose-blog ol {
+  margin-top: 1em;
+  padding-left: 1.5em;
+}
+
+.prose-blog ul {
+  list-style: disc;
+}
+
+.prose-blog ol {
+  list-style: decimal;
+}
+
+.prose-blog li + li {
+  margin-top: 0.5em;
+}
+
+.prose-blog blockquote {
+  border-left: 3px solid var(--brand);
+  padding-left: 1em;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.prose-blog code {
+  background: var(--muted);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+}
+
+.prose-blog pre {
+  background: var(--muted);
+  border-radius: var(--radius-lg);
+  padding: 1em;
+  overflow-x: auto;
+}
+
+.prose-blog pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose-blog img {
+  border-radius: var(--radius-lg);
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

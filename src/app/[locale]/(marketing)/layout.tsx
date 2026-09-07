@@ -33,6 +33,7 @@ export default async function MarketingLayout({
   children: React.ReactNode;
 }) {
   const t = await getTranslations("MarketingLayout");
+  const tBlog = await getTranslations("Blog");
 
   return (
     <div className="marketing-theme flex min-h-svh flex-col">
@@ -49,6 +50,12 @@ export default async function MarketingLayout({
             >
               {t("pricing")}
             </Link>
+            <Link
+              href="/blog"
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
+            >
+              {tBlog("navLabel")}
+            </Link>
             <div className="hidden sm:block">
               <LanguageSwitcher />
             </div>
@@ -63,7 +70,11 @@ export default async function MarketingLayout({
             >
               <NextLink href="/signup">{t("signup")}</NextLink>
             </Button>
-            <MobileMenu pricingLabel={t("pricing")} loginLabel={t("login")} />
+            <MobileMenu
+              pricingLabel={t("pricing")}
+              blogLabel={tBlog("navLabel")}
+              loginLabel={t("login")}
+            />
           </nav>
         </div>
       </header>
