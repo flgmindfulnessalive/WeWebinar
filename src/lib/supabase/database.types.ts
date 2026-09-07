@@ -703,6 +703,33 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["platform_metrics_snapshots"]["Row"]>;
         Relationships: [];
       };
+      framework_definitions: {
+        Row: {
+          id: string;
+          framework_key: string;
+          stage_key:
+            | "welcome"
+            | "align"
+            | "validate"
+            | "engage"
+            | "reframe"
+            | "evidence"
+            | "bridge"
+            | "derisk"
+            | "activate"
+            | "learn";
+          stage_order: number;
+          name_es: string;
+          name_en: string;
+          strategic_purpose_es: string;
+          strategic_purpose_en: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["framework_definitions"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["framework_definitions"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: {
       custom_domain_lookup: {
