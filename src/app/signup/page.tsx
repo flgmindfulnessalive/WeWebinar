@@ -9,11 +9,12 @@ import { SignupForm } from "./signup-form";
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string; plan?: string; billing?: string }>;
+  searchParams: Promise<{ email?: string; plan?: string; billing?: string; source?: string }>;
 }) {
-  const { email, plan, billing } = await searchParams;
+  const { email, plan, billing, source } = await searchParams;
   const selectedPlan = plan && isSelfServePlanKey(plan) ? plan : undefined;
   const billingPeriod = billing && isBillingPeriod(billing) ? billing : "monthly";
+  const signupSource = source === "launchpad" ? "launchpad" : undefined;
   const t = await getTranslations("AuthLayout");
   return (
     <div className="grid min-h-svh md:grid-cols-2">
@@ -45,7 +46,7 @@ export default async function SignupPage({
             <Logo />
             WeWebinars
           </Link>
-          <SignupForm initialEmail={email} plan={selectedPlan} billing={billingPeriod} />
+          <SignupForm initialEmail={email} plan={selectedPlan} billing={billingPeriod} source={signupSource} />
         </div>
       </div>
     </div>

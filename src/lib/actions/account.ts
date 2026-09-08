@@ -31,6 +31,8 @@ export async function createAccount(
   const selectedPlanKey = isSelfServePlanKey(rawSelectedPlan) ? rawSelectedPlan : null;
   const rawBilling = String(formData.get("billing") ?? "");
   const billingPeriod = isBillingPeriod(rawBilling) ? rawBilling : "monthly";
+  const rawSource = String(formData.get("source") ?? "");
+  const fromLaunchpad = rawSource === "launchpad";
 
   if (!name) {
     const t = await getTranslations("AccountActions");
@@ -72,7 +74,11 @@ export async function createAccount(
           // dashboard -- the whole point of signing up is to get a webinar
           // running, and a generic summary screen with zero data is a dead
           // end the host has to figure their way out of on their own.
-          redirectTo = "/dashboard/webinars/new";
+          // A Starter Kit signup is the one exception: it lands in
+          // /dashboard/launchpad instead, continuing the recorrido the
+          // host was already on rather than dropping them into an
+          // unrelated wizard.
+          redirectTo = fromLaunchpad ? "/dashboard/launchpad" : "/dashboard/webinars/new";
           resolved = true;
           // Best-effort: a failed welcome email should never block the
           // account from being created, so it's logged and swallowed

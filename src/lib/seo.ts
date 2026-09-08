@@ -4,7 +4,7 @@ import { hasLocale } from "next-intl";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
-type MarketingHref = "/" | "/pricing" | "/blog" | "/readiness" | "/script-builder";
+type MarketingHref = "/" | "/pricing" | "/blog" | "/readiness" | "/script-builder" | "/starter-kit";
 
 // Self-referencing canonical + hreflang alternates for the marketing
 // routes that exist in both locales, so Google reads the es/en pages as

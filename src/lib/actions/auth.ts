@@ -57,6 +57,13 @@ export async function signUpWithPassword(
   const fullName = String(formData.get("full_name") ?? "");
   const rawPlan = String(formData.get("plan") ?? "");
   const rawBilling = String(formData.get("billing") ?? "");
+  // "Vino del Starter Kit" -- ver createAccount, que lo usa para mandar a
+  // /dashboard/launchpad en vez de /dashboard/webinars/new al terminar
+  // onboarding. Único valor válido hoy; el enum de un solo elemento no es
+  // sobre-ingeniería, es lo mismo que isSelfServePlanKey/isBillingPeriod
+  // ya hacen para no confiar en un string de formulario sin validar.
+  const rawSource = String(formData.get("source") ?? "");
+  const source = rawSource === "launchpad" ? rawSource : null;
   // Populated by the Cloudflare Turnstile widget's own hidden input (see
   // signup-form.tsx) once it's solved -- Supabase Auth verifies it
   // server-side against the secret key configured in its own dashboard
@@ -65,14 +72,19 @@ export async function signUpWithPassword(
   // before the widget finishes still gets Supabase's own rejection message
   // rather than us silently letting it through.
   const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
-  // Carries the plan (+ billing period) a host chose on Pricing through to
-  // onboarding -- as a query string on `next` rather than separate params,
-  // since that's the one value every redirect path here (email confirm,
-  // Google OAuth callback) already forwards verbatim.
+  // Carries the plan (+ billing period) a host chose on Pricing, and/or
+  // where this signup came from, through to onboarding -- as a query
+  // string on `next` rather than separate params, since that's the one
+  // value every redirect path here (email confirm, Google OAuth callback)
+  // already forwards verbatim.
   const billingPeriod = isBillingPeriod(rawBilling) ? rawBilling : "monthly";
-  const next = isSelfServePlanKey(rawPlan)
-    ? `/onboarding?plan=${rawPlan}&billing=${billingPeriod}`
-    : "/onboarding";
+  const onboardingParams = new URLSearchParams();
+  if (isSelfServePlanKey(rawPlan)) {
+    onboardingParams.set("plan", rawPlan);
+    onboardingParams.set("billing", billingPeriod);
+  }
+  if (source) onboardingParams.set("source", source);
+  const next = onboardingParams.size > 0 ? `/onboarding?${onboardingParams.toString()}` : "/onboarding";
 
   let hasSession: boolean;
   try {

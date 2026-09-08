@@ -996,6 +996,115 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["script_builder_events"]["Row"]>;
         Relationships: [];
       };
+      launchpad_projects: {
+        Row: {
+          id: string;
+          account_id: string;
+          title: string;
+          current_step: "cost" | "diagnosis" | "architecture" | "script" | "implementation" | "demo" | "create";
+          status: "active" | "completed";
+          readiness_assessment_id: string | null;
+          webinar_project_id: string | null;
+          created_at: string;
+          updated_at: string;
+          completed_at: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_projects"]["Row"]> & {
+          account_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_projects"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "launchpad_projects_readiness_assessment_id_fkey";
+            columns: ["readiness_assessment_id"];
+            isOneToOne: false;
+            referencedRelation: "readiness_assessments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "launchpad_projects_webinar_project_id_fkey";
+            columns: ["webinar_project_id"];
+            isOneToOne: false;
+            referencedRelation: "webinar_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      launchpad_step_progress: {
+        Row: {
+          id: string;
+          project_id: string;
+          step_key: "cost" | "diagnosis" | "architecture" | "script" | "implementation" | "demo" | "create";
+          status: "not_started" | "in_progress" | "completed" | "needs_review";
+          progress_percentage: number;
+          started_at: string | null;
+          completed_at: string | null;
+          last_activity_at: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_step_progress"]["Row"]> & {
+          project_id: string;
+          step_key: Database["public"]["Tables"]["launchpad_step_progress"]["Row"]["step_key"];
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_step_progress"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "launchpad_step_progress_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      repetition_calculations: {
+        Row: {
+          id: string;
+          project_id: string;
+          inputs: Json;
+          results: Json;
+          calculation_version: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["repetition_calculations"]["Row"]> & {
+          project_id: string;
+          inputs: Json;
+          results: Json;
+        };
+        Update: Partial<Database["public"]["Tables"]["repetition_calculations"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "repetition_calculations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      launchpad_events: {
+        Row: {
+          id: string;
+          project_id: string;
+          event_type:
+            | "launchpad_viewed"
+            | "launchpad_step_started"
+            | "launchpad_step_completed"
+            | "repetition_calculation_completed"
+            | "create_webinar_clicked";
+          properties: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_events"]["Row"]> & {
+          project_id: string;
+          event_type: Database["public"]["Tables"]["launchpad_events"]["Row"]["event_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_events"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -1165,6 +1274,10 @@ export interface Database {
           p_answers: Json;
         };
         Returns: undefined;
+      };
+      get_or_create_launchpad_project: {
+        Args: { p_account_id: string };
+        Returns: Database["public"]["Tables"]["launchpad_projects"]["Row"];
       };
       account_is_publishable: {
         Args: { p_account_id: string };

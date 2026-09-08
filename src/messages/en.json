@@ -400,6 +400,7 @@
   },
   "DashboardNav": {
     "summary": "Summary",
+    "launchpad": "Launchpad",
     "webinars": "Webinars",
     "team": "Team",
     "settings": "Settings"
@@ -1931,6 +1932,132 @@
       "description": "You'll lose your current profile and start the 7 stages over.",
       "confirm": "Yes, start over",
       "cancel": "Cancel"
+    }
+  },
+  "Launchpad": {
+    "dashboard": {
+      "title": "Your Evergreen Webinar Launchpad",
+      "greeting": "Hi, {name}. Let's turn a presentation that depends on you today into a system that can work 24/7.",
+      "loadFailed": "We couldn't load your Launchpad. Refresh the page or try again in a moment.",
+      "stepsCompleted": "{completed} of {total} stages completed",
+      "progressLabel": "Launchpad progress",
+      "percentageCompleted": "{percentage}% completed",
+      "timeRemaining": "{minutes} estimated minutes remaining",
+      "nextStepLabel": "Next step",
+      "continueCta": "Continue my Launchpad",
+      "stepName": {
+        "cost": "Cost of repeating",
+        "diagnosis": "Diagnosis",
+        "architecture": "Architecture",
+        "script": "Script",
+        "implementation": "Implementation",
+        "demo": "Demo",
+        "create": "Create"
+      },
+      "stepResult": {
+        "cost": "Find out how much time and money repeating your presentation costs you.",
+        "diagnosis": "Get your Evergreen Readiness Score and your action plan.",
+        "architecture": "Walk through your webinar's 18-slide Blueprint.",
+        "script": "Generate your webinar's first script with AI.",
+        "implementation": "See how to turn your script into a real webinar.",
+        "demo": "Experience an evergreen webinar working from start to finish.",
+        "create": "Create your first webinar in WeWebinars."
+      },
+      "stepStatus": {
+        "not_started": "Not started",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "needs_review": "Needs review"
+      },
+      "stepCta": {
+        "cost": "Calculate my cost",
+        "diagnosis": "Get my Score",
+        "architecture": "Design my architecture",
+        "script": "Generate my script",
+        "implementation": "See implementation",
+        "demo": "Explore the demo",
+        "create": "Create my webinar"
+      },
+      "estimatedMinutes": "{minutes} min estimated",
+      "comingSoon": "Coming soon",
+      "reviewCta": "Review",
+      "rewardTitle": "Automated Evergreen Webinar Playbook 2026",
+      "rewardSubtitle": "Surprise available once you complete the demo."
+    },
+    "calculator": {
+      "title": "How much does repeating your presentation cost you?",
+      "subtitle": "Fill in your details and find out how much time and money you could recover by automating it.",
+      "presentationsPerWeekLabel": "Presentations per week",
+      "durationMinutesLabel": "Duration of each presentation (minutes)",
+      "prepAndFollowupMinutesLabel": "Prep and follow-up per presentation (minutes)",
+      "peopleRepeatingLabel": "People repeating the presentation",
+      "hourlyValueUsdLabel": "Estimated value of an hour of work (US$)",
+      "automatablePercentageLabel": "Percentage of time you could automate",
+      "insight": "Today, repeating your presentation consumes roughly {annualHours} hours a year: the equivalent of {annualWorkdays} full workdays. If you automate {automatablePercentage}% of the repetitive work, you could recover close to {recoverableHours} hours a year.",
+      "currentSystemLabel": "Current system",
+      "annualHoursLabel": "Hours per year",
+      "annualWorkdaysLabel": "Full workdays",
+      "annualCostLabel": "Annual cost",
+      "recoverableLabel": "Recoverable through automation",
+      "recoverableHoursLabel": "Recoverable hours",
+      "recoverableWorkdaysLabel": "Recoverable workdays",
+      "recoverableValueLabel": "Recoverable value",
+      "projectionNote": "That's about {monthlyCost} a month, or {threeYear} over three years if nothing changes.",
+      "saveCta": "Save and continue",
+      "saving": "Saving...",
+      "saveError": "We couldn't save your calculation. Please try again in a moment."
+    }
+  },
+  "StarterKit": {
+    "meta": {
+      "title": "Evergreen Webinar Starter Kit: turn your presentation into a 24/7 asset",
+      "description": "Calculate how much repeating your presentation costs you, find out if you're ready to automate it, and build the architecture and script for your first evergreen webinar."
+    },
+    "hero": {
+      "eyebrow": "Evergreen Webinar Starter Kit",
+      "title": "Turn your presentation into the plan for an asset that works 24/7",
+      "subtitle": "Calculate how much it costs you to keep repeating it, find out if you're ready to automate it, and build the architecture and script for your first evergreen webinar.",
+      "benefit1": "Calculate the hours and money you lose repeating your presentation.",
+      "benefit2": "Get your Evergreen Readiness Score.",
+      "benefit3": "Build your webinar with an 18-slide Blueprint.",
+      "benefit4": "Generate your first script with artificial intelligence.",
+      "benefit5": "Find out how to automate it with WeWebinars.",
+      "cta": "Start for free",
+      "ctaReturning": "Go to my Launchpad",
+      "microcopy": "No credit card · About 45 minutes · Your progress is saved",
+      "secondaryCta": "See what's included"
+    },
+    "journey": {
+      "title": "Your journey",
+      "subtitle": "Seven guided stages, from your current presentation to your first evergreen webinar.",
+      "stepName": {
+        "cost": "Cost of repeating",
+        "diagnosis": "Diagnosis",
+        "architecture": "Architecture",
+        "script": "Script",
+        "implementation": "Implementation",
+        "demo": "Demo",
+        "create": "Create"
+      },
+      "stepResult": {
+        "cost": "Find out how much time and money repeating your presentation costs you.",
+        "diagnosis": "Get your Evergreen Readiness Score and your action plan.",
+        "architecture": "Walk through your webinar's 18-slide Blueprint.",
+        "script": "Generate your webinar's first script with AI.",
+        "implementation": "See how to turn your script into a real webinar.",
+        "demo": "Experience an evergreen webinar working from start to finish.",
+        "create": "Create your first webinar in WeWebinars."
+      }
+    },
+    "transformation": {
+      "beforeLabel": "Before",
+      "beforeText": "A presentation you have to repeat in person.",
+      "afterLabel": "After",
+      "afterText": "A structured, recordable presentation ready to automate."
+    },
+    "finalCta": {
+      "title": "Your presentation already takes up enough time to become a system.",
+      "subtitle": "Record it once, set it up, and let it work for you 24/7."
     }
   }
 }
