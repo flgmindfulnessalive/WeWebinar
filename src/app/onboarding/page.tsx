@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { AuthLayout } from "@/components/auth-layout";
 import { createClient } from "@/lib/supabase/server";
 import { isBillingPeriod, isSelfServePlanKey } from "@/lib/whop";
 import { OnboardingForm } from "./onboarding-form";
@@ -33,10 +34,8 @@ export default async function OnboardingPage({
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
-      <div className="w-full max-w-md">
-        <OnboardingForm plan={selectedPlan} billing={billingPeriod} source={signupSource} />
-      </div>
-    </div>
+    <AuthLayout>
+      <OnboardingForm plan={selectedPlan} billing={billingPeriod} source={signupSource} />
+    </AuthLayout>
   );
 }

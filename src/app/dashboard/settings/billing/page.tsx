@@ -40,7 +40,7 @@ export default async function BillingPage() {
         .eq("status", "published"),
       supabase
         .from("plans")
-        .select("key, name, price_annual_usd")
+        .select("key, name, price_monthly_usd, price_annual_usd")
         .eq("is_self_serve", true)
         .order("price_annual_usd", { ascending: true, nullsFirst: false }),
       supabase.from("webinars").select("id").eq("account_id", current.account.id),
@@ -58,13 +58,14 @@ export default async function BillingPage() {
           .in("webinar_id", webinarIds)
           .gte("created_at", monthStart)
       : { count: 0 };
-  const changeablePlans = (selfServePlans ?? []).map((p) => ({
-    key: p.key,
-    label:
-      p.price_annual_usd === null
-        ? t("changeToPlan", { plan: p.name })
-        : t("changeToPlanWithPrice", { plan: p.name, price: p.price_annual_usd }),
-  }));
+  // A plan still on its free trial (no billing_customer_id yet) has no
+  // subscription to "switch away from" -- it needs to be paid for, not
+  // changed. That's the one case where the current plan itself belongs in
+  // this list: everyone else only sees the OTHER plans.
+  const isTrialNotBilled = !current.account.billing_customer_id;
+  const payablePlans = (selfServePlans ?? []).filter(
+    (p) => p.key !== current.plan.key || isTrialNotBilled
+  );
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -102,16 +103,51 @@ export default async function BillingPage() {
         <CardHeader>
           <CardTitle className="text-sm font-medium">{t("changePlanTitle")}</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
+        <CardContent className="flex flex-col gap-4">
           {billingConfigured ? (
-            changeablePlans.filter((p) => p.key !== current.plan.key).map((p) => (
-              <CheckoutButton
-                key={p.key}
-                planKey={p.key}
-                billingPeriod="annual"
-                label={p.label}
-              />
-            ))
+            payablePlans.map((p) => {
+              const isCurrent = p.key === current.plan.key;
+              return (
+                <div key={p.key} className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3">
+                  <div>
+                    <p className="text-sm font-medium">{p.name}</p>
+                    {isCurrent && (
+                      <p className="text-xs text-muted-foreground">{t("currentPlanNotBilledHint")}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {p.price_monthly_usd !== null && (
+                      <CheckoutButton
+                        planKey={p.key}
+                        billingPeriod="monthly"
+                        label={
+                          isCurrent
+                            ? t("activatePlanWithPriceMonthly", { plan: p.name, price: p.price_monthly_usd })
+                            : t("changeToPlanWithPriceMonthly", { plan: p.name, price: p.price_monthly_usd })
+                        }
+                      />
+                    )}
+                    {p.price_annual_usd !== null ? (
+                      <CheckoutButton
+                        planKey={p.key}
+                        billingPeriod="annual"
+                        label={
+                          isCurrent
+                            ? t("activatePlanWithPrice", { plan: p.name, price: p.price_annual_usd })
+                            : t("changeToPlanWithPrice", { plan: p.name, price: p.price_annual_usd })
+                        }
+                      />
+                    ) : (
+                      <CheckoutButton
+                        planKey={p.key}
+                        billingPeriod="annual"
+                        label={isCurrent ? t("activatePlan", { plan: p.name }) : t("changeToPlan", { plan: p.name })}
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })
           ) : (
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <p>{t("selfServeDisabled")}</p>

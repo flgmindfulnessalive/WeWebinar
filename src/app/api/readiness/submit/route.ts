@@ -159,28 +159,35 @@ export async function POST(request: Request) {
     console.error("[readiness/submit] Brevo sync failed:", err);
   });
 
-  // Best-effort, no bloqueante -- si quien completó el diagnóstico está
-  // logueado (llegó acá desde /dashboard/launchpad, o simplemente tenía
-  // sesión abierta en otra pestaña), sincroniza la etapa "diagnosis" del
+  // Best-effort (nunca tumba la respuesta ya armada), pero SÍ esperado --
+  // igual que en script-builder/event y createWebinar. Un `.then()` sin
+  // await acá quedaba corriendo después de que la función ya había hecho
+  // `return NextResponse.json(report)`: en el runtime serverless de Vercel
+  // eso significa que el proceso puede congelarse/matarse apenas se manda
+  // la respuesta, así que la sincronización con el Launchpad no llegaba a
+  // terminar y el paso "diagnosis" nunca quedaba marcado como completado
+  // en el dashboard. Si quien completó el diagnóstico está logueado
+  // (llegó acá desde /dashboard/launchpad, o simplemente tenía sesión
+  // abierta en otra pestaña), sincroniza la etapa "diagnosis" del
   // Launchpad. Un score bajo no cuenta como "completado" sino
   // "needs_review": el usuario sí terminó la acción, pero el badge del
   // dashboard debe invitarlo a revisar el plan antes de seguir.
-  getCurrentAccount()
-    .then((current) => {
-      if (!current) return;
+  try {
+    const current = await getCurrentAccount();
+    if (current) {
       const stepStatus = report.readinessStatus === "ready" || report.readinessStatus === "almost_ready"
         ? "completed"
         : "needs_review";
-      return syncLaunchpadStepFromExternalTool({
+      await syncLaunchpadStepFromExternalTool({
         accountId: current.account.id,
         stepKey: "diagnosis",
         status: stepStatus,
         link: { readiness_assessment_id: payload.assessmentId },
       });
-    })
-    .catch((err) => {
-      console.error("[readiness/submit] Launchpad sync failed:", err);
-    });
+    }
+  } catch (err) {
+    console.error("[readiness/submit] Launchpad sync failed:", err);
+  }
 
   return NextResponse.json(report);
 }
