@@ -87,9 +87,9 @@ export function AttentionCard({ webinars }: { webinars: AttentionWebinar[] }) {
   if (visible.length === 0) return null;
 
   return (
-    <Card className="border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
+    <Card className="border-amber-300 bg-amber-50 dark:border-indigo-900 dark:bg-indigo-950/40">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-300">
+        <CardTitle className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-indigo-300">
           <TriangleAlert className="size-4" />
           {t("attentionTitle")}
         </CardTitle>
@@ -112,7 +112,7 @@ export function AttentionCard({ webinars }: { webinars: AttentionWebinar[] }) {
               type="button"
               onClick={() => dismiss(webinar)}
               aria-label={t("attentionDismiss")}
-              className="shrink-0 rounded p-1 text-amber-700/70 hover:bg-amber-100 hover:text-amber-900 dark:text-amber-400/70 dark:hover:bg-amber-900/40 dark:hover:text-amber-200"
+              className="shrink-0 rounded p-1 text-amber-700/70 hover:bg-amber-100 hover:text-amber-900 dark:text-indigo-400/70 dark:hover:bg-indigo-900/40 dark:hover:text-indigo-200"
             >
               <X className="size-3.5" />
             </button>
@@ -121,7 +121,7 @@ export function AttentionCard({ webinars }: { webinars: AttentionWebinar[] }) {
         {visible.length > DISPLAY_LIMIT && (
           <Link
             href="/dashboard/webinars?attention=1"
-            className="text-sm font-medium text-amber-800 hover:underline dark:text-amber-300"
+            className="text-sm font-medium text-amber-800 hover:underline dark:text-indigo-300"
           >
             {t("attentionViewAll", { count: visible.length })}
           </Link>
