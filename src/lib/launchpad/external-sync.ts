@@ -18,7 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function syncLaunchpadStepFromExternalTool(params: {
   accountId: string;
   stepKey: Extract<LaunchpadStepKey, "diagnosis" | "script" | "create">;
-  status: "completed" | "needs_review";
+  status: "in_progress" | "completed" | "needs_review";
   link: { readiness_assessment_id: string } | { webinar_project_id: string } | Record<string, never>;
 }): Promise<void> {
   const supabase = await createClient();
@@ -44,7 +44,23 @@ export async function syncLaunchpadStepFromExternalTool(params: {
     completedAt: row.completed_at,
     lastActivityAt: row.last_activity_at,
   }));
-  const wasAlreadyCompleted = stepStatusFor(existingSteps, params.stepKey) === "completed";
+  const currentStatus = stepStatusFor(existingSteps, params.stepKey);
+
+  // "in_progress" is just the "the user got started" signal (fired the
+  // moment a tool like Readiness begins, long before it's actually
+  // finished) -- same markStepStarted criteria as launchpad/event's
+  // native-step tracking: never pisa un status más avanzado.
+  if (params.status === "in_progress") {
+    if (currentStatus !== "not_started") return;
+    const now = new Date().toISOString();
+    await admin.from("launchpad_step_progress").upsert(
+      { project_id: project.id, step_key: params.stepKey, status: "in_progress", started_at: now, last_activity_at: now },
+      { onConflict: "project_id,step_key" }
+    );
+    return;
+  }
+
+  const wasAlreadyCompleted = currentStatus === "completed";
 
   const now = new Date().toISOString();
   await admin.from("launchpad_step_progress").upsert(
