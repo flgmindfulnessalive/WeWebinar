@@ -1094,7 +1094,9 @@ export interface Database {
             | "launchpad_step_started"
             | "launchpad_step_completed"
             | "repetition_calculation_completed"
-            | "create_webinar_clicked";
+            | "create_webinar_clicked"
+            | "blueprint_slide_viewed"
+            | "blueprint_completed";
           properties: Json;
           created_at: string;
         };
@@ -1104,6 +1106,31 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["launchpad_events"]["Row"]>;
         Relationships: [];
+      };
+      blueprint_progress: {
+        Row: {
+          id: string;
+          project_id: string;
+          slide_number: number;
+          completed: boolean;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["blueprint_progress"]["Row"]> & {
+          project_id: string;
+          slide_number: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["blueprint_progress"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "blueprint_progress_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {

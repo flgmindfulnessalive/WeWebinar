@@ -26,7 +26,7 @@ export const LAUNCHPAD_STEPS: Record<LaunchpadStepKey, LaunchpadStepDefinition> 
     order: 3,
     route: "/dashboard/launchpad/blueprint",
     estimatedMinutes: 10,
-    available: false,
+    available: true,
   },
   script: { key: "script", order: 4, route: "/script-builder", estimatedMinutes: 15, available: true },
   implementation: {

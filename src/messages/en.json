@@ -2006,6 +2006,171 @@
       "saveCta": "Save and continue",
       "saving": "Saving...",
       "saveError": "We couldn't save your calculation. Please try again in a moment."
+    },
+    "blueprint": {
+      "title": "18-Slide Blueprint",
+      "subtitle": "Walk through your webinar's full architecture, act by act.",
+      "progress": "{completed} of {total} slides reviewed",
+      "notesLabel": "Your notes (optional)",
+      "notesPlaceholder": "How would you apply this slide to your presentation?",
+      "markReady": "Mark as ready",
+      "markedReady": "Ready",
+      "previous": "Previous",
+      "next": "Next",
+      "downloadCta": "Download Blueprint",
+      "objectiveLabel": "Objective",
+      "questionLabel": "Question",
+      "exampleLabel": "Example",
+      "visualTipLabel": "Visual recommendation",
+      "completeProfileCta": "Generate my script",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "acts": {
+        "problem": {
+          "title": "Act I: The problem",
+          "description": "Make the limitation of the current approach visible and create relevance."
+        },
+        "new_way": {
+          "title": "Act II: The new way",
+          "description": "Shift the audience's belief and introduce a new paradigm."
+        },
+        "criteria": {
+          "title": "Act III: The criteria",
+          "description": "Show what an effective solution must meet."
+        },
+        "implementation": {
+          "title": "Act IV: The implementation",
+          "description": "Present the vehicle, the offer, and the next step."
+        }
+      },
+      "slides": {
+        "slide1": {
+          "title": "Cover / Big idea",
+          "objective": "Capture immediate attention and create genuine curiosity before explaining anything.",
+          "question": "What question or tension makes someone want to keep watching the next 30 seconds?",
+          "example": "\"What if you could sell without being present on every call?\"",
+          "visualTip": "One large sentence, no logos or secondary text competing for attention."
+        },
+        "slide2": {
+          "title": "Identification",
+          "objective": "Get the audience to recognize themselves in the situation described.",
+          "question": "How would you describe your audience's current situation in their own words?",
+          "example": "\"If you repeat the same demo every week and feel your time isn't paying off...\"",
+          "visualTip": "An image or icon representing the person, not the product."
+        },
+        "slide3": {
+          "title": "The hidden cost",
+          "objective": "Make tangible what the current way of doing things is costing in time, money, or energy.",
+          "question": "How much is it costing your audience to keep doing things the way they do today?",
+          "example": "\"Every repeated presentation is 2 hours that don't come back.\"",
+          "visualTip": "A concrete number or figure, not a vague statement."
+        },
+        "slide4": {
+          "title": "The false problem",
+          "objective": "Question the surface-level explanation the audience already gave themselves.",
+          "question": "What obvious solution have they already tried that doesn't actually address the real cause?",
+          "example": "\"Hiring more people doesn't fix a process that depends on one single person.\"",
+          "visualTip": "Visually contrast \"what looks like the problem\" against what follows."
+        },
+        "slide5": {
+          "title": "The real cause",
+          "objective": "Reveal the true bottleneck behind the symptom.",
+          "question": "What's the root cause nobody had pointed out to them before?",
+          "example": "\"The problem isn't the presentation. It's that its delivery depends on your time.\"",
+          "visualTip": "A simple diagram showing cause → symptom, not just text."
+        },
+        "slide6": {
+          "title": "Paradigm shift",
+          "objective": "Install a new way of seeing the problem that makes the solution that follows obvious.",
+          "question": "What does your audience believe today that they need to stop believing?",
+          "example": "\"Selling isn't an innate skill, it's a repeatable system.\"",
+          "visualTip": "Conceptual before/after, not the product yet."
+        },
+        "slide7": {
+          "title": "The mechanism",
+          "objective": "Explain how the new way works without presenting the product yet.",
+          "question": "What are the concrete steps that make this work?",
+          "example": "\"A 3-call system: diagnosis, plan, follow-up.\"",
+          "visualTip": "A numbered sequence of 3 to 5 steps, simple and visual."
+        },
+        "slide8": {
+          "title": "Before vs. after",
+          "objective": "Contrast the current system with the new possible reality.",
+          "question": "What does day-to-day look like before and after adopting this mechanism?",
+          "example": "\"Before: 5 identical calls a week. After: 1 presentation that works on its own.\"",
+          "visualTip": "Side-by-side table or columns, few words per row."
+        },
+        "slide9": {
+          "title": "The right experience",
+          "objective": "Define how a well-built solution should feel or work.",
+          "question": "What would someone expect to experience if this worked exactly as it should?",
+          "example": "\"It should feel as personal as a 1:1 call, without you being there.\"",
+          "visualTip": "Sensory language: how it looks, feels, how long it takes."
+        },
+        "slide10": {
+          "title": "The criteria",
+          "objective": "Establish the objective criteria any good solution should meet.",
+          "question": "What would a solution absolutely have to meet for you to trust it?",
+          "example": "\"It has to work without my presence, measure results, and look professional.\"",
+          "visualTip": "A checklist of 3 to 5 criteria, not a paragraph."
+        },
+        "slide11": {
+          "title": "Capture and registration",
+          "objective": "Show how the journey begins for someone who arrives at the solution.",
+          "question": "What's the first thing someone does to start using this?",
+          "example": "\"They register on a page with a single clear promise.\"",
+          "visualTip": "A screenshot or simplified mockup of the first step."
+        },
+        "slide12": {
+          "title": "The experience itself",
+          "objective": "Show what the person lives through during the core experience.",
+          "question": "What happens during the main moment of the experience?",
+          "example": "\"They watch the recorded presentation as if it were live, on their own schedule.\"",
+          "visualTip": "A capture of the real experience, not a generic illustration."
+        },
+        "slide13": {
+          "title": "Conversation and attention",
+          "objective": "Show how questions get answered and buying intent gets detected.",
+          "question": "How does the person know they can ask a question and get an answer?",
+          "example": "\"A live chat answers questions while they watch the presentation.\"",
+          "visualTip": "A real example of a question and answer, not an abstract description."
+        },
+        "slide14": {
+          "title": "CTA at the right moment",
+          "objective": "Connect the presentation to a relevant action at the right time.",
+          "question": "At exactly what moment does the invitation to act appear?",
+          "example": "\"The booking button appears only after explaining the mechanism.\"",
+          "visualTip": "Mark on a timeline where the CTA appears."
+        },
+        "slide15": {
+          "title": "Data to improve",
+          "objective": "Show how the process gets measured and optimized over time.",
+          "question": "What data lets someone know whether this is working?",
+          "example": "\"How many registered, how many watched fully, how many took action.\"",
+          "visualTip": "A simple panel or 3 key metrics, not a full table."
+        },
+        "slide16": {
+          "title": "Presenting the solution",
+          "objective": "Reveal the product as the natural consequence of everything explained before.",
+          "question": "How is the offer presented so it feels like the logical next step, not a sales pitch?",
+          "example": "\"That's why we built [product]: the system that does exactly this for you.\"",
+          "visualTip": "The first moment where the product is shown with a name and clear shape."
+        },
+        "slide17": {
+          "title": "Offer and choice",
+          "objective": "Clearly communicate what the person gets, at what price, and with what guarantees.",
+          "question": "What exactly does the offer include, and what lowers the risk of saying yes?",
+          "example": "\"It includes X, Y, Z. 30-day guarantee. Clear price and payment terms.\"",
+          "visualTip": "A list of what's included plus the price, no hidden fine print."
+        },
+        "slide18": {
+          "title": "Decision / CTA",
+          "objective": "Close with a single clear instruction, no ambiguity or multiple paths.",
+          "question": "What's the one action you're asking the audience to take right now?",
+          "example": "\"Book your call below. It's the only button on this page.\"",
+          "visualTip": "One single button, one message, no visual competition."
+        }
+      }
     }
   },
   "StarterKit": {
