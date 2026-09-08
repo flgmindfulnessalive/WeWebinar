@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Script from "next/script";
 import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { signUpWithPassword } from "@/lib/actions/auth";
+import { useTurnstile } from "@/hooks/use-turnstile";
 import type { BillingPeriod, SelfServePlanKey } from "@/lib/whop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,12 +35,6 @@ const PLAN_LABEL: Record<SelfServePlanKey, string> = {
 // an environment that hasn't configured it yet, in which case the widget
 // just doesn't render and signup behaves exactly as before.
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-
-declare global {
-  interface Window {
-    onTurnstileVerified?: (token: string) => void;
-  }
-}
 
 export function SignupForm({
   initialEmail,
@@ -71,25 +65,13 @@ export function SignupForm({
   if (source) onboardingNextParams.set("source", source);
   const onboardingNext =
     onboardingNextParams.size > 0 ? `/onboarding?${onboardingNextParams.toString()}` : "/onboarding";
-  const [captchaToken, setCaptchaToken] = useState("");
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
 
   useEffect(() => {
     if (!showCheckEmail) return;
     const timer = setTimeout(() => router.push("/login"), CHECK_EMAIL_REDIRECT_MS);
     return () => clearTimeout(timer);
   }, [showCheckEmail, router]);
-
-  // Turnstile's own script injects a hidden cf-turnstile-response input
-  // into the .cf-turnstile div once solved, which is what actually reaches
-  // signUpWithPassword on submit -- this callback only drives the button's
-  // disabled state, so someone can't submit before the widget is ready.
-  useEffect(() => {
-    if (!TURNSTILE_SITE_KEY) return;
-    window.onTurnstileVerified = (token: string) => setCaptchaToken(token);
-    return () => {
-      delete window.onTurnstileVerified;
-    };
-  }, []);
 
   return (
     <Card>
@@ -115,14 +97,6 @@ export function SignupForm({
           </div>
         ) : (
           <>
-            {TURNSTILE_SITE_KEY && (
-              <Script
-                src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-                strategy="afterInteractive"
-                async
-                defer
-              />
-            )}
             {plan && (
               <p className="rounded-md border bg-accent px-3 py-2 text-xs text-muted-foreground">
                 {t("planNote", { plan: PLAN_LABEL[plan] })}
@@ -173,13 +147,7 @@ export function SignupForm({
                   autoComplete="new-password"
                 />
               </div>
-              {TURNSTILE_SITE_KEY && (
-                <div
-                  className="cf-turnstile"
-                  data-sitekey={TURNSTILE_SITE_KEY}
-                  data-callback="onTurnstileVerified"
-                />
-              )}
+              {TURNSTILE_SITE_KEY && <div ref={turnstileRef} />}
               {state && "error" in state && (
                 <p className="text-sm text-destructive">{state.error}</p>
               )}

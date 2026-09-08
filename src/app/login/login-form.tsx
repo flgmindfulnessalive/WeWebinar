@@ -1,11 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
-import Script from "next/script";
 import { useTranslations } from "next-intl";
 
 import { signInWithPassword } from "@/lib/actions/auth";
+import { useTurnstile } from "@/hooks/use-turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -26,27 +26,13 @@ import { GoogleButton } from "@/components/google-button";
 // protection: request disallowed (no captcha_token found)".
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-declare global {
-  interface Window {
-    onTurnstileVerified?: (token: string) => void;
-  }
-}
-
 export function LoginForm({ next }: { next: string }) {
   const t = useTranslations("LoginForm");
   const [state, formAction, isPending] = useActionState(
     signInWithPassword,
     null
   );
-  const [captchaToken, setCaptchaToken] = useState("");
-
-  useEffect(() => {
-    if (!TURNSTILE_SITE_KEY) return;
-    window.onTurnstileVerified = (token: string) => setCaptchaToken(token);
-    return () => {
-      delete window.onTurnstileVerified;
-    };
-  }, []);
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
 
   return (
     <Card>
@@ -55,14 +41,6 @@ export function LoginForm({ next }: { next: string }) {
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {TURNSTILE_SITE_KEY && (
-          <Script
-            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-            strategy="afterInteractive"
-            async
-            defer
-          />
-        )}
         <GoogleButton next={next} />
 
         <div className="relative">
@@ -97,13 +75,7 @@ export function LoginForm({ next }: { next: string }) {
               autoComplete="current-password"
             />
           </div>
-          {TURNSTILE_SITE_KEY && (
-            <div
-              className="cf-turnstile"
-              data-sitekey={TURNSTILE_SITE_KEY}
-              data-callback="onTurnstileVerified"
-            />
-          )}
+          {TURNSTILE_SITE_KEY && <div ref={turnstileRef} />}
           {state?.error && (
             <p className="text-sm text-destructive">{state.error}</p>
           )}
