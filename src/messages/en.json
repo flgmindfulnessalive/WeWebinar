@@ -2171,6 +2171,42 @@
           "visualTip": "One single button, one message, no visual competition."
         }
       }
+    },
+    "implementation": {
+      "title": "Turn your script into a real webinar",
+      "subtitle": "See how each piece comes together in the WeWebinars wizard, and use this checklist as your guide while you build it.",
+      "videoComingSoonTitle": "Implementation video coming soon",
+      "videoComingSoonBody": "We're recording the step-by-step walkthrough. In the meantime, use the checklist below -- each item matches a real section of the wizard.",
+      "checklistTitle": "Implementation checklist",
+      "checklistHint": "Check them off as you complete each one in the wizard.",
+      "allDoneNote": "You've completed the checklist. You're ready to create your webinar.",
+      "ctaCreateWebinar": "Create my webinar",
+      "items": {
+        "video": {
+          "title": "Upload your video",
+          "description": "The video your visitors will see when they enter the room."
+        },
+        "schedule": {
+          "title": "Set up your schedule",
+          "description": "Decide when and how visitors can join: fixed time slots, just-in-time start, or both."
+        },
+        "waitingRoom": {
+          "title": "Customize your waiting room",
+          "description": "What your visitor sees on the registration page and while they wait for it to start."
+        },
+        "chat": {
+          "title": "Add simulated chat messages",
+          "description": "Timed messages that appear during playback, so it feels live."
+        },
+        "ctas": {
+          "title": "Add your CTAs",
+          "description": "Links, banners, and polls that appear at exact moments in the video."
+        },
+        "publish": {
+          "title": "Publish your webinar",
+          "description": "Review everything and turn it on so it starts working for you."
+        }
+      }
     }
   },
   "StarterKit": {

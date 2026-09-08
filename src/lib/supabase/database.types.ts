@@ -1096,7 +1096,9 @@ export interface Database {
             | "repetition_calculation_completed"
             | "create_webinar_clicked"
             | "blueprint_slide_viewed"
-            | "blueprint_completed";
+            | "blueprint_completed"
+            | "implementation_item_checked"
+            | "implementation_completed";
           properties: Json;
           created_at: string;
         };

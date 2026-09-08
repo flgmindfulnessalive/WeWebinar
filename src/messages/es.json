@@ -2171,6 +2171,42 @@
           "visualTip": "Un solo botón, un solo mensaje, sin competencia visual."
         }
       }
+    },
+    "implementation": {
+      "title": "Convierte tu guion en un webinar real",
+      "subtitle": "Mira cómo se arma cada pieza en el wizard de WeWebinars y usa este checklist como guía mientras lo haces.",
+      "videoComingSoonTitle": "Video de implementación próximamente",
+      "videoComingSoonBody": "Estamos grabando el paso a paso. Mientras tanto, usa el checklist de abajo: cada item corresponde a una sección real del wizard.",
+      "checklistTitle": "Checklist de implementación",
+      "checklistHint": "Márcalos a medida que los vayas completando en el wizard.",
+      "allDoneNote": "Completaste el checklist. Ya tienes todo listo para crear tu webinar.",
+      "ctaCreateWebinar": "Crear mi webinar",
+      "items": {
+        "video": {
+          "title": "Sube tu video",
+          "description": "El video que van a ver tus visitantes al entrar a la sala."
+        },
+        "schedule": {
+          "title": "Configura la programación",
+          "description": "Define cuándo y cómo pueden entrar tus visitantes: horarios fijos, arranque inmediato, o ambos."
+        },
+        "waitingRoom": {
+          "title": "Personaliza tu sala de espera",
+          "description": "Lo que ve tu visitante en la página de registro y mientras espera que empiece."
+        },
+        "chat": {
+          "title": "Agrega mensajes de chat simulado",
+          "description": "Mensajes cronometrados que aparecen durante la reproducción, para que se sienta en vivo."
+        },
+        "ctas": {
+          "title": "Agrega tus CTAs",
+          "description": "Links, banners y encuestas que aparecen en momentos exactos del video."
+        },
+        "publish": {
+          "title": "Publica tu webinar",
+          "description": "Revisa todo y actívalo para que empiece a trabajar por ti."
+        }
+      }
     }
   },
   "StarterKit": {

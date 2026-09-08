@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { IMPLEMENTATION_CHECKLIST_ITEM_KEYS } from "./implementation-content";
+
 // Límites generosos pero reales -- evita que un payload absurdo (horas
 // negativas, un valor por hora de 10 dígitos) llegue a persistirse o a
 // alimentar un cálculo con NaN/Infinity. Mismo criterio que
@@ -26,6 +28,12 @@ export const BlueprintSlideSaveSchema = z.object({
 });
 export type BlueprintSlideSavePayload = z.infer<typeof BlueprintSlideSaveSchema>;
 
+export const ImplementationChecklistItemSaveSchema = z.object({
+  itemKey: z.enum(IMPLEMENTATION_CHECKLIST_ITEM_KEYS),
+  checked: z.boolean(),
+});
+export type ImplementationChecklistItemSavePayload = z.infer<typeof ImplementationChecklistItemSaveSchema>;
+
 // Solo los eventos que este slice efectivamente dispara -- se extiende
 // (agregando valores al enum de Postgres + acá) a medida que se
 // construyen los módulos de video/demo/rewards, mismo criterio que
@@ -38,6 +46,8 @@ const KNOWN_EVENT_TYPES = [
   "create_webinar_clicked",
   "blueprint_slide_viewed",
   "blueprint_completed",
+  "implementation_item_checked",
+  "implementation_completed",
 ] as const;
 export type LaunchpadEventType = (typeof KNOWN_EVENT_TYPES)[number];
 

@@ -34,7 +34,7 @@ export const LAUNCHPAD_STEPS: Record<LaunchpadStepKey, LaunchpadStepDefinition> 
     order: 5,
     route: "/dashboard/launchpad/implementation",
     estimatedMinutes: 8,
-    available: false,
+    available: true,
   },
   demo: { key: "demo", order: 6, route: "/dashboard/launchpad/demo", estimatedMinutes: 5, available: false },
   create: { key: "create", order: 7, route: "/dashboard/webinars/new", estimatedMinutes: 2, available: true },
