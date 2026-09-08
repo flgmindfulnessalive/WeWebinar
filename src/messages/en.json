@@ -60,6 +60,7 @@
     "submit": "Save password"
   },
   "OnboardingForm": {
+    "emailConfirmedBadge": "Email confirmed",
     "title": "Create your host account",
     "description": "Choose a name for your account. Start on the Starter plan with a 7-day free trial, no credit card required — email us at operaciones@wewebinars.com when you want to upgrade.",
     "descriptionWithPlan": "Choose a name for your account. We'll first activate your 7-day free trial, then take you to pay for the {plan} plan — we ask for a card, first charge on day 8. Cancel before then and you pay nothing.",
