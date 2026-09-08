@@ -17,6 +17,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { LanguageToggle } from "./language-toggle";
 import { CheckoutButton } from "./settings/billing/billing-buttons";
 import { SupportChatWidget } from "./support-chat-widget";
+import { TrialBanner } from "./trial-banner";
 
 // Sets the "dark" class on the dashboard's own wrapper (see id below) before
 // the browser paints it, straight from localStorage -- otherwise a returning
@@ -254,20 +255,7 @@ export default async function DashboardLayout({
             </div>
           </header>
           {trialDaysLeft !== null && (
-            <div className="flex items-center justify-center gap-2 border-b bg-amber-50 px-4 py-2 text-center text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-              <CircleAlert className="size-4 shrink-0" />
-              <span>
-                {t.rich("trialBanner", {
-                  days: trialDaysLeft,
-                  supportEmail: SUPPORT_EMAIL,
-                  email: (chunks) => (
-                    <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-4">
-                      {chunks}
-                    </a>
-                  ),
-                })}
-              </span>
-            </div>
+            <TrialBanner accountId={current.account.id} daysLeft={trialDaysLeft} />
           )}
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </div>
