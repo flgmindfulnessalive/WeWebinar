@@ -60,6 +60,7 @@
     "submit": "Guardar contraseña"
   },
   "OnboardingForm": {
+    "emailConfirmedBadge": "Email confirmado",
     "title": "Crea tu cuenta de host",
     "description": "Elige un nombre para tu cuenta. Empieza con el plan Starter y 7 días de prueba gratis, sin tarjeta de crédito — escríbenos a operaciones@wewebinars.com cuando quieras subir de plan.",
     "descriptionWithPlan": "Elige un nombre para tu cuenta. Primero activamos tu prueba gratis de 7 días y después te llevamos a pagar el plan {plan} — pedimos tarjeta, el primer cobro es el día 8. Cancela antes y no pagas nada.",
