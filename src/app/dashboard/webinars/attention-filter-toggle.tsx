@@ -33,7 +33,7 @@ export function AttentionFilterToggle({ count }: { count: number }) {
       size="sm"
       variant={active ? "default" : "outline"}
       onClick={toggle}
-      className={cn(!active && "border-amber-300 text-amber-800 dark:border-amber-900 dark:text-amber-300")}
+      className={cn(!active && "border-amber-300 text-amber-800 dark:border-indigo-900 dark:text-indigo-300")}
     >
       <AlertTriangle className="size-3.5" />
       {t("attentionFilter", { count })}
