@@ -1323,5 +1323,229 @@
     "fakeViewerMaxLabel": "Máximo de conectados",
     "fakeViewerRangeSeparator": "a",
     "saveWaitingRoom": "Guardar"
+  },
+  "Readiness": {
+    "meta": {
+      "title": "Diagnóstico Evergreen: ¿está tu webinar listo para trabajar por ti?",
+      "description": "Evalúa los seis componentes esenciales de tu webinar en 5-7 minutos y recibe un plan de acción personalizado para convertirlo en un activo evergreen."
+    },
+    "landing": {
+      "eyebrow": "Diagnóstico Evergreen",
+      "title": "¿Está tu webinar listo para trabajar por ti?",
+      "subtitle": "Evalúa los seis componentes esenciales de tu webinar y descubre exactamente qué necesitas corregir antes de automatizarlo.",
+      "statQuestions": "30 preguntas",
+      "statTime": "5–7 minutos",
+      "statPersonalized": "Diagnóstico personalizado",
+      "statPlan": "Plan de acción inmediato",
+      "cta": "Evaluar mi webinar",
+      "noSignupNeeded": "No necesitas registrarte para comenzar.",
+      "resumeBanner": "Tienes un diagnóstico sin terminar.",
+      "resumeCta": "Continuar donde lo dejé",
+      "restartCta": "Empezar de nuevo"
+    },
+    "context": {
+      "title": "Antes de comenzar",
+      "subtitle": "Estas respuestas nos ayudan a personalizar tu diagnóstico -- no suman ni restan puntos.",
+      "businessTypeLabel": "¿Qué tipo de negocio tienes?",
+      "businessType": {
+        "coaching": "Coaching o consultoría",
+        "digital_product": "Curso o producto digital",
+        "membership": "Membresía o comunidad",
+        "network_marketing": "Network marketing",
+        "agency": "Agencia",
+        "saas": "SaaS o software",
+        "professional_services": "Servicios profesionales",
+        "other": "Otro"
+      },
+      "presentationStatusLabel": "¿Ya tienes una presentación de ventas?",
+      "presentationStatus": {
+        "recorded": "Sí, y ya está grabada",
+        "live_only": "Sí, pero todavía la presento en vivo",
+        "partial_structure": "Tengo una estructura parcial",
+        "none": "Todavía no"
+      },
+      "primaryGoalLabel": "¿Cuál es tu principal objetivo?",
+      "primaryGoal": {
+        "save_time": "Ahorrar tiempo",
+        "more_sales": "Conseguir más ventas",
+        "scale_presentation": "Escalar mi presentación",
+        "improve_conversion": "Mejorar la conversión",
+        "follow_up_prospects": "Dar seguimiento a mis prospectos",
+        "measure_audience": "Medir el comportamiento de mi audiencia"
+      }
+    },
+    "categories": {
+      "strategy": {
+        "title": "Estrategia",
+        "description": "Comprueba si tu webinar parte de un mercado, problema y cambio de creencia claramente definidos."
+      },
+      "presentation": {
+        "title": "Presentación",
+        "description": "Evalúa si el contenido guía naturalmente a la audiencia desde el problema hasta la decisión."
+      },
+      "recording": {
+        "title": "Grabación",
+        "description": "Comprueba si el contenido audiovisual puede utilizarse repetidamente sin perder calidad o vigencia."
+      },
+      "evergreen": {
+        "title": "Experiencia evergreen",
+        "description": "Evalúa si el prospecto puede registrarse y vivir la presentación sin intervención manual."
+      },
+      "followup": {
+        "title": "Seguimiento",
+        "description": "Comprueba si existe un sistema para recuperar y acompañar a quienes todavía no actúan."
+      },
+      "measurement": {
+        "title": "Medición",
+        "description": "Evalúa si puedes convertir el comportamiento de la audiencia en decisiones de optimización."
+      }
+    },
+    "questions": {
+      "strategy": {
+        "q1": "¿Tu webinar está dirigido a un tipo específico de persona con un problema claramente definido?",
+        "q2": "¿Puedes explicar en una sola frase el resultado que tu audiencia desea conseguir?",
+        "q3": "¿Has identificado la creencia o forma de pensar que impide que tu prospecto avance?",
+        "q4": "¿Tu presentación introduce una nueva manera de entender el problema?",
+        "q5": "¿Existe una única idea central que conecta toda la presentación?"
+      },
+      "presentation": {
+        "q1": "¿Los primeros minutos generan curiosidad y hacen que la audiencia quiera continuar?",
+        "q2": "¿La presentación sigue una secuencia lógica y fácil de comprender?",
+        "q3": "¿Incluyes evidencia, demostraciones o ejemplos que respalden tus afirmaciones?",
+        "q4": "¿Respondes las objeciones principales antes de presentar la oferta?",
+        "q5": "¿Terminas con una acción única, específica y fácil de ejecutar?"
+      },
+      "recording": {
+        "q1": "¿El audio es claro, estable y fácil de escuchar?",
+        "q2": "¿La imagen, presentación o pantalla compartida se ve profesional?",
+        "q3": "¿La grabación mantiene un ritmo natural y evita secciones innecesariamente largas?",
+        "q4": "¿El contenido evita fechas, horarios o referencias que puedan quedar desactualizadas?",
+        "q5": "¿Tienes un archivo final correctamente exportado y listo para subir?"
+      },
+      "evergreen": {
+        "q1": "¿Tienes una página de registro clara y enfocada en una sola promesa?",
+        "q2": "¿El prospecto puede elegir una sesión o comenzar en un horario conveniente?",
+        "q3": "¿Existe una sala de espera o experiencia previa coherente con la presentación?",
+        "q4": "¿Las llamadas a la acción aparecen en el momento exacto en que son relevantes?",
+        "q5": "¿La experiencia funciona correctamente en dispositivos móviles?"
+      },
+      "followup": {
+        "q1": "¿El registrado recibe una confirmación inmediata?",
+        "q2": "¿Existen recordatorios antes de la presentación?",
+        "q3": "¿Tienes un seguimiento específico para quienes se registran pero no asisten?",
+        "q4": "¿Diferencias el seguimiento según cuánto vio cada persona?",
+        "q5": "¿Los compradores o convertidos dejan de recibir mensajes de venta?"
+      },
+      "measurement": {
+        "q1": "¿Conoces la conversión de tu página de registro?",
+        "q2": "¿Puedes medir qué porcentaje de registrados realmente asiste?",
+        "q3": "¿Puedes identificar cuánto tiempo permanece cada persona en la presentación?",
+        "q4": "¿Conoces el minuto o sección donde ocurre el mayor abandono?",
+        "q5": "¿Puedes medir quién vio, hizo clic o actuó frente a tu llamada a la acción?"
+      }
+    },
+    "answers": {
+      "yes": "Sí, está completamente definido",
+      "partial": "Parcialmente",
+      "no": "Todavía no"
+    },
+    "progress": {
+      "categoryStepLabel": "Paso {current} de {total}"
+    },
+    "nav": {
+      "previous": "Anterior",
+      "continue": "Continuar",
+      "start": "Comenzar"
+    },
+    "validation": {
+      "answerAllQuestions": "Responde las 5 preguntas para continuar.",
+      "selectAnOption": "Elige una opción para continuar."
+    },
+    "anticipation": {
+      "title": "Tu diagnóstico está listo.",
+      "subtitle": "Detectamos tu principal cuello de botella.",
+      "cta": "Ver mi diagnóstico completo"
+    },
+    "leadForm": {
+      "title": "Ya casi terminas",
+      "description": "Tu diagnóstico está listo. Ingresa tus datos para ver tu puntuación completa y recibir tu plan de acción.",
+      "privacyNote": "Vamos a usar tu email únicamente para enviarte tu diagnóstico y, si lo aceptas, recursos sobre webinars evergreen. Nunca lo compartimos con terceros.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "emailLabel": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "consentLabel": "Acepto recibir mi diagnóstico por email según lo descrito arriba.",
+      "marketingConsentLabel": "Quiero recibir estrategias y recursos gratuitos de WeWebinars.",
+      "submit": "Ver mi diagnóstico",
+      "submitting": "Generando tu diagnóstico...",
+      "errorGeneric": "No pudimos generar tu diagnóstico. Intenta de nuevo en un momento.",
+      "errorRateLimited": "Detectamos demasiados intentos desde tu conexión. Intenta de nuevo más tarde.",
+      "errorName": "Ingresa tu nombre.",
+      "errorEmail": "Ingresa un email válido.",
+      "errorConsent": "Necesitamos tu aceptación para mostrarte el diagnóstico."
+    },
+    "results": {
+      "headline": "Tu webinar está {percentage}% listo para automatizarse.",
+      "status": {
+        "not_ready": {
+          "title": "Todavía no está listo",
+          "message": "Tu webinar tiene elementos importantes por definir antes de automatizarlo. La buena noticia es que ahora sabes exactamente por dónde comenzar."
+        },
+        "foundation_built": {
+          "title": "La base está construida",
+          "message": "Ya tienes una estructura funcional, pero algunos vacíos podrían afectar la experiencia, el seguimiento o la conversión."
+        },
+        "almost_ready": {
+          "title": "Casi listo para automatizar",
+          "message": "Tu webinar está bien encaminado. Corrige los puntos prioritarios y podrás convertirlo en un sistema confiable."
+        },
+        "ready": {
+          "title": "Listo para trabajar por ti",
+          "message": "Tienes los componentes esenciales para convertir tu presentación en un activo evergreen."
+        }
+      },
+      "categoryStatus": {
+        "critical": "Prioridad crítica",
+        "needs_work": "Necesita fortalecerse",
+        "good_base": "Buena base",
+        "prepared": "Preparado"
+      },
+      "chartTitle": "Tu puntaje por componente",
+      "chartAlt": "Gráfico de barras horizontales mostrando el porcentaje de preparación de cada uno de los seis componentes evaluados.",
+      "weakestCategoryEyebrow": "Tu principal cuello de botella",
+      "recommendationsTitle": "Tus próximas 3 acciones",
+      "ctaTitle": "Tu presentación tiene potencial. Ahora conviértela en un sistema.",
+      "ctaText": "Sube tu video, configura la experiencia y deja que tu mejor presentación trabaje por ti 24/7.",
+      "ctaButton": "Crear mi webinar",
+      "blueprintCta": "Descargar el Blueprint de 18 slides",
+      "restart": "Hacer el diagnóstico de nuevo",
+      "disclaimer": "Este diagnóstico es orientativo, se basa en tus propias respuestas y no constituye asesoría profesional ni garantiza resultados comerciales."
+    },
+    "recommendations": {
+      "strategy_1": "Define en una frase para quién es tu webinar y qué problema resuelve.",
+      "strategy_2": "Escribe el cambio de creencia central que debe ocurrir.",
+      "strategy_3": "Reduce tu webinar a una sola gran idea.",
+      "presentation_1": "Reescribe los primeros tres minutos alrededor de una pregunta o tensión.",
+      "presentation_2": "Ordena la narrativa: problema, nueva forma, mecanismo, solución y acción.",
+      "presentation_3": "Elimina llamadas a la acción que compitan con la decisión principal.",
+      "recording_1": "Mejora primero el audio; influye más que una cámara costosa.",
+      "recording_2": "Elimina referencias temporales que harán caducar la grabación.",
+      "recording_3": "Exporta y prueba la versión final en escritorio y móvil.",
+      "evergreen_1": "Simplifica la página de registro a una sola promesa.",
+      "evergreen_2": "Define cuándo debe aparecer el CTA.",
+      "evergreen_3": "Prueba todo el recorrido como si fueras un asistente nuevo.",
+      "followup_1": "Crea confirmación y recordatorios previos.",
+      "followup_2": "Separa no asistentes de quienes sí comenzaron a ver.",
+      "followup_3": "Adapta el seguimiento según consumo y acción frente al CTA.",
+      "measurement_1": "Empieza midiendo registro, asistencia y retención.",
+      "measurement_2": "Identifica el principal minuto de abandono.",
+      "measurement_3": "Conecta visualización y clic del CTA con el resultado comercial."
+    },
+    "restartDialog": {
+      "title": "¿Reiniciar el diagnóstico?",
+      "description": "Vas a perder tus respuestas actuales y vas a empezar las 30 preguntas de nuevo.",
+      "confirm": "Sí, reiniciar",
+      "cancel": "Cancelar"
+    }
   }
 }

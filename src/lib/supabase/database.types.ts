@@ -730,6 +730,129 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["framework_definitions"]["Row"]>;
         Relationships: [];
       };
+      readiness_assessments: {
+        Row: {
+          id: string;
+          email: string;
+          name: string;
+          business_type:
+            | "coaching"
+            | "digital_product"
+            | "membership"
+            | "network_marketing"
+            | "agency"
+            | "saas"
+            | "professional_services"
+            | "other";
+          presentation_status: "recorded" | "live_only" | "partial_structure" | "none";
+          primary_goal:
+            | "save_time"
+            | "more_sales"
+            | "scale_presentation"
+            | "improve_conversion"
+            | "follow_up_prospects"
+            | "measure_audience";
+          total_points: number;
+          score_percentage: number;
+          readiness_status: "not_ready" | "foundation_built" | "almost_ready" | "ready";
+          weakest_category: "strategy" | "presentation" | "recording" | "evergreen" | "followup" | "measurement";
+          strategy_score: number;
+          presentation_score: number;
+          recording_score: number;
+          evergreen_score: number;
+          followup_score: number;
+          measurement_score: number;
+          source: string | null;
+          medium: string | null;
+          campaign: string | null;
+          content: string | null;
+          affiliate: string | null;
+          ref: string | null;
+          marketing_consent: boolean;
+          ip_hash: string | null;
+          started_at: string;
+          completed_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["readiness_assessments"]["Row"]> & {
+          id: string;
+          email: string;
+          name: string;
+          business_type: Database["public"]["Tables"]["readiness_assessments"]["Row"]["business_type"];
+          presentation_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["presentation_status"];
+          primary_goal: Database["public"]["Tables"]["readiness_assessments"]["Row"]["primary_goal"];
+          total_points: number;
+          score_percentage: number;
+          readiness_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["readiness_status"];
+          weakest_category: Database["public"]["Tables"]["readiness_assessments"]["Row"]["weakest_category"];
+          strategy_score: number;
+          presentation_score: number;
+          recording_score: number;
+          evergreen_score: number;
+          followup_score: number;
+          measurement_score: number;
+          started_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["readiness_assessments"]["Row"]>;
+        Relationships: [];
+      };
+      readiness_answers: {
+        Row: {
+          id: string;
+          assessment_id: string;
+          category: "strategy" | "presentation" | "recording" | "evergreen" | "followup" | "measurement";
+          question_id: string;
+          answer: "yes" | "partial" | "no";
+          score: number;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["readiness_answers"]["Row"]> & {
+          assessment_id: string;
+          category: Database["public"]["Tables"]["readiness_answers"]["Row"]["category"];
+          question_id: string;
+          answer: Database["public"]["Tables"]["readiness_answers"]["Row"]["answer"];
+          score: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["readiness_answers"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "readiness_answers_assessment_id_fkey";
+            columns: ["assessment_id"];
+            isOneToOne: false;
+            referencedRelation: "readiness_assessments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      readiness_events: {
+        Row: {
+          id: string;
+          assessment_id: string;
+          event_type:
+            | "readiness_viewed"
+            | "readiness_started"
+            | "readiness_context_completed"
+            | "readiness_category_started"
+            | "readiness_category_completed"
+            | "readiness_progress_saved"
+            | "readiness_lead_form_viewed"
+            | "readiness_lead_submitted"
+            | "readiness_completed"
+            | "readiness_result_viewed"
+            | "readiness_cta_clicked"
+            | "readiness_blueprint_clicked"
+            | "readiness_restarted";
+          properties: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["readiness_events"]["Row"]> & {
+          assessment_id: string;
+          event_type: Database["public"]["Tables"]["readiness_events"]["Row"]["event_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["readiness_events"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -867,6 +990,37 @@ export interface Database {
       };
       record_page_view: {
         Args: { p_webinar_id: string };
+        Returns: undefined;
+      };
+      insert_readiness_assessment: {
+        Args: {
+          p_id: string;
+          p_email: string;
+          p_name: string;
+          p_business_type: Database["public"]["Tables"]["readiness_assessments"]["Row"]["business_type"];
+          p_presentation_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["presentation_status"];
+          p_primary_goal: Database["public"]["Tables"]["readiness_assessments"]["Row"]["primary_goal"];
+          p_total_points: number;
+          p_score_percentage: number;
+          p_readiness_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["readiness_status"];
+          p_weakest_category: Database["public"]["Tables"]["readiness_assessments"]["Row"]["weakest_category"];
+          p_strategy_score: number;
+          p_presentation_score: number;
+          p_recording_score: number;
+          p_evergreen_score: number;
+          p_followup_score: number;
+          p_measurement_score: number;
+          p_source: string | null;
+          p_medium: string | null;
+          p_campaign: string | null;
+          p_content: string | null;
+          p_affiliate: string | null;
+          p_ref: string | null;
+          p_marketing_consent: boolean;
+          p_ip_hash: string | null;
+          p_started_at: string;
+          p_answers: Json;
+        };
         Returns: undefined;
       };
       account_is_publishable: {

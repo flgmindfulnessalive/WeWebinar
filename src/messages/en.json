@@ -1323,5 +1323,229 @@
     "fakeViewerMaxLabel": "Maximum viewers",
     "fakeViewerRangeSeparator": "to",
     "saveWaitingRoom": "Save"
+  },
+  "Readiness": {
+    "meta": {
+      "title": "Evergreen Readiness Score: is your webinar ready to work for you?",
+      "description": "Score the six essential components of your webinar in 5-7 minutes and get a personalized action plan to turn it into an evergreen asset."
+    },
+    "landing": {
+      "eyebrow": "Evergreen Readiness Score",
+      "title": "Is your webinar ready to work for you?",
+      "subtitle": "Score the six essential components of your webinar and find out exactly what to fix before automating it.",
+      "statQuestions": "30 questions",
+      "statTime": "5–7 minutes",
+      "statPersonalized": "Personalized diagnosis",
+      "statPlan": "Immediate action plan",
+      "cta": "Score my webinar",
+      "noSignupNeeded": "No signup needed to get started.",
+      "resumeBanner": "You have an unfinished assessment.",
+      "resumeCta": "Continue where I left off",
+      "restartCta": "Start over"
+    },
+    "context": {
+      "title": "Before you start",
+      "subtitle": "These answers help us personalize your report -- they don't add or subtract points.",
+      "businessTypeLabel": "What type of business do you have?",
+      "businessType": {
+        "coaching": "Coaching or consulting",
+        "digital_product": "Course or digital product",
+        "membership": "Membership or community",
+        "network_marketing": "Network marketing",
+        "agency": "Agency",
+        "saas": "SaaS or software",
+        "professional_services": "Professional services",
+        "other": "Other"
+      },
+      "presentationStatusLabel": "Do you already have a sales presentation?",
+      "presentationStatus": {
+        "recorded": "Yes, and it's already recorded",
+        "live_only": "Yes, but I still present it live",
+        "partial_structure": "I have a partial structure",
+        "none": "Not yet"
+      },
+      "primaryGoalLabel": "What's your main goal?",
+      "primaryGoal": {
+        "save_time": "Save time",
+        "more_sales": "Get more sales",
+        "scale_presentation": "Scale my presentation",
+        "improve_conversion": "Improve conversion",
+        "follow_up_prospects": "Follow up with prospects",
+        "measure_audience": "Measure my audience's behavior"
+      }
+    },
+    "categories": {
+      "strategy": {
+        "title": "Strategy",
+        "description": "Checks whether your webinar starts from a clearly defined market, problem, and belief shift."
+      },
+      "presentation": {
+        "title": "Presentation",
+        "description": "Assesses whether the content naturally guides the audience from problem to decision."
+      },
+      "recording": {
+        "title": "Recording",
+        "description": "Checks whether the audiovisual content can be reused repeatedly without losing quality or relevance."
+      },
+      "evergreen": {
+        "title": "Evergreen experience",
+        "description": "Assesses whether a prospect can register and go through the presentation with no manual intervention."
+      },
+      "followup": {
+        "title": "Follow-up",
+        "description": "Checks whether there's a system to re-engage and nurture people who haven't taken action yet."
+      },
+      "measurement": {
+        "title": "Measurement",
+        "description": "Assesses whether you can turn your audience's behavior into optimization decisions."
+      }
+    },
+    "questions": {
+      "strategy": {
+        "q1": "Is your webinar aimed at a specific type of person with a clearly defined problem?",
+        "q2": "Can you explain, in a single sentence, the outcome your audience wants to achieve?",
+        "q3": "Have you identified the belief or mindset that keeps your prospect from moving forward?",
+        "q4": "Does your presentation introduce a new way of understanding the problem?",
+        "q5": "Is there a single core idea that ties the whole presentation together?"
+      },
+      "presentation": {
+        "q1": "Do the first few minutes create curiosity and make the audience want to keep watching?",
+        "q2": "Does the presentation follow a logical, easy-to-follow sequence?",
+        "q3": "Do you include evidence, demonstrations, or examples that back up your claims?",
+        "q4": "Do you address the main objections before presenting the offer?",
+        "q5": "Do you end with a single, specific, easy-to-execute action?"
+      },
+      "recording": {
+        "q1": "Is the audio clear, stable, and easy to listen to?",
+        "q2": "Does the video, slides, or screen share look professional?",
+        "q3": "Does the recording keep a natural pace and avoid unnecessarily long sections?",
+        "q4": "Does the content avoid dates, times, or references that could become outdated?",
+        "q5": "Do you have a final, correctly exported file ready to upload?"
+      },
+      "evergreen": {
+        "q1": "Do you have a clear registration page focused on a single promise?",
+        "q2": "Can the prospect choose a session or start at a convenient time?",
+        "q3": "Is there a waiting room or pre-presentation experience consistent with the presentation itself?",
+        "q4": "Do your calls to action appear at the exact moment they're relevant?",
+        "q5": "Does the experience work correctly on mobile devices?"
+      },
+      "followup": {
+        "q1": "Does the registrant get an immediate confirmation?",
+        "q2": "Are there reminders before the presentation?",
+        "q3": "Do you have a specific follow-up for people who register but don't attend?",
+        "q4": "Do you tailor the follow-up based on how much each person watched?",
+        "q5": "Do buyers or converted leads stop receiving sales messages?"
+      },
+      "measurement": {
+        "q1": "Do you know your registration page's conversion rate?",
+        "q2": "Can you measure what percentage of registrants actually attend?",
+        "q3": "Can you tell how long each person stays in the presentation?",
+        "q4": "Do you know the minute or section where most people drop off?",
+        "q5": "Can you measure who watched, clicked, or acted on your call to action?"
+      }
+    },
+    "answers": {
+      "yes": "Yes, fully defined",
+      "partial": "Partially",
+      "no": "Not yet"
+    },
+    "progress": {
+      "categoryStepLabel": "Step {current} of {total}"
+    },
+    "nav": {
+      "previous": "Back",
+      "continue": "Continue",
+      "start": "Start"
+    },
+    "validation": {
+      "answerAllQuestions": "Answer all 5 questions to continue.",
+      "selectAnOption": "Pick an option to continue."
+    },
+    "anticipation": {
+      "title": "Your diagnosis is ready.",
+      "subtitle": "We found your main bottleneck.",
+      "cta": "See my full diagnosis"
+    },
+    "leadForm": {
+      "title": "Almost there",
+      "description": "Your diagnosis is ready. Enter your details to see your full score and get your action plan.",
+      "privacyNote": "We'll only use your email to send you your diagnosis and, if you opt in, resources on evergreen webinars. We never share it with third parties.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "consentLabel": "I agree to receive my diagnosis by email as described above.",
+      "marketingConsentLabel": "I want to receive free strategies and resources from WeWebinars.",
+      "submit": "See my diagnosis",
+      "submitting": "Generating your diagnosis...",
+      "errorGeneric": "We couldn't generate your diagnosis. Please try again in a moment.",
+      "errorRateLimited": "We detected too many attempts from your connection. Please try again later.",
+      "errorName": "Enter your name.",
+      "errorEmail": "Enter a valid email.",
+      "errorConsent": "We need your consent to show you the diagnosis."
+    },
+    "results": {
+      "headline": "Your webinar is {percentage}% ready to automate.",
+      "status": {
+        "not_ready": {
+          "title": "Not ready yet",
+          "message": "Your webinar has important gaps to close before automating it. The good news is you now know exactly where to start."
+        },
+        "foundation_built": {
+          "title": "The foundation is there",
+          "message": "You already have a working structure, but a few gaps could hurt the experience, follow-up, or conversion."
+        },
+        "almost_ready": {
+          "title": "Almost ready to automate",
+          "message": "Your webinar is well on track. Fix the priority items and you'll be able to turn it into a reliable system."
+        },
+        "ready": {
+          "title": "Ready to work for you",
+          "message": "You have the essential components to turn your presentation into an evergreen asset."
+        }
+      },
+      "categoryStatus": {
+        "critical": "Critical priority",
+        "needs_work": "Needs work",
+        "good_base": "Good foundation",
+        "prepared": "Prepared"
+      },
+      "chartTitle": "Your score by component",
+      "chartAlt": "Horizontal bar chart showing the readiness percentage for each of the six components evaluated.",
+      "weakestCategoryEyebrow": "Your main bottleneck",
+      "recommendationsTitle": "Your next 3 actions",
+      "ctaTitle": "Your presentation has potential. Now turn it into a system.",
+      "ctaText": "Upload your video, configure the experience, and let your best presentation work for you 24/7.",
+      "ctaButton": "Create my webinar",
+      "blueprintCta": "Download the 18-slide Blueprint",
+      "restart": "Take the diagnosis again",
+      "disclaimer": "This diagnosis is directional, based on your own answers, and does not constitute professional advice or guarantee business results."
+    },
+    "recommendations": {
+      "strategy_1": "Define in one sentence who your webinar is for and what problem it solves.",
+      "strategy_2": "Write down the core belief shift that needs to happen.",
+      "strategy_3": "Reduce your webinar to a single big idea.",
+      "presentation_1": "Rewrite the first three minutes around a question or tension.",
+      "presentation_2": "Order the narrative: problem, new approach, mechanism, solution, and action.",
+      "presentation_3": "Remove calls to action that compete with the main decision.",
+      "recording_1": "Fix the audio first; it matters more than an expensive camera.",
+      "recording_2": "Remove time references that will make the recording go stale.",
+      "recording_3": "Export and test the final version on both desktop and mobile.",
+      "evergreen_1": "Simplify the registration page down to a single promise.",
+      "evergreen_2": "Decide exactly when the CTA should appear.",
+      "evergreen_3": "Walk through the whole journey as if you were a brand-new attendee.",
+      "followup_1": "Set up a confirmation and reminders beforehand.",
+      "followup_2": "Separate no-shows from people who actually started watching.",
+      "followup_3": "Tailor the follow-up based on how much they watched and whether they acted on the CTA.",
+      "measurement_1": "Start by measuring registration, attendance, and retention.",
+      "measurement_2": "Identify the main drop-off minute.",
+      "measurement_3": "Connect viewing and CTA clicks to the actual business outcome."
+    },
+    "restartDialog": {
+      "title": "Restart the diagnosis?",
+      "description": "You'll lose your current answers and start all 30 questions over.",
+      "confirm": "Yes, restart",
+      "cancel": "Cancel"
+    }
   }
 }
