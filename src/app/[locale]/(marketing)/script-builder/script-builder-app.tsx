@@ -59,14 +59,21 @@ export function ScriptBuilderApp({
     if (saved && !saved.completed && saved.currentStageIndex > 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync inicial con localStorage, solo disponible post-mount (ver justificación en readiness-app.tsx)
       setBootstrap({ status: "ready", initialState: saved, awaitingResume: true });
+      trackScriptBuilderEvent(saved.projectId, "script_builder_viewed");
     } else {
+      // Genera el id acá (no dentro de createInitialState) para poder
+      // reusarlo también en el tracking de abajo -- evita mandar
+      // projectId "unknown" (un string que ScriptBuilderEventSchema
+      // rechaza por no ser UUID, perdiendo el evento en cada primera
+      // visita).
+      const projectId = crypto.randomUUID();
       setBootstrap({
         status: "ready",
-        initialState: createInitialState(crypto.randomUUID(), attribution, assessmentId ? { assessmentId } : undefined),
+        initialState: createInitialState(projectId, attribution, assessmentId ? { assessmentId } : undefined),
         awaitingResume: false,
       });
+      trackScriptBuilderEvent(projectId, "script_builder_viewed");
     }
-    trackScriptBuilderEvent(saved?.projectId ?? "unknown", "script_builder_viewed");
     // Solo al montar -- attribution/assessmentId vienen de searchParams del
     // server component padre y son estables durante la vida de la página.
     // eslint-disable-next-line react-hooks/exhaustive-deps

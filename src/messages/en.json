@@ -1547,5 +1547,390 @@
       "confirm": "Yes, restart",
       "cancel": "Cancel"
     }
+  },
+  "ScriptBuilder": {
+    "meta": {
+      "title": "Script Builder: write your webinar script in 18 slides",
+      "description": "Fill out your project profile and generate a personalized Master Prompt to write your full webinar script with AI."
+    },
+    "landing": {
+      "eyebrow": "Script Builder",
+      "title": "Your webinar in 18 slides, ready to write",
+      "subtitle": "Fill out your project profile and generate a personalized prompt to create your full webinar script with your favorite AI.",
+      "statStages": "7 stages",
+      "statTime": "10-15 minutes",
+      "statPersonalized": "100% personalized",
+      "statPrompt": "Prompt ready to copy",
+      "cta": "Build my script",
+      "noSignupNeeded": "You don't need to sign up to get started.",
+      "resumeBanner": "You have an unfinished project.",
+      "resumeCta": "Continue where I left off",
+      "restartCta": "Start over"
+    },
+    "nav": {
+      "stepLabel": "Stage {current} of {total}",
+      "previous": "Previous",
+      "continue": "Continue"
+    },
+    "stages": {
+      "basics": {
+        "title": "Your project",
+        "description": "Tell us what you sell and what your webinar looks like."
+      },
+      "audience": {
+        "title": "Your audience",
+        "description": "Define who you're talking to and where they're at today."
+      },
+      "belief": {
+        "title": "Belief shift",
+        "description": "The mental shift your audience needs before they buy."
+      },
+      "mechanism": {
+        "title": "Your mechanism",
+        "description": "How you deliver the result you promise."
+      },
+      "evidence": {
+        "title": "Evidence and authority",
+        "description": "Why they should believe you."
+      },
+      "offer": {
+        "title": "Your offer",
+        "description": "What you're selling and how you'll present it."
+      },
+      "voice": {
+        "title": "Voice and format",
+        "description": "How you want the script to sound and look."
+      }
+    },
+    "fields": {
+      "projectName": {
+        "label": "Project name",
+        "placeholder": "E.g. Fall launch webinar script"
+      },
+      "productName": {
+        "label": "Your product or service name",
+        "placeholder": "E.g. 8-week 1:1 mentorship"
+      },
+      "productType": {
+        "label": "Offer type",
+        "options": {
+          "coaching": "Coaching",
+          "consulting": "Consulting",
+          "course": "Course",
+          "digital_product": "Digital product",
+          "membership": "Membership",
+          "community": "Community",
+          "network_marketing": "Network marketing",
+          "software": "SaaS / software",
+          "professional_service": "Professional service",
+          "physical_product": "Physical product",
+          "event": "Event",
+          "other": "Other"
+        }
+      },
+      "productDescription": {
+        "label": "Describe your product or service",
+        "placeholder": "What exactly is it, and what's included?"
+      },
+      "productPrice": {
+        "label": "Price",
+        "placeholder": "497"
+      },
+      "currency": {
+        "label": "Currency",
+        "placeholder": "USD"
+      },
+      "offerUrl": {
+        "label": "Offer URL (optional)",
+        "placeholder": "https://..."
+      },
+      "desiredDuration": {
+        "label": "Desired webinar length",
+        "options": {
+          "10_15": "10-15 minutes",
+          "15_20": "15-20 minutes",
+          "20_30": "20-30 minutes",
+          "30_45": "30-45 minutes",
+          "custom": "Other length"
+        }
+      },
+      "desiredDurationCustomMinutes": {
+        "label": "How many minutes?",
+        "placeholder": "60"
+      },
+      "targetAudience": {
+        "label": "Who are you talking to?",
+        "placeholder": "E.g. Coaches making under $3k/month who want a repeatable sales system"
+      },
+      "audienceAwareness": {
+        "label": "How aware is your audience of their problem?",
+        "options": {
+          "unaware": "Doesn't know they have the problem",
+          "problem_aware": "Knows the problem, not aware of solutions",
+          "solution_aware": "Knows solutions exist, not yours",
+          "product_aware": "Knows your product, hasn't decided",
+          "most_aware": "Already knows your product, just needs a nudge"
+        }
+      },
+      "currentSituation": {
+        "label": "What's their current situation?",
+        "placeholder": "Where is your audience today?"
+      },
+      "mainProblem": {
+        "label": "What's their main problem?",
+        "placeholder": "The concrete problem you solve"
+      },
+      "frustrations": {
+        "label": "What have they already tried that didn't work?",
+        "placeholder": "Frustrations or failed attempts"
+      },
+      "desiredResult": {
+        "label": "What result do they want?",
+        "placeholder": "The end result they're after"
+      },
+      "currentBelief": {
+        "label": "What do they currently believe that holds them back?",
+        "placeholder": "The current limiting belief"
+      },
+      "commonSolution": {
+        "label": "What common solution do they usually try first?",
+        "placeholder": "The obvious solution they already know"
+      },
+      "whyCommonSolutionFails": {
+        "label": "Why does that common solution fail?",
+        "placeholder": "The real reason it doesn't work"
+      },
+      "rootCause": {
+        "label": "What's the root cause of the problem?",
+        "placeholder": "What nobody had explained to them before"
+      },
+      "newParadigm": {
+        "label": "What's the new paradigm you're proposing?",
+        "placeholder": "The new way of seeing the problem"
+      },
+      "mechanismName": {
+        "label": "Name of your mechanism or method",
+        "placeholder": "E.g. The 3-Call System"
+      },
+      "mechanismDescription": {
+        "label": "Describe how your mechanism works",
+        "placeholder": "How do you deliver the result you promise?"
+      },
+      "mechanismSteps": {
+        "label": "Steps of your mechanism (up to 3)",
+        "placeholder": "E.g. Initial diagnosis"
+      },
+      "differentiators": {
+        "label": "What makes it different from other solutions?",
+        "placeholder": "Your main differentiator"
+      },
+      "founderStory": {
+        "label": "Your story as the founder",
+        "placeholder": "Why did you create this? What did you go through?"
+      },
+      "credentials": {
+        "label": "Relevant credentials or experience",
+        "placeholder": "Years of experience, certifications, achievements"
+      },
+      "proofPoints": {
+        "label": "Evidence and social proof",
+        "type": {
+          "case_study": "Case study",
+          "testimonial": "Testimonial",
+          "data_source": "Data or source",
+          "demonstration": "Demonstration"
+        }
+      },
+      "evidenceLimitations": {
+        "label": "Honest limitations of your evidence",
+        "placeholder": "E.g. not typical results, small sample size"
+      },
+      "offerName": {
+        "label": "Offer name",
+        "placeholder": "E.g. Scale 1:1 Program"
+      },
+      "deliverables": {
+        "label": "What's included in the offer?",
+        "placeholder": "E.g. 8 weekly 1-hour sessions"
+      },
+      "benefits": {
+        "label": "Main benefits",
+        "placeholder": "E.g. A repeatable sales system"
+      },
+      "bonuses": {
+        "label": "Bonuses (if any)",
+        "placeholder": "E.g. Sales script templates"
+      },
+      "pricingStructure": {
+        "label": "Pricing structure",
+        "placeholder": "One-time payment, installments, plans?"
+      },
+      "guarantee": {
+        "label": "Guarantee",
+        "placeholder": "What guarantee do you offer?"
+      },
+      "riskReversal": {
+        "label": "Risk reversal",
+        "placeholder": "How do you lower the perceived risk of buying?"
+      },
+      "legitimateUrgency": {
+        "label": "Legitimate urgency (optional)",
+        "placeholder": "E.g. limited spots due to 1:1 attention -- never invented"
+      },
+      "objections": {
+        "label": "Common objections",
+        "placeholder": "E.g. \"I don't have time\""
+      },
+      "primaryCta": {
+        "label": "Primary call to action",
+        "placeholder": "E.g. Book a call"
+      },
+      "ctaType": {
+        "label": "Action type",
+        "options": {
+          "buy": "Buy",
+          "register": "Register",
+          "book_call": "Book a call",
+          "request_info": "Request info",
+          "start_trial": "Start free trial",
+          "join_community": "Join the community",
+          "talk_to_person": "Talk to a person",
+          "other": "Other"
+        }
+      },
+      "ctaUrl": {
+        "label": "Action URL (optional)",
+        "placeholder": "https://..."
+      },
+      "webinarTitle": {
+        "label": "Your webinar title",
+        "placeholder": "E.g. How to sell without relying on referrals"
+      },
+      "presentationFormat": {
+        "label": "Presentation format",
+        "options": {
+          "camera": "On camera",
+          "voiceover_slides": "Voiceover over slides",
+          "presenter_and_slides": "Presenter and slides",
+          "screen_demo": "Screen demo",
+          "interview": "Interview",
+          "mixed": "Mixed"
+        }
+      },
+      "deliveryStyle": {
+        "label": "Tone (pick all that apply)",
+        "options": {
+          "professional": "Professional",
+          "warm": "Warm",
+          "inspirational": "Inspirational",
+          "educational": "Educational",
+          "direct": "Direct",
+          "conversational": "Conversational",
+          "authoritative": "Authoritative"
+        }
+      },
+      "scriptDetail": {
+        "label": "Script detail level",
+        "options": {
+          "word_for_word": "Word for word",
+          "natural_freedom": "Freedom to sound natural",
+          "talking_points": "Talking points only",
+          "hybrid_open_close": "Exact opening and closing, free in between"
+        }
+      },
+      "language": {
+        "label": "Script language",
+        "options": {
+          "es": "Spanish",
+          "en": "English",
+          "pt": "Portuguese",
+          "fr": "French"
+        }
+      },
+      "forbiddenWords": {
+        "label": "Words or phrases to avoid",
+        "placeholder": "E.g. \"guaranteed\""
+      },
+      "requiredConcepts": {
+        "label": "Concepts that must be included",
+        "placeholder": "E.g. mention your certification"
+      },
+      "additionalInstructions": {
+        "label": "Additional instructions (optional)",
+        "placeholder": "Any other guidance for the script"
+      }
+    },
+    "common": {
+      "add": "Add",
+      "removeItem": "Remove {value}",
+      "proofPointLabelPlaceholder": "E.g. \"Ana went from $2k to $8k/month in 3 months\"",
+      "urlOptionalPlaceholder": "URL (optional)",
+      "addProofPoint": "Add evidence"
+    },
+    "review": {
+      "title": "Review your project",
+      "subtitle": "This is how complete your profile is. The more you fill in, the better your script will be.",
+      "bucket": {
+        "insufficient": {
+          "title": "Key information missing",
+          "description": "You need to fill in at least the critical fields before generating your prompt."
+        },
+        "draft_ready": {
+          "title": "Ready for a first draft",
+          "description": "Your prompt will produce a working script, though you can still add more detail."
+        },
+        "solid": {
+          "title": "Solid profile",
+          "description": "Your prompt will produce a well-grounded, specific script."
+        },
+        "excellent": {
+          "title": "Complete profile",
+          "description": "You have everything needed for a highly personalized script."
+        }
+      },
+      "missingCriticalTitle": "You still need to fill in these key fields:",
+      "completeField": "Complete",
+      "belowMinimum": "You need at least {minimum}% completion to generate your prompt.",
+      "generateCta": "Generate my Master Prompt"
+    },
+    "leadForm": {
+      "title": "You're almost there",
+      "description": "Enter your details to generate and save your Master Prompt.",
+      "privacyNote": "We'll only use your email to save your project and, if you opt in, send you resources about evergreen webinars. We never share it with third parties.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "consentLabel": "I agree to have my project saved as described above.",
+      "marketingConsentLabel": "I want to receive free strategies and resources from WeWebinars.",
+      "submit": "Generate my prompt",
+      "submitting": "Generating your prompt...",
+      "errorGeneric": "We couldn't generate your prompt. Please try again in a moment.",
+      "errorRateLimited": "We detected too many attempts from your connection. Please try again later.",
+      "errorName": "Enter your name.",
+      "errorEmail": "Enter a valid email.",
+      "errorConsent": "We need your consent to generate your prompt."
+    },
+    "result": {
+      "eyebrow": "Master Prompt",
+      "title": "Your Master Prompt is ready",
+      "subtitle": "Copy it and paste it into ChatGPT (or your favorite AI) to generate your full 18-slide webinar script.",
+      "copyAndOpenCta": "Copy and open ChatGPT",
+      "copyOnly": "Copy",
+      "copied": "Copied!",
+      "editAnswers": "Edit my answers",
+      "restart": "Start a new project"
+    },
+    "cta": {
+      "title": "You have the script. Now turn your webinar into a system.",
+      "text": "Upload your video, set up the experience, and let your presentation work for you 24/7.",
+      "button": "Create my webinar"
+    },
+    "restartDialog": {
+      "title": "Start a new project?",
+      "description": "You'll lose your current profile and start the 7 stages over.",
+      "confirm": "Yes, start over",
+      "cancel": "Cancel"
+    }
   }
 }

@@ -1547,5 +1547,390 @@
       "confirm": "Sí, reiniciar",
       "cancel": "Cancelar"
     }
+  },
+  "ScriptBuilder": {
+    "meta": {
+      "title": "Script Builder: crea el guion de tu webinar en 18 slides",
+      "description": "Completa tu perfil de proyecto y genera un Prompt Maestro personalizado para escribir el guion completo de tu webinar con IA."
+    },
+    "landing": {
+      "eyebrow": "Script Builder",
+      "title": "Tu webinar en 18 slides, listo para escribir",
+      "subtitle": "Completa tu perfil de proyecto y genera un prompt personalizado para crear el guion completo de tu webinar con tu IA favorita.",
+      "statStages": "7 etapas",
+      "statTime": "10-15 minutos",
+      "statPersonalized": "100% personalizado",
+      "statPrompt": "Prompt listo para copiar",
+      "cta": "Crear mi guion",
+      "noSignupNeeded": "No necesitas registrarte para comenzar.",
+      "resumeBanner": "Tienes un proyecto sin terminar.",
+      "resumeCta": "Continuar donde lo dejé",
+      "restartCta": "Empezar de nuevo"
+    },
+    "nav": {
+      "stepLabel": "Etapa {current} de {total}",
+      "previous": "Anterior",
+      "continue": "Continuar"
+    },
+    "stages": {
+      "basics": {
+        "title": "Tu proyecto",
+        "description": "Cuéntanos qué vendes y cómo es tu webinar."
+      },
+      "audience": {
+        "title": "Tu audiencia",
+        "description": "Define a quién le hablas y qué le pasa hoy."
+      },
+      "belief": {
+        "title": "Cambio de creencia",
+        "description": "El giro mental que tu audiencia necesita antes de comprar."
+      },
+      "mechanism": {
+        "title": "Tu mecanismo",
+        "description": "Cómo logras el resultado que prometes."
+      },
+      "evidence": {
+        "title": "Evidencia y autoridad",
+        "description": "Por qué deberían creerte."
+      },
+      "offer": {
+        "title": "Tu oferta",
+        "description": "Qué vas a vender y cómo lo vas a presentar."
+      },
+      "voice": {
+        "title": "Voz y formato",
+        "description": "Cómo quieres que suene y se vea el guion."
+      }
+    },
+    "fields": {
+      "projectName": {
+        "label": "Nombre del proyecto",
+        "placeholder": "Ej: Guion webinar lanzamiento otoño"
+      },
+      "productName": {
+        "label": "Nombre de tu producto o servicio",
+        "placeholder": "Ej: Mentoría 1:1 de 8 semanas"
+      },
+      "productType": {
+        "label": "Tipo de oferta",
+        "options": {
+          "coaching": "Coaching",
+          "consulting": "Consultoría",
+          "course": "Curso",
+          "digital_product": "Producto digital",
+          "membership": "Membresía",
+          "community": "Comunidad",
+          "network_marketing": "Network marketing",
+          "software": "SaaS / software",
+          "professional_service": "Servicio profesional",
+          "physical_product": "Producto físico",
+          "event": "Evento",
+          "other": "Otro"
+        }
+      },
+      "productDescription": {
+        "label": "Describe tu producto o servicio",
+        "placeholder": "¿Qué es exactamente y qué incluye?"
+      },
+      "productPrice": {
+        "label": "Precio",
+        "placeholder": "497"
+      },
+      "currency": {
+        "label": "Moneda",
+        "placeholder": "USD"
+      },
+      "offerUrl": {
+        "label": "URL de la oferta (opcional)",
+        "placeholder": "https://..."
+      },
+      "desiredDuration": {
+        "label": "Duración deseada del webinar",
+        "options": {
+          "10_15": "10-15 minutos",
+          "15_20": "15-20 minutos",
+          "20_30": "20-30 minutos",
+          "30_45": "30-45 minutos",
+          "custom": "Otra duración"
+        }
+      },
+      "desiredDurationCustomMinutes": {
+        "label": "¿Cuántos minutos?",
+        "placeholder": "60"
+      },
+      "targetAudience": {
+        "label": "¿A quién le hablas?",
+        "placeholder": "Ej: Coaches que facturan menos de 3k/mes y quieren un sistema de ventas repetible"
+      },
+      "audienceAwareness": {
+        "label": "¿Qué tan consciente es tu audiencia de su problema?",
+        "options": {
+          "unaware": "No sabe que tiene el problema",
+          "problem_aware": "Sabe que tiene el problema, no conoce soluciones",
+          "solution_aware": "Conoce que existen soluciones, no la tuya",
+          "product_aware": "Conoce tu producto, no está decidida",
+          "most_aware": "Ya conoce tu producto y solo le falta un empujón"
+        }
+      },
+      "currentSituation": {
+        "label": "¿Cuál es su situación actual?",
+        "placeholder": "¿Dónde está hoy tu audiencia?"
+      },
+      "mainProblem": {
+        "label": "¿Cuál es su problema principal?",
+        "placeholder": "El problema concreto que resuelves"
+      },
+      "frustrations": {
+        "label": "¿Qué otras cosas ya intentaron y no funcionaron?",
+        "placeholder": "Frustraciones o intentos previos fallidos"
+      },
+      "desiredResult": {
+        "label": "¿Qué resultado desean conseguir?",
+        "placeholder": "El resultado final que buscan"
+      },
+      "currentBelief": {
+        "label": "¿Qué cree tu audiencia hoy que le impide avanzar?",
+        "placeholder": "La creencia limitante actual"
+      },
+      "commonSolution": {
+        "label": "¿Qué solución común suelen probar primero?",
+        "placeholder": "La solución obvia que ya conocen"
+      },
+      "whyCommonSolutionFails": {
+        "label": "¿Por qué esa solución común falla?",
+        "placeholder": "La razón real por la que no funciona"
+      },
+      "rootCause": {
+        "label": "¿Cuál es la causa raíz del problema?",
+        "placeholder": "Lo que nadie les había explicado antes"
+      },
+      "newParadigm": {
+        "label": "¿Cuál es el nuevo paradigma que propones?",
+        "placeholder": "La nueva forma de ver el problema"
+      },
+      "mechanismName": {
+        "label": "Nombre de tu mecanismo o método",
+        "placeholder": "Ej: El Sistema de 3 Llamadas"
+      },
+      "mechanismDescription": {
+        "label": "Describe cómo funciona tu mecanismo",
+        "placeholder": "¿Cómo logras el resultado que prometes?"
+      },
+      "mechanismSteps": {
+        "label": "Pasos de tu mecanismo (hasta 3)",
+        "placeholder": "Ej: Diagnóstico inicial"
+      },
+      "differentiators": {
+        "label": "¿Qué lo hace diferente de otras soluciones?",
+        "placeholder": "Tu diferenciador principal"
+      },
+      "founderStory": {
+        "label": "Tu historia como fundador/a",
+        "placeholder": "¿Por qué creaste esto? ¿Qué viviste?"
+      },
+      "credentials": {
+        "label": "Credenciales o experiencia relevante",
+        "placeholder": "Años de experiencia, certificaciones, logros"
+      },
+      "proofPoints": {
+        "label": "Evidencia y prueba social",
+        "type": {
+          "case_study": "Caso de estudio",
+          "testimonial": "Testimonio",
+          "data_source": "Dato o fuente",
+          "demonstration": "Demostración"
+        }
+      },
+      "evidenceLimitations": {
+        "label": "Limitaciones honestas de tu evidencia",
+        "placeholder": "Ej: resultados no típicos, muestra pequeña"
+      },
+      "offerName": {
+        "label": "Nombre de tu oferta",
+        "placeholder": "Ej: Programa Escala 1:1"
+      },
+      "deliverables": {
+        "label": "¿Qué incluye la oferta?",
+        "placeholder": "Ej: 8 sesiones semanales de 1 hora"
+      },
+      "benefits": {
+        "label": "Beneficios principales",
+        "placeholder": "Ej: Sistema de ventas repetible"
+      },
+      "bonuses": {
+        "label": "Bonos (si tienes)",
+        "placeholder": "Ej: Plantillas de guiones de venta"
+      },
+      "pricingStructure": {
+        "label": "Estructura de precio",
+        "placeholder": "¿Pago único, cuotas, planes?"
+      },
+      "guarantee": {
+        "label": "Garantía",
+        "placeholder": "¿Qué garantía ofreces?"
+      },
+      "riskReversal": {
+        "label": "Reversión de riesgo",
+        "placeholder": "¿Cómo reduces el riesgo percibido de comprar?"
+      },
+      "legitimateUrgency": {
+        "label": "Urgencia legítima (opcional)",
+        "placeholder": "Ej: cupos limitados por atención 1:1 -- nunca inventada"
+      },
+      "objections": {
+        "label": "Objeciones frecuentes",
+        "placeholder": "Ej: \"No tengo tiempo\""
+      },
+      "primaryCta": {
+        "label": "Llamada a la acción principal",
+        "placeholder": "Ej: Agendar una llamada"
+      },
+      "ctaType": {
+        "label": "Tipo de acción",
+        "options": {
+          "buy": "Comprar",
+          "register": "Registrarse",
+          "book_call": "Agendar una llamada",
+          "request_info": "Solicitar información",
+          "start_trial": "Comenzar prueba gratis",
+          "join_community": "Unirse a la comunidad",
+          "talk_to_person": "Hablar con una persona",
+          "other": "Otra"
+        }
+      },
+      "ctaUrl": {
+        "label": "URL de la acción (opcional)",
+        "placeholder": "https://..."
+      },
+      "webinarTitle": {
+        "label": "Título de tu webinar",
+        "placeholder": "Ej: Cómo vender sin depender de referidos"
+      },
+      "presentationFormat": {
+        "label": "Formato de presentación",
+        "options": {
+          "camera": "A cámara",
+          "voiceover_slides": "Voz en off sobre slides",
+          "presenter_and_slides": "Presentador y slides",
+          "screen_demo": "Demo de pantalla",
+          "interview": "Entrevista",
+          "mixed": "Mixto"
+        }
+      },
+      "deliveryStyle": {
+        "label": "Estilo del tono (elige los que apliquen)",
+        "options": {
+          "professional": "Profesional",
+          "warm": "Cálido",
+          "inspirational": "Inspirador",
+          "educational": "Educativo",
+          "direct": "Directo",
+          "conversational": "Conversacional",
+          "authoritative": "Con autoridad"
+        }
+      },
+      "scriptDetail": {
+        "label": "Nivel de detalle del guion",
+        "options": {
+          "word_for_word": "Palabra por palabra",
+          "natural_freedom": "Libertad para sonar natural",
+          "talking_points": "Solo puntos guía",
+          "hybrid_open_close": "Apertura y cierre exactos, resto libre"
+        }
+      },
+      "language": {
+        "label": "Idioma del guion",
+        "options": {
+          "es": "Español",
+          "en": "Inglés",
+          "pt": "Portugués",
+          "fr": "Francés"
+        }
+      },
+      "forbiddenWords": {
+        "label": "Palabras o frases a evitar",
+        "placeholder": "Ej: \"garantizado\""
+      },
+      "requiredConcepts": {
+        "label": "Conceptos que sí o sí deben aparecer",
+        "placeholder": "Ej: mencionar tu certificación"
+      },
+      "additionalInstructions": {
+        "label": "Instrucciones adicionales (opcional)",
+        "placeholder": "Cualquier otra indicación para el guion"
+      }
+    },
+    "common": {
+      "add": "Agregar",
+      "removeItem": "Quitar {value}",
+      "proofPointLabelPlaceholder": "Ej: \"Ana pasó de $2k a $8k/mes en 3 meses\"",
+      "urlOptionalPlaceholder": "URL (opcional)",
+      "addProofPoint": "Agregar evidencia"
+    },
+    "review": {
+      "title": "Revisa tu proyecto",
+      "subtitle": "Así de completo está tu perfil. Cuanto más completes, mejor va a ser tu guion.",
+      "bucket": {
+        "insufficient": {
+          "title": "Falta información clave",
+          "description": "Necesitas completar al menos los campos críticos antes de generar tu prompt."
+        },
+        "draft_ready": {
+          "title": "Listo para un primer borrador",
+          "description": "Tu prompt va a generar un guion funcional, aunque todavía puedes agregar más detalle."
+        },
+        "solid": {
+          "title": "Perfil sólido",
+          "description": "Tu prompt va a producir un guion bien fundamentado y específico."
+        },
+        "excellent": {
+          "title": "Perfil completo",
+          "description": "Tienes todo lo necesario para un guion altamente personalizado."
+        }
+      },
+      "missingCriticalTitle": "Te falta completar estos campos clave:",
+      "completeField": "Completar",
+      "belowMinimum": "Necesitas al menos {minimum}% de completitud para generar tu prompt.",
+      "generateCta": "Generar mi Prompt Maestro"
+    },
+    "leadForm": {
+      "title": "Ya casi tienes tu prompt",
+      "description": "Ingresa tus datos para generar y guardar tu Prompt Maestro.",
+      "privacyNote": "Vamos a usar tu email únicamente para guardar tu proyecto y, si lo aceptas, enviarte recursos sobre webinars evergreen. Nunca lo compartimos con terceros.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "emailLabel": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "consentLabel": "Acepto que se guarde mi proyecto según lo descrito arriba.",
+      "marketingConsentLabel": "Quiero recibir estrategias y recursos gratuitos de WeWebinars.",
+      "submit": "Generar mi prompt",
+      "submitting": "Generando tu prompt...",
+      "errorGeneric": "No pudimos generar tu prompt. Intenta de nuevo en un momento.",
+      "errorRateLimited": "Detectamos demasiados intentos desde tu conexión. Intenta de nuevo más tarde.",
+      "errorName": "Ingresa tu nombre.",
+      "errorEmail": "Ingresa un email válido.",
+      "errorConsent": "Necesitamos tu aceptación para generar tu prompt."
+    },
+    "result": {
+      "eyebrow": "Prompt Maestro",
+      "title": "Tu Prompt Maestro está listo",
+      "subtitle": "Cópialo y pégalo en ChatGPT (o tu IA favorita) para generar el guion completo de tu webinar en 18 slides.",
+      "copyAndOpenCta": "Copiar y abrir ChatGPT",
+      "copyOnly": "Copiar",
+      "copied": "¡Copiado!",
+      "editAnswers": "Editar mis respuestas",
+      "restart": "Empezar un proyecto nuevo"
+    },
+    "cta": {
+      "title": "Tienes el guion. Ahora convierte tu webinar en un sistema.",
+      "text": "Sube tu video, configura la experiencia y deja que tu presentación trabaje por ti 24/7.",
+      "button": "Crear mi webinar"
+    },
+    "restartDialog": {
+      "title": "¿Empezar un proyecto nuevo?",
+      "description": "Vas a perder el perfil actual y vas a empezar las 7 etapas de nuevo.",
+      "confirm": "Sí, empezar de nuevo",
+      "cancel": "Cancelar"
+    }
   }
 }

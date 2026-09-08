@@ -36,6 +36,8 @@ function isLocaleRoutedPath(pathname: string): boolean {
     pathname.startsWith("/en/blog") ||
     pathname.startsWith("/readiness") ||
     pathname.startsWith("/en/readiness") ||
+    pathname.startsWith("/script-builder") ||
+    pathname.startsWith("/en/script-builder") ||
     pathname.startsWith("/w/") ||
     pathname.startsWith("/en/w/")
   );
