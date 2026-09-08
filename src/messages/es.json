@@ -432,6 +432,7 @@
     "canceledNonOwnerMessage": "El dueño de la cuenta necesita reactivar el plan para que puedas volver a entrar.",
     "signOut": "Cerrar sesión",
     "trialBanner": "Prueba gratis: {days, plural, one {vence en # día} other {vencen en # días}}. Después de eso, elige un plan en Facturación para seguir usando tu cuenta.",
+    "trialBannerDismiss": "Cerrar aviso",
     "trialExpiredTitle": "Tu prueba gratis terminó",
     "trialExpiredMessage": "Elige un plan para seguir usando WeWebinars. Tus webinars y tu configuración siguen ahí, esperándote.",
     "continueOnPlan": "Seguir con {plan} — ${price}/mes",

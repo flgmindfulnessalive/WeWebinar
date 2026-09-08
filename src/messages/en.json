@@ -432,6 +432,7 @@
     "canceledNonOwnerMessage": "The account owner needs to reactivate the plan before you can sign back in.",
     "signOut": "Sign out",
     "trialBanner": "Free trial: {days, plural, one {expires in # day} other {expires in # days}}. After that, pick a plan in Billing to keep using your account.",
+    "trialBannerDismiss": "Dismiss notice",
     "trialExpiredTitle": "Your free trial ended",
     "trialExpiredMessage": "Pick a plan to keep using WeWebinars. Your webinars and settings are still there, waiting for you.",
     "continueOnPlan": "Continue on {plan} — ${price}/mo",
