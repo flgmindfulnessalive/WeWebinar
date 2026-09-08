@@ -853,6 +853,149 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["readiness_events"]["Row"]>;
         Relationships: [];
       };
+      webinar_projects: {
+        Row: {
+          id: string;
+          account_id: string | null;
+          readiness_assessment_id: string | null;
+          lead_email: string | null;
+          lead_name: string | null;
+          project_name: string | null;
+          status: "draft" | "profile_complete" | "prompt_generated";
+          profile_completion: number;
+          business_type: string | null;
+          product_name: string | null;
+          product_type: string | null;
+          product_description: string | null;
+          product_price: number | null;
+          currency: string | null;
+          offer_url: string | null;
+          desired_duration: string | null;
+          desired_duration_custom_minutes: number | null;
+          target_audience: string | null;
+          audience_awareness: string | null;
+          current_situation: string | null;
+          main_problem: string | null;
+          frustrations: string | null;
+          desired_result: string | null;
+          current_belief: string | null;
+          common_solution: string | null;
+          why_common_solution_fails: string | null;
+          root_cause: string | null;
+          new_paradigm: string | null;
+          mechanism_name: string | null;
+          mechanism_description: string | null;
+          mechanism_steps: Json;
+          differentiators: string | null;
+          founder_story: string | null;
+          credentials: string | null;
+          proof_points: Json;
+          evidence_limitations: string | null;
+          offer_name: string | null;
+          deliverables: Json;
+          benefits: Json;
+          bonuses: Json;
+          pricing_structure: string | null;
+          guarantee: string | null;
+          risk_reversal: string | null;
+          legitimate_urgency: string | null;
+          objections: Json;
+          primary_cta: string | null;
+          cta_type: string | null;
+          cta_url: string | null;
+          webinar_title: string | null;
+          presentation_format: string | null;
+          delivery_style: Json;
+          script_detail: string | null;
+          language: string;
+          forbidden_words: Json;
+          required_concepts: Json;
+          additional_instructions: string | null;
+          marketing_consent: boolean;
+          source: string | null;
+          medium: string | null;
+          campaign: string | null;
+          content: string | null;
+          affiliate: string | null;
+          ref: string | null;
+          ip_hash: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["webinar_projects"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_projects"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "webinar_projects_readiness_assessment_id_fkey";
+            columns: ["readiness_assessment_id"];
+            isOneToOne: false;
+            referencedRelation: "readiness_assessments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      script_prompt_generations: {
+        Row: {
+          id: string;
+          project_id: string;
+          version: number;
+          prompt_template_version: string;
+          profile_completion: number;
+          prompt_hash: string;
+          copied_at: string | null;
+          chatgpt_opened_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["script_prompt_generations"]["Row"]> & {
+          project_id: string;
+          version: number;
+          prompt_template_version: string;
+          profile_completion: number;
+          prompt_hash: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["script_prompt_generations"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "script_prompt_generations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "webinar_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      script_builder_events: {
+        Row: {
+          id: string;
+          project_id: string;
+          event_type:
+            | "script_builder_viewed"
+            | "script_builder_started"
+            | "script_builder_resumed"
+            | "script_builder_step_started"
+            | "script_builder_step_completed"
+            | "script_builder_progress_saved"
+            | "script_builder_review_viewed"
+            | "script_builder_lead_form_viewed"
+            | "script_builder_lead_submitted"
+            | "script_prompt_generated"
+            | "script_prompt_viewed"
+            | "script_prompt_copied"
+            | "script_chatgpt_opened"
+            | "script_answers_edited"
+            | "script_project_restarted"
+            | "script_wewebinars_cta_viewed"
+            | "script_wewebinars_cta_clicked";
+          properties: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["script_builder_events"]["Row"]> & {
+          project_id: string;
+          event_type: Database["public"]["Tables"]["script_builder_events"]["Row"]["event_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["script_builder_events"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: {
       custom_domain_lookup: {
