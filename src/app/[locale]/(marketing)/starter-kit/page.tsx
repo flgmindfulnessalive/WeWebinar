@@ -17,6 +17,19 @@ const STEP_ICONS = {
   create: Rocket,
 } as const;
 
+// Same icon family as STEP_ICONS (reused on purpose -- benefit1..4 map 1:1
+// to the first four Launchpad steps below, benefit5 is the "launch it"
+// wrap-up), but a lighter badge here: this is the hero's quick-scan list,
+// not the main "Tu recorrido" narrative, so it shouldn't compete with the
+// bigger gradient circles further down the page.
+const HERO_BENEFIT_ICONS = {
+  benefit1: Calculator,
+  benefit2: Gauge,
+  benefit3: Compass,
+  benefit4: Sparkles,
+  benefit5: Rocket,
+} as const;
+
 export async function generateMetadata({
   params,
 }: {
@@ -57,13 +70,22 @@ export default async function StarterKitPage() {
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-5xl">{t("hero.title")}</h1>
         <p className="max-w-2xl text-lg text-muted-foreground text-pretty">{t("hero.subtitle")}</p>
 
-        <ul className="grid gap-2 text-left sm:grid-cols-2">
-          {benefitKeys.map((key) => (
-            <li key={key} className="flex items-start gap-2 text-sm">
-              <span aria-hidden className="mt-1 size-1.5 shrink-0 rounded-full bg-[var(--brand)]" />
-              {t(`hero.${key}`)}
-            </li>
-          ))}
+        <ul className="grid gap-3 text-left sm:grid-cols-2">
+          {benefitKeys.map((key) => {
+            const Icon = HERO_BENEFIT_ICONS[key];
+            return (
+              <li key={key} className="flex items-start gap-3 text-sm">
+                <span
+                  aria-hidden
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full"
+                  style={{ background: "var(--brand-light)", color: "var(--brand)" }}
+                >
+                  <Icon className="size-3.5" />
+                </span>
+                <span className="pt-1">{t(`hero.${key}`)}</span>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="flex flex-col items-center gap-3">
