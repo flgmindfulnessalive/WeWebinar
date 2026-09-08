@@ -48,6 +48,10 @@ const KNOWN_EVENT_TYPES = [
   "blueprint_completed",
   "implementation_item_checked",
   "implementation_completed",
+  "demo_completed",
+  "reward_unlocked",
+  "playbook_downloaded",
+  "discount_revealed",
 ] as const;
 export type LaunchpadEventType = (typeof KNOWN_EVENT_TYPES)[number];
 

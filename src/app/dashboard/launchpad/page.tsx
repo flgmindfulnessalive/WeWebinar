@@ -35,6 +35,9 @@ export default async function LaunchpadPage() {
     .select("step_key, status, progress_percentage, started_at, completed_at, last_activity_at")
     .eq("project_id", project.id);
 
+  const { data: rewardRows } = await supabase.from("launchpad_rewards").select("status").eq("project_id", project.id);
+  const anyRewardUnlocked = (rewardRows ?? []).some((row) => row.status === "unlocked" || row.status === "redeemed");
+
   const steps: LaunchpadStepProgress[] = (stepRows ?? []).map((row) => ({
     stepKey: row.step_key,
     status: row.status,
@@ -66,7 +69,7 @@ export default async function LaunchpadPage() {
         ))}
       </div>
 
-      <LaunchpadRewardTeaser />
+      <LaunchpadRewardTeaser unlocked={anyRewardUnlocked} />
     </div>
   );
 }

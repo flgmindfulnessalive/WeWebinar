@@ -1,3 +1,4 @@
+import { downloadTextFile } from "@/lib/download-text-file";
 import { BLUEPRINT_ACT_KEYS, BLUEPRINT_SLIDES } from "@/lib/launchpad/blueprint-content";
 import type { BlueprintSlideState } from "./blueprint-explorer";
 
@@ -30,14 +31,4 @@ export function buildBlueprintMarkdown(
   return lines.join("\n");
 }
 
-export function downloadBlueprintFile(content: string, filename: string): void {
-  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
+export const downloadBlueprintFile = downloadTextFile;

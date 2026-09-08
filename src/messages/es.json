@@ -1982,7 +1982,8 @@
       "comingSoon": "Próximamente",
       "reviewCta": "Revisar",
       "rewardTitle": "Automated Evergreen Webinar Playbook 2026",
-      "rewardSubtitle": "Sorpresa disponible al completar la demo."
+      "rewardSubtitle": "Sorpresa disponible al completar la demo.",
+      "rewardUnlockedSubtitle": "Desbloqueaste tu Playbook y tu descuento. Ve a buscarlos."
     },
     "calculator": {
       "title": "¿Cuánto te cuesta repetir tu presentación?",
@@ -2206,6 +2207,61 @@
           "title": "Publica tu webinar",
           "description": "Revisa todo y actívalo para que empiece a trabajar por ti."
         }
+      }
+    },
+    "demo": {
+      "title": "Vive la experiencia evergreen",
+      "subtitle": "Antes de crear el tuyo, mira cómo se siente un webinar evergreen real de punta a punta: registro, sala de espera y transmisión.",
+      "demoReadyTitle": "Tu demo está lista",
+      "demoReadyBody": "Se abre en una pestaña nueva -- puedes registrarte como lo haría cualquier visitante y vivir la experiencia completa.",
+      "openDemoCta": "Ver la demo evergreen",
+      "demoComingSoonTitle": "Demo próximamente",
+      "demoComingSoonBody": "Estamos preparando el webinar de demostración. Mientras tanto, puedes seguir explorando el resto del Launchpad.",
+      "confirmHint": "¿Ya la viviste de punta a punta?",
+      "confirmCta": "Ya viví la demo",
+      "confirmedNote": "¡Listo! Desbloqueaste tus recompensas.",
+      "goToRewardsCta": "Ver mis recompensas"
+    },
+    "rewards": {
+      "title": "Tus recompensas",
+      "subtitle": "Por completar el recorrido del Launchpad hasta la demo.",
+      "playbook": {
+        "title": "Automated Evergreen Webinar Playbook 2026",
+        "lockedHint": "Completa la etapa de demo para desbloquearlo.",
+        "unlockedHint": "Una guía descargable con la estructura de guion, el checklist de lanzamiento y los errores más comunes al pasar a evergreen.",
+        "downloadCta": "Descargar Playbook",
+        "intro": "Esta guía resume lo que recorriste en el Launchpad -- guárdala como referencia rápida para tu próximo webinar evergreen.",
+        "sections": {
+          "why_evergreen": {
+            "title": "Por qué pasar a evergreen",
+            "body": "Cada vez que repites tu presentación en vivo, ese tiempo desaparece apenas termina la llamada. Un webinar evergreen invierte la lógica: grabas una vez, lo configuras una vez, y esa misma presentación queda trabajando 24/7 sin que tengas que estar ahí. La diferencia no es solo de tiempo: tu presentación pasa de ser un evento que organizas cada semana a un activo que sigue vendiendo mientras haces otra cosa."
+          },
+          "the_four_acts": {
+            "title": "Los 4 actos de tu guion",
+            "body": "Todo webinar evergreen que convierte sigue la misma estructura narrativa de 18 slides, organizada en 4 actos:"
+          },
+          "launch_checklist": {
+            "title": "Checklist de lanzamiento",
+            "body": "Antes de publicar, asegúrate de tener listos estos 6 elementos -- son exactamente las secciones del wizard de WeWebinars:"
+          },
+          "common_mistakes": {
+            "title": "Errores comunes al pasar a evergreen",
+            "body": "- Grabar la presentación tal cual la das en vivo, sin adaptar el guion a alguien que la ve sin que tú estés ahí para responder preguntas.\n- Saltar directo a grabar sin pasar por el Blueprint: el resultado suena a presentación de producto, no a historia que lleva a una decisión.\n- No programar CTAs ni chat simulado: un video sin ninguna interacción se siente grabado, no en vivo.\n- Lanzar sin probar el flujo completo de registro, sala de espera y sala en vivo desde el punto de vista de un visitante nuevo."
+          },
+          "next_steps": {
+            "title": "Próximos pasos",
+            "body": "Con tu guion listo y tu webinar creado, el trabajo real recién empieza: mira las analíticas de las primeras sesiones (retención, CTAs, encuestas) y ajusta lo que no esté funcionando. Un webinar evergreen no es \"grabar y olvidarse\": es un sistema que mejora con cada dato que te da."
+          }
+        }
+      },
+      "discount": {
+        "title": "Tu descuento",
+        "lockedHint": "Completa la etapa de demo para desbloquearlo.",
+        "unlockedHint": "Un código de descuento para cuando actives tu plan de WeWebinars.",
+        "revealCta": "Revelar mi código",
+        "copyCta": "Copiar",
+        "copied": "¡Copiado!",
+        "codeComingSoon": "Tu código está en camino: te lo enviamos por email en breve."
       }
     }
   },

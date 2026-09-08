@@ -1098,7 +1098,11 @@ export interface Database {
             | "blueprint_slide_viewed"
             | "blueprint_completed"
             | "implementation_item_checked"
-            | "implementation_completed";
+            | "implementation_completed"
+            | "demo_completed"
+            | "reward_unlocked"
+            | "playbook_downloaded"
+            | "discount_revealed";
           properties: Json;
           created_at: string;
         };
@@ -1127,6 +1131,32 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: "blueprint_progress_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      launchpad_rewards: {
+        Row: {
+          id: string;
+          project_id: string;
+          reward_type: "playbook" | "discount";
+          status: "locked" | "unlocked" | "redeemed" | "expired";
+          unlocked_at: string | null;
+          redeemed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_rewards"]["Row"]> & {
+          project_id: string;
+          reward_type: Database["public"]["Tables"]["launchpad_rewards"]["Row"]["reward_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_rewards"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "launchpad_rewards_project_id_fkey";
             columns: ["project_id"];
             isOneToOne: false;
             referencedRelation: "launchpad_projects";
