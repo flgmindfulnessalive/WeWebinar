@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
+import { syncLaunchpadStepFromExternalTool } from "@/lib/launchpad/external-sync";
 import { slugify } from "@/lib/slug";
 import { randomFakeViewerRange } from "@/lib/fake-viewers";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
@@ -54,6 +55,19 @@ export async function createWebinar(
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Best-effort -- the webinar is already created above, so a failed
+  // Launchpad sync shouldn't block the redirect into the wizard.
+  try {
+    await syncLaunchpadStepFromExternalTool({
+      accountId: current.account.id,
+      stepKey: "create",
+      status: "completed",
+      link: {},
+    });
+  } catch (err) {
+    console.error("[webinars] Launchpad sync failed:", err);
   }
 
   // Straight into the edit wizard, not the (still-empty) Control Center --

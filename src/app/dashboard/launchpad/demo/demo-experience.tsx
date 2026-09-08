@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, ExternalLink, PlayCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -27,6 +27,10 @@ export function DemoExperience({
   const [completed, setCompleted] = useState(initialCompleted);
   const [saving, setSaving] = useState(false);
   const demoUrl = process.env.NEXT_PUBLIC_LAUNCHPAD_DEMO_WEBINAR_URL;
+
+  useEffect(() => {
+    if (projectId) trackLaunchpadEvent(projectId, "launchpad_step_started", { step_key: "demo" });
+  }, [projectId]);
 
   async function confirmWatched() {
     setSaving(true);

@@ -4,6 +4,7 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { nextRecommendedStep, stepStatusFor } from "@/lib/launchpad/progress";
 import { ORDERED_LAUNCHPAD_STEPS } from "@/lib/launchpad/steps-config";
 import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { LaunchpadProgressCard } from "./launchpad-progress-card";
 import { LaunchpadRewardTeaser } from "./launchpad-reward-teaser";
@@ -38,6 +39,15 @@ export default async function LaunchpadPage() {
   const { data: rewardRows } = await supabase.from("launchpad_rewards").select("status").eq("project_id", project.id);
   const anyRewardUnlocked = (rewardRows ?? []).some((row) => row.status === "unlocked" || row.status === "redeemed");
 
+  // Fire-and-forget -- una vista del dashboard nunca debe esperar a que
+  // se guarde su propio evento de analítica.
+  createAdminClient()
+    .from("launchpad_events")
+    .insert({ project_id: project.id, event_type: "launchpad_viewed", properties: {} })
+    .then(({ error: eventError }) => {
+      if (eventError) console.error("[dashboard/launchpad] launchpad_viewed insert failed:", eventError);
+    });
+
   const steps: LaunchpadStepProgress[] = (stepRows ?? []).map((row) => ({
     stepKey: row.step_key,
     status: row.status,
@@ -65,6 +75,7 @@ export default async function LaunchpadPage() {
             key={definition.key}
             definition={definition}
             status={stepStatusFor(steps, definition.key)}
+            projectId={project.id}
           />
         ))}
       </div>

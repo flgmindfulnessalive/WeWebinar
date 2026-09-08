@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -60,6 +60,10 @@ export function RepetitionCalculatorForm({
   const [error, setError] = useState<string | null>(null);
 
   const results = useMemo(() => computeRepetitionCalculator(inputs), [inputs]);
+
+  useEffect(() => {
+    if (projectId) trackLaunchpadEvent(projectId, "launchpad_step_started", { step_key: "cost" });
+  }, [projectId]);
 
   function updateField<K extends keyof RepetitionCalculatorInputs>(key: K, value: RepetitionCalculatorInputs[K]) {
     setInputs((prev) => ({ ...prev, [key]: value }));

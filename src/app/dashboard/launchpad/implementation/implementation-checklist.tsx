@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Calendar, Check, DoorOpen, MessageSquare, MousePointerClick, Rocket, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -34,6 +34,10 @@ export function ImplementationChecklist({
   const [checked, setChecked] = useState<Set<ImplementationChecklistItemKey>>(new Set(initialCheckedItems));
   const [savingItem, setSavingItem] = useState<ImplementationChecklistItemKey | null>(null);
   const completedTracked = checked.size === TOTAL_IMPLEMENTATION_ITEMS;
+
+  useEffect(() => {
+    if (projectId) trackLaunchpadEvent(projectId, "launchpad_step_started", { step_key: "implementation" });
+  }, [projectId]);
 
   async function toggle(itemKey: ImplementationChecklistItemKey) {
     const nextChecked = !checked.has(itemKey);
@@ -111,7 +115,12 @@ export function ImplementationChecklist({
             {completedTracked ? t("allDoneNote") : t("checklistHint")}
           </p>
           <Button asChild className="text-white shadow-sm" style={{ background: "linear-gradient(90deg, #4f46e5, #c026d3)" }}>
-            <Link href="/dashboard/webinars/new">{t("ctaCreateWebinar")}</Link>
+            <Link
+              href="/dashboard/webinars/new"
+              onClick={() => projectId && trackLaunchpadEvent(projectId, "create_webinar_clicked")}
+            >
+              {t("ctaCreateWebinar")}
+            </Link>
           </Button>
         </div>
       </CardContent>

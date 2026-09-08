@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+import { getCurrentAccount } from "@/lib/data/account";
+import { syncLaunchpadStepFromExternalTool } from "@/lib/launchpad/external-sync";
 import { sendReadinessLeadToBrevo } from "@/lib/readiness/brevo";
 import {
   READINESS_RATE_LIMIT_MAX_SUBMISSIONS,
@@ -156,6 +158,29 @@ export async function POST(request: Request) {
   }).catch((err) => {
     console.error("[readiness/submit] Brevo sync failed:", err);
   });
+
+  // Best-effort, no bloqueante -- si quien completó el diagnóstico está
+  // logueado (llegó acá desde /dashboard/launchpad, o simplemente tenía
+  // sesión abierta en otra pestaña), sincroniza la etapa "diagnosis" del
+  // Launchpad. Un score bajo no cuenta como "completado" sino
+  // "needs_review": el usuario sí terminó la acción, pero el badge del
+  // dashboard debe invitarlo a revisar el plan antes de seguir.
+  getCurrentAccount()
+    .then((current) => {
+      if (!current) return;
+      const stepStatus = report.readinessStatus === "ready" || report.readinessStatus === "almost_ready"
+        ? "completed"
+        : "needs_review";
+      return syncLaunchpadStepFromExternalTool({
+        accountId: current.account.id,
+        stepKey: "diagnosis",
+        status: stepStatus,
+        link: { readiness_assessment_id: payload.assessmentId },
+      });
+    })
+    .catch((err) => {
+      console.error("[readiness/submit] Launchpad sync failed:", err);
+    });
 
   return NextResponse.json(report);
 }

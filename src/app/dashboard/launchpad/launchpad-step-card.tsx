@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Check, Clock, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { trackLaunchpadEvent } from "@/lib/launchpad/track";
 import { cn } from "@/lib/utils";
 import type { LaunchpadStepDefinition } from "@/lib/launchpad/steps-config";
 import type { LaunchpadStepStatus } from "@/lib/launchpad/types";
@@ -18,9 +21,11 @@ const STATUS_BADGE_STYLES: Record<LaunchpadStepStatus, string> = {
 export function LaunchpadStepCard({
   definition,
   status,
+  projectId,
 }: {
   definition: LaunchpadStepDefinition;
   status: LaunchpadStepStatus;
+  projectId: string;
 }) {
   const t = useTranslations("Launchpad.dashboard");
   const unavailable = !definition.available;
@@ -67,7 +72,14 @@ export function LaunchpadStepCard({
             </Button>
           ) : (
             <Button asChild size="sm" variant={status === "completed" ? "outline" : "default"} className="w-full">
-              <Link href={definition.route}>
+              <Link
+                href={definition.route}
+                onClick={
+                  definition.key === "create"
+                    ? () => trackLaunchpadEvent(projectId, "create_webinar_clicked")
+                    : undefined
+                }
+              >
                 {status === "completed" ? t("reviewCta") : t(`stepCta.${definition.key}`)}
               </Link>
             </Button>

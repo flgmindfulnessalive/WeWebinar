@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+import { syncLaunchpadStepFromExternalTool } from "@/lib/launchpad/external-sync";
 import { PROMPT_TEMPLATE_VERSION } from "@/lib/script-builder/config";
 import { rowToProfile, type WebinarProjectProfileRow } from "@/lib/script-builder/mapping";
 import { buildEvergreenMasterPrompt } from "@/lib/script-builder/prompt-builder";
@@ -32,7 +33,7 @@ const PROJECT_COLUMNS =
 async function recordPromptGenerated(admin: ReturnType<typeof createAdminClient>, projectId: string) {
   const { data: project } = await admin
     .from("webinar_projects")
-    .select(`${PROJECT_COLUMNS}, profile_completion`)
+    .select(`${PROJECT_COLUMNS}, profile_completion, account_id`)
     .eq("id", projectId)
     .maybeSingle();
   if (!project) return;
@@ -56,6 +57,21 @@ async function recordPromptGenerated(admin: ReturnType<typeof createAdminClient>
   });
 
   await admin.from("webinar_projects").update({ status: "prompt_generated" }).eq("id", projectId);
+
+  // Solo si estaba logueado cuando guardó el perfil (webinar_projects.
+  // account_id se setea en /api/script-builder/save cuando corresponde) --
+  // Script Builder sigue siendo usable de punta a punta sin cuenta, esto
+  // es puramente aditivo para quien sí llegó desde el dashboard.
+  if (project.account_id) {
+    await syncLaunchpadStepFromExternalTool({
+      accountId: project.account_id,
+      stepKey: "script",
+      status: "completed",
+      link: { webinar_project_id: projectId },
+    }).catch((err) => {
+      console.error("[script-builder/event] Launchpad sync failed:", err);
+    });
+  }
 }
 
 async function stampLatestGeneration(

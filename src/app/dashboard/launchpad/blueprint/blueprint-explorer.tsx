@@ -40,6 +40,10 @@ export function BlueprintExplorer({
   const completedCount = Object.values(slides).filter((s) => s.completed).length;
 
   useEffect(() => {
+    if (projectId) trackLaunchpadEvent(projectId, "launchpad_step_started", { step_key: "architecture" });
+  }, [projectId]);
+
+  useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 

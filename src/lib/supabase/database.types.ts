@@ -1008,6 +1008,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
           completed_at: string | null;
+          reminder_sent_at: string | null;
         };
         Insert: Partial<Database["public"]["Tables"]["launchpad_projects"]["Row"]> & {
           account_id: string;
