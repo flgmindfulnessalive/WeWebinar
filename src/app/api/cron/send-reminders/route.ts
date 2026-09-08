@@ -9,11 +9,14 @@ import {
   unsubscribeHeaders,
   wrapEmailShell,
 } from "@/lib/email-templates";
+import { computeProjectCompletionPercentage, nextRecommendedStep } from "@/lib/launchpad/progress";
+import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
 import {
   accountDeletionWarningEmail,
   accountSuspendedEmail,
   activationNudgeEmail,
   domainVerificationFailedEmail,
+  launchpadReminderEmail,
   monthlyDigestEmail,
   trialExpiringEmail,
 } from "@/lib/platform-email";
@@ -24,6 +27,21 @@ import type { Database } from "@/lib/supabase/database.types";
 
 const TRIAL_WARNING_WINDOW_DAYS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const LAUNCHPAD_REMINDER_INACTIVITY_DAYS = 3;
+
+// Mismas palabras que Launchpad.dashboard.stepName en es.json -- el email
+// (siempre en español, como el resto de platform-email.ts) tiene que
+// coincidir con lo que el usuario ve en el dashboard, no inventar otra
+// forma de nombrar la misma etapa.
+const LAUNCHPAD_STEP_LABELS_ES: Record<string, string> = {
+  cost: "Costo de repetir",
+  diagnosis: "Diagnóstico",
+  architecture: "Arquitectura",
+  script: "Guion",
+  implementation: "Implementación",
+  demo: "Demo",
+  create: "Crear tu webinar",
+};
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -561,6 +579,78 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Launchpad session recovery: a one-time nudge to accounts that
+  // started the Launchpad (at least one step touched) but went quiet for
+  // LAUNCHPAD_REMINDER_INACTIVITY_DAYS. Same claim-before-send pattern as
+  // the activation nudge above, but on launchpad_projects.reminder_sent_at
+  // instead of a column on accounts -- this is a one-time email per
+  // project, never repeated (there's no "reset" path, matching how
+  // activation_nudge_sent_at also never gets cleared).
+  let launchpadRemindersSent = 0;
+  const launchpadReminderCutoff = new Date(now.getTime() - LAUNCHPAD_REMINDER_INACTIVITY_DAYS * DAY_MS).toISOString();
+
+  const { data: launchpadCandidates } = await admin
+    .from("launchpad_projects")
+    .select("id, account_id")
+    .eq("status", "active")
+    .is("reminder_sent_at", null)
+    .lte("updated_at", launchpadReminderCutoff);
+
+  for (const project of launchpadCandidates ?? []) {
+    // No step touched yet -- an empty shell auto-created just by visiting
+    // /dashboard/launchpad once isn't "abandoned", it's simply unstarted;
+    // not a session-recovery candidate.
+    const { count: stepCount } = await admin
+      .from("launchpad_step_progress")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", project.id);
+    if (!stepCount) continue;
+
+    const { data: claimed, error: claimError } = await admin
+      .from("launchpad_projects")
+      .update({ reminder_sent_at: now.toISOString() })
+      .eq("id", project.id)
+      .is("reminder_sent_at", null)
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`launchpad ${project.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const [{ data: account }, { data: owner }, { data: stepRows }] = await Promise.all([
+        admin.from("accounts").select("name").eq("id", project.account_id).maybeSingle(),
+        admin.from("users").select("email").eq("account_id", project.account_id).eq("role", "owner").maybeSingle(),
+        admin
+          .from("launchpad_step_progress")
+          .select("step_key, status, progress_percentage, started_at, completed_at, last_activity_at")
+          .eq("project_id", project.id),
+      ]);
+      if (account && owner?.email) {
+        const steps: LaunchpadStepProgress[] = (stepRows ?? []).map((row) => ({
+          stepKey: row.step_key,
+          status: row.status,
+          progressPercentage: row.progress_percentage,
+          startedAt: row.started_at,
+          completedAt: row.completed_at,
+          lastActivityAt: row.last_activity_at,
+        }));
+        const nextStep = nextRecommendedStep(steps);
+        const { subject, html } = launchpadReminderEmail(
+          account.name,
+          LAUNCHPAD_STEP_LABELS_ES[nextStep],
+          computeProjectCompletionPercentage(steps)
+        );
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      launchpadRemindersSent++;
+    } catch (err) {
+      errors.push(`launchpad ${project.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return NextResponse.json({
     remindersSent,
     replaysSent,
@@ -571,6 +661,7 @@ export async function GET(request: Request) {
     deletionWarningsSent,
     accountsPurged,
     domainAlertsSent,
+    launchpadRemindersSent,
     errors,
   });
 }

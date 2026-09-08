@@ -7,11 +7,12 @@ import { OnboardingForm } from "./onboarding-form";
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; billing?: string }>;
+  searchParams: Promise<{ plan?: string; billing?: string; source?: string }>;
 }) {
-  const { plan, billing } = await searchParams;
+  const { plan, billing, source } = await searchParams;
   const selectedPlan = plan && isSelfServePlanKey(plan) ? plan : undefined;
   const billingPeriod = billing && isBillingPeriod(billing) ? billing : "monthly";
+  const signupSource = source === "launchpad" ? "launchpad" : undefined;
   const supabase = await createClient();
   const {
     data: { user },
@@ -34,7 +35,7 @@ export default async function OnboardingPage({
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
       <div className="w-full max-w-md">
-        <OnboardingForm plan={selectedPlan} billing={billingPeriod} />
+        <OnboardingForm plan={selectedPlan} billing={billingPeriod} source={signupSource} />
       </div>
     </div>
   );

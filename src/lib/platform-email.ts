@@ -203,6 +203,25 @@ export function activationNudgeEmail(accountName: string): { subject: string; ht
   };
 }
 
+export function launchpadReminderEmail(
+  accountName: string,
+  nextStepLabel: string,
+  percentComplete: number
+): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const safeStepLabel = escapeHtml(nextStepLabel);
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Tu Launchpad te espera</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Vas ${percentComplete}% del camino a tu primer webinar evergreen</h1>
+<p style="margin:0 0 20px;">Notamos que <strong style="color:#18181b;">${safeName}</strong> empezó el Launchpad pero no volvió a entrar. El siguiente paso es <strong style="color:#18181b;">${safeStepLabel}</strong> -- retoma justo donde quedaste, tu progreso está guardado.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/launchpad" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Continuar mi Launchpad</a>
+</td></tr></table>`;
+  return {
+    subject: "No perdiste tu progreso en el Launchpad",
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
 export function newEnterpriseLeadEmail(lead: {
   name: string;
   email: string;

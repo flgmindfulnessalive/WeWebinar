@@ -26,9 +26,11 @@ const PLAN_LABEL: Record<SelfServePlanKey, string> = {
 export function OnboardingForm({
   plan,
   billing,
+  source,
 }: {
   plan?: SelfServePlanKey;
   billing: BillingPeriod;
+  source?: "launchpad";
 }) {
   const t = useTranslations("OnboardingForm");
   const [state, formAction, isPending] = useActionState(createAccount, null);
@@ -59,6 +61,7 @@ export function OnboardingForm({
               <input type="hidden" name="billing" value={billing} />
             </>
           )}
+          {source && <input type="hidden" name="source" value={source} />}
           {plan && (
             <p className="rounded-lg border bg-accent p-4 text-sm text-muted-foreground">
               {t("planNote", { plan: PLAN_LABEL[plan] })}

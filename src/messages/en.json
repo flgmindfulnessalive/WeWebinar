@@ -400,6 +400,7 @@
   },
   "DashboardNav": {
     "summary": "Summary",
+    "launchpad": "Launchpad",
     "webinars": "Webinars",
     "team": "Team",
     "settings": "Settings"
@@ -1323,5 +1324,997 @@
     "fakeViewerMaxLabel": "Maximum viewers",
     "fakeViewerRangeSeparator": "to",
     "saveWaitingRoom": "Save"
+  },
+  "Readiness": {
+    "meta": {
+      "title": "Evergreen Readiness Score: is your webinar ready to work for you?",
+      "description": "Score the six essential components of your webinar in 5-7 minutes and get a personalized action plan to turn it into an evergreen asset."
+    },
+    "landing": {
+      "eyebrow": "Evergreen Readiness Score",
+      "title": "Is your webinar ready to work for you?",
+      "subtitle": "Score the six essential components of your webinar and find out exactly what to fix before automating it.",
+      "statQuestions": "30 questions",
+      "statTime": "5–7 minutes",
+      "statPersonalized": "Personalized diagnosis",
+      "statPlan": "Immediate action plan",
+      "cta": "Score my webinar",
+      "noSignupNeeded": "No signup needed to get started.",
+      "resumeBanner": "You have an unfinished assessment.",
+      "resumeCta": "Continue where I left off",
+      "restartCta": "Start over"
+    },
+    "context": {
+      "title": "Before you start",
+      "subtitle": "These answers help us personalize your report -- they don't add or subtract points.",
+      "businessTypeLabel": "What type of business do you have?",
+      "businessType": {
+        "coaching": "Coaching or consulting",
+        "digital_product": "Course or digital product",
+        "membership": "Membership or community",
+        "network_marketing": "Network marketing",
+        "agency": "Agency",
+        "saas": "SaaS or software",
+        "professional_services": "Professional services",
+        "other": "Other"
+      },
+      "presentationStatusLabel": "Do you already have a sales presentation?",
+      "presentationStatus": {
+        "recorded": "Yes, and it's already recorded",
+        "live_only": "Yes, but I still present it live",
+        "partial_structure": "I have a partial structure",
+        "none": "Not yet"
+      },
+      "primaryGoalLabel": "What's your main goal?",
+      "primaryGoal": {
+        "save_time": "Save time",
+        "more_sales": "Get more sales",
+        "scale_presentation": "Scale my presentation",
+        "improve_conversion": "Improve conversion",
+        "follow_up_prospects": "Follow up with prospects",
+        "measure_audience": "Measure my audience's behavior"
+      }
+    },
+    "categories": {
+      "strategy": {
+        "title": "Strategy",
+        "description": "Checks whether your webinar starts from a clearly defined market, problem, and belief shift."
+      },
+      "presentation": {
+        "title": "Presentation",
+        "description": "Assesses whether the content naturally guides the audience from problem to decision."
+      },
+      "recording": {
+        "title": "Recording",
+        "description": "Checks whether the audiovisual content can be reused repeatedly without losing quality or relevance."
+      },
+      "evergreen": {
+        "title": "Evergreen experience",
+        "description": "Assesses whether a prospect can register and go through the presentation with no manual intervention."
+      },
+      "followup": {
+        "title": "Follow-up",
+        "description": "Checks whether there's a system to re-engage and nurture people who haven't taken action yet."
+      },
+      "measurement": {
+        "title": "Measurement",
+        "description": "Assesses whether you can turn your audience's behavior into optimization decisions."
+      }
+    },
+    "questions": {
+      "strategy": {
+        "q1": "Is your webinar aimed at a specific type of person with a clearly defined problem?",
+        "q2": "Can you explain, in a single sentence, the outcome your audience wants to achieve?",
+        "q3": "Have you identified the belief or mindset that keeps your prospect from moving forward?",
+        "q4": "Does your presentation introduce a new way of understanding the problem?",
+        "q5": "Is there a single core idea that ties the whole presentation together?"
+      },
+      "presentation": {
+        "q1": "Do the first few minutes create curiosity and make the audience want to keep watching?",
+        "q2": "Does the presentation follow a logical, easy-to-follow sequence?",
+        "q3": "Do you include evidence, demonstrations, or examples that back up your claims?",
+        "q4": "Do you address the main objections before presenting the offer?",
+        "q5": "Do you end with a single, specific, easy-to-execute action?"
+      },
+      "recording": {
+        "q1": "Is the audio clear, stable, and easy to listen to?",
+        "q2": "Does the video, slides, or screen share look professional?",
+        "q3": "Does the recording keep a natural pace and avoid unnecessarily long sections?",
+        "q4": "Does the content avoid dates, times, or references that could become outdated?",
+        "q5": "Do you have a final, correctly exported file ready to upload?"
+      },
+      "evergreen": {
+        "q1": "Do you have a clear registration page focused on a single promise?",
+        "q2": "Can the prospect choose a session or start at a convenient time?",
+        "q3": "Is there a waiting room or pre-presentation experience consistent with the presentation itself?",
+        "q4": "Do your calls to action appear at the exact moment they're relevant?",
+        "q5": "Does the experience work correctly on mobile devices?"
+      },
+      "followup": {
+        "q1": "Does the registrant get an immediate confirmation?",
+        "q2": "Are there reminders before the presentation?",
+        "q3": "Do you have a specific follow-up for people who register but don't attend?",
+        "q4": "Do you tailor the follow-up based on how much each person watched?",
+        "q5": "Do buyers or converted leads stop receiving sales messages?"
+      },
+      "measurement": {
+        "q1": "Do you know your registration page's conversion rate?",
+        "q2": "Can you measure what percentage of registrants actually attend?",
+        "q3": "Can you tell how long each person stays in the presentation?",
+        "q4": "Do you know the minute or section where most people drop off?",
+        "q5": "Can you measure who watched, clicked, or acted on your call to action?"
+      }
+    },
+    "answers": {
+      "yes": "Yes, fully defined",
+      "partial": "Partially",
+      "no": "Not yet"
+    },
+    "progress": {
+      "categoryStepLabel": "Step {current} of {total}"
+    },
+    "nav": {
+      "previous": "Back",
+      "continue": "Continue",
+      "start": "Start"
+    },
+    "validation": {
+      "answerAllQuestions": "Answer all 5 questions to continue.",
+      "selectAnOption": "Pick an option to continue."
+    },
+    "anticipation": {
+      "title": "Your diagnosis is ready.",
+      "subtitle": "We found your main bottleneck.",
+      "cta": "See my full diagnosis"
+    },
+    "leadForm": {
+      "title": "Almost there",
+      "description": "Your diagnosis is ready. Enter your details to see your full score and get your action plan.",
+      "privacyNote": "We'll only use your email to send you your diagnosis and, if you opt in, resources on evergreen webinars. We never share it with third parties.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "consentLabel": "I agree to receive my diagnosis by email as described above.",
+      "marketingConsentLabel": "I want to receive free strategies and resources from WeWebinars.",
+      "submit": "See my diagnosis",
+      "submitting": "Generating your diagnosis...",
+      "errorGeneric": "We couldn't generate your diagnosis. Please try again in a moment.",
+      "errorRateLimited": "We detected too many attempts from your connection. Please try again later.",
+      "errorName": "Enter your name.",
+      "errorEmail": "Enter a valid email.",
+      "errorConsent": "We need your consent to show you the diagnosis."
+    },
+    "results": {
+      "headline": "Your webinar is {percentage}% ready to automate.",
+      "status": {
+        "not_ready": {
+          "title": "Not ready yet",
+          "message": "Your webinar has important gaps to close before automating it. The good news is you now know exactly where to start."
+        },
+        "foundation_built": {
+          "title": "The foundation is there",
+          "message": "You already have a working structure, but a few gaps could hurt the experience, follow-up, or conversion."
+        },
+        "almost_ready": {
+          "title": "Almost ready to automate",
+          "message": "Your webinar is well on track. Fix the priority items and you'll be able to turn it into a reliable system."
+        },
+        "ready": {
+          "title": "Ready to work for you",
+          "message": "You have the essential components to turn your presentation into an evergreen asset."
+        }
+      },
+      "categoryStatus": {
+        "critical": "Critical priority",
+        "needs_work": "Needs work",
+        "good_base": "Good foundation",
+        "prepared": "Prepared"
+      },
+      "chartTitle": "Your score by component",
+      "chartAlt": "Horizontal bar chart showing the readiness percentage for each of the six components evaluated.",
+      "weakestCategoryEyebrow": "Your main bottleneck",
+      "recommendationsTitle": "Your next 3 actions",
+      "ctaTitle": "Your presentation has potential. Now turn it into a system.",
+      "ctaText": "Upload your video, configure the experience, and let your best presentation work for you 24/7.",
+      "ctaButton": "Create my webinar",
+      "blueprintCta": "Download the 18-slide Blueprint",
+      "restart": "Take the diagnosis again",
+      "disclaimer": "This diagnosis is directional, based on your own answers, and does not constitute professional advice or guarantee business results."
+    },
+    "recommendations": {
+      "strategy_1": "Define in one sentence who your webinar is for and what problem it solves.",
+      "strategy_2": "Write down the core belief shift that needs to happen.",
+      "strategy_3": "Reduce your webinar to a single big idea.",
+      "presentation_1": "Rewrite the first three minutes around a question or tension.",
+      "presentation_2": "Order the narrative: problem, new approach, mechanism, solution, and action.",
+      "presentation_3": "Remove calls to action that compete with the main decision.",
+      "recording_1": "Fix the audio first; it matters more than an expensive camera.",
+      "recording_2": "Remove time references that will make the recording go stale.",
+      "recording_3": "Export and test the final version on both desktop and mobile.",
+      "evergreen_1": "Simplify the registration page down to a single promise.",
+      "evergreen_2": "Decide exactly when the CTA should appear.",
+      "evergreen_3": "Walk through the whole journey as if you were a brand-new attendee.",
+      "followup_1": "Set up a confirmation and reminders beforehand.",
+      "followup_2": "Separate no-shows from people who actually started watching.",
+      "followup_3": "Tailor the follow-up based on how much they watched and whether they acted on the CTA.",
+      "measurement_1": "Start by measuring registration, attendance, and retention.",
+      "measurement_2": "Identify the main drop-off minute.",
+      "measurement_3": "Connect viewing and CTA clicks to the actual business outcome."
+    },
+    "restartDialog": {
+      "title": "Restart the diagnosis?",
+      "description": "You'll lose your current answers and start all 30 questions over.",
+      "confirm": "Yes, restart",
+      "cancel": "Cancel"
+    }
+  },
+  "ScriptBuilder": {
+    "meta": {
+      "title": "Script Builder: write your webinar script in 18 slides",
+      "description": "Fill out your project profile and generate a personalized Master Prompt to write your full webinar script with AI."
+    },
+    "landing": {
+      "eyebrow": "Script Builder",
+      "title": "Your webinar in 18 slides, ready to write",
+      "subtitle": "Fill out your project profile and generate a personalized prompt to create your full webinar script with your favorite AI.",
+      "statStages": "7 stages",
+      "statTime": "10-15 minutes",
+      "statPersonalized": "100% personalized",
+      "statPrompt": "Prompt ready to copy",
+      "cta": "Build my script",
+      "noSignupNeeded": "You don't need to sign up to get started.",
+      "resumeBanner": "You have an unfinished project.",
+      "resumeCta": "Continue where I left off",
+      "restartCta": "Start over"
+    },
+    "nav": {
+      "stepLabel": "Stage {current} of {total}",
+      "previous": "Previous",
+      "continue": "Continue"
+    },
+    "stages": {
+      "basics": {
+        "title": "Your project",
+        "description": "Tell us what you sell and what your webinar looks like."
+      },
+      "audience": {
+        "title": "Your audience",
+        "description": "Define who you're talking to and where they're at today."
+      },
+      "belief": {
+        "title": "Belief shift",
+        "description": "The mental shift your audience needs before they buy."
+      },
+      "mechanism": {
+        "title": "Your mechanism",
+        "description": "How you deliver the result you promise."
+      },
+      "evidence": {
+        "title": "Evidence and authority",
+        "description": "Why they should believe you."
+      },
+      "offer": {
+        "title": "Your offer",
+        "description": "What you're selling and how you'll present it."
+      },
+      "voice": {
+        "title": "Voice and format",
+        "description": "How you want the script to sound and look."
+      }
+    },
+    "fields": {
+      "projectName": {
+        "label": "Project name",
+        "placeholder": "E.g. Fall launch webinar script"
+      },
+      "productName": {
+        "label": "Your product or service name",
+        "placeholder": "E.g. 8-week 1:1 mentorship"
+      },
+      "productType": {
+        "label": "Offer type",
+        "options": {
+          "coaching": "Coaching",
+          "consulting": "Consulting",
+          "course": "Course",
+          "digital_product": "Digital product",
+          "membership": "Membership",
+          "community": "Community",
+          "network_marketing": "Network marketing",
+          "software": "SaaS / software",
+          "professional_service": "Professional service",
+          "physical_product": "Physical product",
+          "event": "Event",
+          "other": "Other"
+        }
+      },
+      "productDescription": {
+        "label": "Describe your product or service",
+        "placeholder": "What exactly is it, and what's included?"
+      },
+      "productPrice": {
+        "label": "Price",
+        "placeholder": "497"
+      },
+      "currency": {
+        "label": "Currency",
+        "placeholder": "USD"
+      },
+      "offerUrl": {
+        "label": "Offer URL (optional)",
+        "placeholder": "https://..."
+      },
+      "desiredDuration": {
+        "label": "Desired webinar length",
+        "options": {
+          "10_15": "10-15 minutes",
+          "15_20": "15-20 minutes",
+          "20_30": "20-30 minutes",
+          "30_45": "30-45 minutes",
+          "custom": "Other length"
+        }
+      },
+      "desiredDurationCustomMinutes": {
+        "label": "How many minutes?",
+        "placeholder": "60"
+      },
+      "targetAudience": {
+        "label": "Who are you talking to?",
+        "placeholder": "E.g. Coaches making under $3k/month who want a repeatable sales system"
+      },
+      "audienceAwareness": {
+        "label": "How aware is your audience of their problem?",
+        "options": {
+          "unaware": "Doesn't know they have the problem",
+          "problem_aware": "Knows the problem, not aware of solutions",
+          "solution_aware": "Knows solutions exist, not yours",
+          "product_aware": "Knows your product, hasn't decided",
+          "most_aware": "Already knows your product, just needs a nudge"
+        }
+      },
+      "currentSituation": {
+        "label": "What's their current situation?",
+        "placeholder": "Where is your audience today?"
+      },
+      "mainProblem": {
+        "label": "What's their main problem?",
+        "placeholder": "The concrete problem you solve"
+      },
+      "frustrations": {
+        "label": "What have they already tried that didn't work?",
+        "placeholder": "Frustrations or failed attempts"
+      },
+      "desiredResult": {
+        "label": "What result do they want?",
+        "placeholder": "The end result they're after"
+      },
+      "currentBelief": {
+        "label": "What do they currently believe that holds them back?",
+        "placeholder": "The current limiting belief"
+      },
+      "commonSolution": {
+        "label": "What common solution do they usually try first?",
+        "placeholder": "The obvious solution they already know"
+      },
+      "whyCommonSolutionFails": {
+        "label": "Why does that common solution fail?",
+        "placeholder": "The real reason it doesn't work"
+      },
+      "rootCause": {
+        "label": "What's the root cause of the problem?",
+        "placeholder": "What nobody had explained to them before"
+      },
+      "newParadigm": {
+        "label": "What's the new paradigm you're proposing?",
+        "placeholder": "The new way of seeing the problem"
+      },
+      "mechanismName": {
+        "label": "Name of your mechanism or method",
+        "placeholder": "E.g. The 3-Call System"
+      },
+      "mechanismDescription": {
+        "label": "Describe how your mechanism works",
+        "placeholder": "How do you deliver the result you promise?"
+      },
+      "mechanismSteps": {
+        "label": "Steps of your mechanism (up to 3)",
+        "placeholder": "E.g. Initial diagnosis"
+      },
+      "differentiators": {
+        "label": "What makes it different from other solutions?",
+        "placeholder": "Your main differentiator"
+      },
+      "founderStory": {
+        "label": "Your story as the founder",
+        "placeholder": "Why did you create this? What did you go through?"
+      },
+      "credentials": {
+        "label": "Relevant credentials or experience",
+        "placeholder": "Years of experience, certifications, achievements"
+      },
+      "proofPoints": {
+        "label": "Evidence and social proof",
+        "type": {
+          "case_study": "Case study",
+          "testimonial": "Testimonial",
+          "data_source": "Data or source",
+          "demonstration": "Demonstration"
+        }
+      },
+      "evidenceLimitations": {
+        "label": "Honest limitations of your evidence",
+        "placeholder": "E.g. not typical results, small sample size"
+      },
+      "offerName": {
+        "label": "Offer name",
+        "placeholder": "E.g. Scale 1:1 Program"
+      },
+      "deliverables": {
+        "label": "What's included in the offer?",
+        "placeholder": "E.g. 8 weekly 1-hour sessions"
+      },
+      "benefits": {
+        "label": "Main benefits",
+        "placeholder": "E.g. A repeatable sales system"
+      },
+      "bonuses": {
+        "label": "Bonuses (if any)",
+        "placeholder": "E.g. Sales script templates"
+      },
+      "pricingStructure": {
+        "label": "Pricing structure",
+        "placeholder": "One-time payment, installments, plans?"
+      },
+      "guarantee": {
+        "label": "Guarantee",
+        "placeholder": "What guarantee do you offer?"
+      },
+      "riskReversal": {
+        "label": "Risk reversal",
+        "placeholder": "How do you lower the perceived risk of buying?"
+      },
+      "legitimateUrgency": {
+        "label": "Legitimate urgency (optional)",
+        "placeholder": "E.g. limited spots due to 1:1 attention -- never invented"
+      },
+      "objections": {
+        "label": "Common objections",
+        "placeholder": "E.g. \"I don't have time\""
+      },
+      "primaryCta": {
+        "label": "Primary call to action",
+        "placeholder": "E.g. Book a call"
+      },
+      "ctaType": {
+        "label": "Action type",
+        "options": {
+          "buy": "Buy",
+          "register": "Register",
+          "book_call": "Book a call",
+          "request_info": "Request info",
+          "start_trial": "Start free trial",
+          "join_community": "Join the community",
+          "talk_to_person": "Talk to a person",
+          "other": "Other"
+        }
+      },
+      "ctaUrl": {
+        "label": "Action URL (optional)",
+        "placeholder": "https://..."
+      },
+      "webinarTitle": {
+        "label": "Your webinar title",
+        "placeholder": "E.g. How to sell without relying on referrals"
+      },
+      "presentationFormat": {
+        "label": "Presentation format",
+        "options": {
+          "camera": "On camera",
+          "voiceover_slides": "Voiceover over slides",
+          "presenter_and_slides": "Presenter and slides",
+          "screen_demo": "Screen demo",
+          "interview": "Interview",
+          "mixed": "Mixed"
+        }
+      },
+      "deliveryStyle": {
+        "label": "Tone (pick all that apply)",
+        "options": {
+          "professional": "Professional",
+          "warm": "Warm",
+          "inspirational": "Inspirational",
+          "educational": "Educational",
+          "direct": "Direct",
+          "conversational": "Conversational",
+          "authoritative": "Authoritative"
+        }
+      },
+      "scriptDetail": {
+        "label": "Script detail level",
+        "options": {
+          "word_for_word": "Word for word",
+          "natural_freedom": "Freedom to sound natural",
+          "talking_points": "Talking points only",
+          "hybrid_open_close": "Exact opening and closing, free in between"
+        }
+      },
+      "language": {
+        "label": "Script language",
+        "options": {
+          "es": "Spanish",
+          "en": "English",
+          "pt": "Portuguese",
+          "fr": "French"
+        }
+      },
+      "forbiddenWords": {
+        "label": "Words or phrases to avoid",
+        "placeholder": "E.g. \"guaranteed\""
+      },
+      "requiredConcepts": {
+        "label": "Concepts that must be included",
+        "placeholder": "E.g. mention your certification"
+      },
+      "additionalInstructions": {
+        "label": "Additional instructions (optional)",
+        "placeholder": "Any other guidance for the script"
+      }
+    },
+    "common": {
+      "add": "Add",
+      "removeItem": "Remove {value}",
+      "proofPointLabelPlaceholder": "E.g. \"Ana went from $2k to $8k/month in 3 months\"",
+      "urlOptionalPlaceholder": "URL (optional)",
+      "addProofPoint": "Add evidence"
+    },
+    "review": {
+      "title": "Review your project",
+      "subtitle": "This is how complete your profile is. The more you fill in, the better your script will be.",
+      "bucket": {
+        "insufficient": {
+          "title": "Key information missing",
+          "description": "You need to fill in at least the critical fields before generating your prompt."
+        },
+        "draft_ready": {
+          "title": "Ready for a first draft",
+          "description": "Your prompt will produce a working script, though you can still add more detail."
+        },
+        "solid": {
+          "title": "Solid profile",
+          "description": "Your prompt will produce a well-grounded, specific script."
+        },
+        "excellent": {
+          "title": "Complete profile",
+          "description": "You have everything needed for a highly personalized script."
+        }
+      },
+      "missingCriticalTitle": "You still need to fill in these key fields:",
+      "completeField": "Complete",
+      "belowMinimum": "You need at least {minimum}% completion to generate your prompt.",
+      "generateCta": "Generate my Master Prompt"
+    },
+    "leadForm": {
+      "title": "You're almost there",
+      "description": "Enter your details to generate and save your Master Prompt.",
+      "privacyNote": "We'll only use your email to save your project and, if you opt in, send you resources about evergreen webinars. We never share it with third parties.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "consentLabel": "I agree to have my project saved as described above.",
+      "marketingConsentLabel": "I want to receive free strategies and resources from WeWebinars.",
+      "submit": "Generate my prompt",
+      "submitting": "Generating your prompt...",
+      "errorGeneric": "We couldn't generate your prompt. Please try again in a moment.",
+      "errorRateLimited": "We detected too many attempts from your connection. Please try again later.",
+      "errorName": "Enter your name.",
+      "errorEmail": "Enter a valid email.",
+      "errorConsent": "We need your consent to generate your prompt."
+    },
+    "result": {
+      "eyebrow": "Master Prompt",
+      "title": "Your Master Prompt is ready",
+      "subtitle": "Copy it and paste it into ChatGPT (or your favorite AI) to generate your full 18-slide webinar script.",
+      "copyAndOpenCta": "Copy and open ChatGPT",
+      "copyOnly": "Copy",
+      "copied": "Copied!",
+      "editAnswers": "Edit my answers",
+      "restart": "Start a new project"
+    },
+    "cta": {
+      "title": "You have the script. Now turn your webinar into a system.",
+      "text": "Upload your video, set up the experience, and let your presentation work for you 24/7.",
+      "button": "Create my webinar"
+    },
+    "restartDialog": {
+      "title": "Start a new project?",
+      "description": "You'll lose your current profile and start the 7 stages over.",
+      "confirm": "Yes, start over",
+      "cancel": "Cancel"
+    }
+  },
+  "Launchpad": {
+    "dashboard": {
+      "title": "Your Evergreen Webinar Launchpad",
+      "greeting": "Hi, {name}. Let's turn a presentation that depends on you today into a system that can work 24/7.",
+      "loadFailed": "We couldn't load your Launchpad. Refresh the page or try again in a moment.",
+      "stepsCompleted": "{completed} of {total} stages completed",
+      "progressLabel": "Launchpad progress",
+      "percentageCompleted": "{percentage}% completed",
+      "timeRemaining": "{minutes} estimated minutes remaining",
+      "nextStepLabel": "Next step",
+      "continueCta": "Continue my Launchpad",
+      "stepName": {
+        "cost": "Cost of repeating",
+        "diagnosis": "Diagnosis",
+        "architecture": "Architecture",
+        "script": "Script",
+        "implementation": "Implementation",
+        "demo": "Demo",
+        "create": "Create"
+      },
+      "stepResult": {
+        "cost": "Find out how much time and money repeating your presentation costs you.",
+        "diagnosis": "Get your Evergreen Readiness Score and your action plan.",
+        "architecture": "Walk through your webinar's 18-slide Blueprint.",
+        "script": "Generate your webinar's first script with AI.",
+        "implementation": "See how to turn your script into a real webinar.",
+        "demo": "Experience an evergreen webinar working from start to finish.",
+        "create": "Create your first webinar in WeWebinars."
+      },
+      "stepStatus": {
+        "not_started": "Not started",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "needs_review": "Needs review"
+      },
+      "stepCta": {
+        "cost": "Calculate my cost",
+        "diagnosis": "Get my Score",
+        "architecture": "Design my architecture",
+        "script": "Generate my script",
+        "implementation": "See implementation",
+        "demo": "Explore the demo",
+        "create": "Create my webinar"
+      },
+      "estimatedMinutes": "{minutes} min estimated",
+      "comingSoon": "Coming soon",
+      "reviewCta": "Review",
+      "rewardTitle": "Automated Evergreen Webinar Playbook 2026",
+      "rewardSubtitle": "Surprise available once you complete the demo.",
+      "rewardUnlockedSubtitle": "You unlocked your Playbook and your discount. Go grab them."
+    },
+    "calculator": {
+      "title": "How much does repeating your presentation cost you?",
+      "subtitle": "Fill in your details and find out how much time and money you could recover by automating it.",
+      "presentationsPerWeekLabel": "Presentations per week",
+      "durationMinutesLabel": "Duration of each presentation (minutes)",
+      "prepAndFollowupMinutesLabel": "Prep and follow-up per presentation (minutes)",
+      "peopleRepeatingLabel": "People repeating the presentation",
+      "hourlyValueUsdLabel": "Estimated value of an hour of work (US$)",
+      "automatablePercentageLabel": "Percentage of time you could automate",
+      "insight": "Today, repeating your presentation consumes roughly {annualHours} hours a year: the equivalent of {annualWorkdays} full workdays. If you automate {automatablePercentage}% of the repetitive work, you could recover close to {recoverableHours} hours a year.",
+      "currentSystemLabel": "Current system",
+      "annualHoursLabel": "Hours per year",
+      "annualWorkdaysLabel": "Full workdays",
+      "annualCostLabel": "Annual cost",
+      "recoverableLabel": "Recoverable through automation",
+      "recoverableHoursLabel": "Recoverable hours",
+      "recoverableWorkdaysLabel": "Recoverable workdays",
+      "recoverableValueLabel": "Recoverable value",
+      "projectionNote": "That's about {monthlyCost} a month, or {threeYear} over three years if nothing changes.",
+      "saveCta": "Save and continue",
+      "saving": "Saving...",
+      "saveError": "We couldn't save your calculation. Please try again in a moment."
+    },
+    "blueprint": {
+      "title": "18-Slide Blueprint",
+      "subtitle": "Walk through your webinar's full architecture, act by act.",
+      "progress": "{completed} of {total} slides reviewed",
+      "notesLabel": "Your notes (optional)",
+      "notesPlaceholder": "How would you apply this slide to your presentation?",
+      "markReady": "Mark as ready",
+      "markedReady": "Ready",
+      "previous": "Previous",
+      "next": "Next",
+      "downloadCta": "Download Blueprint",
+      "objectiveLabel": "Objective",
+      "questionLabel": "Question",
+      "exampleLabel": "Example",
+      "visualTipLabel": "Visual recommendation",
+      "completeProfileCta": "Generate my script",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "acts": {
+        "problem": {
+          "title": "Act I: The problem",
+          "description": "Make the limitation of the current approach visible and create relevance."
+        },
+        "new_way": {
+          "title": "Act II: The new way",
+          "description": "Shift the audience's belief and introduce a new paradigm."
+        },
+        "criteria": {
+          "title": "Act III: The criteria",
+          "description": "Show what an effective solution must meet."
+        },
+        "implementation": {
+          "title": "Act IV: The implementation",
+          "description": "Present the vehicle, the offer, and the next step."
+        }
+      },
+      "slides": {
+        "slide1": {
+          "title": "Cover / Big idea",
+          "objective": "Capture immediate attention and create genuine curiosity before explaining anything.",
+          "question": "What question or tension makes someone want to keep watching the next 30 seconds?",
+          "example": "\"What if you could sell without being present on every call?\"",
+          "visualTip": "One large sentence, no logos or secondary text competing for attention."
+        },
+        "slide2": {
+          "title": "Identification",
+          "objective": "Get the audience to recognize themselves in the situation described.",
+          "question": "How would you describe your audience's current situation in their own words?",
+          "example": "\"If you repeat the same demo every week and feel your time isn't paying off...\"",
+          "visualTip": "An image or icon representing the person, not the product."
+        },
+        "slide3": {
+          "title": "The hidden cost",
+          "objective": "Make tangible what the current way of doing things is costing in time, money, or energy.",
+          "question": "How much is it costing your audience to keep doing things the way they do today?",
+          "example": "\"Every repeated presentation is 2 hours that don't come back.\"",
+          "visualTip": "A concrete number or figure, not a vague statement."
+        },
+        "slide4": {
+          "title": "The false problem",
+          "objective": "Question the surface-level explanation the audience already gave themselves.",
+          "question": "What obvious solution have they already tried that doesn't actually address the real cause?",
+          "example": "\"Hiring more people doesn't fix a process that depends on one single person.\"",
+          "visualTip": "Visually contrast \"what looks like the problem\" against what follows."
+        },
+        "slide5": {
+          "title": "The real cause",
+          "objective": "Reveal the true bottleneck behind the symptom.",
+          "question": "What's the root cause nobody had pointed out to them before?",
+          "example": "\"The problem isn't the presentation. It's that its delivery depends on your time.\"",
+          "visualTip": "A simple diagram showing cause → symptom, not just text."
+        },
+        "slide6": {
+          "title": "Paradigm shift",
+          "objective": "Install a new way of seeing the problem that makes the solution that follows obvious.",
+          "question": "What does your audience believe today that they need to stop believing?",
+          "example": "\"Selling isn't an innate skill, it's a repeatable system.\"",
+          "visualTip": "Conceptual before/after, not the product yet."
+        },
+        "slide7": {
+          "title": "The mechanism",
+          "objective": "Explain how the new way works without presenting the product yet.",
+          "question": "What are the concrete steps that make this work?",
+          "example": "\"A 3-call system: diagnosis, plan, follow-up.\"",
+          "visualTip": "A numbered sequence of 3 to 5 steps, simple and visual."
+        },
+        "slide8": {
+          "title": "Before vs. after",
+          "objective": "Contrast the current system with the new possible reality.",
+          "question": "What does day-to-day look like before and after adopting this mechanism?",
+          "example": "\"Before: 5 identical calls a week. After: 1 presentation that works on its own.\"",
+          "visualTip": "Side-by-side table or columns, few words per row."
+        },
+        "slide9": {
+          "title": "The right experience",
+          "objective": "Define how a well-built solution should feel or work.",
+          "question": "What would someone expect to experience if this worked exactly as it should?",
+          "example": "\"It should feel as personal as a 1:1 call, without you being there.\"",
+          "visualTip": "Sensory language: how it looks, feels, how long it takes."
+        },
+        "slide10": {
+          "title": "The criteria",
+          "objective": "Establish the objective criteria any good solution should meet.",
+          "question": "What would a solution absolutely have to meet for you to trust it?",
+          "example": "\"It has to work without my presence, measure results, and look professional.\"",
+          "visualTip": "A checklist of 3 to 5 criteria, not a paragraph."
+        },
+        "slide11": {
+          "title": "Capture and registration",
+          "objective": "Show how the journey begins for someone who arrives at the solution.",
+          "question": "What's the first thing someone does to start using this?",
+          "example": "\"They register on a page with a single clear promise.\"",
+          "visualTip": "A screenshot or simplified mockup of the first step."
+        },
+        "slide12": {
+          "title": "The experience itself",
+          "objective": "Show what the person lives through during the core experience.",
+          "question": "What happens during the main moment of the experience?",
+          "example": "\"They watch the recorded presentation as if it were live, on their own schedule.\"",
+          "visualTip": "A capture of the real experience, not a generic illustration."
+        },
+        "slide13": {
+          "title": "Conversation and attention",
+          "objective": "Show how questions get answered and buying intent gets detected.",
+          "question": "How does the person know they can ask a question and get an answer?",
+          "example": "\"A live chat answers questions while they watch the presentation.\"",
+          "visualTip": "A real example of a question and answer, not an abstract description."
+        },
+        "slide14": {
+          "title": "CTA at the right moment",
+          "objective": "Connect the presentation to a relevant action at the right time.",
+          "question": "At exactly what moment does the invitation to act appear?",
+          "example": "\"The booking button appears only after explaining the mechanism.\"",
+          "visualTip": "Mark on a timeline where the CTA appears."
+        },
+        "slide15": {
+          "title": "Data to improve",
+          "objective": "Show how the process gets measured and optimized over time.",
+          "question": "What data lets someone know whether this is working?",
+          "example": "\"How many registered, how many watched fully, how many took action.\"",
+          "visualTip": "A simple panel or 3 key metrics, not a full table."
+        },
+        "slide16": {
+          "title": "Presenting the solution",
+          "objective": "Reveal the product as the natural consequence of everything explained before.",
+          "question": "How is the offer presented so it feels like the logical next step, not a sales pitch?",
+          "example": "\"That's why we built [product]: the system that does exactly this for you.\"",
+          "visualTip": "The first moment where the product is shown with a name and clear shape."
+        },
+        "slide17": {
+          "title": "Offer and choice",
+          "objective": "Clearly communicate what the person gets, at what price, and with what guarantees.",
+          "question": "What exactly does the offer include, and what lowers the risk of saying yes?",
+          "example": "\"It includes X, Y, Z. 30-day guarantee. Clear price and payment terms.\"",
+          "visualTip": "A list of what's included plus the price, no hidden fine print."
+        },
+        "slide18": {
+          "title": "Decision / CTA",
+          "objective": "Close with a single clear instruction, no ambiguity or multiple paths.",
+          "question": "What's the one action you're asking the audience to take right now?",
+          "example": "\"Book your call below. It's the only button on this page.\"",
+          "visualTip": "One single button, one message, no visual competition."
+        }
+      }
+    },
+    "implementation": {
+      "title": "Turn your script into a real webinar",
+      "subtitle": "See how each piece comes together in the WeWebinars wizard, and use this checklist as your guide while you build it.",
+      "videoComingSoonTitle": "Implementation video coming soon",
+      "videoComingSoonBody": "We're recording the step-by-step walkthrough. In the meantime, use the checklist below -- each item matches a real section of the wizard.",
+      "checklistTitle": "Implementation checklist",
+      "checklistHint": "Check them off as you complete each one in the wizard.",
+      "allDoneNote": "You've completed the checklist. You're ready to create your webinar.",
+      "ctaCreateWebinar": "Create my webinar",
+      "items": {
+        "video": {
+          "title": "Upload your video",
+          "description": "The video your visitors will see when they enter the room."
+        },
+        "schedule": {
+          "title": "Set up your schedule",
+          "description": "Decide when and how visitors can join: fixed time slots, just-in-time start, or both."
+        },
+        "waitingRoom": {
+          "title": "Customize your waiting room",
+          "description": "What your visitor sees on the registration page and while they wait for it to start."
+        },
+        "chat": {
+          "title": "Add simulated chat messages",
+          "description": "Timed messages that appear during playback, so it feels live."
+        },
+        "ctas": {
+          "title": "Add your CTAs",
+          "description": "Links, banners, and polls that appear at exact moments in the video."
+        },
+        "publish": {
+          "title": "Publish your webinar",
+          "description": "Review everything and turn it on so it starts working for you."
+        }
+      }
+    },
+    "demo": {
+      "title": "Live the evergreen experience",
+      "subtitle": "Before you build your own, see how a real evergreen webinar feels end to end: registration, waiting room, and the live room.",
+      "demoReadyTitle": "Your demo is ready",
+      "demoReadyBody": "It opens in a new tab -- you can register just like any visitor and live the full experience.",
+      "openDemoCta": "Watch the evergreen demo",
+      "demoComingSoonTitle": "Demo coming soon",
+      "demoComingSoonBody": "We're setting up the demo webinar. In the meantime, keep exploring the rest of the Launchpad.",
+      "confirmHint": "Did you already experience it end to end?",
+      "confirmCta": "I watched the demo",
+      "confirmedNote": "Done! You unlocked your rewards.",
+      "goToRewardsCta": "See my rewards"
+    },
+    "rewards": {
+      "title": "Your rewards",
+      "subtitle": "For completing the Launchpad journey through the demo.",
+      "playbook": {
+        "title": "Automated Evergreen Webinar Playbook 2026",
+        "lockedHint": "Complete the demo step to unlock it.",
+        "unlockedHint": "A downloadable guide with the script structure, the launch checklist, and the most common mistakes when going evergreen.",
+        "downloadCta": "Download Playbook",
+        "intro": "This guide sums up what you covered in the Launchpad -- keep it as a quick reference for your next evergreen webinar.",
+        "sections": {
+          "why_evergreen": {
+            "title": "Why go evergreen",
+            "body": "Every time you repeat your presentation live, that time disappears the moment the call ends. An evergreen webinar flips that logic: you record it once, set it up once, and that same presentation keeps working 24/7 without you having to be there. The difference isn't just about time -- your presentation goes from being an event you organize every week to an asset that keeps selling while you do something else."
+          },
+          "the_four_acts": {
+            "title": "The 4 acts of your script",
+            "body": "Every evergreen webinar that converts follows the same 18-slide narrative structure, organized into 4 acts:"
+          },
+          "launch_checklist": {
+            "title": "Launch checklist",
+            "body": "Before you publish, make sure you have these 6 pieces ready -- they're exactly the sections of the WeWebinars wizard:"
+          },
+          "common_mistakes": {
+            "title": "Common mistakes when going evergreen",
+            "body": "- Recording the presentation exactly as you give it live, without adapting the script for someone watching without you there to answer questions.\n- Jumping straight to recording without going through the Blueprint: the result sounds like a product pitch, not a story that leads to a decision.\n- Not scheduling CTAs or simulated chat -- a video with no interaction at all feels recorded, not live.\n- Launching without testing the full registration, waiting room, and live room flow from a first-time visitor's point of view."
+          },
+          "next_steps": {
+            "title": "Next steps",
+            "body": "With your script ready and your webinar created, the real work is just starting: look at the analytics from the first sessions (retention, CTAs, polls) and adjust whatever isn't working. An evergreen webinar isn't \"record and forget\" -- it's a system that improves with every piece of data it gives you."
+          }
+        }
+      },
+      "discount": {
+        "title": "Your discount",
+        "lockedHint": "Complete the demo step to unlock it.",
+        "unlockedHint": "A discount code for when you activate your WeWebinars plan.",
+        "revealCta": "Reveal my code",
+        "copyCta": "Copy",
+        "copied": "Copied!",
+        "codeComingSoon": "Your code is on its way -- we'll email it to you shortly."
+      }
+    }
+  },
+  "StarterKit": {
+    "meta": {
+      "title": "Evergreen Webinar Starter Kit: turn your presentation into a 24/7 asset",
+      "description": "Calculate how much repeating your presentation costs you, find out if you're ready to automate it, and build the architecture and script for your first evergreen webinar."
+    },
+    "hero": {
+      "eyebrow": "Evergreen Webinar Starter Kit",
+      "title": "Turn your presentation into the plan for an asset that works 24/7",
+      "subtitle": "Calculate how much it costs you to keep repeating it, find out if you're ready to automate it, and build the architecture and script for your first evergreen webinar.",
+      "benefit1": "Calculate the hours and money you lose repeating your presentation.",
+      "benefit2": "Get your Evergreen Readiness Score.",
+      "benefit3": "Build your webinar with an 18-slide Blueprint.",
+      "benefit4": "Generate your first script with artificial intelligence.",
+      "benefit5": "Find out how to automate it with WeWebinars.",
+      "cta": "Start for free",
+      "ctaReturning": "Go to my Launchpad",
+      "microcopy": "No credit card · About 45 minutes · Your progress is saved",
+      "secondaryCta": "See what's included"
+    },
+    "journey": {
+      "title": "Your journey",
+      "subtitle": "Seven guided stages, from your current presentation to your first evergreen webinar.",
+      "stepName": {
+        "cost": "Cost of repeating",
+        "diagnosis": "Diagnosis",
+        "architecture": "Architecture",
+        "script": "Script",
+        "implementation": "Implementation",
+        "demo": "Demo",
+        "create": "Create"
+      },
+      "stepResult": {
+        "cost": "Find out how much time and money repeating your presentation costs you.",
+        "diagnosis": "Get your Evergreen Readiness Score and your action plan.",
+        "architecture": "Walk through your webinar's 18-slide Blueprint.",
+        "script": "Generate your webinar's first script with AI.",
+        "implementation": "See how to turn your script into a real webinar.",
+        "demo": "Experience an evergreen webinar working from start to finish.",
+        "create": "Create your first webinar in WeWebinars."
+      }
+    },
+    "transformation": {
+      "beforeLabel": "Before",
+      "beforeText": "A presentation you have to repeat in person.",
+      "afterLabel": "After",
+      "afterText": "A structured, recordable presentation ready to automate."
+    },
+    "finalCta": {
+      "title": "Your presentation already takes up enough time to become a system.",
+      "subtitle": "Record it once, set it up, and let it work for you 24/7."
+    }
   }
 }

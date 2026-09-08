@@ -703,6 +703,468 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["platform_metrics_snapshots"]["Row"]>;
         Relationships: [];
       };
+      framework_definitions: {
+        Row: {
+          id: string;
+          framework_key: string;
+          stage_key:
+            | "welcome"
+            | "align"
+            | "validate"
+            | "engage"
+            | "reframe"
+            | "evidence"
+            | "bridge"
+            | "derisk"
+            | "activate"
+            | "learn";
+          stage_order: number;
+          name_es: string;
+          name_en: string;
+          strategic_purpose_es: string;
+          strategic_purpose_en: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["framework_definitions"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["framework_definitions"]["Row"]>;
+        Relationships: [];
+      };
+      readiness_assessments: {
+        Row: {
+          id: string;
+          email: string;
+          name: string;
+          business_type:
+            | "coaching"
+            | "digital_product"
+            | "membership"
+            | "network_marketing"
+            | "agency"
+            | "saas"
+            | "professional_services"
+            | "other";
+          presentation_status: "recorded" | "live_only" | "partial_structure" | "none";
+          primary_goal:
+            | "save_time"
+            | "more_sales"
+            | "scale_presentation"
+            | "improve_conversion"
+            | "follow_up_prospects"
+            | "measure_audience";
+          total_points: number;
+          score_percentage: number;
+          readiness_status: "not_ready" | "foundation_built" | "almost_ready" | "ready";
+          weakest_category: "strategy" | "presentation" | "recording" | "evergreen" | "followup" | "measurement";
+          strategy_score: number;
+          presentation_score: number;
+          recording_score: number;
+          evergreen_score: number;
+          followup_score: number;
+          measurement_score: number;
+          source: string | null;
+          medium: string | null;
+          campaign: string | null;
+          content: string | null;
+          affiliate: string | null;
+          ref: string | null;
+          marketing_consent: boolean;
+          ip_hash: string | null;
+          started_at: string;
+          completed_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["readiness_assessments"]["Row"]> & {
+          id: string;
+          email: string;
+          name: string;
+          business_type: Database["public"]["Tables"]["readiness_assessments"]["Row"]["business_type"];
+          presentation_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["presentation_status"];
+          primary_goal: Database["public"]["Tables"]["readiness_assessments"]["Row"]["primary_goal"];
+          total_points: number;
+          score_percentage: number;
+          readiness_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["readiness_status"];
+          weakest_category: Database["public"]["Tables"]["readiness_assessments"]["Row"]["weakest_category"];
+          strategy_score: number;
+          presentation_score: number;
+          recording_score: number;
+          evergreen_score: number;
+          followup_score: number;
+          measurement_score: number;
+          started_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["readiness_assessments"]["Row"]>;
+        Relationships: [];
+      };
+      readiness_answers: {
+        Row: {
+          id: string;
+          assessment_id: string;
+          category: "strategy" | "presentation" | "recording" | "evergreen" | "followup" | "measurement";
+          question_id: string;
+          answer: "yes" | "partial" | "no";
+          score: number;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["readiness_answers"]["Row"]> & {
+          assessment_id: string;
+          category: Database["public"]["Tables"]["readiness_answers"]["Row"]["category"];
+          question_id: string;
+          answer: Database["public"]["Tables"]["readiness_answers"]["Row"]["answer"];
+          score: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["readiness_answers"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "readiness_answers_assessment_id_fkey";
+            columns: ["assessment_id"];
+            isOneToOne: false;
+            referencedRelation: "readiness_assessments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      readiness_events: {
+        Row: {
+          id: string;
+          assessment_id: string;
+          event_type:
+            | "readiness_viewed"
+            | "readiness_started"
+            | "readiness_context_completed"
+            | "readiness_category_started"
+            | "readiness_category_completed"
+            | "readiness_progress_saved"
+            | "readiness_lead_form_viewed"
+            | "readiness_lead_submitted"
+            | "readiness_completed"
+            | "readiness_result_viewed"
+            | "readiness_cta_clicked"
+            | "readiness_blueprint_clicked"
+            | "readiness_restarted";
+          properties: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["readiness_events"]["Row"]> & {
+          assessment_id: string;
+          event_type: Database["public"]["Tables"]["readiness_events"]["Row"]["event_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["readiness_events"]["Row"]>;
+        Relationships: [];
+      };
+      webinar_projects: {
+        Row: {
+          id: string;
+          account_id: string | null;
+          readiness_assessment_id: string | null;
+          lead_email: string | null;
+          lead_name: string | null;
+          project_name: string | null;
+          status: "draft" | "profile_complete" | "prompt_generated";
+          profile_completion: number;
+          business_type: string | null;
+          product_name: string | null;
+          product_type: string | null;
+          product_description: string | null;
+          product_price: number | null;
+          currency: string | null;
+          offer_url: string | null;
+          desired_duration: string | null;
+          desired_duration_custom_minutes: number | null;
+          target_audience: string | null;
+          audience_awareness: string | null;
+          current_situation: string | null;
+          main_problem: string | null;
+          frustrations: string | null;
+          desired_result: string | null;
+          current_belief: string | null;
+          common_solution: string | null;
+          why_common_solution_fails: string | null;
+          root_cause: string | null;
+          new_paradigm: string | null;
+          mechanism_name: string | null;
+          mechanism_description: string | null;
+          mechanism_steps: Json;
+          differentiators: string | null;
+          founder_story: string | null;
+          credentials: string | null;
+          proof_points: Json;
+          evidence_limitations: string | null;
+          offer_name: string | null;
+          deliverables: Json;
+          benefits: Json;
+          bonuses: Json;
+          pricing_structure: string | null;
+          guarantee: string | null;
+          risk_reversal: string | null;
+          legitimate_urgency: string | null;
+          objections: Json;
+          primary_cta: string | null;
+          cta_type: string | null;
+          cta_url: string | null;
+          webinar_title: string | null;
+          presentation_format: string | null;
+          delivery_style: Json;
+          script_detail: string | null;
+          language: string;
+          forbidden_words: Json;
+          required_concepts: Json;
+          additional_instructions: string | null;
+          marketing_consent: boolean;
+          source: string | null;
+          medium: string | null;
+          campaign: string | null;
+          content: string | null;
+          affiliate: string | null;
+          ref: string | null;
+          ip_hash: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["webinar_projects"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_projects"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "webinar_projects_readiness_assessment_id_fkey";
+            columns: ["readiness_assessment_id"];
+            isOneToOne: false;
+            referencedRelation: "readiness_assessments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      script_prompt_generations: {
+        Row: {
+          id: string;
+          project_id: string;
+          version: number;
+          prompt_template_version: string;
+          profile_completion: number;
+          prompt_hash: string;
+          copied_at: string | null;
+          chatgpt_opened_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["script_prompt_generations"]["Row"]> & {
+          project_id: string;
+          version: number;
+          prompt_template_version: string;
+          profile_completion: number;
+          prompt_hash: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["script_prompt_generations"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "script_prompt_generations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "webinar_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      script_builder_events: {
+        Row: {
+          id: string;
+          project_id: string;
+          event_type:
+            | "script_builder_viewed"
+            | "script_builder_started"
+            | "script_builder_resumed"
+            | "script_builder_step_started"
+            | "script_builder_step_completed"
+            | "script_builder_progress_saved"
+            | "script_builder_review_viewed"
+            | "script_builder_lead_form_viewed"
+            | "script_builder_lead_submitted"
+            | "script_prompt_generated"
+            | "script_prompt_viewed"
+            | "script_prompt_copied"
+            | "script_chatgpt_opened"
+            | "script_answers_edited"
+            | "script_project_restarted"
+            | "script_wewebinars_cta_viewed"
+            | "script_wewebinars_cta_clicked";
+          properties: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["script_builder_events"]["Row"]> & {
+          project_id: string;
+          event_type: Database["public"]["Tables"]["script_builder_events"]["Row"]["event_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["script_builder_events"]["Row"]>;
+        Relationships: [];
+      };
+      launchpad_projects: {
+        Row: {
+          id: string;
+          account_id: string;
+          title: string;
+          current_step: "cost" | "diagnosis" | "architecture" | "script" | "implementation" | "demo" | "create";
+          status: "active" | "completed";
+          readiness_assessment_id: string | null;
+          webinar_project_id: string | null;
+          created_at: string;
+          updated_at: string;
+          completed_at: string | null;
+          reminder_sent_at: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_projects"]["Row"]> & {
+          account_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_projects"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "launchpad_projects_readiness_assessment_id_fkey";
+            columns: ["readiness_assessment_id"];
+            isOneToOne: false;
+            referencedRelation: "readiness_assessments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "launchpad_projects_webinar_project_id_fkey";
+            columns: ["webinar_project_id"];
+            isOneToOne: false;
+            referencedRelation: "webinar_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      launchpad_step_progress: {
+        Row: {
+          id: string;
+          project_id: string;
+          step_key: "cost" | "diagnosis" | "architecture" | "script" | "implementation" | "demo" | "create";
+          status: "not_started" | "in_progress" | "completed" | "needs_review";
+          progress_percentage: number;
+          started_at: string | null;
+          completed_at: string | null;
+          last_activity_at: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_step_progress"]["Row"]> & {
+          project_id: string;
+          step_key: Database["public"]["Tables"]["launchpad_step_progress"]["Row"]["step_key"];
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_step_progress"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "launchpad_step_progress_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      repetition_calculations: {
+        Row: {
+          id: string;
+          project_id: string;
+          inputs: Json;
+          results: Json;
+          calculation_version: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["repetition_calculations"]["Row"]> & {
+          project_id: string;
+          inputs: Json;
+          results: Json;
+        };
+        Update: Partial<Database["public"]["Tables"]["repetition_calculations"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "repetition_calculations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      launchpad_events: {
+        Row: {
+          id: string;
+          project_id: string;
+          event_type:
+            | "launchpad_viewed"
+            | "launchpad_step_started"
+            | "launchpad_step_completed"
+            | "repetition_calculation_completed"
+            | "create_webinar_clicked"
+            | "blueprint_slide_viewed"
+            | "blueprint_completed"
+            | "implementation_item_checked"
+            | "implementation_completed"
+            | "demo_completed"
+            | "reward_unlocked"
+            | "playbook_downloaded"
+            | "discount_revealed";
+          properties: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_events"]["Row"]> & {
+          project_id: string;
+          event_type: Database["public"]["Tables"]["launchpad_events"]["Row"]["event_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_events"]["Row"]>;
+        Relationships: [];
+      };
+      blueprint_progress: {
+        Row: {
+          id: string;
+          project_id: string;
+          slide_number: number;
+          completed: boolean;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["blueprint_progress"]["Row"]> & {
+          project_id: string;
+          slide_number: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["blueprint_progress"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "blueprint_progress_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      launchpad_rewards: {
+        Row: {
+          id: string;
+          project_id: string;
+          reward_type: "playbook" | "discount";
+          status: "locked" | "unlocked" | "redeemed" | "expired";
+          unlocked_at: string | null;
+          redeemed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["launchpad_rewards"]["Row"]> & {
+          project_id: string;
+          reward_type: Database["public"]["Tables"]["launchpad_rewards"]["Row"]["reward_type"];
+        };
+        Update: Partial<Database["public"]["Tables"]["launchpad_rewards"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "launchpad_rewards_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -841,6 +1303,41 @@ export interface Database {
       record_page_view: {
         Args: { p_webinar_id: string };
         Returns: undefined;
+      };
+      insert_readiness_assessment: {
+        Args: {
+          p_id: string;
+          p_email: string;
+          p_name: string;
+          p_business_type: Database["public"]["Tables"]["readiness_assessments"]["Row"]["business_type"];
+          p_presentation_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["presentation_status"];
+          p_primary_goal: Database["public"]["Tables"]["readiness_assessments"]["Row"]["primary_goal"];
+          p_total_points: number;
+          p_score_percentage: number;
+          p_readiness_status: Database["public"]["Tables"]["readiness_assessments"]["Row"]["readiness_status"];
+          p_weakest_category: Database["public"]["Tables"]["readiness_assessments"]["Row"]["weakest_category"];
+          p_strategy_score: number;
+          p_presentation_score: number;
+          p_recording_score: number;
+          p_evergreen_score: number;
+          p_followup_score: number;
+          p_measurement_score: number;
+          p_source: string | null;
+          p_medium: string | null;
+          p_campaign: string | null;
+          p_content: string | null;
+          p_affiliate: string | null;
+          p_ref: string | null;
+          p_marketing_consent: boolean;
+          p_ip_hash: string | null;
+          p_started_at: string;
+          p_answers: Json;
+        };
+        Returns: undefined;
+      };
+      get_or_create_launchpad_project: {
+        Args: { p_account_id: string };
+        Returns: Database["public"]["Tables"]["launchpad_projects"]["Row"];
       };
       account_is_publishable: {
         Args: { p_account_id: string };

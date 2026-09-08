@@ -46,10 +46,12 @@ export function SignupForm({
   initialEmail,
   plan,
   billing,
+  source,
 }: {
   initialEmail?: string;
   plan?: SelfServePlanKey;
   billing: BillingPeriod;
+  source?: "launchpad";
 }) {
   const t = useTranslations("SignupForm");
   const [state, formAction, isPending] = useActionState(
@@ -58,7 +60,17 @@ export function SignupForm({
   );
   const router = useRouter();
   const showCheckEmail = Boolean(state && "checkEmail" in state);
-  const onboardingNext = plan ? `/onboarding?plan=${plan}&billing=${billing}` : "/onboarding";
+  // Mismo criterio que signUpWithPassword: junta plan/billing y/o source
+  // en un único querystring sobre /onboarding, sin agregar un tercer
+  // formato de "next" distinto para el botón de Google.
+  const onboardingNextParams = new URLSearchParams();
+  if (plan) {
+    onboardingNextParams.set("plan", plan);
+    onboardingNextParams.set("billing", billing);
+  }
+  if (source) onboardingNextParams.set("source", source);
+  const onboardingNext =
+    onboardingNextParams.size > 0 ? `/onboarding?${onboardingNextParams.toString()}` : "/onboarding";
   const [captchaToken, setCaptchaToken] = useState("");
 
   useEffect(() => {
@@ -135,6 +147,7 @@ export function SignupForm({
                   <input type="hidden" name="billing" value={billing} />
                 </>
               )}
+              {source && <input type="hidden" name="source" value={source} />}
               <div className="grid gap-2">
                 <Label htmlFor="full_name">{t("nameLabel")}</Label>
                 <Input id="full_name" name="full_name" type="text" required autoComplete="name" />
