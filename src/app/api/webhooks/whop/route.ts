@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { unwrapWebhook, WebhookVerificationError } from "@whop/sdk/helpers";
 
-import { planKeyForWhopPlanId } from "@/lib/whop";
+import { planKeyForWhopPlanId, STARTER_KIT_PRODUCT_ID } from "@/lib/whop";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { accountActivatedEmail, paymentFailedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
+import { claimStarterKitFromWhop } from "@/lib/launchpad/whop-starter-kit-claim";
 import type { Database, SubscriptionStatus } from "@/lib/supabase/database.types";
 
 // Whop's generated WebhookEvent enum (@whop/sdk/api/types/WebhookEvent) --
@@ -19,6 +20,7 @@ type WhopWebhookPayload = {
   data: {
     id: string; // membership id, prefixed "mem_"
     plan_id: string;
+    product_id: string;
     user_id: string | null;
     status: string;
     metadata: Record<string, unknown>;
@@ -170,7 +172,21 @@ export async function POST(request: Request): Promise<Response> {
   // vanishing silently after an immediate 200, since nothing else surfaces
   // a billing-sync failure otherwise.
   if (SYNCED_EVENTS.has(event.type)) {
-    await syncMembership(event);
+    if (event.data.product_id === STARTER_KIT_PRODUCT_ID) {
+      // Free marketplace listing, not a checkout we created -- no
+      // metadata.account_id to sync against, so this never goes through
+      // syncMembership. Provisioning only reacts to the membership
+      // actually going live; "deactivated" has nothing to unwind (free,
+      // lifetime access, no billing behind it).
+      if (event.type === "membership.activated") {
+        await claimStarterKitFromWhop({
+          membershipId: event.data.id,
+          whopUserId: event.data.user_id,
+        });
+      }
+    } else {
+      await syncMembership(event);
+    }
   }
 
   return NextResponse.json({ received: true });

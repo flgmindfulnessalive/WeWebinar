@@ -82,6 +82,7 @@ export interface Database {
           digest_unsubscribed_at: string | null;
           unsubscribe_token: string;
           brevo_api_key: string | null;
+          whop_starter_kit_claimed_at: string | null;
           created_at: string;
           updated_at: string;
         };
