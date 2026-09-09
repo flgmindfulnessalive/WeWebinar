@@ -445,7 +445,9 @@
   },
   "GrowthNav": {
     "overview": "Overview",
-    "prospects": "Prospects"
+    "prospects": "Prospects",
+    "campaigns": "Campaigns",
+    "tasks": "Tasks"
   },
   "GrowthLayout": {
     "panelTitle": "Partner Engine"
@@ -610,6 +612,66 @@
       "full_message": "Full message",
       "follow_up": "Follow-up",
       "proposal": "Formal proposal"
+    }
+  },
+  "GrowthCampaigns": {
+    "title": "Campaigns",
+    "noPermission": "You don't have permission to do that.",
+    "missingFields": "Fill in the required fields.",
+    "selectCampaign": "Choose a campaign.",
+    "assigned": "Prospect assigned to the campaign.",
+    "createCampaign": "Create campaign",
+    "creating": "Creating...",
+    "nameLabel": "Name",
+    "namePlaceholder": "E.g. Fitness creators Q1",
+    "pipelineLabel": "Pipeline",
+    "offerLabel": "Offer",
+    "offerPlaceholder": "E.g. 3 months free of the Business plan",
+    "messageStrategyLabel": "Message strategy",
+    "messageStrategyPlaceholder": "Internal notes on the outreach angle for this campaign...",
+    "noCampaigns": "No campaigns yet. Create the first one.",
+    "prospectCount": "{count} prospects",
+    "roster": "Prospects in campaign ({count})",
+    "emptyRoster": "No prospects assigned to this campaign yet.",
+    "fieldCampaigns": "Campaigns",
+    "noCampaignsYet": "No campaigns created yet.",
+    "assignToCampaign": "Assign",
+    "removeFromCampaign": "Remove from campaign",
+    "pipeline": {
+      "creator": "Creator",
+      "ugc": "UGC Creator",
+      "distribution": "Distribution Partner"
+    },
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed"
+    }
+  },
+  "GrowthTasks": {
+    "title": "Tasks",
+    "noPermission": "You don't have permission to do that.",
+    "missingFields": "Fill in the required fields.",
+    "taskCreated": "Task created.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "E.g. Send follow-up message",
+    "dueDateLabel": "Due date",
+    "prospectLabel": "Prospect",
+    "noProspectLinked": "No prospect linked",
+    "addTask": "Add task",
+    "creating": "Creating...",
+    "complete": "Complete",
+    "cancel": "Cancel",
+    "openTasks": "Open ({count})",
+    "closedTasks": "Closed ({count})",
+    "noOpenTasks": "No open tasks.",
+    "noTasksForProspect": "No tasks for this prospect yet.",
+    "noDueDate": "No due date",
+    "tabTasks": "Tasks ({count})",
+    "taskStatus": {
+      "open": "Open",
+      "done": "Done",
+      "cancelled": "Cancelled"
     }
   },
   "DashboardHome": {
