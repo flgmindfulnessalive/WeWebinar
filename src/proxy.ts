@@ -40,6 +40,8 @@ function isLocaleRoutedPath(pathname: string): boolean {
     pathname.startsWith("/en/script-builder") ||
     pathname.startsWith("/starter-kit") ||
     pathname.startsWith("/en/starter-kit") ||
+    pathname.startsWith("/whop/the-execution-mindset-libro") ||
+    pathname.startsWith("/en/whop/the-execution-mindset-libro") ||
     pathname.startsWith("/w/") ||
     pathname.startsWith("/en/w/")
   );

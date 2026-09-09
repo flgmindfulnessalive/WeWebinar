@@ -57,6 +57,21 @@
   --brand-2: #c026d3;
 }
 
+/* "The Execution Mindset" book landing (/whop/the-execution-mindset-libro)
+   is a separate product/brand hosted under the WeWebinars domain -- it
+   deliberately does not share the marketing-theme indigo/fuchsia brand or
+   toggle with the site's light/dark mode. Fixed navy/gold/cream identity,
+   same on every viewer, matching the book cover art itself. */
+.execution-mindset-theme {
+  --em-navy: #12141c;
+  --em-navy-deep: #0b0c12;
+  --em-cream: #f5f1e8;
+  --em-cream-2: #efe9db;
+  --em-gold: #c9973b;
+  --em-gold-light: #e0b563;
+  --em-ink: #1a1c24;
+}
+
 @keyframes marketing-blob {
   0%,
   100% {
