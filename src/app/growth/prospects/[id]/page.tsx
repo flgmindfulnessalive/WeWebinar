@@ -9,7 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StageBadge } from "../../stage-badge";
 import { StageSelect } from "./stage-select";
 import { ArchiveButton } from "./archive-button";
+import { AnalyzeButton } from "./analyze-button";
+import { ScorePanel } from "./score-panel";
+import { MessagesSection, type ProspectMessage } from "./messages-section";
 import { NotesSection, type ProspectNote } from "./notes-section";
+import type { ScoreBreakdown } from "@/lib/growth/scoring";
 
 function initials(name: string): string {
   return name
@@ -28,6 +32,7 @@ export default async function GrowthProspectDetailPage({
   const { id } = await params;
   const operator = await requireGrowthOperator();
   const t = await getTranslations("GrowthProspects");
+  const tScoring = await getTranslations("GrowthScoring");
   const locale = await getLocale();
   const supabase = await createClient();
 
@@ -39,7 +44,7 @@ export default async function GrowthProspectDetailPage({
 
   if (!prospect) notFound();
 
-  const [{ data: rawNotes }, { data: activity }] = await Promise.all([
+  const [{ data: rawNotes }, { data: activity }, { data: latestScore }, { data: messages }] = await Promise.all([
     supabase
       .from("partner_notes")
       .select("id, body, created_at, author_id")
@@ -51,6 +56,18 @@ export default async function GrowthProspectDetailPage({
       .eq("prospect_id", id)
       .order("created_at", { ascending: false })
       .limit(50),
+    supabase
+      .from("partner_scores")
+      .select("fit_score, fit_breakdown, opportunity_score, opportunity_breakdown")
+      .eq("prospect_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("partner_messages")
+      .select("id, channel, kind, body, status, created_at")
+      .eq("prospect_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
   const authorIds = [...new Set((rawNotes ?? []).map((n) => n.author_id))];
@@ -86,12 +103,13 @@ export default async function GrowthProspectDetailPage({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {canEdit ? (
             <StageSelect prospectId={prospect.id} currentStage={prospect.stage} />
           ) : (
             <StageBadge stage={prospect.stage} label={t(`stage.${prospect.stage}`)} />
           )}
+          {canEdit && <AnalyzeButton prospectId={prospect.id} hasAnalysis={Boolean(latestScore)} />}
           {canEdit && <ArchiveButton prospectId={prospect.id} />}
         </div>
       </div>
@@ -99,6 +117,8 @@ export default async function GrowthProspectDetailPage({
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
+          <TabsTrigger value="analysis">{tScoring("tabAnalysis")}</TabsTrigger>
+          <TabsTrigger value="messages">{tScoring("tabMessages", { count: messages?.length ?? 0 })}</TabsTrigger>
           <TabsTrigger value="notes">{t("tabNotes", { count: notes.length })}</TabsTrigger>
           <TabsTrigger value="activity">{t("tabActivity")}</TabsTrigger>
         </TabsList>
@@ -126,6 +146,43 @@ export default async function GrowthProspectDetailPage({
                 <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("fieldBio")}</p>
                 <p className="text-sm whitespace-pre-wrap">{prospect.bio ?? t("notSet")}</p>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analysis" className="flex flex-col gap-4">
+          {latestScore ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <ScorePanel
+                title={tScoring("fitScoreTitle")}
+                score={latestScore.fit_score}
+                breakdown={latestScore.fit_breakdown as ScoreBreakdown}
+                namespace="GrowthScoring"
+              />
+              <ScorePanel
+                title={tScoring("opportunityScoreTitle")}
+                score={latestScore.opportunity_score}
+                breakdown={latestScore.opportunity_breakdown as ScoreBreakdown}
+                namespace="GrowthScoring"
+              />
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                {tScoring("noAnalysisYet")}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="messages">
+          <Card>
+            <CardContent className="p-6">
+              <MessagesSection
+                prospectId={prospect.id}
+                messages={(messages ?? []) as ProspectMessage[]}
+                hasAnalysis={Boolean(latestScore)}
+              />
             </CardContent>
           </Card>
         </TabsContent>

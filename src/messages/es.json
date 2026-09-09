@@ -548,6 +548,70 @@
       "task_completed": "Tarea completada"
     }
   },
+  "GrowthScoring": {
+    "noPermission": "No tienes permiso para hacer esto.",
+    "missingFields": "Completa los campos requeridos.",
+    "prospectNotFound": "No encontramos ese prospect.",
+    "noEvidence": "Agrega al menos una nota o la bio del prospect antes de analizar -- la IA solo usa datos reales que hayas cargado, no inventa nada.",
+    "alreadyUpToDate": "El análisis ya está al día con la evidencia actual.",
+    "analysisFailed": "No pudimos analizar el prospect. Probá de nuevo.",
+    "analysisComplete": "Análisis completo.",
+    "analyzeFirst": "Analiza el prospect con IA primero para poder generar mensajes.",
+    "messageGenerationFailed": "No pudimos generar el mensaje. Probá de nuevo.",
+    "messageGenerated": "Mensaje generado.",
+    "analyzing": "Analizando...",
+    "analyzeWithAi": "Analizar con IA",
+    "refreshAnalysis": "Actualizar análisis",
+    "tabAnalysis": "Análisis",
+    "tabMessages": "Mensajes ({count})",
+    "fitScoreTitle": "Fit Score",
+    "opportunityScoreTitle": "Opportunity Score",
+    "noAnalysisYet": "Todavía no hay análisis. Agrega una nota o la bio del prospect y usa \"Analizar con IA\".",
+    "band": {
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto",
+      "excellent": "Excelente"
+    },
+    "component": {
+      "audienceFit": "Fit de audiencia",
+      "problemFit": "Fit de problema",
+      "commercialIntent": "Intención comercial",
+      "contentRelevance": "Relevancia de contenido",
+      "saasAffinity": "Afinidad con SaaS",
+      "reachQuality": "Calidad del alcance",
+      "brandFit": "Fit de marca",
+      "responseProbability": "Probabilidad de respuesta",
+      "easeOfContact": "Facilidad de contacto",
+      "audienceQuality": "Calidad de audiencia",
+      "estimatedCost": "Costo estimado",
+      "saasCollaborationHistory": "Historial de colaboración con SaaS",
+      "expectedRevenue": "Revenue esperado",
+      "competition": "Competencia"
+    },
+    "channelLabel": "Canal",
+    "kindLabel": "Tipo de mensaje",
+    "generateMessage": "Generar mensaje",
+    "generating": "Generando...",
+    "noMessages": "Todavía no hay mensajes generados.",
+    "copy": "Copiar",
+    "markSent": "Marcar como enviado",
+    "sent": "Enviado",
+    "channel": {
+      "email": "Email",
+      "instagram_dm": "Instagram DM",
+      "linkedin_dm": "LinkedIn DM",
+      "tiktok_dm": "TikTok DM",
+      "whatsapp": "WhatsApp",
+      "other": "Otro"
+    },
+    "kind": {
+      "opening": "Primer contacto",
+      "full_message": "Mensaje completo",
+      "follow_up": "Seguimiento",
+      "proposal": "Propuesta formal"
+    }
+  },
   "DashboardHome": {
     "title": "Resumen",
     "createWebinar": "Crear webinar",
