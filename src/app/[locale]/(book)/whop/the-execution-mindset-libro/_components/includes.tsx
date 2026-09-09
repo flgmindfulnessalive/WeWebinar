@@ -56,13 +56,13 @@ export function Includes({ t }: { t: IncludesCopy }) {
       <div className="mx-auto mt-12 grid max-w-6xl grid-cols-2 gap-4 px-6 sm:grid-cols-3 lg:grid-cols-5">
         {PAGES.map(({ file, key }) => (
           <figure key={file} className="flex flex-col items-center gap-2">
-            <div className="overflow-hidden rounded-lg border border-[var(--em-gold)]/40 shadow-sm">
+            <div className="group overflow-hidden rounded-lg border border-[var(--em-gold)]/40 shadow-sm transition-[box-shadow,border-color] duration-500 ease-out hover:border-white hover:shadow-[0_0_28px_6px_rgba(255,255,255,0.55)]">
               <Image
                 src={`${ASSETS}/pages/${file}.webp`}
                 alt={t[key]}
                 width={362}
                 height={519}
-                className="w-full"
+                className="w-full transition-[filter] duration-500 ease-out group-hover:brightness-125"
               />
             </div>
             <figcaption className="text-xs font-medium text-[var(--em-ink)]/60">{t[key]}</figcaption>

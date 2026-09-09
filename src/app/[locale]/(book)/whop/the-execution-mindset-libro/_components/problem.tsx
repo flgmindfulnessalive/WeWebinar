@@ -17,7 +17,7 @@ export function Problem({ t }: { t: ProblemCopy }) {
   return (
     <section
       className="relative overflow-hidden bg-scroll bg-cover bg-[position:70%_center] bg-no-repeat py-24 sm:py-32 md:bg-fixed"
-      style={{ backgroundImage: `url(${ASSETS}/mountain-landscape.webp)` }}
+      style={{ backgroundImage: `url(${ASSETS}/beach-landscape.webp)` }}
     >
       <div
         aria-hidden
@@ -45,8 +45,8 @@ export function Problem({ t }: { t: ProblemCopy }) {
           <div className="relative mx-auto max-w-sm lg:ml-auto lg:mr-0">
             <span
               aria-hidden
-              className="pointer-events-none absolute -top-8 -left-2 font-serif text-8xl leading-none select-none lg:-right-4 lg:left-auto"
-              style={{ color: "var(--em-gold)", opacity: 0.35 }}
+              className="pointer-events-none absolute -top-8 -left-4 font-serif text-8xl leading-none select-none"
+              style={{ color: "var(--em-gold)", opacity: 0.65 }}
             >
               &ldquo;
             </span>
