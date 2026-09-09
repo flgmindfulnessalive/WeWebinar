@@ -2591,11 +2591,14 @@
       "titleHighlight": "dentro",
       "subtitle": "Deja de negociar contigo mismo.",
       "body": "Un sistema práctico para pensar mejor, actuar con disciplina y crear la vida que quieres.",
+      "priceOld": "11,94 US$",
+      "priceNew": "8 US$",
+      "priceDiscount": "33% dscto",
       "cta": "Obtén tu copia ahora",
       "ctaMicrocopy": "Acceso digital inmediato · Pago único · Garantía de 7 días",
       "feature1": "Libro completo",
       "feature2": "Workbook de implementación",
-      "feature3": "Acceso inmediato en todos tus dispositivos",
+      "feature3": "Acceso inmediato",
       "badgeLine1": "Garantía de satisfacción",
       "badgeLine2": "7 días"
     },
@@ -2640,14 +2643,17 @@
       "body": "El libro te da la mentalidad, el marco y las ideas clave. El workbook te guía paso a paso para aplicarlo en tu vida real.",
       "item1": "Libro completo (formato digital)",
       "item2": "Workbook de implementación",
-      "item3": "Acceso inmediato en todos tus dispositivos",
-      "item4": "Diseño claro, práctico y accionable"
+      "item3": "Acceso inmediato",
+      "item4": "Diseño claro, práctico y accionable",
+      "page1": "El marco: The Why Compass",
+      "page2": "La Regla de los Cinco",
+      "page3": "Tu hoja de trabajo",
+      "page4": "Sistema semanal de ejecución",
+      "page5": "Plan de 30 días"
     },
     "trust": {
       "item1Title": "Acceso inmediato",
       "item1Body": "Empieza hoy mismo.",
-      "item2Title": "En todos tus dispositivos",
-      "item2Body": "Lee y trabaja donde quieras.",
       "item3Title": "Una inversión en ti",
       "item3Body": "Herramientas que te acompañarán para siempre.",
       "item4Title": "Garantía de 7 días",
@@ -2658,7 +2664,9 @@
       "name": "Francesco Lulli",
       "role": "Creador de The Execution Mindset",
       "bio1": "Francesco escribió este sistema después de ver el mismo patrón una y otra vez: personas con claridad sobre lo que quieren, pero sin un método real para sostener la acción día tras día.",
-      "bio2": "The Execution Mindset no es otro libro de motivación. Es un sistema de trabajo: lo que aprendiste, conviértelo en hábito; lo que decidiste, ejecútalo esta semana."
+      "quote": "No necesitas declarar una identidad perfecta. Necesitas construir evidencia mediante comportamientos.",
+      "quoteSource": "— The Execution Mindset, Capítulo 3",
+      "bio2": "Su punto de partida es simple: proteger una prioridad dominante sin fingir que las demás responsabilidades desaparecen. Para Francesco, la vida que quieres no es un sueño -- es una decisión que se sostiene con un sistema, no con fuerza de voluntad."
     },
     "faq": {
       "eyebrow": "PREGUNTAS FRECUENTES",
@@ -2680,6 +2688,9 @@
       "eyebrow": "THE EXECUTION MINDSET",
       "title": "Es momento de ejecutar.",
       "subtitle": "Tu próxima etapa empieza hoy.",
+      "priceOld": "11,94 US$",
+      "priceNew": "8 US$",
+      "priceDiscount": "33% dscto",
       "cta": "Obtén tu copia ahora",
       "trust1": "Pago seguro",
       "trust2": "Acceso de por vida",
