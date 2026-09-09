@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { WHOP_CHECKOUT_URL, ASSETS, ICONS } from "./constants";
 
@@ -17,8 +17,6 @@ type HeroCopy = {
   feature1: string;
   feature2: string;
   feature3: string;
-  badgeLine1: string;
-  badgeLine2: string;
 };
 
 const FEATURES = [
@@ -87,32 +85,15 @@ export function Hero({ t }: { t: HeroCopy }) {
           </ul>
         </div>
 
-        <div className="relative mx-auto w-full max-w-md pt-9 pr-7 sm:pt-12 sm:pr-12 lg:max-w-none">
+        <div className="mx-auto w-full max-w-lg lg:max-w-none">
           <Image
             src={`${ASSETS}/hero-books.webp`}
             alt="The Execution Mindset — libro y workbook"
-            width={900}
-            height={666}
+            width={1526}
+            height={1006}
             className="w-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.45)]"
             priority
           />
-          <div
-            className="absolute top-0 right-0 flex size-24 flex-col items-center justify-center gap-1 rounded-full text-center shadow-lg sm:size-32"
-            style={{
-              background: "radial-gradient(circle at 32% 28%, var(--em-gold-light), var(--em-gold) 72%)",
-              boxShadow: "0 0 0 3px var(--em-navy), 0 0 0 5px var(--em-gold-light), 0 12px 24px rgba(0,0,0,0.35)",
-            }}
-          >
-            <p className="px-3 text-[9px] leading-tight font-bold text-[var(--em-navy-deep)] uppercase sm:text-[11px]">
-              {t.badgeLine1}
-            </p>
-            <p className="text-base font-extrabold text-[var(--em-navy-deep)] sm:text-xl">{t.badgeLine2}</p>
-            <div className="flex gap-0.5">
-              {[0, 1, 2].map((i) => (
-                <Star key={i} className="size-2 fill-current text-[var(--em-navy-deep)] sm:size-2.5" />
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </section>
