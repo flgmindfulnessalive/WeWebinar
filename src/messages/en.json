@@ -2558,5 +2558,123 @@
       "title": "Your presentation already takes up enough time to become a system.",
       "subtitle": "Record it once, set it up, and let it work for you 24/7."
     }
+  },
+  "ExecutionMindset": {
+    "meta": {
+      "title": "The Execution Mindset — Book + Workbook | Francesco Lulli",
+      "description": "Stop negotiating with yourself. A practical system to think better, act with discipline, and build the life you want. Book + implementation workbook, instant access."
+    },
+    "nav": {
+      "includes": "What's Included",
+      "benefits": "Benefits",
+      "author": "About the Author",
+      "faq": "FAQ",
+      "cta": "Get Your Copy"
+    },
+    "hero": {
+      "eyebrow": "THE EXECUTION MINDSET",
+      "titleStart": "See what's",
+      "titleHighlight": "inside",
+      "subtitle": "Stop negotiating with yourself.",
+      "body": "A practical system to think better, act with discipline, and build the life you want.",
+      "cta": "Get Your Copy Now",
+      "ctaMicrocopy": "Instant digital access · One-time payment · 7-day guarantee",
+      "feature1": "Full book",
+      "feature2": "Implementation workbook",
+      "feature3": "Instant access on all your devices",
+      "badgeLine1": "Satisfaction Guarantee",
+      "badgeLine2": "7 Days"
+    },
+    "benefits": {
+      "item1Title": "Mental clarity",
+      "item1Body": "Make better decisions and focus your energy on what actually matters.",
+      "item2Title": "Practical discipline",
+      "item2Body": "Simple tools to move from intention to action.",
+      "item3Title": "Real results",
+      "item3Body": "Build habits that move you toward the life you want.",
+      "item4Title": "Life by design",
+      "item4Body": "A system to create freedom, purpose, and a future on your own terms."
+    },
+    "problem": {
+      "eyebrow": "THE PROBLEM",
+      "titleStart": "You know what you want but you don't",
+      "titleHighlight": "do it.",
+      "body1": "You have good intentions, you read, you get inspired… but the same old life wins.",
+      "body2": "You get distracted, you procrastinate, you lose focus, and you start over again and again.",
+      "body3Start": "The problem isn't that you lack motivation. It's that you need a",
+      "body3Highlight": "system.",
+      "quote1": "An extraordinary life",
+      "quote2": "isn't a matter of luck.",
+      "quote3": "It's a matter of execution."
+    },
+    "method": {
+      "eyebrow": "THE METHOD",
+      "title": "Plan. Apply. Achieve.",
+      "subtitle": "The same four-step system that runs through the entire workbook.",
+      "step1Title": "Plan",
+      "step1Body": "Define what matters this week before the week defines you.",
+      "step2Title": "Apply",
+      "step2Body": "Turn every plan into a concrete action, today, without waiting for the perfect moment.",
+      "step3Title": "Achieve",
+      "step3Body": "Measure real progress, not the feeling of being busy.",
+      "step4Title": "Repeat",
+      "step4Body": "Turn execution into a habit that sustains itself, not a one-time effort."
+    },
+    "includes": {
+      "eyebrow": "WHAT'S INCLUDED",
+      "title": "Two tools. One purpose.",
+      "body": "The book gives you the mindset, the framework, and the key ideas. The workbook guides you step by step to apply it to your real life.",
+      "item1": "Full book (digital format)",
+      "item2": "Implementation workbook",
+      "item3": "Instant access on all your devices",
+      "item4": "Clear, practical, actionable design"
+    },
+    "trust": {
+      "item1Title": "Instant access",
+      "item1Body": "Start today.",
+      "item2Title": "On all your devices",
+      "item2Body": "Read and work wherever you want.",
+      "item3Title": "An investment in you",
+      "item3Body": "Tools that stay with you for good.",
+      "item4Title": "7-day guarantee",
+      "item4Body": "If you're not satisfied, we'll refund you."
+    },
+    "author": {
+      "eyebrow": "ABOUT THE AUTHOR",
+      "name": "Francesco Lulli",
+      "role": "Creator of The Execution Mindset",
+      "bio1": "Francesco wrote this system after seeing the same pattern over and over: people with total clarity about what they want, but no real method to sustain action day after day.",
+      "bio2": "The Execution Mindset isn't another motivation book. It's a working system: what you learn, you turn into habit; what you decide, you execute this week."
+    },
+    "faq": {
+      "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+      "title": "Before you start",
+      "q1": "What format do the book and workbook come in?",
+      "a1": "Both arrive in digital format, ready to read and work through on your computer, tablet, or phone as soon as you complete your purchase.",
+      "q2": "Do I need prior experience with productivity systems?",
+      "a2": "No. The system is designed to start from zero: every tool in the workbook walks you through it step by step, with no jargon or unnecessary theory.",
+      "q3": "How long does it take to apply the system?",
+      "a3": "The book reads in a couple of sittings. The workbook is meant to be worked through week by week, at your own pace.",
+      "q4": "What if I've already tried other methods and they didn't work?",
+      "a4": "The Execution Mindset isn't another list of tips: it's a repeatable system with concrete tools (like the Rule of Five and the Weekly Energy Map) to sustain action over time.",
+      "q5": "How do I access it after purchase?",
+      "a5": "You get instant access as soon as your purchase is confirmed on Whop, with clear instructions to download both materials.",
+      "q6": "Is there a guarantee?",
+      "a6": "Yes. You have 7 days to try the system. If you feel it's not for you, we'll refund you, no questions asked."
+    },
+    "finalCta": {
+      "eyebrow": "THE EXECUTION MINDSET",
+      "title": "It's time to execute.",
+      "subtitle": "Your next chapter starts today.",
+      "cta": "Get Your Copy Now",
+      "trust1": "Secure payment",
+      "trust2": "Lifetime access",
+      "trust3": "7-day guarantee"
+    },
+    "footer": {
+      "tagline": "A practical system to think better, act with discipline, and build the life you want.",
+      "poweredBy": "A product under",
+      "rights": "© {year} The Execution Mindset. All rights reserved."
+    }
   }
 }
