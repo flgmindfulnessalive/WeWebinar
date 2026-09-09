@@ -18,7 +18,7 @@ export function Author({ t }: { t: AuthorCopy }) {
       <div className="mx-auto max-w-3xl px-6 text-center">
         <span className="text-xs font-semibold tracking-[0.2em] text-[var(--em-gold)]">{t.eyebrow}</span>
 
-        <div className="mx-auto mt-6 size-28 overflow-hidden rounded-full ring-4 ring-[var(--em-gold)] sm:size-32">
+        <div className="mx-auto mt-6 size-28 overflow-hidden rounded-full ring-2 ring-[var(--em-gold)] sm:size-32">
           <Image
             src={`${ASSETS}/francesco-lulli.webp`}
             alt={t.name}
