@@ -2520,16 +2520,16 @@
   "StarterKit": {
     "meta": {
       "title": "Evergreen Webinar Starter Kit: convierte tu presentación en un activo 24/7",
-      "description": "Calcula cuánto te cuesta repetir tu presentación, evalúa si estás listo para automatizarla y construye la arquitectura y el guion de tu primer webinar evergreen."
+      "description": "Calcula cuánto te cuesta repetir tu presentación, evalúa si estás listo para automatizarla y construye la arquitectura y el guión de tu primer webinar evergreen."
     },
     "hero": {
       "eyebrow": "Evergreen Webinar Starter Kit",
       "title": "Una experiencia <highlight>gratuita y guiada</highlight> para crear tu webinar ganador",
-      "subtitle": "Calcula cuánto te cuesta seguir repitiéndola, evalúa si estás listo para automatizarla y construye la arquitectura y el guion de tu primer webinar evergreen.",
+      "subtitle": "Calcula cuánto te cuesta seguir repitiéndola, evalúa si estás listo para automatizarla y construye la arquitectura y el guión de tu primer webinar evergreen.",
       "benefit1": "Calcula las horas y el dinero que pierdes repitiendo tu presentación.",
       "benefit2": "Obtén tu Evergreen Readiness Score.",
       "benefit3": "Construye tu webinar con un Blueprint de 18 slides.",
-      "benefit4": "Genera tu primer guion con inteligencia artificial.",
+      "benefit4": "Genera tu primer guión con inteligencia artificial.",
       "benefit5": "Descubre cómo automatizarlo con WeWebinars.",
       "cta": "Comenzar gratis",
       "ctaReturning": "Ir a mi Launchpad",
@@ -2547,7 +2547,7 @@
         "cost": "Costo de repetir",
         "diagnosis": "Diagnóstico",
         "architecture": "Arquitectura",
-        "script": "Guion",
+        "script": "Guión",
         "implementation": "Implementación",
         "demo": "Demo",
         "create": "Crear"
@@ -2556,8 +2556,8 @@
         "cost": "Descubre cuánto tiempo y dinero te cuesta repetir tu presentación.",
         "diagnosis": "Obtén tu Evergreen Readiness Score y tu plan de acción.",
         "architecture": "Recorre el Blueprint de 18 slides de tu webinar.",
-        "script": "Genera el primer guion de tu webinar con IA.",
-        "implementation": "Mira cómo convertir tu guion en un webinar real.",
+        "script": "Genera el primer guión de tu webinar con IA.",
+        "implementation": "Mira cómo convertir tu guión en un webinar real.",
         "demo": "Vive una experiencia evergreen funcionando de principio a fin.",
         "create": "Crea tu primer webinar en WeWebinars."
       },
