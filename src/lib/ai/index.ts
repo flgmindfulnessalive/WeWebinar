@@ -5,6 +5,7 @@ import { AnthropicProvider } from "@/lib/ai/providers/anthropic";
 
 export type { AIProvider, AIEffort } from "@/lib/ai/provider";
 export { AIProviderError } from "@/lib/ai/provider";
+export { MODEL as AI_MODEL } from "@/lib/ai/providers/anthropic";
 
 let provider: AIProvider | null = null;
 

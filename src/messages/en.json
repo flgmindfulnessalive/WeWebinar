@@ -548,6 +548,70 @@
       "task_completed": "Task completed"
     }
   },
+  "GrowthScoring": {
+    "noPermission": "You don't have permission to do that.",
+    "missingFields": "Fill in the required fields.",
+    "prospectNotFound": "We couldn't find that prospect.",
+    "noEvidence": "Add at least a note or the prospect's bio before analyzing -- the AI only uses real data you've entered, it never makes things up.",
+    "alreadyUpToDate": "The analysis is already up to date with the current evidence.",
+    "analysisFailed": "We couldn't analyze the prospect. Try again.",
+    "analysisComplete": "Analysis complete.",
+    "analyzeFirst": "Analyze the prospect with AI first to generate messages.",
+    "messageGenerationFailed": "We couldn't generate the message. Try again.",
+    "messageGenerated": "Message generated.",
+    "analyzing": "Analyzing...",
+    "analyzeWithAi": "Analyze with AI",
+    "refreshAnalysis": "Refresh analysis",
+    "tabAnalysis": "Analysis",
+    "tabMessages": "Messages ({count})",
+    "fitScoreTitle": "Fit Score",
+    "opportunityScoreTitle": "Opportunity Score",
+    "noAnalysisYet": "No analysis yet. Add a note or the prospect's bio and use \"Analyze with AI\".",
+    "band": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "excellent": "Excellent"
+    },
+    "component": {
+      "audienceFit": "Audience fit",
+      "problemFit": "Problem fit",
+      "commercialIntent": "Commercial intent",
+      "contentRelevance": "Content relevance",
+      "saasAffinity": "SaaS affinity",
+      "reachQuality": "Reach quality",
+      "brandFit": "Brand fit",
+      "responseProbability": "Response probability",
+      "easeOfContact": "Ease of contact",
+      "audienceQuality": "Audience quality",
+      "estimatedCost": "Estimated cost",
+      "saasCollaborationHistory": "SaaS collaboration history",
+      "expectedRevenue": "Expected revenue",
+      "competition": "Competition"
+    },
+    "channelLabel": "Channel",
+    "kindLabel": "Message type",
+    "generateMessage": "Generate message",
+    "generating": "Generating...",
+    "noMessages": "No messages generated yet.",
+    "copy": "Copy",
+    "markSent": "Mark as sent",
+    "sent": "Sent",
+    "channel": {
+      "email": "Email",
+      "instagram_dm": "Instagram DM",
+      "linkedin_dm": "LinkedIn DM",
+      "tiktok_dm": "TikTok DM",
+      "whatsapp": "WhatsApp",
+      "other": "Other"
+    },
+    "kind": {
+      "opening": "Opening",
+      "full_message": "Full message",
+      "follow_up": "Follow-up",
+      "proposal": "Formal proposal"
+    }
+  },
   "DashboardHome": {
     "title": "Summary",
     "createWebinar": "Create webinar",

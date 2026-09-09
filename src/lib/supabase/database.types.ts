@@ -69,6 +69,9 @@ export type PartnerActivityType =
   | "marked_contacted"
   | "task_created"
   | "task_completed";
+export type PartnerChannel = "email" | "instagram_dm" | "linkedin_dm" | "tiktok_dm" | "whatsapp" | "other";
+export type PartnerMessageKind = "opening" | "full_message" | "follow_up" | "proposal";
+export type PartnerMessageStatus = "draft" | "copied" | "marked_sent";
 
 export interface Database {
   public: {
@@ -1312,6 +1315,104 @@ export interface Database {
           },
         ];
       };
+      partner_ai_analyses: {
+        Row: {
+          id: string;
+          prospect_id: string;
+          prompt_version: string;
+          model: string;
+          source_hash: string;
+          result: Json;
+          input_tokens: number;
+          output_tokens: number;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_ai_analyses"]["Row"]> & {
+          prospect_id: string;
+          prompt_version: string;
+          model: string;
+          source_hash: string;
+          result: Json;
+          input_tokens: number;
+          output_tokens: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_ai_analyses"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_ai_analyses_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_scores: {
+        Row: {
+          id: string;
+          prospect_id: string;
+          fit_score: number;
+          fit_breakdown: Json;
+          opportunity_score: number;
+          opportunity_breakdown: Json;
+          based_on_analysis_id: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_scores"]["Row"]> & {
+          prospect_id: string;
+          fit_score: number;
+          fit_breakdown: Json;
+          opportunity_score: number;
+          opportunity_breakdown: Json;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_scores"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_scores_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_scores_based_on_analysis_id_fkey";
+            columns: ["based_on_analysis_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_ai_analyses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_messages: {
+        Row: {
+          id: string;
+          prospect_id: string;
+          channel: PartnerChannel;
+          kind: PartnerMessageKind;
+          body: string;
+          ai_generated: boolean;
+          status: PartnerMessageStatus;
+          created_by: string | null;
+          created_at: string;
+          sent_at: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_messages"]["Row"]> & {
+          prospect_id: string;
+          channel: PartnerChannel;
+          kind: PartnerMessageKind;
+          body: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_messages"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_messages_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -1792,6 +1893,9 @@ export interface Database {
       partner_platform: PartnerPlatform;
       partner_stage: PartnerStage;
       partner_activity_type: PartnerActivityType;
+      partner_channel: PartnerChannel;
+      partner_message_kind: PartnerMessageKind;
+      partner_message_status: PartnerMessageStatus;
     };
     CompositeTypes: Record<string, never>;
   };

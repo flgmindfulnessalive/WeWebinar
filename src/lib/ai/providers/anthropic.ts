@@ -17,7 +17,7 @@ import {
 // (e.g. api/support/ai-reply) -- one place to change it if that ever
 // changes, instead of three (soon more, once the generation pipeline
 // lands).
-const MODEL = "claude-sonnet-5";
+export const MODEL = "claude-sonnet-5";
 
 let client: Anthropic | null = null;
 function getClient(): Anthropic {
