@@ -222,6 +222,21 @@ export function launchpadReminderEmail(
   };
 }
 
+export function starterKitAccessEmail(magicLink: string): { subject: string; html: string } {
+  const safeLink = escapeHtml(magicLink);
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Evergreen Webinar Starter Kit</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu kit ya está listo en tu Launchpad</h1>
+<p style="margin:0 0 20px;">Entra con este link para acceder a tu cuenta de WeWebinars y empezar el Launchpad: la guía paso a paso para armar tu primer webinar evergreen. El link es de un solo uso y vence pronto, así que úsalo ahora.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${magicLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Entrar a mi Launchpad</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Si el botón no funciona, copia y pega este link en tu navegador:<br /><a href="${magicLink}" style="color:${BRAND};word-break:break-all;">${safeLink}</a></p>`;
+  return {
+    subject: "Tu Evergreen Webinar Starter Kit ya está listo",
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
 export function newEnterpriseLeadEmail(lead: {
   name: string;
   email: string;
