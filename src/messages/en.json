@@ -2524,7 +2524,7 @@
     },
     "hero": {
       "eyebrow": "Evergreen Webinar Starter Kit",
-      "title": "Turn your presentation into the plan for an asset that works 24/7",
+      "title": "A <highlight>free, guided</highlight> experience to build your winning webinar",
       "subtitle": "Calculate how much it costs you to keep repeating it, find out if you're ready to automate it, and build the architecture and script for your first evergreen webinar.",
       "benefit1": "Calculate the hours and money you lose repeating your presentation.",
       "benefit2": "Get your Evergreen Readiness Score.",
@@ -2560,7 +2560,9 @@
         "implementation": "See how to turn your script into a real webinar.",
         "demo": "Experience an evergreen webinar working from start to finish.",
         "create": "Create your first webinar in WeWebinars."
-      }
+      },
+      "startTag": "Start here",
+      "goalTag": "Goal"
     },
     "transformation": {
       "beforeLabel": "Before",
@@ -2569,7 +2571,7 @@
       "afterText": "A structured, recordable presentation ready to automate."
     },
     "finalCta": {
-      "title": "Your presentation already takes up enough time to become a system.",
+      "title": "Your presentation already takes up enough time. It's time to turn it into an asset.",
       "subtitle": "Record it once, set it up, and let it work for you 24/7."
     }
   },
