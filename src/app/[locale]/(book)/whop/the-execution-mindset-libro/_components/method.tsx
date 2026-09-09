@@ -30,7 +30,7 @@ export function Method({ t }: { t: MethodCopy }) {
         <div className="mx-auto mb-12 max-w-xl text-center">
           <span className="text-xs font-semibold tracking-[0.2em] text-[var(--em-gold)]">{t.eyebrow}</span>
           <h2 className="mt-2 text-3xl font-extrabold text-balance text-[var(--em-ink)] sm:text-4xl">{t.title}</h2>
-          <p className="mt-3 text-pretty text-[var(--em-ink)]/60">{t.subtitle}</p>
+          <p className="mt-3 text-pretty text-lg text-[var(--em-ink)]/60">{t.subtitle}</p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -48,7 +48,7 @@ export function Method({ t }: { t: MethodCopy }) {
                 className="size-9 object-contain"
               />
               <h3 className="text-lg font-bold text-[var(--em-ink)]">{t[titleKey]}</h3>
-              <p className="text-sm text-pretty text-[var(--em-ink)]/60">{t[bodyKey]}</p>
+              <p className="text-base text-pretty text-[var(--em-ink)]/60">{t[bodyKey]}</p>
             </div>
           ))}
         </div>

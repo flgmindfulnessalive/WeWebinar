@@ -67,7 +67,7 @@ export function FinalCta({ t }: { t: FinalCtaCopy }) {
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           {trustItems.map(({ icon: Icon, label }) => (
-            <span key={label} className="flex items-center gap-1.5 text-sm text-white/60">
+            <span key={label} className="flex items-center gap-1.5 text-base text-white/60">
               <Icon className="size-4" />
               {label}
             </span>

@@ -45,7 +45,7 @@ export function Faq({ t }: { t: FaqCopy }) {
                 {t[qKey]}
                 <Plus className="size-4 shrink-0 text-[var(--em-gold)] transition-transform group-open:rotate-45" />
               </summary>
-              <p className="mt-3 text-pretty text-[var(--em-ink)]/65">{t[aKey]}</p>
+              <p className="mt-3 text-pretty text-lg text-[var(--em-ink)]/65">{t[aKey]}</p>
             </details>
           ))}
         </div>

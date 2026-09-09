@@ -34,21 +34,30 @@ export function Problem({ t }: { t: ProblemCopy }) {
           <h2 className="max-w-xl text-3xl leading-tight font-extrabold text-balance text-white sm:text-4xl">
             {t.titleStart} <span style={{ color: "var(--em-gold)" }}>{t.titleHighlight}</span>
           </h2>
-          <p className="max-w-lg text-pretty text-white/75">{t.body1}</p>
-          <p className="max-w-lg text-pretty text-white/75">{t.body2}</p>
-          <p className="max-w-lg text-pretty text-white/75">
+          <p className="max-w-lg text-pretty text-lg text-white/75">{t.body1}</p>
+          <p className="max-w-lg text-pretty text-lg text-white/75">{t.body2}</p>
+          <p className="max-w-lg text-pretty text-lg text-white/75">
             {t.body3Start} <span className="font-semibold text-white">{t.body3Highlight}</span>
           </p>
         </div>
 
         <div className="lg:justify-self-end lg:text-right">
-          <p className="max-w-xs text-lg leading-snug font-medium text-pretty text-white/90 lg:ml-auto">
-            {t.quote1}
-            <br />
-            {t.quote2}
-            <br />
-            <span style={{ color: "var(--em-gold)" }}>{t.quote3}</span>
-          </p>
+          <div className="relative mx-auto max-w-sm lg:ml-auto lg:mr-0">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -top-8 -left-2 font-serif text-8xl leading-none select-none lg:-right-4 lg:left-auto"
+              style={{ color: "var(--em-gold)", opacity: 0.35 }}
+            >
+              &ldquo;
+            </span>
+            <p className="relative text-2xl leading-snug font-semibold text-balance text-pretty text-white sm:text-3xl">
+              {t.quote1}
+              <br />
+              {t.quote2}
+              <br />
+              <span style={{ color: "var(--em-gold)" }}>{t.quote3}</span>
+            </p>
+          </div>
         </div>
       </div>
     </section>

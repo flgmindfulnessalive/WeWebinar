@@ -34,7 +34,7 @@ export function Benefits({ t }: { t: BenefitsCopy }) {
               className="size-14 object-contain"
             />
             <h3 className="text-lg font-bold text-[var(--em-ink)]">{t[titleKey]}</h3>
-            <p className="max-w-[22ch] text-sm text-pretty text-[var(--em-ink)]/60">{t[bodyKey]}</p>
+            <p className="max-w-[22ch] text-base text-pretty text-[var(--em-ink)]/60">{t[bodyKey]}</p>
           </div>
         ))}
       </div>
