@@ -40,7 +40,13 @@ export function Method({ t }: { t: MethodCopy }) {
               className="relative flex flex-col gap-3 rounded-2xl border border-[var(--em-ink)]/10 bg-[var(--em-cream)]/60 p-6"
             >
               <span className="text-xs font-semibold text-[var(--em-gold)]">0{i + 1}</span>
-              <Image src={`${ICONS}/${icon}.webp`} alt="" width={40} height={40} className="size-9" />
+              <Image
+                src={`${ICONS}/${icon}.webp`}
+                alt=""
+                width={40}
+                height={40}
+                className="size-9 object-contain"
+              />
               <h3 className="text-lg font-bold text-[var(--em-ink)]">{t[titleKey]}</h3>
               <p className="text-sm text-pretty text-[var(--em-ink)]/60">{t[bodyKey]}</p>
             </div>

@@ -20,7 +20,13 @@ export function Author({ t }: { t: AuthorCopy }) {
           className="mx-auto mt-6 flex size-20 items-center justify-center rounded-full"
           style={{ background: "var(--em-cream)" }}
         >
-          <Image src={`${ICONS}/people.webp`} alt="" width={44} height={44} className="size-10" />
+          <Image
+            src={`${ICONS}/people.webp`}
+            alt=""
+            width={44}
+            height={44}
+            className="size-10 object-contain"
+          />
         </div>
 
         <h2 className="mt-4 text-2xl font-extrabold text-[var(--em-ink)]">{t.name}</h2>

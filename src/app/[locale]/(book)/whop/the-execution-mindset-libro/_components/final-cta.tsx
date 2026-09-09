@@ -7,6 +7,9 @@ type FinalCtaCopy = {
   eyebrow: string;
   title: string;
   subtitle: string;
+  priceOld: string;
+  priceNew: string;
+  priceDiscount: string;
   cta: string;
   trust1: string;
   trust2: string;
@@ -39,6 +42,17 @@ export function FinalCta({ t }: { t: FinalCtaCopy }) {
         <span className="text-xs font-semibold tracking-[0.2em] text-[var(--em-gold-light)]">{t.eyebrow}</span>
         <h2 className="text-3xl font-extrabold text-balance text-white sm:text-4xl">{t.title}</h2>
         <p className="text-lg text-white/70">{t.subtitle}</p>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/40 line-through">{t.priceOld}</span>
+          <span className="text-2xl font-extrabold text-white">{t.priceNew}</span>
+          <span
+            className="rounded-full px-2 py-0.5 text-xs font-semibold text-[var(--em-navy-deep)]"
+            style={{ background: "var(--em-gold)" }}
+          >
+            {t.priceDiscount}
+          </span>
+        </div>
 
         <a
           href={WHOP_CHECKOUT_URL}

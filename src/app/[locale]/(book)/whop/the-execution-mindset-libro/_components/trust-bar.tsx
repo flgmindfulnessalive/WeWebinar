@@ -5,8 +5,6 @@ import { ICONS } from "./constants";
 type TrustCopy = {
   item1Title: string;
   item1Body: string;
-  item2Title: string;
-  item2Body: string;
   item3Title: string;
   item3Body: string;
   item4Title: string;
@@ -15,7 +13,6 @@ type TrustCopy = {
 
 const ITEMS = [
   { icon: "lightning-light", titleKey: "item1Title", bodyKey: "item1Body" },
-  { icon: "devices-light", titleKey: "item2Title", bodyKey: "item2Body" },
   { icon: "gift-light", titleKey: "item3Title", bodyKey: "item3Body" },
   { icon: "shield-check-light", titleKey: "item4Title", bodyKey: "item4Body" },
 ] as const;
@@ -23,10 +20,21 @@ const ITEMS = [
 export function TrustBar({ t }: { t: TrustCopy }) {
   return (
     <section className="bg-[var(--em-navy)] py-14">
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-3xl gap-8 px-6 sm:grid-cols-3">
         {ITEMS.map(({ icon, titleKey, bodyKey }) => (
           <div key={icon} className="flex items-start gap-3">
-            <Image src={`${ICONS}/${icon}.webp`} alt="" width={28} height={28} className="mt-0.5 size-6 shrink-0" />
+            <span
+              className="flex size-10 shrink-0 items-center justify-center rounded-full"
+              style={{ background: "rgba(201, 151, 59, 0.15)" }}
+            >
+              <Image
+                src={`${ICONS}/${icon}.webp`}
+                alt=""
+                width={40}
+                height={40}
+                className="size-5 object-contain"
+              />
+            </span>
             <div>
               <p className="font-semibold text-white">{t[titleKey]}</p>
               <p className="text-sm text-white/50">{t[bodyKey]}</p>

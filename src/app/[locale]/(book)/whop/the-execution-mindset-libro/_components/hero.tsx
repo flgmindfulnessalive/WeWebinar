@@ -9,6 +9,9 @@ type HeroCopy = {
   titleHighlight: string;
   subtitle: string;
   body: string;
+  priceOld: string;
+  priceNew: string;
+  priceDiscount: string;
   cta: string;
   ctaMicrocopy: string;
   feature1: string;
@@ -45,6 +48,16 @@ export function Hero({ t }: { t: HeroCopy }) {
           <p className="max-w-md text-pretty text-white/60">{t.body}</p>
 
           <div className="flex flex-col items-start gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-white/40 line-through">{t.priceOld}</span>
+              <span className="text-2xl font-extrabold text-white">{t.priceNew}</span>
+              <span
+                className="rounded-full px-2 py-0.5 text-xs font-semibold text-[var(--em-navy-deep)]"
+                style={{ background: "var(--em-gold)" }}
+              >
+                {t.priceDiscount}
+              </span>
+            </div>
             <a
               href={WHOP_CHECKOUT_URL}
               target="_blank"
@@ -61,14 +74,20 @@ export function Hero({ t }: { t: HeroCopy }) {
           <ul className="mt-2 grid gap-3 sm:grid-cols-3 sm:gap-6">
             {FEATURES.map(({ icon, key }) => (
               <li key={key} className="flex items-center gap-2">
-                <Image src={`${ICONS}/${icon}.webp`} alt="" width={22} height={22} className="size-5 shrink-0" />
+                <Image
+                  src={`${ICONS}/${icon}.webp`}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="size-5 shrink-0 object-contain"
+                />
                 <span className="text-sm text-white/70">{t[key]}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+        <div className="relative mx-auto w-full max-w-md pt-9 pr-7 sm:pt-12 sm:pr-12 lg:max-w-none">
           <Image
             src={`${ASSETS}/hero-books.webp`}
             alt="The Execution Mindset — libro y workbook"
@@ -78,7 +97,7 @@ export function Hero({ t }: { t: HeroCopy }) {
             priority
           />
           <div
-            className="absolute -top-4 -right-2 flex size-24 flex-col items-center justify-center gap-1 rounded-full text-center shadow-lg sm:-top-6 sm:-right-6 sm:size-32"
+            className="absolute top-0 right-0 flex size-24 flex-col items-center justify-center gap-1 rounded-full text-center shadow-lg sm:size-32"
             style={{
               background: "radial-gradient(circle at 32% 28%, var(--em-gold-light), var(--em-gold) 72%)",
               boxShadow: "0 0 0 3px var(--em-navy), 0 0 0 5px var(--em-gold-light), 0 12px 24px rgba(0,0,0,0.35)",

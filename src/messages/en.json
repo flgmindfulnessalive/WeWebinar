@@ -2591,11 +2591,14 @@
       "titleHighlight": "inside",
       "subtitle": "Stop negotiating with yourself.",
       "body": "A practical system to think better, act with discipline, and build the life you want.",
+      "priceOld": "$11.94",
+      "priceNew": "$8",
+      "priceDiscount": "33% off",
       "cta": "Get Your Copy Now",
       "ctaMicrocopy": "Instant digital access · One-time payment · 7-day guarantee",
       "feature1": "Full book",
       "feature2": "Implementation workbook",
-      "feature3": "Instant access on all your devices",
+      "feature3": "Instant access",
       "badgeLine1": "Satisfaction Guarantee",
       "badgeLine2": "7 Days"
     },
@@ -2640,14 +2643,17 @@
       "body": "The book gives you the mindset, the framework, and the key ideas. The workbook guides you step by step to apply it to your real life.",
       "item1": "Full book (digital format)",
       "item2": "Implementation workbook",
-      "item3": "Instant access on all your devices",
-      "item4": "Clear, practical, actionable design"
+      "item3": "Instant access",
+      "item4": "Clear, practical, actionable design",
+      "page1": "The framework: The Why Compass",
+      "page2": "The Rule of Five",
+      "page3": "Your worksheet",
+      "page4": "Weekly execution system",
+      "page5": "30-day plan"
     },
     "trust": {
       "item1Title": "Instant access",
       "item1Body": "Start today.",
-      "item2Title": "On all your devices",
-      "item2Body": "Read and work wherever you want.",
       "item3Title": "An investment in you",
       "item3Body": "Tools that stay with you for good.",
       "item4Title": "7-day guarantee",
@@ -2658,7 +2664,7 @@
       "name": "Francesco Lulli",
       "role": "Creator of The Execution Mindset",
       "bio1": "Francesco wrote this system after seeing the same pattern over and over: people with total clarity about what they want, but no real method to sustain action day after day.",
-      "bio2": "The Execution Mindset isn't another motivation book. It's a working system: what you learn, you turn into habit; what you decide, you execute this week."
+      "bio2": "His starting point is simple: protect one dominant priority without pretending your other responsibilities disappear. For Francesco, the life you want isn't a dream -- it's a decision sustained by a system, not willpower."
     },
     "faq": {
       "eyebrow": "FREQUENTLY ASKED QUESTIONS",
@@ -2680,6 +2686,9 @@
       "eyebrow": "THE EXECUTION MINDSET",
       "title": "It's time to execute.",
       "subtitle": "Your next chapter starts today.",
+      "priceOld": "$11.94",
+      "priceNew": "$8",
+      "priceDiscount": "33% off",
       "cta": "Get Your Copy Now",
       "trust1": "Secure payment",
       "trust2": "Lifetime access",
