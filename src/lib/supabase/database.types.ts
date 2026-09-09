@@ -36,6 +36,40 @@ export type EmailTemplateType =
 export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
 export type LeadStatus = "new" | "contacted" | "converted" | "closed";
 
+export type GrowthOperatorRole = "owner" | "growth_admin" | "growth_operator" | "viewer";
+export type PartnerPipeline = "creator" | "ugc" | "distribution";
+export type PartnerPlatform =
+  | "instagram"
+  | "tiktok"
+  | "youtube"
+  | "linkedin"
+  | "website"
+  | "newsletter"
+  | "other";
+export type PartnerStage =
+  | "discovered"
+  | "qualified"
+  | "high_fit"
+  | "ready_to_contact"
+  | "contacted"
+  | "replied"
+  | "interested"
+  | "negotiating"
+  | "agreed"
+  | "active_partner"
+  | "inactive"
+  | "rejected";
+export type PartnerActivityType =
+  | "imported"
+  | "analyzed"
+  | "score_updated"
+  | "stage_changed"
+  | "note_added"
+  | "message_generated"
+  | "marked_contacted"
+  | "task_created"
+  | "task_completed";
+
 export interface Database {
   public: {
     Tables: {
@@ -1166,6 +1200,118 @@ export interface Database {
           },
         ];
       };
+      growth_operators: {
+        Row: {
+          user_id: string;
+          role: GrowthOperatorRole;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["growth_operators"]["Row"]> & {
+          user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["growth_operators"]["Row"]>;
+        Relationships: [];
+      };
+      partner_prospects: {
+        Row: {
+          id: string;
+          pipeline: PartnerPipeline;
+          platform: PartnerPlatform;
+          stage: PartnerStage;
+          owner_id: string | null;
+          priority: number;
+          full_name: string | null;
+          username: string | null;
+          profile_url: string;
+          normalized_profile_url: string;
+          profile_image_url: string | null;
+          bio: string | null;
+          website: string | null;
+          email: string | null;
+          normalized_email: string | null;
+          phone: string | null;
+          country: string | null;
+          city: string | null;
+          language: string | null;
+          audience_metrics: Json;
+          content_profile: Json;
+          business_profile: Json;
+          follower_count: number | null;
+          engagement_rate: number | null;
+          next_action: string | null;
+          next_action_date: string | null;
+          last_contact_at: string | null;
+          touches_count: number;
+          source: string;
+          archived_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_prospects"]["Row"]> & {
+          pipeline: PartnerPipeline;
+          platform: PartnerPlatform;
+          profile_url: string;
+          normalized_profile_url: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_prospects"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_prospects_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "growth_operators";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      partner_notes: {
+        Row: {
+          id: string;
+          prospect_id: string;
+          author_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_notes"]["Row"]> & {
+          prospect_id: string;
+          author_id: string;
+          body: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_notes"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_notes_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_activity_log: {
+        Row: {
+          id: string;
+          prospect_id: string;
+          type: PartnerActivityType;
+          payload: Json;
+          actor_id: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_activity_log"]["Row"]> & {
+          prospect_id: string;
+          type: PartnerActivityType;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_activity_log"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_activity_log_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -1204,6 +1350,18 @@ export interface Database {
       };
     };
     Functions: {
+      is_growth_operator: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      growth_operator_role: {
+        Args: Record<string, never>;
+        Returns: GrowthOperatorRole | null;
+      };
+      can_edit_partner_engine: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
       create_account_with_owner: {
         Args: {
           p_name: string;
@@ -1629,6 +1787,11 @@ export interface Database {
       invitation_status: InvitationStatus;
       lead_status: LeadStatus;
       video_provider: VideoProvider;
+      growth_operator_role: GrowthOperatorRole;
+      partner_pipeline: PartnerPipeline;
+      partner_platform: PartnerPlatform;
+      partner_stage: PartnerStage;
+      partner_activity_type: PartnerActivityType;
     };
     CompositeTypes: Record<string, never>;
   };
