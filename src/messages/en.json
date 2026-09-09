@@ -2289,7 +2289,11 @@
       "cta": "Start for free",
       "ctaReturning": "Go to my Launchpad",
       "microcopy": "No credit card · About 45 minutes · Your progress is saved",
-      "secondaryCta": "See what's included"
+      "secondaryCta": "See what's included",
+      "whopCheckEmailTitle": "We're already setting up your access",
+      "whopCheckEmailBody": "You claimed your Evergreen Webinar Starter Kit on Whop. In a few minutes you'll get an email with a link straight into your Launchpad -- no password to create.",
+      "whopManualFallback": "Didn't get it in a few minutes? Check spam or",
+      "whopManualFallbackLink": "create your account manually"
     },
     "journey": {
       "title": "Your journey",

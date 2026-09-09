@@ -2289,7 +2289,11 @@
       "cta": "Comenzar gratis",
       "ctaReturning": "Ir a mi Launchpad",
       "microcopy": "Sin tarjeta de crédito · Aproximadamente 45 minutos · Tu progreso queda guardado",
-      "secondaryCta": "Ver qué incluye"
+      "secondaryCta": "Ver qué incluye",
+      "whopCheckEmailTitle": "Ya estamos procesando tu acceso",
+      "whopCheckEmailBody": "Confirmaste tu Evergreen Webinar Starter Kit en Whop. En unos minutos te llega un correo con un link para entrar directo a tu Launchpad, sin necesidad de crear una contraseña.",
+      "whopManualFallback": "¿No te llegó en unos minutos? Revisa spam o",
+      "whopManualFallbackLink": "crea tu cuenta manualmente"
     },
     "journey": {
       "title": "Tu recorrido",

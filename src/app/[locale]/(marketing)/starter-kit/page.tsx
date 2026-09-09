@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Calculator, Compass, FileText, Gauge, Rocket, Sparkles } from "lucide-react";
+import { Calculator, Compass, FileText, Gauge, Mail, Rocket, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
@@ -49,10 +49,28 @@ export async function generateMetadata({
   };
 }
 
-export default async function StarterKitPage() {
+export default async function StarterKitPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const t = await getTranslations("StarterKit");
   const current = await getCurrentAccount();
   const primaryCtaHref = current ? "/dashboard/launchpad" : "/signup?source=launchpad";
+
+  // A visitor arriving from the free Whop marketplace listing (see
+  // lib/whop.ts STARTER_KIT_PRODUCT_ID and the webhook route) already has
+  // an account being provisioned in the background -- the webhook resolves
+  // their email as a Whop lead and emails them a magic link. Routing them
+  // through the plain /signup form here too would race that: both flows
+  // try to confirm the same email around the same time and stomp on each
+  // other's Supabase confirmation token, leaving the account stuck
+  // unconfirmed. So a session-less Whop arrival gets a "check your email"
+  // panel instead of the manual signup CTA, with a delayed manual
+  // fallback in case the webhook itself failed (missing permission, Whop
+  // API hiccup, etc).
+  const { utm_source } = await searchParams;
+  const isWhopArrival = !current && utm_source === "whop";
 
   const benefitKeys = ["benefit1", "benefit2", "benefit3", "benefit4", "benefit5"] as const;
 
@@ -88,16 +106,20 @@ export default async function StarterKitPage() {
           })}
         </ul>
 
-        <div className="flex flex-col items-center gap-3">
-          <Link
-            href={primaryCtaHref}
-            className="inline-flex h-12 items-center justify-center rounded-md px-8 text-base font-medium text-white shadow-sm transition-opacity hover:opacity-90"
-            style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
-          >
-            {current ? t("hero.ctaReturning") : t("hero.cta")}
-          </Link>
-          <p className="text-xs text-muted-foreground">{t("hero.microcopy")}</p>
-        </div>
+        {isWhopArrival ? (
+          <WhopCheckEmailPanel t={t} />
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <Link
+              href={primaryCtaHref}
+              className="inline-flex h-12 items-center justify-center rounded-md px-8 text-base font-medium text-white shadow-sm transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+            >
+              {current ? t("hero.ctaReturning") : t("hero.cta")}
+            </Link>
+            <p className="text-xs text-muted-foreground">{t("hero.microcopy")}</p>
+          </div>
+        )}
 
         <a href="#recorrido" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
           {t("hero.secondaryCta")}
@@ -160,14 +182,51 @@ export default async function StarterKitPage() {
       <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-6 py-16 text-center">
         <h2 className="text-2xl font-semibold text-balance">{t("finalCta.title")}</h2>
         <p className="text-muted-foreground text-pretty">{t("finalCta.subtitle")}</p>
-        <Link
-          href={primaryCtaHref}
-          className="inline-flex h-12 items-center justify-center rounded-md px-8 text-base font-medium text-white shadow-sm transition-opacity hover:opacity-90"
-          style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
-        >
-          {current ? t("hero.ctaReturning") : t("hero.cta")}
-        </Link>
+        {isWhopArrival ? (
+          <WhopCheckEmailPanel t={t} />
+        ) : (
+          <Link
+            href={primaryCtaHref}
+            className="inline-flex h-12 items-center justify-center rounded-md px-8 text-base font-medium text-white shadow-sm transition-opacity hover:opacity-90"
+            style={{ background: "linear-gradient(90deg, var(--brand), var(--brand-2))" }}
+          >
+            {current ? t("hero.ctaReturning") : t("hero.cta")}
+          </Link>
+        )}
       </section>
+    </div>
+  );
+}
+
+// Shown instead of the manual signup CTA to a session-less visitor arriving
+// from the free Whop marketplace listing -- see isWhopArrival above for why
+// routing them through /signup too would race the webhook's own account
+// provisioning. The fallback link stays visible (not hidden behind a
+// timer) since there's no reliable client-side signal for "the webhook
+// already ran"; it's just de-emphasized so it isn't mistaken for the
+// primary path.
+function WhopCheckEmailPanel({
+  t,
+}: {
+  t: Awaited<ReturnType<typeof getTranslations<"StarterKit">>>;
+}) {
+  return (
+    <div className="flex max-w-md flex-col items-center gap-3 rounded-xl border p-6 text-center">
+      <span
+        aria-hidden
+        className="flex size-10 items-center justify-center rounded-full"
+        style={{ background: "var(--brand-light)", color: "var(--brand)" }}
+      >
+        <Mail className="size-5" />
+      </span>
+      <p className="font-semibold">{t("hero.whopCheckEmailTitle")}</p>
+      <p className="text-sm text-muted-foreground">{t("hero.whopCheckEmailBody")}</p>
+      <p className="text-xs text-muted-foreground">
+        {t("hero.whopManualFallback")}{" "}
+        <Link href="/signup?source=launchpad" className="underline underline-offset-4">
+          {t("hero.whopManualFallbackLink")}
+        </Link>
+      </p>
     </div>
   );
 }
