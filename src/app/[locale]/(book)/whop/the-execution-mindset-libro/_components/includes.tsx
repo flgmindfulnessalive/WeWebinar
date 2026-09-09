@@ -36,7 +36,7 @@ export function Includes({ t }: { t: IncludesCopy }) {
         <h2 className="max-w-lg text-3xl leading-tight font-extrabold text-balance text-[var(--em-ink)] sm:text-4xl">
           {t.title}
         </h2>
-        <p className="max-w-lg text-pretty text-[var(--em-ink)]/60">{t.body}</p>
+        <p className="max-w-lg text-pretty text-lg text-[var(--em-ink)]/60">{t.body}</p>
 
         <ul className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           {items.map((item) => (
@@ -47,7 +47,7 @@ export function Includes({ t }: { t: IncludesCopy }) {
               >
                 <Check className="size-3" />
               </span>
-              <span className="text-sm text-[var(--em-ink)]/85">{item}</span>
+              <span className="text-base text-[var(--em-ink)]/85">{item}</span>
             </li>
           ))}
         </ul>

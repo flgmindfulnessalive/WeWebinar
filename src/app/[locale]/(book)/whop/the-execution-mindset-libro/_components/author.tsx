@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { ICONS } from "./constants";
+import { ASSETS } from "./constants";
 
 type AuthorCopy = {
   eyebrow: string;
@@ -18,23 +18,20 @@ export function Author({ t }: { t: AuthorCopy }) {
       <div className="mx-auto max-w-3xl px-6 text-center">
         <span className="text-xs font-semibold tracking-[0.2em] text-[var(--em-gold)]">{t.eyebrow}</span>
 
-        <div
-          className="mx-auto mt-6 flex size-20 items-center justify-center rounded-full"
-          style={{ background: "var(--em-cream)" }}
-        >
+        <div className="mx-auto mt-6 size-28 overflow-hidden rounded-full ring-4 ring-[var(--em-gold)] sm:size-32">
           <Image
-            src={`${ICONS}/people.webp`}
-            alt=""
-            width={44}
-            height={44}
-            className="size-10 object-contain"
+            src={`${ASSETS}/francesco-lulli.webp`}
+            alt={t.name}
+            width={480}
+            height={480}
+            className="size-full object-cover"
           />
         </div>
 
         <h2 className="mt-4 text-2xl font-extrabold text-[var(--em-ink)]">{t.name}</h2>
         <p className="text-sm font-medium text-[var(--em-gold)]">{t.role}</p>
 
-        <p className="mt-6 text-pretty text-[var(--em-ink)]/70">{t.bio1}</p>
+        <p className="mt-6 text-pretty text-lg text-[var(--em-ink)]/70">{t.bio1}</p>
 
         <blockquote
           className="mx-auto mt-6 max-w-xl border-l-2 pl-4 text-left"
@@ -46,7 +43,7 @@ export function Author({ t }: { t: AuthorCopy }) {
           </cite>
         </blockquote>
 
-        <p className="mt-6 text-pretty text-[var(--em-ink)]/70">{t.bio2}</p>
+        <p className="mt-6 text-pretty text-lg text-[var(--em-ink)]/70">{t.bio2}</p>
       </div>
     </section>
   );

@@ -37,7 +37,7 @@ export function TrustBar({ t }: { t: TrustCopy }) {
             </span>
             <div>
               <p className="font-semibold text-white">{t[titleKey]}</p>
-              <p className="text-sm text-white/50">{t[bodyKey]}</p>
+              <p className="text-base text-white/50">{t[bodyKey]}</p>
             </div>
           </div>
         ))}

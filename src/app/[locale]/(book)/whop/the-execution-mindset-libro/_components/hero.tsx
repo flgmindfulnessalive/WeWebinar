@@ -43,7 +43,7 @@ export function Hero({ t }: { t: HeroCopy }) {
             {t.titleStart} <span style={{ color: "var(--em-gold)" }}>{t.titleHighlight}</span>
           </h1>
           <p className="text-xl font-medium text-white/90">{t.subtitle}</p>
-          <p className="max-w-md text-pretty text-white/60">{t.body}</p>
+          <p className="max-w-md text-pretty text-lg text-white/60">{t.body}</p>
 
           <div className="flex flex-col items-start gap-3">
             <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export function Hero({ t }: { t: HeroCopy }) {
                   height={40}
                   className="size-5 shrink-0 object-contain"
                 />
-                <span className="text-sm text-white/70">{t[key]}</span>
+                <span className="text-base text-white/70">{t[key]}</span>
               </li>
             ))}
           </ul>
