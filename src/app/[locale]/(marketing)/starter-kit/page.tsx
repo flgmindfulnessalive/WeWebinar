@@ -7,6 +7,7 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { ORDERED_LAUNCHPAD_STEPS } from "@/lib/launchpad/steps-config";
 import { localeAlternates } from "@/lib/seo";
 import { GradientBlobs } from "@/components/gradient-blobs";
+import { ComparisonGlowTrace } from "../_components/comparison-glow-trace";
 
 // Same icon family used across the hero's quick-scan benefit strip --
 // benefit1..4 map 1:1 to the first four Launchpad steps, benefit5 is the
@@ -104,11 +105,10 @@ export default async function StarterKitPage({
               {benefitKeys.map((key) => {
                 const Icon = HERO_BENEFIT_ICONS[key];
                 return (
-                  <li key={key} className="flex flex-col items-center gap-2.5 text-center">
+                  <li key={key} className="group flex flex-col items-center gap-2.5 text-center">
                     <span
                       aria-hidden
-                      className="flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
-                      style={{ color: "var(--brand)" }}
+                      className="flex size-11 shrink-0 items-center justify-center rounded-full border bg-background text-[var(--brand)] transition-all duration-300 group-hover:scale-110 group-hover:border-transparent group-hover:bg-[linear-gradient(135deg,var(--brand),var(--brand-2))] group-hover:text-white group-hover:shadow-[0_8px_18px_-6px_rgba(79,70,229,0.5)]"
                     >
                       <Icon className="size-[18px]" />
                     </span>
@@ -165,14 +165,16 @@ export default async function StarterKitPage({
               const isFirst = index === 0;
               const isLast = index === ORDERED_LAUNCHPAD_STEPS.length - 1;
               return (
-                <li key={step.key} className="flex items-start gap-5 py-[22px]">
+                <li
+                  key={step.key}
+                  className="group -mx-3 flex items-start gap-5 rounded-xl px-3 py-[22px] transition-colors duration-300 hover:bg-[var(--brand-light)]/60"
+                >
                   <span
-                    className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-full border-2 text-base font-extrabold"
-                    style={
+                    className={`relative z-10 flex size-12 shrink-0 items-center justify-center rounded-full border-2 text-base font-extrabold transition-all duration-300 group-hover:scale-110 group-hover:border-transparent group-hover:bg-[linear-gradient(135deg,var(--brand),var(--brand-2))] group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] ${
                       isFirst || isLast
-                        ? { background: "linear-gradient(135deg, var(--brand), var(--brand-2))", borderColor: "transparent", color: "white" }
-                        : { borderColor: "var(--border)", color: "var(--brand)", background: "var(--background)" }
-                    }
+                        ? "border-transparent bg-[linear-gradient(135deg,var(--brand),var(--brand-2))] text-white"
+                        : "border-[var(--border)] bg-[var(--background)] text-[var(--brand)]"
+                    }`}
                   >
                     {step.order}
                   </span>
@@ -208,9 +210,10 @@ export default async function StarterKitPage({
             <ArrowRight aria-hidden className="size-6" />
           </div>
           <div
-            className="rounded-xl border-2 p-6"
+            className="relative rounded-xl border-2 p-6"
             style={{ borderColor: "var(--brand)", background: "var(--brand-light)" }}
           >
+            <ComparisonGlowTrace />
             <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: "var(--brand)" }}>
               {t("transformation.afterLabel")}
             </p>
