@@ -447,7 +447,8 @@
     "overview": "Resumen",
     "prospects": "Prospects",
     "campaigns": "Campañas",
-    "tasks": "Tareas"
+    "tasks": "Tareas",
+    "analytics": "Analítica"
   },
   "GrowthLayout": {
     "panelTitle": "Partner Engine"
@@ -462,6 +463,8 @@
   },
   "GrowthProspects": {
     "title": "Prospects",
+    "viewList": "Vista de lista",
+    "viewKanban": "Vista Kanban",
     "noPermission": "No tienes permiso para hacer esto.",
     "missingFields": "Completa los campos requeridos.",
     "duplicateProspect": "Ya existe un prospect con esa URL o email.",
@@ -673,6 +676,17 @@
       "done": "Completada",
       "cancelled": "Cancelada"
     }
+  },
+  "GrowthAnalytics": {
+    "title": "Analítica",
+    "subtitle": "Funnel del pipeline y scores promedio de los prospects activos.",
+    "totalProspects": "Prospects activos",
+    "analyzedCount": "Analizados con IA",
+    "closedCount": "Inactivos / rechazados",
+    "avgFitScore": "Fit Score promedio",
+    "avgOpportunityScore": "Opportunity Score promedio",
+    "noData": "Sin datos",
+    "funnelTitle": "Prospects por etapa"
   },
   "DashboardHome": {
     "title": "Resumen",

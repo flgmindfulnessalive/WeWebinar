@@ -2,23 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Megaphone, CheckSquare } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, CheckSquare, BarChart3 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
-// Inbox/Analytics se agregan a esta lista a medida que cada Slice los
-// construye (ver docs/partner-engine/ARCHITECTURE.md §H) -- no quedan
-// como links "próximamente" sin destino real.
+// Inbox se agrega a esta lista cuando se construya (MVP2 -- Unified Inbox,
+// ver docs/partner-engine/ARCHITECTURE.md §H) -- no queda como link
+// "próximamente" sin destino real.
 const NAV_ITEMS: {
   href: string;
-  labelKey: "overview" | "prospects" | "campaigns" | "tasks";
+  labelKey: "overview" | "prospects" | "campaigns" | "tasks" | "analytics";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/growth", labelKey: "overview", icon: LayoutDashboard },
   { href: "/growth/prospects", labelKey: "prospects", icon: Users },
   { href: "/growth/campaigns", labelKey: "campaigns", icon: Megaphone },
   { href: "/growth/tasks", labelKey: "tasks", icon: CheckSquare },
+  { href: "/growth/analytics", labelKey: "analytics", icon: BarChart3 },
 ];
 
 export function GrowthNav() {
