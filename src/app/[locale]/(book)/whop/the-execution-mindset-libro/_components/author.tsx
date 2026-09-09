@@ -7,6 +7,8 @@ type AuthorCopy = {
   name: string;
   role: string;
   bio1: string;
+  quote: string;
+  quoteSource: string;
   bio2: string;
 };
 
@@ -33,7 +35,18 @@ export function Author({ t }: { t: AuthorCopy }) {
         <p className="text-sm font-medium text-[var(--em-gold)]">{t.role}</p>
 
         <p className="mt-6 text-pretty text-[var(--em-ink)]/70">{t.bio1}</p>
-        <p className="mt-4 text-pretty text-[var(--em-ink)]/70">{t.bio2}</p>
+
+        <blockquote
+          className="mx-auto mt-6 max-w-xl border-l-2 pl-4 text-left"
+          style={{ borderColor: "var(--em-gold)" }}
+        >
+          <p className="text-pretty text-lg font-medium text-[var(--em-ink)] italic">&ldquo;{t.quote}&rdquo;</p>
+          <cite className="mt-2 block text-xs font-semibold tracking-wide text-[var(--em-ink)]/50 not-italic">
+            {t.quoteSource}
+          </cite>
+        </blockquote>
+
+        <p className="mt-6 text-pretty text-[var(--em-ink)]/70">{t.bio2}</p>
       </div>
     </section>
   );
