@@ -1540,6 +1540,16 @@ export interface Database {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      get_growth_analytics: {
+        Args: Record<string, never>;
+        Returns: {
+          stage_counts: Json;
+          avg_fit_score: number | null;
+          avg_opportunity_score: number | null;
+          analyzed_count: number;
+          total_prospects: number;
+        }[];
+      };
       create_account_with_owner: {
         Args: {
           p_name: string;
