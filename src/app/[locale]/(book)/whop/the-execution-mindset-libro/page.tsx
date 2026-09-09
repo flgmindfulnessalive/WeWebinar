@@ -24,7 +24,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "ExecutionMindset.meta" });
   const title = t("title");
   const description = t("description");
-  const image = { url: `${ASSETS}/hero-books.webp`, width: 900, height: 666 };
+  const image = { url: `${ASSETS}/hero-books.webp`, width: 1526, height: 1006 };
   return {
     title,
     description,
