@@ -310,6 +310,59 @@
   animation: comparison-glow-trace 3.2s ease-in-out forwards;
 }
 
+/* Starter Kit "Tu recorrido" timeline (JourneyTrail, starter-kit/journey-trail.tsx)
+   -- each step's outline sharpens and emits one signal ring when the
+   connector line reaches it while scrolling, instead of filling solid like
+   the hero benefit icons' hover state above it on the same page. */
+.journey-marker {
+  transition:
+    border-color 0.5s ease,
+    box-shadow 0.5s ease,
+    transform 0.3s ease;
+}
+
+.journey-marker:hover {
+  transform: scale(1.08);
+}
+
+.journey-ping {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid var(--brand);
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-journey-active="true"] .journey-marker {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+[data-journey-active="true"] .journey-ping {
+  animation: journey-ping 1s ease-out;
+}
+
+@keyframes journey-ping {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-ping {
+    animation: none !important;
+  }
+  .journey-marker {
+    transition: none;
+  }
+}
+
 /* Wewe (Support Agent mascot, support-chat-widget.tsx) -- blink and antenna
    glow run infinitely; the three body gestures (breathe/tilt/hop) are
    single-play (`1 both`, not infinite) so wewe-mascot.tsx's JS can pick one
