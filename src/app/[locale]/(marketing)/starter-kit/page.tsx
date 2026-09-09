@@ -8,6 +8,7 @@ import { ORDERED_LAUNCHPAD_STEPS } from "@/lib/launchpad/steps-config";
 import { localeAlternates } from "@/lib/seo";
 import { GradientBlobs } from "@/components/gradient-blobs";
 import { ComparisonGlowTrace } from "../_components/comparison-glow-trace";
+import { JourneyTrail } from "./journey-trail";
 
 // Same icon family used across the hero's quick-scan benefit strip --
 // benefit1..4 map 1:1 to the first four Launchpad steps, benefit5 is the
@@ -139,7 +140,7 @@ export default async function StarterKitPage({
 
           <a
             href="#recorrido"
-            className="group inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/50"
+            className="group mt-3 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/50"
           >
             {t("hero.secondaryCta")}
             <ChevronDown className="size-3.5 animate-bounce transition-transform" />
@@ -154,35 +155,34 @@ export default async function StarterKitPage({
           <p className="mt-2 text-muted-foreground text-pretty">{t("journey.subtitle")}</p>
         </div>
 
-        <div className="relative mx-auto max-w-2xl">
-          <div
-            aria-hidden
-            className="absolute top-2 bottom-2 left-6 w-px opacity-30"
-            style={{ background: "linear-gradient(180deg, var(--brand), var(--brand-2))" }}
-          />
+        <JourneyTrail stepCount={ORDERED_LAUNCHPAD_STEPS.length}>
           <ol className="relative flex flex-col">
             {ORDERED_LAUNCHPAD_STEPS.map((step, index) => {
               const isFirst = index === 0;
               const isLast = index === ORDERED_LAUNCHPAD_STEPS.length - 1;
+              const isEndpoint = isFirst || isLast;
               return (
                 <li
                   key={step.key}
+                  data-journey-step=""
+                  data-journey-active={isEndpoint ? "true" : undefined}
                   className="group -mx-3 flex items-start gap-5 rounded-xl px-3 py-[22px] transition-colors duration-300 hover:bg-[var(--brand-light)]/60"
                 >
                   <span
-                    className={`relative z-10 flex size-12 shrink-0 items-center justify-center rounded-full border-2 text-base font-extrabold transition-all duration-300 group-hover:scale-110 group-hover:border-transparent group-hover:bg-[linear-gradient(135deg,var(--brand),var(--brand-2))] group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] ${
-                      isFirst || isLast
-                        ? "border-transparent bg-[linear-gradient(135deg,var(--brand),var(--brand-2))] text-white"
+                    className={`journey-marker relative z-10 flex size-12 shrink-0 items-center justify-center rounded-full border-2 text-base font-extrabold ${
+                      isEndpoint
+                        ? "border-transparent bg-[linear-gradient(135deg,var(--brand),var(--brand-2))] text-white shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)]"
                         : "border-[var(--border)] bg-[var(--background)] text-[var(--brand)]"
                     }`}
                   >
                     {step.order}
+                    {!isEndpoint && <span aria-hidden className="journey-ping" />}
                   </span>
                   <div className="flex-1 pt-1.5">
                     <p className="font-semibold">{t(`journey.stepName.${step.key}`)}</p>
                     <p className="text-sm text-muted-foreground">{t(`journey.stepResult.${step.key}`)}</p>
                   </div>
-                  {(isFirst || isLast) && (
+                  {isEndpoint && (
                     <span
                       className="mt-1.5 ml-auto shrink-0 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase"
                       style={{ color: "var(--brand)", background: "var(--brand-light)" }}
@@ -194,7 +194,7 @@ export default async function StarterKitPage({
               );
             })}
           </ol>
-        </div>
+        </JourneyTrail>
       </section>
 
       {/* Transformación */}
