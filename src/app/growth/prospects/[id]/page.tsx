@@ -13,6 +13,8 @@ import { AnalyzeButton } from "./analyze-button";
 import { ScorePanel } from "./score-panel";
 import { MessagesSection, type ProspectMessage } from "./messages-section";
 import { NotesSection, type ProspectNote } from "./notes-section";
+import { CampaignAssign } from "./campaign-assign";
+import { TasksSection, type ProspectTask } from "./tasks-section";
 import type { ScoreBreakdown } from "@/lib/growth/scoring";
 
 function initials(name: string): string {
@@ -33,6 +35,8 @@ export default async function GrowthProspectDetailPage({
   const operator = await requireGrowthOperator();
   const t = await getTranslations("GrowthProspects");
   const tScoring = await getTranslations("GrowthScoring");
+  const tCampaigns = await getTranslations("GrowthCampaigns");
+  const tTasks = await getTranslations("GrowthTasks");
   const locale = await getLocale();
   const supabase = await createClient();
 
@@ -44,7 +48,15 @@ export default async function GrowthProspectDetailPage({
 
   if (!prospect) notFound();
 
-  const [{ data: rawNotes }, { data: activity }, { data: latestScore }, { data: messages }] = await Promise.all([
+  const [
+    { data: rawNotes },
+    { data: activity },
+    { data: latestScore },
+    { data: messages },
+    { data: campaignLinks },
+    { data: allCampaigns },
+    { data: tasks },
+  ] = await Promise.all([
     supabase
       .from("partner_notes")
       .select("id, body, created_at, author_id")
@@ -68,6 +80,17 @@ export default async function GrowthProspectDetailPage({
       .select("id, channel, kind, body, status, created_at")
       .eq("prospect_id", id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("partner_campaign_prospects")
+      .select("campaign_id, partner_campaigns(id, name)")
+      .eq("prospect_id", id),
+    supabase.from("partner_campaigns").select("id, name").order("created_at", { ascending: false }),
+    supabase
+      .from("partner_tasks")
+      .select("id, title, due_date, status")
+      .eq("prospect_id", id)
+      .order("status", { ascending: true })
+      .order("due_date", { ascending: true, nullsFirst: false }),
   ]);
 
   const authorIds = [...new Set((rawNotes ?? []).map((n) => n.author_id))];
@@ -84,6 +107,12 @@ export default async function GrowthProspectDetailPage({
 
   const displayName = prospect.full_name || prospect.username || prospect.profile_url;
   const canEdit = canEditPartnerEngine(operator.role);
+
+  const assignedCampaigns = (campaignLinks ?? [])
+    .map((link) => link.partner_campaigns)
+    .filter((c): c is { id: string; name: string } => Boolean(c));
+  const campaignOptions = allCampaigns ?? [];
+  const prospectTasks: ProspectTask[] = tasks ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -120,6 +149,7 @@ export default async function GrowthProspectDetailPage({
           <TabsTrigger value="analysis">{tScoring("tabAnalysis")}</TabsTrigger>
           <TabsTrigger value="messages">{tScoring("tabMessages", { count: messages?.length ?? 0 })}</TabsTrigger>
           <TabsTrigger value="notes">{t("tabNotes", { count: notes.length })}</TabsTrigger>
+          <TabsTrigger value="tasks">{tTasks("tabTasks", { count: prospectTasks.length })}</TabsTrigger>
           <TabsTrigger value="activity">{t("tabActivity")}</TabsTrigger>
         </TabsList>
 
@@ -145,6 +175,12 @@ export default async function GrowthProspectDetailPage({
               <div className="sm:col-span-2">
                 <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("fieldBio")}</p>
                 <p className="text-sm whitespace-pre-wrap">{prospect.bio ?? t("notSet")}</p>
+              </div>
+              <div className="sm:col-span-2">
+                <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  {tCampaigns("fieldCampaigns")}
+                </p>
+                <CampaignAssign prospectId={prospect.id} assigned={assignedCampaigns} options={campaignOptions} />
               </div>
             </CardContent>
           </Card>
@@ -191,6 +227,14 @@ export default async function GrowthProspectDetailPage({
           <Card>
             <CardContent className="p-6">
               <NotesSection prospectId={prospect.id} notes={notes} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tasks">
+          <Card>
+            <CardContent className="p-6">
+              <TasksSection prospectId={prospect.id} tasks={prospectTasks} />
             </CardContent>
           </Card>
         </TabsContent>

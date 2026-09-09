@@ -2,21 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, CheckSquare } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
-// Campaigns/Tasks/Inbox/Analytics se agregan a esta lista a medida que
-// cada Slice los construye (ver docs/partner-engine/ARCHITECTURE.md §H) --
-// no quedan como links "próximamente" sin destino real.
+// Inbox/Analytics se agregan a esta lista a medida que cada Slice los
+// construye (ver docs/partner-engine/ARCHITECTURE.md §H) -- no quedan
+// como links "próximamente" sin destino real.
 const NAV_ITEMS: {
   href: string;
-  labelKey: "overview" | "prospects";
+  labelKey: "overview" | "prospects" | "campaigns" | "tasks";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/growth", labelKey: "overview", icon: LayoutDashboard },
   { href: "/growth/prospects", labelKey: "prospects", icon: Users },
+  { href: "/growth/campaigns", labelKey: "campaigns", icon: Megaphone },
+  { href: "/growth/tasks", labelKey: "tasks", icon: CheckSquare },
 ];
 
 export function GrowthNav() {

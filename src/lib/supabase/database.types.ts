@@ -72,6 +72,8 @@ export type PartnerActivityType =
 export type PartnerChannel = "email" | "instagram_dm" | "linkedin_dm" | "tiktok_dm" | "whatsapp" | "other";
 export type PartnerMessageKind = "opening" | "full_message" | "follow_up" | "proposal";
 export type PartnerMessageStatus = "draft" | "copied" | "marked_sent";
+export type PartnerCampaignStatus = "active" | "paused" | "completed";
+export type PartnerTaskStatus = "open" | "done" | "cancelled";
 
 export interface Database {
   public: {
@@ -1413,6 +1415,81 @@ export interface Database {
           },
         ];
       };
+      partner_campaigns: {
+        Row: {
+          id: string;
+          name: string;
+          pipeline: PartnerPipeline;
+          icp: Json;
+          message_strategy: string | null;
+          offer: string | null;
+          owner_id: string | null;
+          status: PartnerCampaignStatus;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_campaigns"]["Row"]> & {
+          name: string;
+          pipeline: PartnerPipeline;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_campaigns"]["Row"]>;
+        Relationships: [];
+      };
+      partner_campaign_prospects: {
+        Row: {
+          campaign_id: string;
+          prospect_id: string;
+          added_at: string;
+        };
+        Insert: {
+          campaign_id: string;
+          prospect_id: string;
+          added_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_campaign_prospects"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_campaign_prospects_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_campaigns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_campaign_prospects_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_tasks: {
+        Row: {
+          id: string;
+          prospect_id: string | null;
+          owner_id: string | null;
+          title: string;
+          description: string | null;
+          due_date: string | null;
+          priority: number;
+          status: PartnerTaskStatus;
+          created_at: string;
+          completed_at: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_tasks"]["Row"]> & {
+          title: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_tasks"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_tasks_prospect_id_fkey";
+            columns: ["prospect_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -1896,6 +1973,8 @@ export interface Database {
       partner_channel: PartnerChannel;
       partner_message_kind: PartnerMessageKind;
       partner_message_status: PartnerMessageStatus;
+      partner_campaign_status: PartnerCampaignStatus;
+      partner_task_status: PartnerTaskStatus;
     };
     CompositeTypes: Record<string, never>;
   };

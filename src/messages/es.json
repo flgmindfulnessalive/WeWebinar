@@ -445,7 +445,9 @@
   },
   "GrowthNav": {
     "overview": "Resumen",
-    "prospects": "Prospects"
+    "prospects": "Prospects",
+    "campaigns": "Campañas",
+    "tasks": "Tareas"
   },
   "GrowthLayout": {
     "panelTitle": "Partner Engine"
@@ -610,6 +612,66 @@
       "full_message": "Mensaje completo",
       "follow_up": "Seguimiento",
       "proposal": "Propuesta formal"
+    }
+  },
+  "GrowthCampaigns": {
+    "title": "Campañas",
+    "noPermission": "No tienes permiso para hacer esto.",
+    "missingFields": "Completa los campos requeridos.",
+    "selectCampaign": "Elegí una campaña.",
+    "assigned": "Prospect asignado a la campaña.",
+    "createCampaign": "Crear campaña",
+    "creating": "Creando...",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Ej: Creators de fitness Q1",
+    "pipelineLabel": "Pipeline",
+    "offerLabel": "Oferta",
+    "offerPlaceholder": "Ej: 3 meses gratis del plan Business",
+    "messageStrategyLabel": "Estrategia de mensaje",
+    "messageStrategyPlaceholder": "Notas internas sobre el ángulo de outreach para esta campaña...",
+    "noCampaigns": "Todavía no hay campañas. Creá la primera.",
+    "prospectCount": "{count} prospects",
+    "roster": "Prospects en la campaña ({count})",
+    "emptyRoster": "Todavía no hay prospects asignados a esta campaña.",
+    "fieldCampaigns": "Campañas",
+    "noCampaignsYet": "Todavía no hay campañas creadas.",
+    "assignToCampaign": "Asignar",
+    "removeFromCampaign": "Quitar de la campaña",
+    "pipeline": {
+      "creator": "Creator",
+      "ugc": "UGC Creator",
+      "distribution": "Distribution Partner"
+    },
+    "status": {
+      "active": "Activa",
+      "paused": "Pausada",
+      "completed": "Completada"
+    }
+  },
+  "GrowthTasks": {
+    "title": "Tareas",
+    "noPermission": "No tienes permiso para hacer esto.",
+    "missingFields": "Completa los campos requeridos.",
+    "taskCreated": "Tarea creada.",
+    "titleLabel": "Título",
+    "titlePlaceholder": "Ej: Enviar mensaje de seguimiento",
+    "dueDateLabel": "Vencimiento",
+    "prospectLabel": "Prospect",
+    "noProspectLinked": "Sin prospect vinculado",
+    "addTask": "Agregar tarea",
+    "creating": "Creando...",
+    "complete": "Completar",
+    "cancel": "Cancelar",
+    "openTasks": "Abiertas ({count})",
+    "closedTasks": "Cerradas ({count})",
+    "noOpenTasks": "No hay tareas abiertas.",
+    "noTasksForProspect": "Todavía no hay tareas para este prospect.",
+    "noDueDate": "Sin fecha",
+    "tabTasks": "Tareas ({count})",
+    "taskStatus": {
+      "open": "Abierta",
+      "done": "Completada",
+      "cancelled": "Cancelada"
     }
   },
   "DashboardHome": {
