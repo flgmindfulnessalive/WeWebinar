@@ -24,7 +24,7 @@ type WhopWebhookPayload = {
   data: {
     id: string; // membership id, prefixed "mem_"
     status: string;
-    user: { id: string; email: string | null } | null;
+    user: { id: string; email: string | null; name: string | null } | null;
     plan: { id: string } | null;
     product: { id: string } | null;
     metadata: Record<string, unknown>;
@@ -214,6 +214,8 @@ export async function POST(request: Request): Promise<Response> {
         await claimStarterKitFromWhop({
           membershipId: event.data.id,
           whopUserId: event.data.user?.id ?? null,
+          email: event.data.user?.email ?? null,
+          name: event.data.user?.name ?? null,
         });
       }
     } else {
