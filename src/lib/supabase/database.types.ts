@@ -1729,6 +1729,10 @@ export interface Database {
           paid: number;
         }[];
       };
+      record_first_attendee_if_new: {
+        Args: { p_account_id: string; p_webinar_id: string };
+        Returns: void;
+      };
       record_viewer_event: {
         Args: {
           p_access_token: string;

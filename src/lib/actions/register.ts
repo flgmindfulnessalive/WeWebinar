@@ -210,6 +210,22 @@ export async function registerForWebinar(
       computed_session_start: result.computed_session_start,
     });
 
+    // Best-effort, same rationale as the confirmation email above -- this
+    // milestone belongs to the host's account, not the anonymous registrant,
+    // so it goes through the admin-side RPC rather than record_growth_event
+    // (there is no auth.uid() to resolve here). record_first_attendee_if_new
+    // is a no-op past the account's very first registrant (partial unique
+    // index + ON CONFLICT DO NOTHING), so it's safe to call unconditionally
+    // on every registration instead of pre-checking "is this the first".
+    try {
+      await admin.rpc("record_first_attendee_if_new", {
+        p_account_id: webinar.account_id,
+        p_webinar_id: webinarId,
+      });
+    } catch (err) {
+      console.error("[register] first_attendee tracking failed:", err);
+    }
+
     if (webinar.brevo_list_id) {
       // Best-effort, same rationale as the confirmation email above.
       try {
