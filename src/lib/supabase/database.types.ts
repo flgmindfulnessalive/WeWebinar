@@ -742,6 +742,17 @@ export interface Database {
           },
         ];
       };
+      whop_starter_kit_webhook_claims: {
+        Row: {
+          membership_id: string;
+          claimed_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["whop_starter_kit_webhook_claims"]["Row"]> & {
+          membership_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["whop_starter_kit_webhook_claims"]["Row"]>;
+        Relationships: [];
+      };
       support_ai_replies: {
         Row: {
           id: string;
