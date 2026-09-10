@@ -89,21 +89,40 @@ export function AuthConfirmClient() {
     };
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "PASSWORD_RECOVERY") {
+      // Same guard as the getSession() branch below: a pending email
+      // confirmation link takes priority over any session activity this
+      // listener picks up (including a stale session merely refreshing
+      // itself on client init, which can itself emit SIGNED_IN) -- only
+      // handleContinue()'s own verifyOtp gets to decide this page's outcome
+      // while a token_hash is waiting to be clicked through.
+      if ((event === "SIGNED_IN" || event === "PASSWORD_RECOVERY") && !(isEmailOtpType(otpType) && tokenHash)) {
         goNext();
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       if (redirected) return;
+      if (isEmailOtpType(otpType) && tokenHash) {
+        // A real email confirmation link always wins over whatever session
+        // (if any) is already sitting in this browser -- an existing
+        // session used to short-circuit straight to goNext() here, but a
+        // stale one (refresh token quietly expired, or just a different
+        // account from an earlier login on this device) makes that
+        // redirect land on middleware's own auth check, which finds no
+        // valid user and bounces to /login -- silently, with no error
+        // shown, and without ever consuming this link's token. Requiring
+        // the click-through regardless of session state means verifyOtp
+        // always runs and either succeeds (switching to the linked
+        // identity, replacing any stale session) or fails with a real,
+        // visible error instead of a dead-end redirect.
+        setStatus("ready");
+        return;
+      }
       if (data.session) {
         goNext();
         return;
       }
-      if (isEmailOtpType(otpType) && tokenHash) {
-        // Wait for handleContinue() -- do not verify yet.
-        setStatus("ready");
-      } else if (!code) {
+      if (!code) {
         setError({ kind: "invalid" });
       }
       // else: a `code` was present -- detectSessionInUrl already attempted
