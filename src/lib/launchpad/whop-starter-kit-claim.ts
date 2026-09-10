@@ -4,11 +4,35 @@ import { createStarterKitLead } from "@/lib/whop";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/slug";
 import { sendEmail } from "@/lib/resend";
-import { starterKitAccessEmail } from "@/lib/platform-email";
+import { starterKitAccessEmail, starterKitClaimFailedEmail } from "@/lib/platform-email";
 
 // Same trial tier every other self-serve signup starts on -- see
 // TRIAL_PLAN_KEY in lib/actions/account.ts.
 const TRIAL_PLAN_KEY = "core";
+
+// Same ops inbox every other internal alert in this codebase uses
+// (lib/actions/leads.ts, app/dashboard/layout.tsx, etc -- there's no
+// shared export for it, each caller redefines it locally).
+const OPERATIONS_EMAIL = "operaciones@wewebinars.com";
+
+// Every early return below used to be just a console.error: a buyer sees
+// "check your email" on /starter-kit and, if any step here fails, silently
+// gets nothing, with no record anywhere that it happened. This makes each
+// failure an actionable alert instead -- best-effort itself (an alert
+// failing must never throw out of the caller that awaits it).
+async function notifyOpsOfClaimFailure(details: {
+  reason: string;
+  membershipId: string;
+  whopUserId: string | null;
+  email: string | null;
+}) {
+  try {
+    const { subject, html } = starterKitClaimFailedEmail(details);
+    await sendEmail({ to: OPERATIONS_EMAIL, subject, html });
+  } catch (err) {
+    console.error("[whop starter-kit] failure alert itself failed to send:", err);
+  }
+}
 
 // Claiming the free Evergreen Webinar Starter Kit on Whop's marketplace has
 // no signup form -- Whop redirects the buyer straight to /starter-kit with
@@ -26,6 +50,12 @@ export async function claimStarterKitFromWhop({
 }): Promise<void> {
   if (!whopUserId) {
     console.error(`[whop starter-kit] membership ${membershipId} has no user_id -- cannot resolve a lead`);
+    await notifyOpsOfClaimFailure({
+      reason: "La membership no trae user_id -- no se puede resolver ningún lead.",
+      membershipId,
+      whopUserId: null,
+      email: null,
+    });
     return;
   }
 
@@ -34,6 +64,13 @@ export async function claimStarterKitFromWhop({
     console.error(
       `[whop starter-kit] could not resolve an email for Whop user ${whopUserId} (membership ${membershipId}) -- is member:email:read enabled on the Whop app?`
     );
+    await notifyOpsOfClaimFailure({
+      reason:
+        "No se pudo resolver el email del comprador en Whop -- revisá si el permiso member:email:read está habilitado en el Whop Developer Dashboard para esta app.",
+      membershipId,
+      whopUserId,
+      email: null,
+    });
     return;
   }
   const email = lead.email.trim().toLowerCase();
@@ -50,6 +87,12 @@ export async function claimStarterKitFromWhop({
   });
   if (linkError || !link?.user) {
     console.error(`[whop starter-kit] generateLink failed for ${email}:`, linkError?.message);
+    await notifyOpsOfClaimFailure({
+      reason: `generateLink (magic link) falló: ${linkError?.message ?? "sin detalle"}.`,
+      membershipId,
+      whopUserId,
+      email,
+    });
     return;
   }
 
@@ -79,6 +122,12 @@ export async function claimStarterKitFromWhop({
       .single();
     if (!plan) {
       console.error(`[whop starter-kit] plan '${TRIAL_PLAN_KEY}' not found`);
+      await notifyOpsOfClaimFailure({
+        reason: `El plan '${TRIAL_PLAN_KEY}' no existe en la tabla plans.`,
+        membershipId,
+        whopUserId,
+        email,
+      });
       return;
     }
 
@@ -102,11 +151,23 @@ export async function claimStarterKitFromWhop({
         slug = `${baseSlug}-${attempt + 2}`;
       } else {
         console.error(`[whop starter-kit] account insert failed for ${email}:`, error.message);
+        await notifyOpsOfClaimFailure({
+          reason: `Falló la creación de la cuenta: ${error.message}.`,
+          membershipId,
+          whopUserId,
+          email,
+        });
         return;
       }
     }
     if (!created) {
       console.error(`[whop starter-kit] could not allocate a unique slug for ${email}`);
+      await notifyOpsOfClaimFailure({
+        reason: "No se pudo generar un slug único para la cuenta tras varios intentos.",
+        membershipId,
+        whopUserId,
+        email,
+      });
       return;
     }
 
@@ -119,6 +180,12 @@ export async function claimStarterKitFromWhop({
         `[whop starter-kit] failed to attach user ${link.user.id} to account ${created.id}:`,
         attachError.message
       );
+      await notifyOpsOfClaimFailure({
+        reason: `No se pudo asociar el usuario a la cuenta recién creada: ${attachError.message}.`,
+        membershipId,
+        whopUserId,
+        email,
+      });
       return;
     }
 
@@ -137,6 +204,12 @@ export async function claimStarterKitFromWhop({
         `[whop starter-kit] failed to create Launchpad project for account ${accountId}:`,
         error.message
       );
+      await notifyOpsOfClaimFailure({
+        reason: `No se pudo crear el proyecto de Launchpad para la cuenta ${accountId}: ${error.message}.`,
+        membershipId,
+        whopUserId,
+        email,
+      });
       return;
     }
   }
@@ -148,6 +221,14 @@ export async function claimStarterKitFromWhop({
     await sendEmail({ to: email, subject, html });
   } catch (err) {
     console.error(`[whop starter-kit] access email failed for ${email}:`, err);
+    await notifyOpsOfClaimFailure({
+      reason: `La cuenta y el Launchpad se crearon bien, pero el envío del email de acceso falló: ${
+        err instanceof Error ? err.message : String(err)
+      }. El comprador nunca recibió su link.`,
+      membershipId,
+      whopUserId,
+      email,
+    });
     return;
   }
 
