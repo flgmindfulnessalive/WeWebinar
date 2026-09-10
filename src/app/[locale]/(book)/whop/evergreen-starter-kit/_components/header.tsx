@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 import { Logo } from "@/components/logo";
-import { WHOP_CHECKOUT_URL } from "./constants";
 
 const SECTIONS = ["problem", "method", "includes", "faq"] as const;
 const ANCHORS: Record<(typeof SECTIONS)[number], string> = {
@@ -39,9 +38,7 @@ export function Header({
 
         <div className="flex items-center gap-2">
           <a
-            href={WHOP_CHECKOUT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#checkout"
             className="hidden h-9 items-center justify-center rounded-md px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:inline-flex"
             style={{ background: "linear-gradient(135deg, var(--skv-brand), var(--skv-brand-2))" }}
           >
@@ -72,9 +69,8 @@ export function Header({
               </a>
             ))}
             <a
-              href={WHOP_CHECKOUT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#checkout"
+              onClick={() => setOpen(false)}
               className="inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold text-white"
               style={{ background: "linear-gradient(135deg, var(--skv-brand), var(--skv-brand-2))" }}
             >
