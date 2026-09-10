@@ -9,6 +9,15 @@ import { starterKitAccessEmail, starterKitClaimFailedEmail } from "@/lib/platfor
 // TRIAL_PLAN_KEY in lib/actions/account.ts.
 const TRIAL_PLAN_KEY = "core";
 
+// This function only ever fires for STARTER_KIT_PRODUCT_ID -- the one Whop
+// listing that always redirects buyers to /en/starter-kit (see
+// STARTER_KIT_PRODUCT_ID's own comment in lib/whop.ts) -- so the account's
+// locale is hardcoded rather than read from any request context (there is
+// none at webhook-fire time). If a second Whop listing with a different
+// claim path is ever added, this needs to become a real product_id->locale
+// map instead.
+const ACCOUNT_LOCALE = "en";
+
 // Same ops inbox every other internal alert in this codebase uses
 // (lib/actions/leads.ts, app/dashboard/layout.tsx, etc -- there's no
 // shared export for it, each caller redefines it locally).
@@ -139,7 +148,13 @@ export async function claimStarterKitFromWhop({
     for (let attempt = 0; attempt < 5 && !created; attempt++) {
       const { data, error } = await admin
         .from("accounts")
-        .insert({ name: accountName, slug, plan_id: plan.id, subscription_status: "trialing" })
+        .insert({
+          name: accountName,
+          slug,
+          plan_id: plan.id,
+          subscription_status: "trialing",
+          locale: ACCOUNT_LOCALE,
+        })
         .select("id")
         .single();
       if (!error) {
@@ -214,7 +229,7 @@ export async function claimStarterKitFromWhop({
   const magicLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?token_hash=${link.properties.hashed_token}&type=magiclink&next=/dashboard/launchpad`;
 
   try {
-    const { subject, html } = starterKitAccessEmail(magicLink);
+    const { subject, html } = starterKitAccessEmail(magicLink, ACCOUNT_LOCALE);
     await sendEmail({ to: email, subject, html });
   } catch (err) {
     console.error(`[whop starter-kit] access email failed for ${email}:`, err);

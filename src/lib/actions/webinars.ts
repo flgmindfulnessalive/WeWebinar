@@ -279,7 +279,7 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
     // notification email shouldn't surface as a publish error.
     try {
       const [{ data: account }, { data: owner }, customDomainHostname] = await Promise.all([
-        supabase.from("accounts").select("slug").eq("id", webinar.account_id).maybeSingle(),
+        supabase.from("accounts").select("slug, locale").eq("id", webinar.account_id).maybeSingle(),
         supabase
           .from("users")
           .select("email")
@@ -290,7 +290,7 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
       ]);
       if (account && owner?.email) {
         const registrationLink = webinarPublicUrl(account.slug, webinar.slug, customDomainHostname);
-        const { subject, html } = webinarPublishedEmail(webinar.title, registrationLink);
+        const { subject, html } = webinarPublishedEmail(webinar.title, registrationLink, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
     } catch (err) {

@@ -61,7 +61,8 @@ export async function inviteMember(
       current.account.name,
       current.user.display_name,
       role,
-      signupLink
+      signupLink,
+      current.account.locale
     );
     await sendEmail({ to: email, subject, html });
   } catch (err) {

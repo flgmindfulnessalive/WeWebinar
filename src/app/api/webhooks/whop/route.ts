@@ -7,7 +7,7 @@ import { accountActivatedEmail, paymentFailedEmail } from "@/lib/platform-email"
 import { sendEmail } from "@/lib/resend";
 import { claimStarterKitFromWhop } from "@/lib/launchpad/whop-starter-kit-claim";
 import { recordGrowthEventAsAdmin } from "@/lib/growth/record-event-admin";
-import type { Database, SubscriptionStatus } from "@/lib/supabase/database.types";
+import type { AccountLocale, Database, SubscriptionStatus } from "@/lib/supabase/database.types";
 
 // Whop's generated WebhookEvent enum (@whop/sdk/api/types/WebhookEvent) --
 // current event names as of @whop/sdk 1.1.2. unwrapWebhook does NOT
@@ -55,7 +55,8 @@ async function notifyOwner(
   admin: ReturnType<typeof createAdminClient>,
   accountId: string,
   accountName: string,
-  build: (name: string) => { subject: string; html: string }
+  accountLocale: AccountLocale,
+  build: (name: string, locale: AccountLocale) => { subject: string; html: string }
 ) {
   // Best-effort: the status change already landed, so a failed
   // notification email is logged and swallowed rather than retried.
@@ -67,7 +68,7 @@ async function notifyOwner(
       .eq("role", "owner")
       .maybeSingle();
     if (owner?.email) {
-      const { subject, html } = build(accountName);
+      const { subject, html } = build(accountName, accountLocale);
       await sendEmail({ to: owner.email, subject, html });
     }
   } catch (err) {
@@ -101,7 +102,7 @@ async function syncMembership(payload: WhopWebhookPayload) {
 
   const { data: before } = await admin
     .from("accounts")
-    .select("name, subscription_status, canceled_at")
+    .select("name, subscription_status, canceled_at, locale")
     .eq("id", accountId)
     .maybeSingle();
 
@@ -146,7 +147,7 @@ async function syncMembership(payload: WhopWebhookPayload) {
   }
 
   if (before.subscription_status !== "active" && newStatus === "active") {
-    await notifyOwner(admin, accountId, before.name, accountActivatedEmail);
+    await notifyOwner(admin, accountId, before.name, before.locale, accountActivatedEmail);
     // Growth OS revenue attribution: this is the one lifecycle event
     // MVP 0 wires from here (subscription_upgraded/renewed/cancelled are
     // declared in the growth_event_name enum but not emitted yet --
@@ -177,7 +178,7 @@ async function syncMembership(payload: WhopWebhookPayload) {
     }
   }
   if (before.subscription_status !== "past_due" && newStatus === "past_due") {
-    await notifyOwner(admin, accountId, before.name, paymentFailedEmail);
+    await notifyOwner(admin, accountId, before.name, before.locale, paymentFailedEmail);
   }
 }
 

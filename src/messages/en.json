@@ -76,6 +76,8 @@
   "AuthConfirm": {
     "invalidLink": "This link isn't valid or is incomplete.",
     "usedOrExpired": "This link was already used or has expired. Request a new one.",
+    "connectionError": "We couldn't connect to the authentication server. Try again in a moment.",
+    "tryAgain": "Try again",
     "backToLogin": "Back to login",
     "confirming": "Confirming..."
   },
