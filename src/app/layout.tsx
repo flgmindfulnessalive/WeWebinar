@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { WhopPixel } from "@/components/whop-pixel";
+import { GrowthBeacon } from "@/components/growth-beacon";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <WhopPixel />
+        <GrowthBeacon />
         {children}
       </body>
     </html>

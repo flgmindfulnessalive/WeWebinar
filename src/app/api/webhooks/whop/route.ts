@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { accountActivatedEmail, paymentFailedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { claimStarterKitFromWhop } from "@/lib/launchpad/whop-starter-kit-claim";
+import { recordGrowthEventAsAdmin } from "@/lib/growth/record-event-admin";
 import type { Database, SubscriptionStatus } from "@/lib/supabase/database.types";
 
 // Whop's generated WebhookEvent enum (@whop/sdk/api/types/WebhookEvent) --
@@ -143,6 +144,27 @@ async function syncMembership(payload: WhopWebhookPayload) {
 
   if (before.subscription_status !== "active" && newStatus === "active") {
     await notifyOwner(admin, accountId, before.name, accountActivatedEmail);
+    // Growth OS revenue attribution: this is the one lifecycle event
+    // MVP 0 wires from here (subscription_upgraded/renewed/cancelled are
+    // declared in the growth_event_name enum but not emitted yet --
+    // deferred, not needed to prove "attribution -> revenue" works end to
+    // end). Best-effort, same as notifyOwner above -- a tracking failure
+    // must never surface as a billing-sync error.
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("id")
+        .eq("account_id", accountId)
+        .eq("role", "owner")
+        .maybeSingle();
+      await recordGrowthEventAsAdmin(admin, {
+        eventName: "subscription_started",
+        accountId,
+        userId: owner?.id ?? null,
+      });
+    } catch (err) {
+      console.error(`[whop webhook] subscription_started tracking failed for account ${accountId}:`, err);
+    }
   }
   if (before.subscription_status !== "past_due" && newStatus === "past_due") {
     await notifyOwner(admin, accountId, before.name, paymentFailedEmail);
