@@ -207,6 +207,15 @@ export async function POST(request: Request): Promise<Response> {
   // vanishing silently after an immediate 200, since nothing else surfaces
   // a billing-sync failure otherwise.
   if (SYNCED_EVENTS.has(event.type)) {
+    // WhopWebhookPayload's shape was asserted, not verified against a real
+    // delivery (see the type's own comment above) -- data.product_id came
+    // back undefined against a real membership.activated event, so at
+    // least that field is wrong. Logging the untouched raw body here (not
+    // the re-serialized `event`, in case unwrapWebhook itself normalizes
+    // something) is the fastest way to see Whop's actual shape and fix the
+    // type in one pass instead of guessing field by field.
+    console.error(`[whop webhook] raw payload for ${event.type}:`, rawBody);
+
     if (event.data.product_id === STARTER_KIT_PRODUCT_ID) {
       // Free marketplace listing, not a checkout we created -- no
       // metadata.account_id to sync against, so this never goes through
