@@ -1,4 +1,4 @@
-import { Calculator, Cog, Compass, Gauge, PlayCircle, Rocket, Wand2 } from "lucide-react";
+import { Cog, Compass, Gauge, Rocket, Wand2 } from "lucide-react";
 
 type MethodCopy = {
   eyebrow: string;
@@ -14,20 +14,20 @@ type MethodCopy = {
   step4Body: string;
   step5Title: string;
   step5Body: string;
-  step6Title: string;
-  step6Body: string;
-  step7Title: string;
-  step7Body: string;
 };
 
+// The framework itself is 5 steps: Diagnosis -> Architecture -> Script ->
+// Implementation -> Launch -- what actually turns a presentation into a
+// selling machine. The Starter Kit's other two tools (the cost calculator
+// and the working demo) are real, free deliverables too, but they make
+// the case for the framework and prove it works rather than being part of
+// the mechanism -- so they live in Includes below, not here.
 const STEPS = [
-  { icon: Calculator, titleKey: "step1Title" as const, bodyKey: "step1Body" as const },
-  { icon: Gauge, titleKey: "step2Title" as const, bodyKey: "step2Body" as const },
-  { icon: Compass, titleKey: "step3Title" as const, bodyKey: "step3Body" as const },
-  { icon: Wand2, titleKey: "step4Title" as const, bodyKey: "step4Body" as const },
-  { icon: Cog, titleKey: "step5Title" as const, bodyKey: "step5Body" as const },
-  { icon: PlayCircle, titleKey: "step6Title" as const, bodyKey: "step6Body" as const },
-  { icon: Rocket, titleKey: "step7Title" as const, bodyKey: "step7Body" as const },
+  { icon: Gauge, titleKey: "step1Title" as const, bodyKey: "step1Body" as const },
+  { icon: Compass, titleKey: "step2Title" as const, bodyKey: "step2Body" as const },
+  { icon: Wand2, titleKey: "step3Title" as const, bodyKey: "step3Body" as const },
+  { icon: Cog, titleKey: "step4Title" as const, bodyKey: "step4Body" as const },
+  { icon: Rocket, titleKey: "step5Title" as const, bodyKey: "step5Body" as const },
 ];
 
 export function Method({ t }: { t: MethodCopy }) {
@@ -45,7 +45,7 @@ export function Method({ t }: { t: MethodCopy }) {
           <p className="mt-3 text-lg text-pretty text-white/60">{t.subtitle}</p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {STEPS.map(({ icon: Icon, titleKey, bodyKey }, i) => (
             <div
               key={titleKey}

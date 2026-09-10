@@ -2608,7 +2608,7 @@
   "StarterKitVsl": {
     "meta": {
       "title": "Free Evergreen Webinar Starter Kit — Stop Repeating Your Pitch",
-      "description": "The exact 7-step system to turn a presentation you keep repeating into an evergreen webinar that sells 24/7. Free, no credit card."
+      "description": "The exact 5-step framework to turn a presentation you keep repeating into an evergreen webinar that sells 24/7. Free, no credit card."
     },
     "nav": {
       "problem": "The Problem",
@@ -2621,10 +2621,10 @@
       "eyebrow": "FREE — INSTANT ACCESS",
       "titleStart": "Stop Giving The Same Presentation Over And Over.",
       "titleHighlight": "Turn It Into A Webinar That Sells For You 24/7.",
-      "subtitle": "The exact 7-step system to take one presentation you're tired of repeating and turn it into an evergreen webinar that books calls and closes sales — without you ever showing up live again.",
+      "subtitle": "The exact 5-step framework to take one presentation you're tired of repeating and turn it into an evergreen webinar that books calls and closes sales — without you ever showing up live again.",
       "cta": "Get My Free Starter Kit",
       "ctaMicrocopy": "No credit card. Takes about 3 minutes to claim.",
-      "feature1": "7-step system",
+      "feature1": "5-step framework",
       "feature2": "~50 minutes total",
       "feature3": "100% free, no card"
     },
@@ -2642,27 +2642,23 @@
     },
     "method": {
       "eyebrow": "THE EVERGREEN WEBINAR FRAMEWORK",
-      "title": "It's Not About \"Recording Your Webinar.\" It's This 7-Step System.",
+      "title": "It's Not About \"Recording Your Webinar.\" It's This 5-Step Framework.",
       "subtitle": "A recording isn't a system — it's just a video nobody asked for. Here's what actually turns a presentation into a selling machine.",
-      "step1Title": "Cost of Repeating",
-      "step1Body": "See exactly what doing this live is costing you today.",
-      "step2Title": "Diagnosis",
-      "step2Body": "Get your Evergreen Readiness Score and a real action plan.",
-      "step3Title": "Architecture",
-      "step3Body": "Walk through the 18-slide Blueprint your webinar needs to convert.",
-      "step4Title": "Script",
-      "step4Body": "Generate your first script with AI, in minutes, not weeks.",
-      "step5Title": "Implementation",
-      "step5Body": "Turn that script into an actual working webinar.",
-      "step6Title": "Demo",
-      "step6Body": "Experience a real evergreen webinar running start to finish.",
-      "step7Title": "Launch",
-      "step7Body": "Publish your first one, live and selling, inside WeWebinars."
+      "step1Title": "Diagnosis",
+      "step1Body": "Get your Evergreen Readiness Score and a real action plan.",
+      "step2Title": "Architecture",
+      "step2Body": "Walk through the 18-slide Blueprint your webinar needs to convert.",
+      "step3Title": "Script",
+      "step3Body": "Generate your first script with AI, in minutes, not weeks.",
+      "step4Title": "Implementation",
+      "step4Body": "Turn that script into an actual working webinar.",
+      "step5Title": "Launch",
+      "step5Body": "Publish your first one, live and selling, inside WeWebinars."
     },
     "includes": {
       "eyebrow": "WHAT YOU GET",
       "title": "Here's Everything Inside The Starter Kit — Free Today",
-      "subtitle": "Placeholder values below — swap for real, defensible numbers before this goes live.",
+      "subtitle": "The 5-step framework above, plus two extra tools to make the case and prove it works — all free.",
       "item1Label": "The Repetition Cost Calculator",
       "item1Value": "$XX",
       "item2Label": "Your Evergreen Readiness Score + Action Plan",
@@ -2699,9 +2695,9 @@
       "q1": "Is this actually free?",
       "a1": "Yes. No credit card, no trial that quietly starts charging you. Claim it and it's yours.",
       "q2": "Do I need to be technical to do this?",
-      "a2": "No. If you can fill out a form and click \"Next,\" you can complete all 7 steps.",
+      "a2": "No. If you can fill out a form and click \"Next,\" you can complete the whole kit.",
       "q3": "How long does this actually take?",
-      "a3": "About 50 minutes end to end, spread across the 7 steps — you don't have to do it all in one sitting.",
+      "a3": "About 50 minutes end to end, spread across the kit — you don't have to do it all in one sitting.",
       "q4": "I don't have a presentation yet. Can I still use this?",
       "a4": "Yes — Step 3 (Architecture) walks you through building one from scratch using the 18-slide Blueprint.",
       "q5": "What's the catch?",
