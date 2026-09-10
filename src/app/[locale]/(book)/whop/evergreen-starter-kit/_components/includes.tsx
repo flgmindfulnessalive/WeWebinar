@@ -62,7 +62,16 @@ export function Includes({ t }: { t: IncludesCopy }) {
                 <Check className="size-3.5" />
               </span>
               <span className="flex-1 text-base text-white/85">{t[labelKey]}</span>
-              <span className="text-sm font-semibold text-white/40 line-through">{t[valueKey]}</span>
+              {t[valueKey].startsWith("$") ? (
+                <span className="text-sm font-semibold text-white/40 line-through">{t[valueKey]}</span>
+              ) : (
+                <span
+                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase"
+                  style={{ background: "rgba(108, 76, 255, 0.15)", color: "var(--skv-brand-2)" }}
+                >
+                  {t[valueKey]}
+                </span>
+              )}
             </div>
           ))}
 
