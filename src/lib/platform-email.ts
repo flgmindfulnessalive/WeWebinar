@@ -263,6 +263,36 @@ ${messageBlock}
   };
 }
 
+// Sent to ops whenever claimStarterKitFromWhop (see
+// lib/launchpad/whop-starter-kit-claim.ts) bails out early -- lead email
+// resolution, magic-link generation, account/Launchpad provisioning, or the
+// access email itself can each fail independently, and every one of those
+// used to just log to console and vanish: the buyer sees "check your email"
+// on /starter-kit and never gets anything, with zero record anywhere that
+// it happened. This turns that into an actionable alert instead of a
+// server log line nobody's watching.
+export function starterKitClaimFailedEmail(details: {
+  reason: string;
+  membershipId: string;
+  whopUserId: string | null;
+  email: string | null;
+}): { subject: string; html: string } {
+  const rows = [
+    statRow("Motivo", escapeHtml(details.reason)),
+    statRow("Membership", escapeHtml(details.membershipId)),
+    statRow("Whop user", escapeHtml(details.whopUserId ?? "—")),
+    statRow("Email resuelto", escapeHtml(details.email ?? "—")),
+  ];
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#dc2626;">Starter Kit -- provisión falló</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Un claim del Starter Kit en Whop no se completó</h1>
+<p style="margin:0 0 16px;">Este comprador reclamó el Evergreen Webinar Starter Kit gratis en Whop, vio "te llegará un email en unos minutos" en /starter-kit, pero la provisión automática se detuvo antes de mandarlo. Puede necesitar que le crees la cuenta a mano o que le reenvíes el acceso.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px;">${rows.join("")}</table>`;
+  return {
+    subject: "Starter Kit: un claim de Whop no se pudo provisionar",
+    html: wrapPlatformEmailShell(inner),
+  };
+}
+
 function statRow(label: string, value: string): string {
   return `<tr>
     <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:13px;color:#71717a;">${label}</td>
