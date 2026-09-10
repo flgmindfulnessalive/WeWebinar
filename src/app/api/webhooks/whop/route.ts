@@ -87,8 +87,14 @@ async function syncMembership(payload: WhopWebhookPayload) {
   const admin = createAdminClient();
   const accountId = resolveAccountId(payload);
   if (!accountId) {
+    // product_id included on purpose: this same "no metadata.account_id"
+    // shape is also what a *free* marketplace claim looks like (see
+    // STARTER_KIT_PRODUCT_ID above) -- if that id doesn't match what's
+    // hardcoded there, the event falls through to here instead of
+    // claimStarterKitFromWhop, and this log is the fastest way to see the
+    // real product_id Whop sent and fix the constant.
     console.error(
-      `[whop webhook] membership ${payload.data.id} has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl?`
+      `[whop webhook] membership ${payload.data.id} (product ${payload.data.product_id}) has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl? If this is the free Starter Kit listing, STARTER_KIT_PRODUCT_ID in lib/whop.ts is stale.`
     );
     return;
   }
