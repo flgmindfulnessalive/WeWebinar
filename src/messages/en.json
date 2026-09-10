@@ -445,6 +445,7 @@
   },
   "GrowthNav": {
     "overview": "Overview",
+    "commandCenter": "Growth OS",
     "prospects": "Prospects",
     "campaigns": "Campaigns",
     "tasks": "Tasks",
@@ -687,6 +688,31 @@
     "avgOpportunityScore": "Average Opportunity Score",
     "noData": "No data",
     "funnelTitle": "Prospects by stage"
+  },
+  "GrowthCommandCenter": {
+    "title": "Growth OS",
+    "subtitle": "Activation funnel and per-account attribution, across the whole product.",
+    "funnelTitle": "Activation funnel (all accounts)",
+    "funnel": {
+      "signups": "Signups",
+      "webinarCreated": "Webinar created",
+      "videoUploaded": "Video uploaded",
+      "ctaConfigured": "CTA configured",
+      "webinarPublished": "Webinar published",
+      "activated": "Activated (1st attendee)",
+      "paid": "Paying"
+    },
+    "attributionTitle": "Attribution by account",
+    "attributionCount": "{count, plural, =0 {no data} one {# account} other {# accounts}}",
+    "noAttribution": "No attribution has been computed for any account yet.",
+    "noSource": "No source recorded",
+    "table": {
+      "account": "Account",
+      "status": "Status",
+      "firstTouch": "First touch",
+      "lastTouch": "Last touch",
+      "updated": "Updated"
+    }
   },
   "DashboardHome": {
     "title": "Summary",

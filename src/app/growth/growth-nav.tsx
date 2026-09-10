@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Megaphone, CheckSquare, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, CheckSquare, BarChart3, Activity } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -10,12 +10,19 @@ import { cn } from "@/lib/utils";
 // Inbox se agrega a esta lista cuando se construya (MVP2 -- Unified Inbox,
 // ver docs/partner-engine/ARCHITECTURE.md §H) -- no queda como link
 // "próximamente" sin destino real.
+//
+// commandCenter es Growth OS (todo el producto: funnel de activación +
+// atribución por cuenta), no Partner Engine -- distinto de "analytics"
+// (funnel/scores de prospects). Vive bajo el mismo layout/guard porque
+// comparte el allowlist de growth_operators, no porque sea parte del
+// Partner Engine.
 const NAV_ITEMS: {
   href: string;
-  labelKey: "overview" | "prospects" | "campaigns" | "tasks" | "analytics";
+  labelKey: "overview" | "prospects" | "campaigns" | "tasks" | "analytics" | "commandCenter";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/growth", labelKey: "overview", icon: LayoutDashboard },
+  { href: "/growth/command-center", labelKey: "commandCenter", icon: Activity },
   { href: "/growth/prospects", labelKey: "prospects", icon: Users },
   { href: "/growth/campaigns", labelKey: "campaigns", icon: Megaphone },
   { href: "/growth/tasks", labelKey: "tasks", icon: CheckSquare },

@@ -445,6 +445,7 @@
   },
   "GrowthNav": {
     "overview": "Resumen",
+    "commandCenter": "Growth OS",
     "prospects": "Prospects",
     "campaigns": "Campañas",
     "tasks": "Tareas",
@@ -687,6 +688,31 @@
     "avgOpportunityScore": "Opportunity Score promedio",
     "noData": "Sin datos",
     "funnelTitle": "Prospects por etapa"
+  },
+  "GrowthCommandCenter": {
+    "title": "Growth OS",
+    "subtitle": "Funnel de activación y atribución por cuenta, de todo el producto.",
+    "funnelTitle": "Funnel de activación (todas las cuentas)",
+    "funnel": {
+      "signups": "Registros",
+      "webinarCreated": "Webinar creado",
+      "videoUploaded": "Video subido",
+      "ctaConfigured": "CTA configurado",
+      "webinarPublished": "Webinar publicado",
+      "activated": "Activado (1er asistente)",
+      "paid": "Pagando"
+    },
+    "attributionTitle": "Atribución por cuenta",
+    "attributionCount": "{count, plural, =0 {sin datos} one {# cuenta} other {# cuentas}}",
+    "noAttribution": "Todavía no hay atribución calculada para ninguna cuenta.",
+    "noSource": "Sin origen registrado",
+    "table": {
+      "account": "Cuenta",
+      "status": "Estado",
+      "firstTouch": "Primer toque",
+      "lastTouch": "Último toque",
+      "updated": "Actualizado"
+    }
   },
   "DashboardHome": {
     "title": "Resumen",
