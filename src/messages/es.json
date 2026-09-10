@@ -78,6 +78,8 @@
     "usedOrExpired": "Este link ya fue usado o expiró. Pide uno nuevo.",
     "connectionError": "No pudimos conectar con el servidor de autenticación. Prueba de nuevo en un momento.",
     "tryAgain": "Probar de nuevo",
+    "readyBody": "Por tu seguridad, confirmá el acceso con un clic.",
+    "continueButton": "Confirmar y continuar",
     "backToLogin": "Volver a ingresar",
     "confirming": "Confirmando..."
   },
