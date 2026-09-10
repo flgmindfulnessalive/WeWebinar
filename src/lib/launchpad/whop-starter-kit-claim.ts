@@ -250,7 +250,19 @@ export async function claimStarterKitFromWhop({
     }
   }
 
-  const magicLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?token_hash=${link.properties.hashed_token}&type=magiclink&next=/dashboard/launchpad`;
+  // Hardcoding type=magiclink here was the actual root cause behind
+  // "already used or expired" firing on a genuinely fresh, single, prompt
+  // click: generateLink's own verification_type is what GoTrue actually
+  // stored the one-time token as, and for a brand-new email (every buyer
+  // on this claim path, since the auth user gets created right here) that
+  // comes back as "signup", not "magiclink" -- confirmed via Supabase's
+  // auth logs, which showed a single generateLink + a single verifyOtp
+  // call 25s apart, verifyOtp failing with error_code "otp_expired" /
+  // "One-time token not found" because it was querying for a token of
+  // type magiclink that was actually stored as type signup. Using the
+  // type GoTrue actually assigned keeps this correct for both a new user
+  // (signup) and an existing one claiming a second time (magiclink).
+  const magicLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?token_hash=${link.properties.hashed_token}&type=${link.properties.verification_type}&next=/dashboard/launchpad`;
 
   try {
     const { subject, html } = starterKitAccessEmail(magicLink, ACCOUNT_LOCALE);
