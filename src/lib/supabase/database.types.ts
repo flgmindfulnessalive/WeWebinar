@@ -11,6 +11,7 @@ export type Json =
   | Json[];
 
 export type UserRole = "owner" | "editor" | "viewer";
+export type AccountLocale = "es" | "en";
 export type SubscriptionStatus =
   | "trialing"
   | "active"
@@ -198,6 +199,7 @@ export interface Database {
           unsubscribe_token: string;
           brevo_api_key: string | null;
           whop_starter_kit_claimed_at: string | null;
+          locale: AccountLocale;
           created_at: string;
           updated_at: string;
         };
@@ -1680,6 +1682,7 @@ export interface Database {
           p_slug: string;
           p_plan_key?: string;
           p_timezone_default?: string;
+          p_locale?: AccountLocale;
         };
         Returns: Database["public"]["Tables"]["accounts"]["Row"];
       };

@@ -23,16 +23,15 @@ import {
 import { sendEmail } from "@/lib/resend";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { checkVercelDomainStatus } from "@/lib/domains/vercel";
-import type { Database } from "@/lib/supabase/database.types";
+import type { AccountLocale, Database } from "@/lib/supabase/database.types";
 
 const TRIAL_WARNING_WINDOW_DAYS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const LAUNCHPAD_REMINDER_INACTIVITY_DAYS = 3;
 
-// Mismas palabras que Launchpad.dashboard.stepName en es.json -- el email
-// (siempre en español, como el resto de platform-email.ts) tiene que
-// coincidir con lo que el usuario ve en el dashboard, no inventar otra
-// forma de nombrar la misma etapa.
+// Mismas palabras que Launchpad.dashboard.stepName en es.json/en.json -- el
+// email tiene que coincidir con lo que el usuario ve en el dashboard, no
+// inventar otra forma de nombrar la misma etapa.
 const LAUNCHPAD_STEP_LABELS_ES: Record<string, string> = {
   cost: "Costo de repetir",
   diagnosis: "Diagnóstico",
@@ -42,6 +41,18 @@ const LAUNCHPAD_STEP_LABELS_ES: Record<string, string> = {
   demo: "Demo",
   create: "Crear tu webinar",
 };
+const LAUNCHPAD_STEP_LABELS_EN: Record<string, string> = {
+  cost: "Cost of repeating",
+  diagnosis: "Diagnosis",
+  architecture: "Architecture",
+  script: "Script",
+  implementation: "Implementation",
+  demo: "Demo",
+  create: "Create",
+};
+function launchpadStepLabel(stepKey: string, locale: AccountLocale): string {
+  return (locale === "en" ? LAUNCHPAD_STEP_LABELS_EN : LAUNCHPAD_STEP_LABELS_ES)[stepKey];
+}
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -212,7 +223,7 @@ export async function GET(request: Request) {
 
   const { data: expiringSoon } = await admin
     .from("accounts")
-    .select("id, name, trial_ends_at")
+    .select("id, name, trial_ends_at, locale")
     .eq("subscription_status", "trialing")
     .is("trial_warning_sent_at", null)
     .lte("trial_ends_at", new Date(Date.now() + TRIAL_WARNING_WINDOW_DAYS * DAY_MS).toISOString());
@@ -246,7 +257,7 @@ export async function GET(request: Request) {
           0,
           Math.ceil((new Date(account.trial_ends_at).getTime() - Date.now()) / DAY_MS)
         );
-        const { subject, html } = trialExpiringEmail(account.name, daysLeft);
+        const { subject, html } = trialExpiringEmail(account.name, daysLeft, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
       trialWarningsSent++;
@@ -261,7 +272,7 @@ export async function GET(request: Request) {
 
   const { data: expiredTrials } = await admin
     .from("accounts")
-    .select("id, name")
+    .select("id, name, locale")
     .eq("subscription_status", "trialing")
     .lte("trial_ends_at", new Date().toISOString());
 
@@ -287,7 +298,7 @@ export async function GET(request: Request) {
         .eq("role", "owner")
         .maybeSingle();
       if (owner?.email) {
-        const { subject, html } = accountSuspendedEmail(account.name);
+        const { subject, html } = accountSuspendedEmail(account.name, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
       trialsSuspended++;
@@ -307,13 +318,12 @@ export async function GET(request: Request) {
   const now = new Date();
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const prevMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-  const periodLabel = new Intl.DateTimeFormat("es", { month: "long", year: "numeric" }).format(
-    prevMonthStart
-  );
+  const periodLabelFor = (locale: AccountLocale) =>
+    new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(prevMonthStart);
 
   const { data: digestCandidates } = await admin
     .from("accounts")
-    .select("id, name, unsubscribe_token")
+    .select("id, name, unsubscribe_token, locale")
     .in("subscription_status", ["trialing", "active", "past_due"])
     .is("digest_unsubscribed_at", null)
     .or(`last_digest_sent_at.is.null,last_digest_sent_at.lt.${monthStart.toISOString()}`);
@@ -358,7 +368,7 @@ export async function GET(request: Request) {
         const unsubscribeUrl = digestUnsubscribeUrlFor(account.unsubscribe_token);
         const { subject, html } = monthlyDigestEmail(
           account.name,
-          periodLabel,
+          periodLabelFor(account.locale),
           {
             registrantCount: row?.registrant_count ?? 0,
             attendeeCount: row?.attendee_count ?? 0,
@@ -366,7 +376,8 @@ export async function GET(request: Request) {
             topWebinarTitle: row?.top_webinar_title ?? null,
             topWebinarRegistrants: row?.top_webinar_registrants ?? 0,
           },
-          unsubscribeUrl
+          unsubscribeUrl,
+          account.locale
         );
         await sendEmail({ to: owner.email, subject, html, headers: unsubscribeHeaders(unsubscribeUrl) });
       }
@@ -384,7 +395,7 @@ export async function GET(request: Request) {
 
   const { data: nudgeCandidates } = await admin
     .from("accounts")
-    .select("id, name")
+    .select("id, name, locale")
     .in("subscription_status", ["trialing", "active"])
     .is("activation_nudge_sent_at", null)
     .lte("created_at", nudgeCutoff);
@@ -421,7 +432,7 @@ export async function GET(request: Request) {
         .eq("role", "owner")
         .maybeSingle();
       if (owner?.email) {
-        const { subject, html } = activationNudgeEmail(account.name);
+        const { subject, html } = activationNudgeEmail(account.name, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
       activationNudgesSent++;
@@ -449,7 +460,7 @@ export async function GET(request: Request) {
 
   const { data: dueForWarning } = await admin
     .from("accounts")
-    .select("id, name, canceled_at")
+    .select("id, name, canceled_at, locale")
     .eq("subscription_status", "canceled")
     .is("deletion_warning_sent_at", null)
     .not("canceled_at", "is", null)
@@ -484,7 +495,7 @@ export async function GET(request: Request) {
               DAY_MS
           )
         );
-        const { subject, html } = accountDeletionWarningEmail(account.name, daysLeft);
+        const { subject, html } = accountDeletionWarningEmail(account.name, daysLeft, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
       deletionWarningsSent++;
@@ -567,10 +578,14 @@ export async function GET(request: Request) {
 
       const [{ data: owner }, { data: account }] = await Promise.all([
         admin.from("users").select("email").eq("account_id", d.account_id).eq("role", "owner").maybeSingle(),
-        admin.from("accounts").select("name").eq("id", d.account_id).maybeSingle(),
+        admin.from("accounts").select("name, locale").eq("id", d.account_id).maybeSingle(),
       ]);
       if (owner?.email) {
-        const { subject, html } = domainVerificationFailedEmail(account?.name ?? d.hostname, d.hostname);
+        const { subject, html } = domainVerificationFailedEmail(
+          account?.name ?? d.hostname,
+          d.hostname,
+          account?.locale ?? "es"
+        );
         await sendEmail({ to: owner.email, subject, html });
       }
       domainAlertsSent++;
@@ -621,7 +636,7 @@ export async function GET(request: Request) {
 
     try {
       const [{ data: account }, { data: owner }, { data: stepRows }] = await Promise.all([
-        admin.from("accounts").select("name").eq("id", project.account_id).maybeSingle(),
+        admin.from("accounts").select("name, locale").eq("id", project.account_id).maybeSingle(),
         admin.from("users").select("email").eq("account_id", project.account_id).eq("role", "owner").maybeSingle(),
         admin
           .from("launchpad_step_progress")
@@ -640,8 +655,9 @@ export async function GET(request: Request) {
         const nextStep = nextRecommendedStep(steps);
         const { subject, html } = launchpadReminderEmail(
           account.name,
-          LAUNCHPAD_STEP_LABELS_ES[nextStep],
-          computeProjectCompletionPercentage(steps)
+          launchpadStepLabel(nextStep, account.locale),
+          computeProjectCompletionPercentage(steps),
+          account.locale
         );
         await sendEmail({ to: owner.email, subject, html });
       }

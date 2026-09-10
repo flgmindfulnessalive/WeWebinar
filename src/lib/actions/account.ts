@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slug";
@@ -36,6 +36,11 @@ export async function createAccount(
   const billingPeriod = isBillingPeriod(rawBilling) ? rawBilling : "monthly";
   const rawSource = String(formData.get("source") ?? "");
   const fromLaunchpad = rawSource === "launchpad";
+  // next-intl's routing only serves "es"/"en" (see i18n/routing.ts), so this
+  // request-scoped locale always narrows to one of the two -- the account's
+  // locale is set once here, at creation time, matching the path the host
+  // actually signed up from.
+  const locale = (await getLocale()) === "en" ? "en" : "es";
 
   if (!name) {
     const t = await getTranslations("AccountActions");
@@ -70,6 +75,7 @@ export async function createAccount(
           p_slug: slug,
           p_plan_key: planKey,
           p_timezone_default: timezone,
+          p_locale: locale,
         });
 
         if (!error) {
@@ -91,7 +97,7 @@ export async function createAccount(
               typeof user.user_metadata?.full_name === "string"
                 ? user.user_metadata.full_name
                 : null;
-            const { subject, html } = welcomeEmail(name, fullName);
+            const { subject, html } = welcomeEmail(name, fullName, locale);
             await sendEmail({ to: user.email!, subject, html });
           } catch (err) {
             console.error("[account] welcome email failed:", err);

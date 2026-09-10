@@ -126,7 +126,7 @@ export async function reactivateAccount(accountId: string): Promise<AdminActionS
   const supabase = await createClient();
   const { data: before } = await supabase
     .from("accounts")
-    .select("name, subscription_status")
+    .select("name, subscription_status, locale")
     .eq("id", accountId)
     .maybeSingle();
 
@@ -149,7 +149,7 @@ export async function reactivateAccount(accountId: string): Promise<AdminActionS
         .eq("role", "owner")
         .maybeSingle();
       if (owner?.email) {
-        const { subject, html } = accountActivatedEmail(before.name);
+        const { subject, html } = accountActivatedEmail(before.name, before.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
     } catch (err) {

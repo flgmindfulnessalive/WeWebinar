@@ -3,7 +3,16 @@
 // sent by a host to their own registrants and branded with the host's own
 // logo/color. These come from WeWebinars itself, so they always use the
 // platform's own brand instead of resolveEmailBranding(account).
+//
+// Every host/buyer-facing template below takes a `locale` so the copy
+// matches the language the account was created in (see accounts.locale --
+// set once at account-creation time from the claim's own path/origin, e.g.
+// the Starter Kit's Whop listing always redirects to /en/starter-kit). The
+// two internal-ops-only templates (newEnterpriseLeadEmail,
+// starterKitClaimFailedEmail) stay Spanish-only: they go to the ops inbox,
+// not a host, so there's no per-recipient locale to honor.
 import { escapeHtml } from "./email-templates";
+import type { AccountLocale } from "./supabase/database.types";
 
 const FONT_STACK =
   "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
@@ -13,9 +22,16 @@ const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 // Table-based markup with inline styles, no CSS gradients -- same
 // reasoning as wrapEmailShell() in email-templates.ts: Outlook and other
 // clients don't reliably support either.
-function wrapPlatformEmailShell(innerHtml: string, unsubscribeUrl?: string): string {
+function wrapPlatformEmailShell(
+  innerHtml: string,
+  locale: AccountLocale,
+  unsubscribeUrl?: string
+): string {
+  const footerBrandLine =
+    locale === "en" ? "WeWebinars — evergreen webinar platform" : "WeWebinars — plataforma de webinars evergreen";
+  const unsubscribeLabel = locale === "en" ? "Unsubscribe from the monthly digest" : "Darse de baja del resumen mensual";
   const unsubscribeLine = unsubscribeUrl
-    ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">Darse de baja del resumen mensual</a>`
+    ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">${unsubscribeLabel}</a>`
     : "";
   return `<!doctype html>
 <html>
@@ -34,7 +50,7 @@ function wrapPlatformEmailShell(innerHtml: string, unsubscribeUrl?: string): str
 ${innerHtml}
 </td></tr>
 <tr><td style="background:#ffffff;border-radius:0 0 12px 12px;padding:0 32px 32px;text-align:center;font-size:12px;color:#a1a1aa;font-family:${FONT_STACK};">
-  WeWebinars — plataforma de webinars evergreen${unsubscribeLine}
+  ${footerBrandLine}${unsubscribeLine}
 </td></tr>
 </table>
 </td></tr>
@@ -45,35 +61,72 @@ ${innerHtml}
 
 export function trialExpiringEmail(
   accountName: string,
-  daysLeft: number
+  daysLeft: number,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const dayWord = daysLeft === 1 ? "day" : "days";
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Trial period</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your trial ends in ${daysLeft} ${dayWord}</h1>
+<p style="margin:0 0 20px;">The account <strong style="color:#18181b;">${safeName}</strong> on WeWebinars is still on its trial period. To keep using it without interruption, write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> to activate it.</p>`;
+    return {
+      subject: `Your WeWebinars trial ends in ${daysLeft} ${dayWord}`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const dayWord = daysLeft === 1 ? "día" : "días";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Período de prueba</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu prueba vence en ${daysLeft} ${dayWord}</h1>
 <p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> en WeWebinars todavía está en período de prueba. Para seguir usándola sin interrupciones, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
   return {
     subject: `Tu prueba en WeWebinars vence en ${daysLeft} ${dayWord}`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
-export function accountSuspendedEmail(accountName: string): { subject: string; html: string } {
+export function accountSuspendedEmail(
+  accountName: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Account suspended</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your trial period ended</h1>
+<p style="margin:0 0 20px;">The account <strong style="color:#18181b;">${safeName}</strong> was suspended because the 7-day trial period ended without being activated. Write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> to activate it.</p>`;
+    return {
+      subject: "Your WeWebinars account was suspended",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta suspendida</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu período de prueba terminó</h1>
 <p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> quedó suspendida porque el período de prueba de 7 días terminó sin activarse. Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
   return {
     subject: "Tu cuenta en WeWebinars fue suspendida",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
 export function accountDeletionWarningEmail(
   accountName: string,
-  daysLeft: number
+  daysLeft: number,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const dayWord = daysLeft === 1 ? "day" : "days";
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Account canceled</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your data gets deleted in ${daysLeft} ${dayWord}</h1>
+<p style="margin:0 0 20px;">The account <strong style="color:#18181b;">${safeName}</strong> on WeWebinars is still canceled. If you don't reactivate a plan before then, your webinars, registrants, and settings get permanently deleted -- reactivate anytime to keep everything exactly as it is.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Reactivate my account</a>
+</td></tr></table>`;
+    return {
+      subject: `Your WeWebinars account gets deleted in ${daysLeft} ${dayWord}`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const dayWord = daysLeft === 1 ? "día" : "días";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta cancelada</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tus datos se eliminan en ${daysLeft} ${dayWord}</h1>
@@ -83,15 +136,30 @@ export function accountDeletionWarningEmail(
 </td></tr></table>`;
   return {
     subject: `Tu cuenta en WeWebinars se elimina en ${daysLeft} ${dayWord}`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
 export function welcomeEmail(
   accountName: string,
-  ownerName: string | null
+  ownerName: string | null,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const greeting = ownerName ? `Hi ${escapeHtml(ownerName)},` : "Hi,";
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Welcome</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your WeWebinars account is ready</h1>
+<p style="margin:0 0 16px;">${greeting} we created <strong style="color:#18181b;">${safeName}</strong> with a 7-day trial period so you can try it without rushing.</p>
+<p style="margin:0 0 20px;">Head to your dashboard to create your first evergreen webinar. Any questions, write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Go to my dashboard</a>
+</td></tr></table>`;
+    return {
+      subject: "Welcome to WeWebinars",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const greeting = ownerName ? `Hola ${escapeHtml(ownerName)},` : "Hola,";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Bienvenido</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu cuenta en WeWebinars está lista</h1>
@@ -102,23 +170,50 @@ export function welcomeEmail(
 </td></tr></table>`;
   return {
     subject: "Bienvenido a WeWebinars",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
-export function accountActivatedEmail(accountName: string): { subject: string; html: string } {
+export function accountActivatedEmail(
+  accountName: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Account activated</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeName} is now active</h1>
+<p style="margin:0 0 20px;">Your WeWebinars account was activated. You can now publish and run your webinars with no trial limits. Any questions, write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
+    return {
+      subject: "Your WeWebinars account was activated",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta activada</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeName} ya está activa</h1>
 <p style="margin:0 0 20px;">Tu cuenta en WeWebinars quedó activada. Ya puedes publicar y correr tus webinars sin límite de prueba. Cualquier duda, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
   return {
     subject: "Tu cuenta en WeWebinars fue activada",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
-export function paymentFailedEmail(accountName: string): { subject: string; html: string } {
+export function paymentFailedEmail(
+  accountName: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Payment declined</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">We couldn't charge your subscription</h1>
+<p style="margin:0 0 20px;">The last charge attempt for the account <strong style="color:#18181b;">${safeName}</strong> failed. Update your payment method to avoid the account getting suspended. If you need help, write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Update payment method</a>
+</td></tr></table>`;
+    return {
+      subject: "Action required: your WeWebinars payment was declined",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Pago rechazado</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">No pudimos cobrar tu suscripción</h1>
 <p style="margin:0 0 20px;">El último intento de cobro de la cuenta <strong style="color:#18181b;">${safeName}</strong> falló. Actualiza tu método de pago para evitar que la cuenta quede suspendida. Si necesitas ayuda, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>
@@ -127,16 +222,30 @@ export function paymentFailedEmail(accountName: string): { subject: string; html
 </td></tr></table>`;
   return {
     subject: "Acción requerida: tu pago en WeWebinars fue rechazado",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
 export function webinarPublishedEmail(
   webinarTitle: string,
-  registrationLink: string
+  registrationLink: string,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeTitle = escapeHtml(webinarTitle);
   const safeLink = escapeHtml(registrationLink);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Webinar published</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeTitle} is now live</h1>
+<p style="margin:0 0 20px;">Your webinar was published and is ready to take registrations. Share this link with your audience:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;"><tr><td style="background:#f4f4f5;border-radius:8px;padding:12px 14px;font-size:13px;word-break:break-all;color:${BRAND};">${safeLink}</td></tr></table>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${registrationLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">View registration page</a>
+</td></tr></table>`;
+    return {
+      subject: `Your webinar "${webinarTitle}" is now published`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Webinar publicado</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeTitle} ya está en vivo</h1>
 <p style="margin:0 0 20px;">Tu webinar quedó publicado y listo para recibir registros. Comparte este link con tu audiencia:</p>
@@ -146,16 +255,29 @@ export function webinarPublishedEmail(
 </td></tr></table>`;
   return {
     subject: `Tu webinar "${webinarTitle}" ya está publicado`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
 export function domainVerificationFailedEmail(
   accountName: string,
-  hostname: string
+  hostname: string,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
   const safeHostname = escapeHtml(hostname);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Custom domain</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeHostname} stopped verifying</h1>
+<p style="margin:0 0 20px;">The custom domain for <strong style="color:#18181b;">${safeName}</strong> was active, but stopped resolving correctly -- a DNS record may have been changed or removed. In the meantime, your webinars are still available at your WeWebinars link. Check your settings and re-verify the domain to restore it.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/domain" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Check my domain</a>
+</td></tr></table>`;
+    return {
+      subject: `Action required: your domain ${hostname} stopped verifying`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Dominio propio</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeHostname} dejó de verificarse</h1>
 <p style="margin:0 0 20px;">El dominio propio de <strong style="color:#18181b;">${safeName}</strong> estaba activo, pero dejó de resolver correctamente -- puede que se haya modificado o eliminado un registro DNS. Mientras tanto, tus webinars siguen disponibles en tu link de WeWebinars. Revisa la configuración y volvé a verificar el dominio para restablecerlo.</p>
@@ -164,7 +286,7 @@ export function domainVerificationFailedEmail(
 </td></tr></table>`;
   return {
     subject: `Acción requerida: tu dominio ${hostname} dejó de verificarse`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
@@ -172,9 +294,24 @@ export function teamInviteEmail(
   accountName: string,
   inviterName: string | null,
   role: "editor" | "viewer",
-  signupLink: string
+  signupLink: string,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeAccount = escapeHtml(accountName);
+  if (locale === "en") {
+    const inviter = inviterName ? escapeHtml(inviterName) : "A team member";
+    const roleLabel = role === "editor" ? "Editor" : "Viewer";
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Team invitation</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${inviter} invited you to ${safeAccount}</h1>
+<p style="margin:0 0 20px;">You were invited to join <strong style="color:#18181b;">${safeAccount}</strong> on WeWebinars, with <strong style="color:#18181b;">${roleLabel}</strong> permissions. Create your account with this same email to accept -- the invitation expires in 7 days.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${signupLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Accept invitation</a>
+</td></tr></table>`;
+    return {
+      subject: `${inviter} invited you to ${accountName} on WeWebinars`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inviter = inviterName ? escapeHtml(inviterName) : "Un miembro del equipo";
   const roleLabel = role === "editor" ? "Editor" : "Solo lectura";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Invitación de equipo</p>
@@ -185,12 +322,27 @@ export function teamInviteEmail(
 </td></tr></table>`;
   return {
     subject: `${inviter} te invitó a ${accountName} en WeWebinars`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
-export function activationNudgeEmail(accountName: string): { subject: string; html: string } {
+export function activationNudgeEmail(
+  accountName: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Need a hand?</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">You haven't published your first webinar yet</h1>
+<p style="margin:0 0 20px;">We noticed <strong style="color:#18181b;">${safeName}</strong> hasn't published a webinar yet. If you got stuck on any step (video, scheduling, waiting room) write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> and we'll help you set it up.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/webinars/new" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Create my first webinar</a>
+</td></tr></table>`;
+    return {
+      subject: "Want help setting up your first webinar?",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">¿Necesitas una mano?</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Todavía no publicaste tu primer webinar</h1>
 <p style="margin:0 0 20px;">Notamos que <strong style="color:#18181b;">${safeName}</strong> todavía no publicó ningún webinar. Si te trabaste con algún paso (video, programación, sala de espera) escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> y te ayudamos a armarlo.</p>
@@ -199,17 +351,30 @@ export function activationNudgeEmail(accountName: string): { subject: string; ht
 </td></tr></table>`;
   return {
     subject: "¿Te ayudamos a armar tu primer webinar?",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
 export function launchpadReminderEmail(
   accountName: string,
   nextStepLabel: string,
-  percentComplete: number
+  percentComplete: number,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
   const safeStepLabel = escapeHtml(nextStepLabel);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Your Launchpad is waiting</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">You're ${percentComplete}% of the way to your first evergreen webinar</h1>
+<p style="margin:0 0 20px;">We noticed <strong style="color:#18181b;">${safeName}</strong> started the Launchpad but hasn't come back. The next step is <strong style="color:#18181b;">${safeStepLabel}</strong> -- pick up right where you left off, your progress is saved.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/launchpad" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Continue my Launchpad</a>
+</td></tr></table>`;
+    return {
+      subject: "You haven't lost your Launchpad progress",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Tu Launchpad te espera</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Vas ${percentComplete}% del camino a tu primer webinar evergreen</h1>
 <p style="margin:0 0 20px;">Notamos que <strong style="color:#18181b;">${safeName}</strong> empezó el Launchpad pero no volvió a entrar. El siguiente paso es <strong style="color:#18181b;">${safeStepLabel}</strong> -- retoma justo donde quedaste, tu progreso está guardado.</p>
@@ -218,12 +383,28 @@ export function launchpadReminderEmail(
 </td></tr></table>`;
   return {
     subject: "No perdiste tu progreso en el Launchpad",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
-export function starterKitAccessEmail(magicLink: string): { subject: string; html: string } {
+export function starterKitAccessEmail(
+  magicLink: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
   const safeLink = escapeHtml(magicLink);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Evergreen Webinar Starter Kit</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your kit is ready in your Launchpad</h1>
+<p style="margin:0 0 20px;">Sign in with this link to access your WeWebinars account and start the Launchpad: the step-by-step guide to building your first evergreen webinar. The link is single-use and expires soon, so use it now.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${magicLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Go to my Launchpad</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">If the button doesn't work, copy and paste this link into your browser:<br /><a href="${magicLink}" style="color:${BRAND};word-break:break-all;">${safeLink}</a></p>`;
+    return {
+      subject: "Your Evergreen Webinar Starter Kit is ready",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Evergreen Webinar Starter Kit</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu kit ya está listo en tu Launchpad</h1>
 <p style="margin:0 0 20px;">Entra con este link para acceder a tu cuenta de WeWebinars y empezar el Launchpad: la guía paso a paso para armar tu primer webinar evergreen. El link es de un solo uso y vence pronto, así que úsalo ahora.</p>
@@ -233,10 +414,11 @@ export function starterKitAccessEmail(magicLink: string): { subject: string; htm
 <p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Si el botón no funciona, copia y pega este link en tu navegador:<br /><a href="${magicLink}" style="color:${BRAND};word-break:break-all;">${safeLink}</a></p>`;
   return {
     subject: "Tu Evergreen Webinar Starter Kit ya está listo",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
+// Internal ops-inbox alert, always Spanish -- see the module comment above.
 export function newEnterpriseLeadEmail(lead: {
   name: string;
   email: string;
@@ -259,7 +441,7 @@ ${messageBlock}
 </td></tr></table>`;
   return {
     subject: `Nuevo lead Enterprise: ${lead.name}`,
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, "es"),
   };
 }
 
@@ -270,7 +452,8 @@ ${messageBlock}
 // used to just log to console and vanish: the buyer sees "check your email"
 // on /starter-kit and never gets anything, with zero record anywhere that
 // it happened. This turns that into an actionable alert instead of a
-// server log line nobody's watching.
+// server log line nobody's watching. Internal ops-inbox alert, always
+// Spanish -- see the module comment above.
 export function starterKitClaimFailedEmail(details: {
   reason: string;
   membershipId: string;
@@ -289,7 +472,7 @@ export function starterKitClaimFailedEmail(details: {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px;">${rows.join("")}</table>`;
   return {
     subject: "Starter Kit: un claim de Whop no se pudo provisionar",
-    html: wrapPlatformEmailShell(inner),
+    html: wrapPlatformEmailShell(inner, "es"),
   };
 }
 
@@ -310,10 +493,36 @@ export function monthlyDigestEmail(
     topWebinarTitle: string | null;
     topWebinarRegistrants: number;
   },
-  unsubscribeUrl: string
+  unsubscribeUrl: string,
+  locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
   const safePeriod = escapeHtml(periodLabel);
+  if (locale === "en") {
+    const rows = [
+      statRow("New registrants", String(stats.registrantCount)),
+      statRow("Attendees", String(stats.attendeeCount)),
+      statRow("Average retention", `${Math.round(stats.avgWatchPct)}%`),
+    ];
+    if (stats.topWebinarTitle) {
+      rows.push(
+        statRow(
+          "Top webinar by registrants",
+          `${escapeHtml(stats.topWebinarTitle)} (${stats.topWebinarRegistrants})`
+        )
+      );
+    }
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Monthly digest</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">${safeName} in ${safePeriod}</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">${rows.join("")}</table>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">View full dashboard</a>
+</td></tr></table>`;
+    return {
+      subject: `Your ${safePeriod} summary on WeWebinars`,
+      html: wrapPlatformEmailShell(inner, locale, unsubscribeUrl),
+    };
+  }
   const rows = [
     statRow("Nuevos registrados", String(stats.registrantCount)),
     statRow("Asistentes", String(stats.attendeeCount)),
@@ -335,6 +544,6 @@ export function monthlyDigestEmail(
 </td></tr></table>`;
   return {
     subject: `Tu resumen de ${safePeriod} en WeWebinars`,
-    html: wrapPlatformEmailShell(inner, unsubscribeUrl),
+    html: wrapPlatformEmailShell(inner, locale, unsubscribeUrl),
   };
 }
