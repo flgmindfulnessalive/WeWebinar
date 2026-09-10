@@ -15,11 +15,14 @@ type BenefitsCopy = {
 
 const ITEMS = [
   { icon: "brain", titleKey: "item1Title", bodyKey: "item1Body" },
-  // "target-v3" (not "target"/"target-v2"): renamed each time the file
-  // content changed so the URL changes too -- browsers/CDN cache these
-  // public/ assets by path, and a same-path replacement kept serving the
-  // stale artwork after deploy.
-  { icon: "target-v3", titleKey: "item2Title", bodyKey: "item2Body" },
+  // "target-v4": renamed each time the file content changed so the URL
+  // changes too -- browsers/CDN cache these public/ assets by path, and a
+  // same-path replacement kept serving stale artwork after deploy. v4 fixes
+  // the two dark rings' bottom arcs, which the source reference photo (a
+  // JPEG screenshot) had flattened at the very bottom -- reconstructed as
+  // true circles from the rings' own unaffected top/left/right arcs, with
+  // the already-correct gold ring and arrow left untouched.
+  { icon: "target-v4", titleKey: "item2Title", bodyKey: "item2Body" },
   { icon: "chart-up", titleKey: "item3Title", bodyKey: "item3Body" },
   { icon: "mountain", titleKey: "item4Title", bodyKey: "item4Body" },
 ] as const;
