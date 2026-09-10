@@ -67,7 +67,6 @@ const CONVERT_PLANS: PlanIdMap = {
 // checkout *we* create, so the resulting membership carries no
 // metadata.account_id -- see the webhook route for how a buyer is resolved
 // and provisioned from it instead.
-export const STARTER_KIT_WHOP_ACCOUNT_ID = "biz_FcdBjm0QL8efoE";
 export const STARTER_KIT_PRODUCT_ID = "prod_eLNUbVQzbycKU";
 
 export function planKeyForWhopPlanId(planId: string): SelfServePlanKey | undefined {
@@ -181,30 +180,11 @@ export async function cancelSelfServeMembership(membershipId: string): Promise<b
   }
 }
 
-// Registers the buyer as a Whop lead for the Starter Kit product and reads
-// back their email off the response -- the only place a webhook-driven
-// membership's buyer email is available at all. Membership/Member/User
-// (summary) never carry one (see the module comment above
-// resolveAccountId in the webhook route); leads.create()'s response does,
-// gated behind the member:email:read permission on this Whop app
-// (Developer Dashboard -> app -> Permissions). Returns null email when
-// that permission isn't enabled, rather than throwing, so the caller can
-// log a clear diagnostic instead of a generic API error.
-export async function createStarterKitLead(
-  whopUserId: string
-): Promise<{ email: string; name: string | null } | null> {
-  if (!whopConfigured()) return null;
-  try {
-    const lead = await whopClient().leads.create({
-      account_id: STARTER_KIT_WHOP_ACCOUNT_ID,
-      product_id: STARTER_KIT_PRODUCT_ID,
-      user_id: whopUserId,
-      referrer: "whop-marketplace-evergreen-starter-kit",
-    });
-    if (!lead.user.email) return null;
-    return { email: lead.user.email, name: lead.user.name };
-  } catch (err) {
-    console.error("[whop] createStarterKitLead failed:", err);
-    return null;
-  }
-}
+// Previously registered the buyer as a Whop lead (leads.create()) to read
+// their email off the response, gated behind the member:email:read
+// permission on this Whop app -- dropped after a real claim showed that
+// permission isn't actually granted (Whop returns a null email), and that
+// the membership.activated webhook payload itself already carries
+// data.user.email directly. See claimStarterKitFromWhop, which now reads
+// the email straight from the webhook instead of making this extra,
+// permission-gated API call.

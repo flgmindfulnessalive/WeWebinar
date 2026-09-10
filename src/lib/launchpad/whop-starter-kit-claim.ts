@@ -1,6 +1,5 @@
 import "server-only";
 
-import { createStarterKitLead } from "@/lib/whop";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/slug";
 import { sendEmail } from "@/lib/resend";
@@ -37,43 +36,41 @@ async function notifyOpsOfClaimFailure(details: {
 // Claiming the free Evergreen Webinar Starter Kit on Whop's marketplace has
 // no signup form -- Whop redirects the buyer straight to /starter-kit with
 // a membership already created on its side. This provisions WeWebinars
-// access from that webhook alone: resolve the buyer's email as a Whop
-// lead, reuse their account if one already exists for that email (never
+// access from that webhook alone, using the buyer's email straight off the
+// membership.activated payload (data.user.email -- see the webhook route):
+// reuse their account if one already exists for that email (never
 // duplicate), otherwise create the auth user + trial account + Launchpad
 // project, then email a magic link straight into /dashboard/launchpad.
+//
+// Previously resolved the email via a separate leads.create() Whop API
+// call, gated behind the member:email:read permission -- dropped after a
+// real claim showed that permission isn't actually granted for this app
+// (Whop returned a null email every time) and, more simply, the webhook
+// payload already carries the email directly, no extra API call needed.
 export async function claimStarterKitFromWhop({
   membershipId,
   whopUserId,
+  email: rawEmail,
+  name,
 }: {
   membershipId: string;
   whopUserId: string | null;
+  email: string | null;
+  name: string | null;
 }): Promise<void> {
-  if (!whopUserId) {
-    console.error(`[whop starter-kit] membership ${membershipId} has no user_id -- cannot resolve a lead`);
-    await notifyOpsOfClaimFailure({
-      reason: "La membership no trae user_id -- no se puede resolver ningún lead.",
-      membershipId,
-      whopUserId: null,
-      email: null,
-    });
-    return;
-  }
-
-  const lead = await createStarterKitLead(whopUserId);
-  if (!lead) {
+  if (!rawEmail) {
     console.error(
-      `[whop starter-kit] could not resolve an email for Whop user ${whopUserId} (membership ${membershipId}) -- is member:email:read enabled on the Whop app?`
+      `[whop starter-kit] membership ${membershipId} (user ${whopUserId ?? "?"}) has no email on the webhook payload`
     );
     await notifyOpsOfClaimFailure({
-      reason:
-        "No se pudo resolver el email del comprador en Whop -- revisá si el permiso member:email:read está habilitado en el Whop Developer Dashboard para esta app.",
+      reason: "El payload del webhook no trae email del comprador (data.user.email vino null/undefined).",
       membershipId,
       whopUserId,
       email: null,
     });
     return;
   }
-  const email = lead.email.trim().toLowerCase();
+  const email = rawEmail.trim().toLowerCase();
   const admin = createAdminClient();
 
   // generateLink creates the auth user when one doesn't exist yet (see
@@ -131,7 +128,7 @@ export async function claimStarterKitFromWhop({
       return;
     }
 
-    const accountName = lead.name?.trim() || email.split("@")[0];
+    const accountName = name?.trim() || email.split("@")[0];
     const baseSlug = slugify(accountName) || "cuenta";
     let slug = baseSlug;
     let created: { id: string } | null = null;
