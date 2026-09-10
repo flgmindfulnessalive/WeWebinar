@@ -72,6 +72,23 @@
   --em-ink: #1a1c24;
 }
 
+/* Starter Kit VSL (/whop/evergreen-starter-kit), same "own brand under
+   (book)" pattern as .execution-mindset-theme -- but this one IS a
+   WeWebinars product (not a separate imprint), so it keeps the site's own
+   indigo/fuchsia brand pair instead of inventing a new accent. Fixed dark
+   background always, deliberately not tied to light/dark mode: a
+   direct-response landing page reads as one flat, unchanging surface, the
+   same on every viewer, the way the printed page it's modeled on would. */
+.starter-kit-vsl-theme {
+  --skv-bg: #08080f;
+  --skv-bg-deep: #050509;
+  --skv-surface: #100f1d;
+  --skv-ink: #f5f4fb;
+  --skv-ink-muted: rgba(245, 244, 251, 0.65);
+  --skv-brand: #6c4cff;
+  --skv-brand-2: #ff4ecd;
+}
+
 @keyframes marketing-blob {
   0%,
   100% {
