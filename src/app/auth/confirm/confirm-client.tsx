@@ -71,9 +71,15 @@ export function AuthConfirmClient() {
   const [error, setError] = useState<
     { kind: "invalid" } | { kind: "expired" } | { kind: "connection" } | { kind: "raw"; message: string } | null
   >(null);
+  // One client for this page's whole lifecycle -- calling createClient()
+  // again in handleContinue() would spin up a second GoTrueClient sharing
+  // the same cookie storage, which Supabase's own docs warn can produce
+  // inconsistent auth-lock behavior between the two instances. Lazy
+  // useState initializer, not useRef, so this respects the rule that a
+  // ref's `.current` may not be read during render.
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
-    const supabase = createClient();
     let redirected = false;
 
     const goNext = () => {
@@ -108,12 +114,11 @@ export function AuthConfirmClient() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [code, tokenHash, otpType, next, router]);
+  }, [code, tokenHash, otpType, next, router, supabase]);
 
   async function handleContinue() {
     if (!isEmailOtpType(otpType) || !tokenHash) return;
     setStatus("verifying");
-    const supabase = createClient();
     const { error: verifyError } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: otpType,
