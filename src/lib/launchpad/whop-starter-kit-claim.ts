@@ -82,6 +82,30 @@ export async function claimStarterKitFromWhop({
   const email = rawEmail.trim().toLowerCase();
   const admin = createAdminClient();
 
+  // Claim this membership_id BEFORE doing anything else -- Whop retries a
+  // webhook delivery it considers too slow to ack, which used to race a
+  // still in-flight first run straight into a second generateLink() call
+  // below for the same email. generateLink's one-time-token store keeps a
+  // single active token per user, so that second call silently invalidated
+  // the first run's token before its email was ever opened: the buyer's
+  // first "Starter Kit ready" email died with "already used or expired" on
+  // the very first real click, even though nothing was actually reused.
+  // Same insert-as-claim pattern as email_sends' dedup insert in the
+  // reminders cron -- the unique constraint on membership_id is the atomic
+  // gate, so a redelivered webhook for the same membership always loses
+  // this race and returns immediately instead of ever reaching
+  // generateLink.
+  const { error: claimError } = await admin
+    .from("whop_starter_kit_webhook_claims")
+    .insert({ membership_id: membershipId });
+  if (claimError) {
+    if (claimError.code === "23505") return;
+    console.error(`[whop starter-kit] claim insert failed for membership ${membershipId}:`, claimError.message);
+    // Best-effort dedup: a failure here (not a duplicate -- some other
+    // write error) must never block a real claim from being provisioned,
+    // so fall through and keep going rather than returning.
+  }
+
   // generateLink creates the auth user when one doesn't exist yet (see
   // GoTrueAdminApi.generateLink's own doc comment) and, either way, hands
   // back the token this buyer's access email needs -- one call answers
