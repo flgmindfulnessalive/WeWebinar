@@ -11,19 +11,22 @@ import type { Database, SubscriptionStatus } from "@/lib/supabase/database.types
 
 // Whop's generated WebhookEvent enum (@whop/sdk/api/types/WebhookEvent) --
 // current event names as of @whop/sdk 1.1.2. unwrapWebhook does NOT
-// validate the payload against a typed model (see its own doc comment:
-// Fern generates no webhook event models), so this shape is asserted, not
-// checked. Verify against a real test delivery (Whop dashboard -> your
-// webhook -> "Send test event") before relying on this in production --
-// docs.whop.com was not reachable from this sandbox to cross-check.
+// validate the payload against a typed model (Fern generates no webhook
+// event models), so this shape is asserted, not checked by the SDK --
+// but it IS now verified against a real membership.activated delivery
+// (2026-09-10): plan/product/user come back as nested objects
+// ({ id, ... }), not the flat *_id fields an earlier version of this type
+// assumed. That mismatch silently routed every Starter Kit claim into
+// syncMembership() instead of claimStarterKitFromWhop() -- see the git
+// history on this file for the incident.
 type WhopWebhookPayload = {
   type: string;
   data: {
     id: string; // membership id, prefixed "mem_"
-    plan_id: string;
-    product_id: string;
-    user_id: string | null;
     status: string;
+    user: { id: string; email: string | null } | null;
+    plan: { id: string } | null;
+    product: { id: string } | null;
     metadata: Record<string, unknown>;
   };
 };
@@ -87,20 +90,14 @@ async function syncMembership(payload: WhopWebhookPayload) {
   const admin = createAdminClient();
   const accountId = resolveAccountId(payload);
   if (!accountId) {
-    // product_id included on purpose: this same "no metadata.account_id"
-    // shape is also what a *free* marketplace claim looks like (see
-    // STARTER_KIT_PRODUCT_ID above) -- if that id doesn't match what's
-    // hardcoded there, the event falls through to here instead of
-    // claimStarterKitFromWhop, and this log is the fastest way to see the
-    // real product_id Whop sent and fix the constant.
     console.error(
-      `[whop webhook] membership ${payload.data.id} (product ${payload.data.product_id}) has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl? If this is the free Starter Kit listing, STARTER_KIT_PRODUCT_ID in lib/whop.ts is stale.`
+      `[whop webhook] membership ${payload.data.id} (product ${payload.data.product?.id ?? "?"}) has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl?`
     );
     return;
   }
 
   const newStatus = mapWhopStatus(payload.data.status);
-  const planKey = planKeyForWhopPlanId(payload.data.plan_id);
+  const planKey = payload.data.plan ? planKeyForWhopPlanId(payload.data.plan.id) : undefined;
 
   const { data: before } = await admin
     .from("accounts")
@@ -114,7 +111,7 @@ async function syncMembership(payload: WhopWebhookPayload) {
   }
 
   const update: Database["public"]["Tables"]["accounts"]["Update"] = {
-    billing_customer_id: payload.data.user_id,
+    billing_customer_id: payload.data.user?.id ?? null,
     billing_subscription_id: payload.data.id,
     subscription_status: newStatus,
   };
@@ -207,16 +204,7 @@ export async function POST(request: Request): Promise<Response> {
   // vanishing silently after an immediate 200, since nothing else surfaces
   // a billing-sync failure otherwise.
   if (SYNCED_EVENTS.has(event.type)) {
-    // WhopWebhookPayload's shape was asserted, not verified against a real
-    // delivery (see the type's own comment above) -- data.product_id came
-    // back undefined against a real membership.activated event, so at
-    // least that field is wrong. Logging the untouched raw body here (not
-    // the re-serialized `event`, in case unwrapWebhook itself normalizes
-    // something) is the fastest way to see Whop's actual shape and fix the
-    // type in one pass instead of guessing field by field.
-    console.error(`[whop webhook] raw payload for ${event.type}:`, rawBody);
-
-    if (event.data.product_id === STARTER_KIT_PRODUCT_ID) {
+    if (event.data.product?.id === STARTER_KIT_PRODUCT_ID) {
       // Free marketplace listing, not a checkout we created -- no
       // metadata.account_id to sync against, so this never goes through
       // syncMembership. Provisioning only reacts to the membership
@@ -225,7 +213,7 @@ export async function POST(request: Request): Promise<Response> {
       if (event.type === "membership.activated") {
         await claimStarterKitFromWhop({
           membershipId: event.data.id,
-          whopUserId: event.data.user_id,
+          whopUserId: event.data.user?.id ?? null,
         });
       }
     } else {
