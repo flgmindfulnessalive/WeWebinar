@@ -1733,6 +1733,24 @@ export interface Database {
         Args: { p_account_id: string; p_webinar_id: string };
         Returns: void;
       };
+      get_growth_attribution_list: {
+        Args: { p_limit?: number };
+        Returns: {
+          account_id: string;
+          account_name: string;
+          account_slug: string;
+          subscription_status: SubscriptionStatus;
+          first_touch_source: string | null;
+          first_touch_medium: string | null;
+          first_touch_campaign: string | null;
+          first_touch_at: string | null;
+          last_touch_source: string | null;
+          last_touch_medium: string | null;
+          last_touch_campaign: string | null;
+          last_touch_at: string | null;
+          computed_at: string;
+        }[];
+      };
       record_viewer_event: {
         Args: {
           p_access_token: string;

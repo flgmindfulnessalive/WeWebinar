@@ -162,6 +162,13 @@ async function syncMembership(payload: WhopWebhookPayload) {
         accountId,
         userId: owner?.id ?? null,
       });
+
+      // Freezes growth_attributions' last-touch at the moment of first
+      // paid conversion (recompute_growth_attribution's own logic caps
+      // last-touch at the first subscription_started event) -- a service-
+      // role call, so this relies on recompute_growth_attribution's
+      // auth.uid() is null bypass.
+      await admin.rpc("recompute_growth_attribution", { p_account_id: accountId });
     } catch (err) {
       console.error(`[whop webhook] subscription_started tracking failed for account ${accountId}:`, err);
     }

@@ -65,7 +65,7 @@ export async function createAccount(
       // Rare race: two hosts pick the same name at the same moment. Retry
       // a few times with a numeric suffix before giving up.
       while (attempt < 5 && !resolved) {
-        const { error } = await supabase.rpc("create_account_with_owner", {
+        const { data: newAccount, error } = await supabase.rpc("create_account_with_owner", {
           p_name: name,
           p_slug: slug,
           p_plan_key: planKey,
@@ -108,6 +108,14 @@ export async function createAccount(
               eventName: "signup_completed",
               anonymousId,
             });
+
+            // Materializes growth_attributions for this account right after
+            // the anonymous->user merge above, so first/last touch is
+            // captured from the very first read instead of the row sitting
+            // empty until some other event happens to trigger a recompute.
+            if (newAccount) {
+              await supabase.rpc("recompute_growth_attribution", { p_account_id: newAccount.id });
+            }
           } catch (err) {
             console.error("[account] signup_completed tracking failed:", err);
           }
