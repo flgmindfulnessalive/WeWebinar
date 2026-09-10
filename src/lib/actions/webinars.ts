@@ -12,6 +12,7 @@ import { randomFakeViewerRange } from "@/lib/fake-viewers";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { webinarPublishedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
+import { recordGrowthEvent } from "@/lib/growth/record-event";
 import type { VideoProvider } from "@/lib/supabase/database.types";
 
 export type WebinarActionState = { error: string } | null;
@@ -68,6 +69,15 @@ export async function createWebinar(
     });
   } catch (err) {
     console.error("[webinars] Launchpad sync failed:", err);
+  }
+
+  // Best-effort, same reasoning as signup_completed in account.ts -- this is
+  // what lets the activation funnel eventually be sliced by acquisition
+  // channel instead of only the aggregate milestone timestamp.
+  try {
+    await recordGrowthEvent(supabase, { eventName: "webinar_created", webinarId: data.id });
+  } catch (err) {
+    console.error("[webinars] webinar_created tracking failed:", err);
   }
 
   // Straight into the edit wizard, not the (still-empty) Control Center --
@@ -285,6 +295,13 @@ export async function publishWebinar(webinarId: string): Promise<WebinarActionSt
       }
     } catch (err) {
       console.error("[webinars] webinar published email failed:", err);
+    }
+
+    // Best-effort, same reasoning as webinar_created above.
+    try {
+      await recordGrowthEvent(supabase, { eventName: "webinar_published", webinarId });
+    } catch (err) {
+      console.error("[webinars] webinar_published tracking failed:", err);
     }
   }
 
