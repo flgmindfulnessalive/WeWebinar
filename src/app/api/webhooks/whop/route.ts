@@ -212,6 +212,11 @@ export async function POST(request: Request): Promise<Response> {
       // actually going live; "deactivated" has nothing to unwind (free,
       // lifetime access, no billing behind it).
       if (event.type === "membership.activated") {
+        // TEMPORARY: capturing the real plan_id for the Starter Kit's free
+        // plan (needed to wire the embedded Whop checkout on the new VSL
+        // landing page -- not visible anywhere in the Whop dashboard UI the
+        // user could find). Remove this line once that value is in hand.
+        console.log(`[whop starter-kit] plan_id for this membership: ${event.data.plan?.id ?? "null"}`);
         await claimStarterKitFromWhop({
           membershipId: event.data.id,
           whopUserId: event.data.user?.id ?? null,
