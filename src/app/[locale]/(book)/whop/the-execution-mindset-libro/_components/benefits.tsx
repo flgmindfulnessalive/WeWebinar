@@ -15,10 +15,11 @@ type BenefitsCopy = {
 
 const ITEMS = [
   { icon: "brain", titleKey: "item1Title", bodyKey: "item1Body" },
-  // "target-v2" (not "target"): renamed on purpose so the URL changes --
-  // browsers/CDN had the old cropped artwork cached at the old path and
-  // kept serving it after the file content was replaced in place.
-  { icon: "target-v2", titleKey: "item2Title", bodyKey: "item2Body" },
+  // "target-v3" (not "target"/"target-v2"): renamed each time the file
+  // content changed so the URL changes too -- browsers/CDN cache these
+  // public/ assets by path, and a same-path replacement kept serving the
+  // stale artwork after deploy.
+  { icon: "target-v3", titleKey: "item2Title", bodyKey: "item2Body" },
   { icon: "chart-up", titleKey: "item3Title", bodyKey: "item3Body" },
   { icon: "mountain", titleKey: "item4Title", bodyKey: "item4Body" },
 ] as const;
