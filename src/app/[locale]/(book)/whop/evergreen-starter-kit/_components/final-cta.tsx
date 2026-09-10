@@ -1,6 +1,6 @@
-import { ArrowRight, CreditCard, Timer, Wallet } from "lucide-react";
+import { CreditCard, Timer, Wallet } from "lucide-react";
 
-import { WHOP_CHECKOUT_URL } from "./constants";
+import { CheckoutEmbed } from "./checkout-embed";
 
 type FinalCtaCopy = {
   title: string;
@@ -19,7 +19,7 @@ export function FinalCta({ t }: { t: FinalCtaCopy }) {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[var(--skv-bg)] py-24 sm:py-32">
+    <section id="checkout" className="relative overflow-hidden bg-[var(--skv-bg)] py-24 sm:py-32">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
@@ -35,16 +35,9 @@ export function FinalCta({ t }: { t: FinalCtaCopy }) {
         <h2 className="text-3xl font-extrabold text-balance text-white sm:text-4xl">{t.title}</h2>
         <p className="text-lg text-pretty text-white/60">{t.subtitle}</p>
 
-        <a
-          href={WHOP_CHECKOUT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-flex h-14 items-center justify-center gap-2 rounded-md px-10 text-lg font-semibold text-white shadow-lg shadow-black/40 transition-transform hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, var(--skv-brand), var(--skv-brand-2))" }}
-        >
-          {t.cta}
-          <ArrowRight className="size-5" />
-        </a>
+        <div className="mt-2 w-full">
+          <CheckoutEmbed buttonText={t.cta} />
+        </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           {trustItems.map(({ icon: Icon, label }) => (

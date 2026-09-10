@@ -1,7 +1,5 @@
 import { ArrowRight, Layers, Timer, Wallet } from "lucide-react";
 
-import { WHOP_CHECKOUT_URL } from "./constants";
-
 type HeroCopy = {
   eyebrow: string;
   titleStart: string;
@@ -56,9 +54,7 @@ export function Hero({ t }: { t: HeroCopy }) {
 
         <div className="mt-2 flex flex-col items-center gap-3">
           <a
-            href={WHOP_CHECKOUT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#checkout"
             className="inline-flex h-14 items-center justify-center gap-2 rounded-md px-10 text-lg font-semibold text-white shadow-lg shadow-black/40 transition-transform hover:scale-[1.02]"
             style={{ background: "linear-gradient(135deg, var(--skv-brand), var(--skv-brand-2))" }}
           >
