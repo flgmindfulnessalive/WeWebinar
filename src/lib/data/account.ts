@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -19,7 +20,13 @@ export type CurrentAccount = {
 // account/role they have, and the plan limits that gate the UI.
 // Returns null when the caller isn't authenticated or hasn't
 // completed onboarding yet — callers decide how to redirect.
-export async function getCurrentAccount(): Promise<CurrentAccount | null> {
+//
+// Wrapped in React's cache() because it's now also called from
+// i18n/request.ts (to fall back to the account's own locale when no
+// NEXT_LOCALE cookie is set yet) on top of every layout/page that already
+// calls it -- without this, a single dashboard request would repeat the
+// same auth.getUser() + users + accounts round trip two or three times.
+export const getCurrentAccount = cache(async (): Promise<CurrentAccount | null> => {
   try {
     const supabase = await createClient();
     const {
@@ -63,4 +70,4 @@ export async function getCurrentAccount(): Promise<CurrentAccount | null> {
     console.error("[account] getCurrentAccount failed:", err);
     return null;
   }
-}
+});
