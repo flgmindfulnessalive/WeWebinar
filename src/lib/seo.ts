@@ -11,7 +11,8 @@ type MarketingHref =
   | "/readiness"
   | "/script-builder"
   | "/starter-kit"
-  | "/whop/the-execution-mindset-libro";
+  | "/whop/the-execution-mindset-libro"
+  | "/whop/evergreen-starter-kit";
 
 // Self-referencing canonical + hreflang alternates for the marketing
 // routes that exist in both locales, so Google reads the es/en pages as

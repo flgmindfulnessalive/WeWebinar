@@ -2605,6 +2605,118 @@
       "subtitle": "Grábala una vez, configúrala y deja que trabaje por ti 24/7."
     }
   },
+  "StarterKitVsl": {
+    "meta": {
+      "title": "Free Evergreen Webinar Starter Kit — Stop Repeating Your Pitch",
+      "description": "The exact 5-step framework to turn a presentation you keep repeating into an evergreen webinar that sells 24/7. Free, no credit card."
+    },
+    "nav": {
+      "problem": "The Problem",
+      "method": "The Method",
+      "includes": "What's Inside",
+      "faq": "FAQ",
+      "cta": "Get It Free"
+    },
+    "hero": {
+      "eyebrow": "FREE — INSTANT ACCESS",
+      "titleStart": "Stop Giving The Same Presentation Over And Over.",
+      "titleHighlight": "Turn It Into A Webinar That Sells For You 24/7.",
+      "subtitle": "The exact 5-step framework to take one presentation you're tired of repeating and turn it into an evergreen webinar that books calls and closes sales — without you ever showing up live again.",
+      "cta": "Get My Free Starter Kit",
+      "ctaMicrocopy": "No credit card. Takes about 3 minutes to claim.",
+      "feature1": "5-step framework",
+      "feature2": "~50 minutes total",
+      "feature3": "100% free, no card"
+    },
+    "problem": {
+      "eyebrow": "THE TRUTH NOBODY TELLS YOU",
+      "titleStart": "If your presentation actually works...",
+      "titleHighlight": "it's already costing you a fortune.",
+      "body1": "You built something great. A pitch, a demo, a webinar — it converts. People say yes after they see it.",
+      "body2": "So what did you do? You started giving it again. And again. And again. Every single time someone new needs to see it, you have to be there — live, on camera, repeating the same slides, answering the same questions, closing the same way, for the hundredth time.",
+      "body3Start": "That's not a business.",
+      "body3Highlight": "That's a job you built for yourself, one presentation at a time.",
+      "quote1": "Every hour you spend",
+      "quote2": "re-presenting is an hour",
+      "quote3": "you're not scaling."
+    },
+    "method": {
+      "eyebrow": "THE EVERGREEN WEBINAR FRAMEWORK",
+      "title": "It's Not About \"Recording Your Webinar.\" It's This 5-Step Framework.",
+      "subtitle": "A recording isn't a system — it's just a video nobody asked for. Here's what actually turns a presentation into a selling machine.",
+      "step1Title": "Diagnosis",
+      "step1Body": "Get your Evergreen Readiness Score and a real action plan.",
+      "step2Title": "Architecture",
+      "step2Body": "Walk through the 18-slide Blueprint your webinar needs to convert.",
+      "step3Title": "Script",
+      "step3Body": "Generate your first script with AI, in minutes, not weeks.",
+      "step4Title": "Implementation",
+      "step4Body": "Turn that script into an actual working webinar.",
+      "step5Title": "Launch",
+      "step5Body": "Publish your first one, live and selling, inside WeWebinars."
+    },
+    "includes": {
+      "eyebrow": "WHAT YOU GET",
+      "title": "Here's Everything Inside The Starter Kit — Free Today",
+      "subtitle": "The 5-step framework above, plus two extra tools to make the case and prove it works — all free.",
+      "item1Label": "The Repetition Cost Calculator",
+      "item1Value": "$XX",
+      "item2Label": "Your Evergreen Readiness Score + Action Plan",
+      "item2Value": "$XX",
+      "item3Label": "The 18-Slide Webinar Blueprint",
+      "item3Value": "$XX",
+      "item4Label": "AI-generated first script",
+      "item4Value": "$XX",
+      "item5Label": "Step-by-step Implementation walkthrough",
+      "item5Value": "$XX",
+      "item6Label": "A full working demo evergreen webinar",
+      "item6Value": "$XX",
+      "item7Label": "Your first live evergreen webinar, published",
+      "item7Value": "$XX",
+      "totalLabel": "Total value",
+      "totalValue": "$XXX",
+      "todayLabel": "Today",
+      "todayValue": "FREE"
+    },
+    "trust": {
+      "title": "Built For People Who Are Done Trading Their Time For Their Pitch",
+      "item1Title": "Coaches & consultants",
+      "item1Body": "Tired of re-explaining the same offer on every call.",
+      "item2Title": "Course creators",
+      "item2Body": "Who want a launch that doesn't need them live.",
+      "item3Title": "Agencies",
+      "item3Body": "Pitching the same service to prospect after prospect.",
+      "item4Title": "Anyone with a working pitch",
+      "item4Body": "And no system to scale it yet."
+    },
+    "faq": {
+      "eyebrow": "QUESTIONS",
+      "title": "Frequently Asked Questions",
+      "q1": "Is this actually free?",
+      "a1": "Yes. No credit card, no trial that quietly starts charging you. Claim it and it's yours.",
+      "q2": "Do I need to be technical to do this?",
+      "a2": "No. If you can fill out a form and click \"Next,\" you can complete the whole kit.",
+      "q3": "How long does this actually take?",
+      "a3": "About 50 minutes end to end, spread across the kit — you don't have to do it all in one sitting.",
+      "q4": "I don't have a presentation yet. Can I still use this?",
+      "a4": "Yes — Step 3 (Architecture) walks you through building one from scratch using the 18-slide Blueprint.",
+      "q5": "What's the catch?",
+      "a5": "No catch. This is the same Launchpad every WeWebinars customer gets — we're giving it away free because most people who try it upgrade once they see what an evergreen webinar can do for them."
+    },
+    "finalCta": {
+      "title": "Your Presentation Already Works. Stop Giving It Away One Live Call At A Time.",
+      "subtitle": "Claim the free Starter Kit and have your first evergreen webinar live in the next 50 minutes.",
+      "cta": "Get My Free Starter Kit",
+      "trust1": "100% Free",
+      "trust2": "No Credit Card",
+      "trust3": "~50 Minutes"
+    },
+    "footer": {
+      "tagline": "The free Evergreen Webinar Starter Kit is a product of WeWebinars.",
+      "poweredBy": "Powered by",
+      "rights": "© {year} WeWebinars. All rights reserved."
+    }
+  },
   "ExecutionMindset": {
     "meta": {
       "title": "The Execution Mindset — Libro + Workbook | Francesco Lulli",
