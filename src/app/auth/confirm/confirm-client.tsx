@@ -58,7 +58,7 @@ export function AuthConfirmClient() {
   // storing the translated string itself, so this effect never needs `t`
   // (from useTranslations, not stable across renders) in its dep array.
   const [error, setError] = useState<
-    { kind: "invalid" } | { kind: "expired" } | { kind: "raw"; message: string } | null
+    { kind: "invalid" } | { kind: "expired" } | { kind: "connection" } | { kind: "raw"; message: string } | null
   >(null);
 
   useEffect(() => {
@@ -97,10 +97,19 @@ export function AuthConfirmClient() {
       verify.then(({ error: verifyError }) => {
         if (redirected) return;
         if (verifyError) {
+          // AuthRetryableFetchError: the browser's fetch() to Supabase's auth
+          // endpoint itself failed (network blip, DNS, ad-blocker) rather than
+          // Supabase rejecting the token -- the SDK's own message for this is
+          // just the raw browser error ("Failed to fetch"), which read as a
+          // dead end rather than "try again". Same connection-failure class
+          // AuthActions.connectionError already covers for the server-action
+          // side of auth (see lib/actions/auth.ts).
           setError(
             verifyError.code === "bad_code_verifier" || verifyError.code === "otp_expired"
               ? { kind: "expired" }
-              : { kind: "raw", message: verifyError.message }
+              : verifyError.name === "AuthRetryableFetchError"
+                ? { kind: "connection" }
+                : { kind: "raw", message: verifyError.message }
           );
           return;
         }
@@ -119,15 +128,23 @@ export function AuthConfirmClient() {
       message = t("invalidLink");
     } else if (error.kind === "expired") {
       message = t("usedOrExpired");
+    } else if (error.kind === "connection") {
+      message = t("connectionError");
     } else {
       message = error.message;
     }
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-sm text-destructive">{message}</p>
-        <Button asChild variant="outline">
-          <Link href="/login">{t("backToLogin")}</Link>
-        </Button>
+        {error.kind === "connection" ? (
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            {t("tryAgain")}
+          </Button>
+        ) : (
+          <Button asChild variant="outline">
+            <Link href="/login">{t("backToLogin")}</Link>
+          </Button>
+        )}
       </div>
     );
   }
