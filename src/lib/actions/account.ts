@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -11,6 +12,8 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { welcomeEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { isBillingPeriod, isSelfServePlanKey } from "@/lib/whop";
+import { GROWTH_ANONYMOUS_ID_COOKIE } from "@/lib/growth/anonymous-id";
+import { recordGrowthEvent } from "@/lib/growth/record-event";
 
 export type CreateAccountState = { error: string } | null;
 
@@ -92,6 +95,21 @@ export async function createAccount(
             await sendEmail({ to: user.email!, subject, html });
           } catch (err) {
             console.error("[account] welcome email failed:", err);
+          }
+
+          // Best-effort, same reasoning as the welcome email above: this is
+          // the moment growth_identities' anonymous->user merge actually
+          // happens (see record_growth_event's SECURITY DEFINER body) --
+          // a failure here must never block account creation, just lose
+          // that one merge/event.
+          try {
+            const anonymousId = (await cookies()).get(GROWTH_ANONYMOUS_ID_COOKIE)?.value ?? null;
+            await recordGrowthEvent(supabase, {
+              eventName: "signup_completed",
+              anonymousId,
+            });
+          } catch (err) {
+            console.error("[account] signup_completed tracking failed:", err);
           }
 
           // The account itself is always created on the Starter trial

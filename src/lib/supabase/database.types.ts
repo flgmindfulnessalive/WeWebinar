@@ -75,6 +75,82 @@ export type PartnerMessageStatus = "draft" | "copied" | "marked_sent";
 export type PartnerCampaignStatus = "active" | "paused" | "completed";
 export type PartnerTaskStatus = "open" | "done" | "cancelled";
 
+export type GrowthEventName =
+  | "page_viewed"
+  | "lead_magnet_started"
+  | "lead_magnet_completed"
+  | "email_captured"
+  | "signup_started"
+  | "signup_completed"
+  | "webinar_created"
+  | "video_uploaded"
+  | "webinar_published"
+  | "first_attendee"
+  | "trial_started"
+  | "subscription_started"
+  | "subscription_upgraded"
+  | "subscription_renewed"
+  | "subscription_cancelled"
+  | "partner_link_clicked"
+  | "referral_signup"
+  | "cta_clicked";
+
+// Named directly rather than drilled through Database["public"]["Tables"]
+// like most Row types in this file: with 50+ tables already declared,
+// self-referencing that deep an index type from within the same
+// interface (Tables entries referencing their own Row, Functions
+// referencing these Rows as Returns) stopped resolving correctly for
+// these three -- tsc reported them as missing from Database["public"]
+// ["Tables"] entirely even though they're declared right there. Standalone
+// aliases sidestep it and read just as clearly.
+export type GrowthIdentityRow = {
+  id: string;
+  email: string | null;
+  merged_into_user_id: string | null;
+  merged_at: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  created_at: string;
+};
+export type GrowthEventRow = {
+  id: string;
+  event_name: GrowthEventName;
+  anonymous_id: string | null;
+  user_id: string | null;
+  account_id: string | null;
+  session_id: string | null;
+  occurred_at: string;
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  content: string | null;
+  term: string | null;
+  referral_code: string | null;
+  partner_id: string | null;
+  experiment_id: string | null;
+  variant_id: string | null;
+  webinar_id: string | null;
+  lead_magnet_id: string | null;
+  metadata: Json;
+  created_at: string;
+};
+export type GrowthAttributionRow = {
+  account_id: string;
+  first_touch_source: string | null;
+  first_touch_medium: string | null;
+  first_touch_campaign: string | null;
+  first_touch_content: string | null;
+  first_touch_at: string | null;
+  last_touch_source: string | null;
+  last_touch_medium: string | null;
+  last_touch_campaign: string | null;
+  last_touch_content: string | null;
+  last_touch_at: string | null;
+  partner_id: string | null;
+  lead_magnet_id: string | null;
+  computed_at: string;
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -1526,6 +1602,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      growth_identities: {
+        Row: GrowthIdentityRow;
+        Insert: Partial<GrowthIdentityRow> & { id: string };
+        Update: Partial<GrowthIdentityRow>;
+        Relationships: [];
+      };
+      growth_events: {
+        Row: GrowthEventRow;
+        Insert: Partial<GrowthEventRow> & { event_name: GrowthEventName };
+        Update: Partial<GrowthEventRow>;
+        Relationships: [
+          {
+            foreignKeyName: "growth_events_anonymous_id_fkey";
+            columns: ["anonymous_id"];
+            isOneToOne: false;
+            referencedRelation: "growth_identities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "growth_events_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "growth_events_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      growth_attributions: {
+        Row: GrowthAttributionRow;
+        Insert: Partial<GrowthAttributionRow> & { account_id: string };
+        Update: Partial<GrowthAttributionRow>;
+        Relationships: [
+          {
+            foreignKeyName: "growth_attributions_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
       is_growth_operator: {
@@ -1558,6 +1682,52 @@ export interface Database {
           p_timezone_default?: string;
         };
         Returns: Database["public"]["Tables"]["accounts"]["Row"];
+      };
+      record_growth_event: {
+        Args: {
+          p_event_name: GrowthEventName;
+          p_anonymous_id?: string | null;
+          p_source?: string | null;
+          p_medium?: string | null;
+          p_campaign?: string | null;
+          p_content?: string | null;
+          p_term?: string | null;
+          p_referral_code?: string | null;
+          p_webinar_id?: string | null;
+          p_lead_magnet_id?: string | null;
+          p_metadata?: Json;
+        };
+        Returns: GrowthEventRow;
+      };
+      recompute_growth_attribution: {
+        Args: { p_account_id: string };
+        Returns: GrowthAttributionRow;
+      };
+      get_account_activation_milestones: {
+        Args: { p_account_id: string };
+        Returns: {
+          signup_at: string | null;
+          first_webinar_created_at: string | null;
+          first_video_uploaded_at: string | null;
+          first_cta_configured_at: string | null;
+          first_webinar_published_at: string | null;
+          first_attendee_at: string | null;
+          first_cta_click_at: string | null;
+          subscription_started_at: string | null;
+          is_activated: boolean;
+        }[];
+      };
+      get_growth_funnel_counts: {
+        Args: { p_start: string; p_end: string };
+        Returns: {
+          signups: number;
+          webinar_created: number;
+          video_uploaded: number;
+          cta_configured: number;
+          webinar_published: number;
+          activated: number;
+          paid: number;
+        }[];
       };
       record_viewer_event: {
         Args: {
@@ -1985,6 +2155,7 @@ export interface Database {
       partner_message_status: PartnerMessageStatus;
       partner_campaign_status: PartnerCampaignStatus;
       partner_task_status: PartnerTaskStatus;
+      growth_event_name: GrowthEventName;
     };
     CompositeTypes: Record<string, never>;
   };
