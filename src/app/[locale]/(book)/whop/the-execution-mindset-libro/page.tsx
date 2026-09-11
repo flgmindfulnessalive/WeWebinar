@@ -13,8 +13,14 @@ import { Author } from "./_components/author";
 import { Faq } from "./_components/faq";
 import { FinalCta } from "./_components/final-cta";
 import { Footer } from "./_components/footer";
-import { ASSETS } from "./_components/constants";
 
+// No explicit openGraph.images here -- this route's own opengraph-image.tsx
+// (dark navy/gold card themed to the page, same pattern as
+// /whop/evergreen-starter-kit) is picked up automatically by Next's file
+// convention, but only when generateMetadata doesn't already set an image
+// itself. Setting one here (as this used to, pointing at the raw
+// hero-books.webp product photo) silently overrides that file and social
+// previews lose the branded card.
 export async function generateMetadata({
   params,
 }: {
@@ -24,13 +30,12 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "ExecutionMindset.meta" });
   const title = t("title");
   const description = t("description");
-  const image = { url: `${ASSETS}/hero-books.webp`, width: 1526, height: 1006 };
   return {
     title,
     description,
     alternates: localeAlternates("/whop/the-execution-mindset-libro", locale),
-    openGraph: { title, description, images: [image] },
-    twitter: { title, description, images: [image] },
+    openGraph: { title, description },
+    twitter: { title, description },
   };
 }
 
