@@ -1,11 +1,18 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StageBadge } from "../stage-badge";
 import { scoreBand } from "@/lib/growth/scoring";
 import type { PartnerStage } from "@/lib/supabase/database.types";
 import { Funnel } from "./funnel";
+
+function formatMrr(amount: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
+    amount
+  );
+}
 
 // Core progression only -- inactive/rejected are exit states, not "further
 // along" than active_partner, so they'd break the funnel's shrinking-width
@@ -26,10 +33,15 @@ export default async function GrowthAnalyticsPage() {
   const t = await getTranslations("GrowthAnalytics");
   const tStage = await getTranslations("GrowthProspects");
   const tBand = await getTranslations("GrowthScoring.band");
+  const locale = await getLocale();
   const supabase = await createClient();
 
-  const { data: analyticsRows } = await supabase.rpc("get_growth_analytics");
+  const [{ data: analyticsRows }, { data: revenueRows }] = await Promise.all([
+    supabase.rpc("get_growth_analytics"),
+    supabase.rpc("get_partner_revenue_summary"),
+  ]);
   const data = analyticsRows?.[0];
+  const partnerRevenue = revenueRows ?? [];
 
   const stageCounts = (data?.stage_counts ?? {}) as Record<string, number>;
   const totalProspects = data?.total_prospects ?? 0;
@@ -105,6 +117,50 @@ export default async function GrowthAnalyticsPage() {
           <div className="min-w-[420px]">
             <Funnel steps={funnelSteps} />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">{t("partnerRevenueTitle")}</h2>
+            <span className="text-xs text-muted-foreground">
+              {t("partnerRevenueCount", { count: partnerRevenue.length })}
+            </span>
+          </div>
+          {partnerRevenue.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("noPartnerRevenue")}</p>
+          ) : (
+            <div className="overflow-auto rounded-md border">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="p-2 text-left font-medium">{t("table.partner")}</th>
+                    <th className="p-2 text-left font-medium">{t("table.stage")}</th>
+                    <th className="p-2 text-left font-medium">{t("table.attributedAccounts")}</th>
+                    <th className="p-2 text-left font-medium">{t("table.activeAccounts")}</th>
+                    <th className="p-2 text-left font-medium">{t("table.mrr")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {partnerRevenue.map((row) => (
+                    <tr key={row.prospect_id} className="border-t align-top">
+                      <td className="p-2">
+                        <p className="font-medium">{row.full_name || row.username || t("notSet")}</p>
+                        {row.referral_code && <p className="text-xs text-muted-foreground">{row.referral_code}</p>}
+                      </td>
+                      <td className="p-2">
+                        <StageBadge stage={row.stage} label={tStage(`stage.${row.stage}`)} />
+                      </td>
+                      <td className="p-2 tabular-nums">{row.attributed_accounts}</td>
+                      <td className="p-2 tabular-nums">{row.active_accounts}</td>
+                      <td className="p-2 font-medium tabular-nums">{formatMrr(row.mrr_usd, locale)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
