@@ -14,6 +14,7 @@ import { ScorePanel } from "./score-panel";
 import { MessagesSection, type ProspectMessage } from "./messages-section";
 import { NotesSection, type ProspectNote } from "./notes-section";
 import { CampaignAssign } from "./campaign-assign";
+import { ReferralSection } from "./referral-section";
 import { TasksSection, type ProspectTask } from "./tasks-section";
 import type { ScoreBreakdown } from "@/lib/growth/scoring";
 
@@ -107,6 +108,9 @@ export default async function GrowthProspectDetailPage({
 
   const displayName = prospect.full_name || prospect.username || prospect.profile_url;
   const canEdit = canEditPartnerEngine(operator.role);
+  const referralLink = prospect.referral_code
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/?ref=${prospect.referral_code}`
+    : null;
 
   const assignedCampaigns = (campaignLinks ?? [])
     .map((link) => link.partner_campaigns)
@@ -171,6 +175,17 @@ export default async function GrowthProspectDetailPage({
               <div>
                 <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("fieldSource")}</p>
                 <p className="text-sm">{prospect.source}</p>
+              </div>
+              <div className="sm:col-span-2">
+                <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  {t("fieldReferralLink")}
+                </p>
+                <ReferralSection
+                  prospectId={prospect.id}
+                  referralCode={prospect.referral_code}
+                  referralLink={referralLink}
+                  canEdit={canEdit}
+                />
               </div>
               <div className="sm:col-span-2">
                 <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("fieldBio")}</p>

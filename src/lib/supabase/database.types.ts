@@ -69,7 +69,8 @@ export type PartnerActivityType =
   | "message_generated"
   | "marked_contacted"
   | "task_created"
-  | "task_completed";
+  | "task_completed"
+  | "referral_code_generated";
 export type PartnerChannel = "email" | "instagram_dm" | "linkedin_dm" | "tiktok_dm" | "whatsapp" | "other";
 export type PartnerMessageKind = "opening" | "full_message" | "follow_up" | "proposal";
 export type PartnerMessageStatus = "draft" | "copied" | "marked_sent";
@@ -1338,6 +1339,7 @@ export interface Database {
           last_contact_at: string | null;
           touches_count: number;
           source: string;
+          referral_code: string | null;
           archived_at: string | null;
           created_at: string;
           updated_at: string;
@@ -1764,6 +1766,19 @@ export interface Database {
           last_touch_campaign: string | null;
           last_touch_at: string | null;
           computed_at: string;
+        }[];
+      };
+      get_partner_revenue_summary: {
+        Args: Record<string, never>;
+        Returns: {
+          prospect_id: string;
+          full_name: string | null;
+          username: string | null;
+          stage: PartnerStage;
+          referral_code: string | null;
+          attributed_accounts: number;
+          active_accounts: number;
+          mrr_usd: number;
         }[];
       };
       record_viewer_event: {

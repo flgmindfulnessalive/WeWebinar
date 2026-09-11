@@ -1,5 +1,7 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
+
 import Papa from "papaparse";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -8,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireGrowthOperator, canEditPartnerEngine } from "@/lib/data/growth";
 import { normalizeProfileUrl, normalizeEmail, detectPlatform } from "@/lib/growth/normalize";
+import { slugify } from "@/lib/slug";
 import type { Database, Json, PartnerPipeline, PartnerStage } from "@/lib/supabase/database.types";
 
 export type GrowthActionState = { error: string } | { success: string } | null;
@@ -209,6 +212,45 @@ export async function updateProspectStage(prospectId: string, stage: PartnerStag
   }
   revalidatePath(`/growth/prospects/${prospectId}`);
   revalidatePath("/growth/prospects");
+}
+
+// Growth OS MVP 2 (A): el código de referido es lo único que
+// record_growth_event() necesita para resolver partner_id (ver la
+// migración 20260911000002) -- se genera acá una sola vez por prospect, a
+// pedido del operador, en vez de para todos los prospects importados (la
+// mayoría nunca llega a active_partner). Mismo patrón de reintento con
+// sufijo random que el slug de cuenta en whop-starter-kit-claim.ts.
+export async function generateReferralCode(prospectId: string): Promise<void> {
+  const operator = await requireGrowthOperator();
+  if (!canEditPartnerEngine(operator.role)) return;
+
+  const supabase = await createClient();
+  const { data: prospect } = await supabase
+    .from("partner_prospects")
+    .select("full_name, username, referral_code")
+    .eq("id", prospectId)
+    .maybeSingle();
+  if (!prospect || prospect.referral_code) {
+    revalidatePath(`/growth/prospects/${prospectId}`);
+    return;
+  }
+
+  const base = slugify(prospect.full_name || prospect.username || "partner") || "partner";
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = `${base}-${randomBytes(2).toString("hex")}`;
+    const { error } = await supabase
+      .from("partner_prospects")
+      .update({ referral_code: code })
+      .eq("id", prospectId);
+    if (!error) {
+      await logActivity(supabase, prospectId, "referral_code_generated", operator.userId, { referral_code: code });
+      break;
+    }
+    if (error.code !== "23505") break;
+  }
+
+  revalidatePath(`/growth/prospects/${prospectId}`);
 }
 
 export async function archiveProspect(prospectId: string): Promise<void> {

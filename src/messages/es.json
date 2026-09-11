@@ -512,6 +512,10 @@
     "fieldFollowers": "Seguidores",
     "fieldCountry": "País",
     "fieldSource": "Origen",
+    "fieldReferralLink": "Link de referido",
+    "generateReferralCode": "Generar código de referido",
+    "copyReferralLink": "Copiar link",
+    "referralLinkCopied": "¡Copiado!",
     "fieldBio": "Bio",
     "notSet": "Sin datos",
     "noteBodyPlaceholder": "Escribe una nota...",
@@ -558,7 +562,8 @@
       "message_generated": "Mensaje generado",
       "marked_contacted": "Marcado como contactado",
       "task_created": "Tarea creada",
-      "task_completed": "Tarea completada"
+      "task_completed": "Tarea completada",
+      "referral_code_generated": "Código de referido generado"
     }
   },
   "GrowthScoring": {
@@ -694,7 +699,17 @@
     "avgFitScore": "Fit Score promedio",
     "avgOpportunityScore": "Opportunity Score promedio",
     "noData": "Sin datos",
-    "funnelTitle": "Prospects por etapa"
+    "funnelTitle": "Prospects por etapa",
+    "partnerRevenueTitle": "Revenue por partner",
+    "partnerRevenueCount": "{count, plural, =0 {sin datos} one {# partner} other {# partners}}",
+    "noPartnerRevenue": "Todavía no hay partners con código de referido generado.",
+    "table": {
+      "partner": "Partner",
+      "stage": "Etapa",
+      "attributedAccounts": "Cuentas atribuidas",
+      "activeAccounts": "Cuentas activas",
+      "mrr": "MRR"
+    }
   },
   "GrowthCommandCenter": {
     "title": "Growth OS",
