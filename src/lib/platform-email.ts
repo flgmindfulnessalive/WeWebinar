@@ -69,7 +69,11 @@ export function trialExpiringEmail(
     const dayWord = daysLeft === 1 ? "day" : "days";
     const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Trial period</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your trial ends in ${daysLeft} ${dayWord}</h1>
-<p style="margin:0 0 20px;">The account <strong style="color:#18181b;">${safeName}</strong> on WeWebinars is still on its trial period. To keep using it without interruption, write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> to activate it.</p>`;
+<p style="margin:0 0 16px;">The account <strong style="color:#18181b;">${safeName}</strong> on WeWebinars is still on its trial period. Pick a plan to keep using it without interruption.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Pick a plan</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Questions first? Write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
     return {
       subject: `Your WeWebinars trial ends in ${daysLeft} ${dayWord}`,
       html: wrapPlatformEmailShell(inner, locale),
@@ -78,32 +82,51 @@ export function trialExpiringEmail(
   const dayWord = daysLeft === 1 ? "día" : "días";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Período de prueba</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu prueba vence en ${daysLeft} ${dayWord}</h1>
-<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> en WeWebinars todavía está en período de prueba. Para seguir usándola sin interrupciones, escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
+<p style="margin:0 0 16px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> en WeWebinars todavía está en período de prueba. Elige un plan para seguir usándola sin interrupciones.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Elegir un plan</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">¿Dudas antes? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
   return {
     subject: `Tu prueba en WeWebinars vence en ${daysLeft} ${dayWord}`,
     html: wrapPlatformEmailShell(inner, locale),
   };
 }
 
-export function accountSuspendedEmail(
+// Fires once the 7-day trial lapses without a plan -- the account moves to
+// subscription_status 'canceled' (same status a lapsed paid Whop
+// subscription gets), not 'suspended' (reserved for a real admin action,
+// see suspendAccount in lib/actions/admin.ts). That reuses the self-serve
+// reactivation screen dashboard/layout.tsx already renders for 'canceled'
+// accounts -- a one-click checkout, not a support-only dead end -- and the
+// same 90-day retention/deletion-warning lifecycle in this cron file.
+export function trialEndedEmail(
   accountName: string,
   locale: AccountLocale
 ): { subject: string; html: string } {
   const safeName = escapeHtml(accountName);
   if (locale === "en") {
-    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Account suspended</p>
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Trial ended</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your trial period ended</h1>
-<p style="margin:0 0 20px;">The account <strong style="color:#18181b;">${safeName}</strong> was suspended because the 7-day trial period ended without being activated. Write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> to activate it.</p>`;
+<p style="margin:0 0 16px;">The 7-day trial for <strong style="color:#18181b;">${safeName}</strong> ended without picking a plan. Your webinars and settings are still there -- pick a plan to pick up right where you left off.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Pick a plan</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Questions first? Write to us at <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
     return {
-      subject: "Your WeWebinars account was suspended",
+      subject: "Your WeWebinars trial ended",
       html: wrapPlatformEmailShell(inner, locale),
     };
   }
-  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Cuenta suspendida</p>
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Prueba terminada</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu período de prueba terminó</h1>
-<p style="margin:0 0 20px;">La cuenta <strong style="color:#18181b;">${safeName}</strong> quedó suspendida porque el período de prueba de 7 días terminó sin activarse. Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a> para activarla.</p>`;
+<p style="margin:0 0 16px;">La prueba de 7 días de <strong style="color:#18181b;">${safeName}</strong> terminó sin elegir un plan. Tus webinars y configuración siguen ahí -- elige un plan para retomar justo donde quedaste.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Elegir un plan</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">¿Dudas antes? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND};">${SUPPORT_EMAIL}</a>.</p>`;
   return {
-    subject: "Tu cuenta en WeWebinars fue suspendida",
+    subject: "Tu prueba en WeWebinars terminó",
     html: wrapPlatformEmailShell(inner, locale),
   };
 }

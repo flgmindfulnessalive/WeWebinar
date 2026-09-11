@@ -13,11 +13,11 @@ import { computeProjectCompletionPercentage, nextRecommendedStep } from "@/lib/l
 import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
 import {
   accountDeletionWarningEmail,
-  accountSuspendedEmail,
   activationNudgeEmail,
   domainVerificationFailedEmail,
   launchpadReminderEmail,
   monthlyDigestEmail,
+  trialEndedEmail,
   trialExpiringEmail,
 } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
@@ -213,13 +213,18 @@ export async function GET(request: Request) {
     }
   }
 
-  // --- Trial lifecycle: suspend accounts whose 7-day trial expired, and
-  // warn accounts about to expire. Lives in this same handler instead of a
-  // separate cron route so it needs no extra entry in vercel.json or a
-  // second URL in the external 5-minute cron -- both checks below are
-  // cheap and fully idempotent, so running them on every tick is harmless.
+  // --- Trial lifecycle: cancel accounts whose 7-day trial expired, and
+  // warn accounts about to expire. Lands on subscription_status 'canceled',
+  // not 'suspended' -- see trialEndedEmail's own comment in
+  // platform-email.ts for why: it puts the account on the self-serve
+  // reactivation screen (and the 90-day retention timer below) instead of
+  // the support-only dead end reserved for a real admin suspension. Lives
+  // in this same handler instead of a separate cron route so it needs no
+  // extra entry in vercel.json or a second URL in the external 5-minute
+  // cron -- both checks below are cheap and fully idempotent, so running
+  // them on every tick is harmless.
   let trialWarningsSent = 0;
-  let trialsSuspended = 0;
+  let trialsCanceled = 0;
 
   const { data: expiringSoon } = await admin
     .from("accounts")
@@ -279,13 +284,13 @@ export async function GET(request: Request) {
   for (const account of expiredTrials ?? []) {
     const { data: claimed, error: claimError } = await admin
       .from("accounts")
-      .update({ subscription_status: "suspended", suspended_at: new Date().toISOString() })
+      .update({ subscription_status: "canceled", canceled_at: new Date().toISOString() })
       .eq("id", account.id)
       .eq("subscription_status", "trialing")
       .select("id")
       .maybeSingle();
     if (claimError) {
-      errors.push(`trial suspend ${account.id}: ${claimError.message}`);
+      errors.push(`trial cancel ${account.id}: ${claimError.message}`);
       continue;
     }
     if (!claimed) continue;
@@ -298,12 +303,12 @@ export async function GET(request: Request) {
         .eq("role", "owner")
         .maybeSingle();
       if (owner?.email) {
-        const { subject, html } = accountSuspendedEmail(account.name, account.locale);
+        const { subject, html } = trialEndedEmail(account.name, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
-      trialsSuspended++;
+      trialsCanceled++;
     } catch (err) {
-      errors.push(`trial suspend ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(`trial cancel ${account.id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -671,7 +676,7 @@ export async function GET(request: Request) {
     remindersSent,
     replaysSent,
     trialWarningsSent,
-    trialsSuspended,
+    trialsCanceled,
     digestsSent,
     activationNudgesSent,
     deletionWarningsSent,
