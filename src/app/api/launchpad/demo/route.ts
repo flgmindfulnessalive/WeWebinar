@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
+import { recordGrowthEvent } from "@/lib/growth/record-event";
 import { nextRecommendedStep, stepStatusFor } from "@/lib/launchpad/progress";
 import { LAUNCHPAD_REWARD_TYPES } from "@/lib/launchpad/types";
 import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
@@ -55,6 +56,20 @@ export async function POST() {
 
   let rewardsJustUnlocked = false;
   if (!wasAlreadyCompleted) {
+    // Growth OS: la etapa "demo" es la última del recorrido de contenido
+    // del Launchpad antes de las recompensas -- el proxy que usamos para
+    // "terminó el lead magnet". Best-effort, nunca debe tumbar el resto
+    // del flujo de rewards debajo.
+    try {
+      await recordGrowthEvent(supabase, {
+        eventName: "lead_magnet_completed",
+        leadMagnetId: "launchpad",
+        metadata: { project_id: project.id },
+      });
+    } catch (err) {
+      console.error("[launchpad/demo] growth event failed:", err);
+    }
+
     const { data: existingRewards } = await admin
       .from("launchpad_rewards")
       .select("reward_type, status")

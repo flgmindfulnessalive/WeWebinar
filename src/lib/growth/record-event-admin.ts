@@ -6,6 +6,7 @@ export type RecordGrowthEventAdminParams = {
   eventName: GrowthEventName;
   accountId: string;
   userId?: string | null;
+  leadMagnetId?: string | null;
   metadata?: GrowthEventRow["metadata"];
 };
 
@@ -43,6 +44,7 @@ export async function recordGrowthEventAsAdmin(
     account_id: params.accountId,
     user_id: params.userId ?? null,
     anonymous_id: anonymousId,
+    lead_magnet_id: params.leadMagnetId ?? null,
     metadata: params.metadata ?? {},
   });
 
