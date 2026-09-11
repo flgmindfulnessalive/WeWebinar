@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type ProblemCopy = {
   eyebrow: string;
   titleStart: string;
@@ -32,7 +34,15 @@ export function Problem({ t }: { t: ProblemCopy }) {
           </p>
         </div>
 
-        <div className="lg:justify-self-end lg:text-right">
+        <div className="flex flex-col items-center gap-10 lg:items-end lg:justify-self-end lg:text-right">
+          <Image
+            src="/marketing/evergreen-starter-kit/problem-chained-to-desk.webp"
+            alt=""
+            width={1536}
+            height={1024}
+            className="w-full max-w-sm lg:max-w-md"
+          />
+
           <div className="relative mx-auto max-w-sm lg:mr-0 lg:ml-auto">
             <span
               aria-hidden
