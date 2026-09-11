@@ -209,7 +209,7 @@ export async function claimStarterKitFromWhop({
 
     const { error: attachError } = await admin
       .from("users")
-      .update({ account_id: created.id, role: "owner" })
+      .update({ account_id: created.id, role: "owner", password_set: false })
       .eq("id", link.user.id);
     if (attachError) {
       console.error(
