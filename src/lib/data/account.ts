@@ -11,6 +11,7 @@ export type CurrentAccount = {
     role: Database["public"]["Tables"]["users"]["Row"]["role"];
     display_name: string | null;
     avatar_url: string | null;
+    password_set: boolean;
   };
   account: Database["public"]["Tables"]["accounts"]["Row"];
   plan: Database["public"]["Tables"]["plans"]["Row"];
@@ -37,7 +38,7 @@ export const getCurrentAccount = cache(async (): Promise<CurrentAccount | null> 
 
     const { data: profile } = await supabase
       .from("users")
-      .select("id, email, role, display_name, avatar_url, account_id")
+      .select("id, email, role, display_name, avatar_url, account_id, password_set")
       .eq("id", authUser.id)
       .single();
 
@@ -62,6 +63,7 @@ export const getCurrentAccount = cache(async (): Promise<CurrentAccount | null> 
         role: profile.role,
         display_name: profile.display_name,
         avatar_url: profile.avatar_url,
+        password_set: profile.password_set,
       },
       account: accountRow,
       plan,

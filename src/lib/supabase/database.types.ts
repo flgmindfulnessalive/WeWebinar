@@ -227,6 +227,7 @@ export interface Database {
           display_name: string | null;
           avatar_url: string | null;
           bio: string | null;
+          password_set: boolean;
           created_at: string;
           updated_at: string;
         };

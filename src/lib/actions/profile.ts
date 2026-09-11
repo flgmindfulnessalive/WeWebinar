@@ -45,13 +45,27 @@ export async function changePassword(
 
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.updateUser({ password });
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.updateUser({ password });
     if (error) return { error: error.message };
+
+    // Flips the "set your password" dashboard banner off for good -- see
+    // password_set's own comment in the 20260911000001 migration. Never
+    // blocks the actual password change on this: the password is already
+    // saved in Supabase Auth by this point, so a failure here at worst
+    // leaves the banner showing again for someone who already has a
+    // password, not a security issue.
+    if (user) {
+      await supabase.from("users").update({ password_set: true }).eq("id", user.id);
+    }
   } catch (err) {
     console.error("[profile] changePassword failed:", err);
     return { error: t("authServerError") };
   }
 
+  revalidatePath("/dashboard", "layout");
   return { success: true };
 }
 

@@ -18,6 +18,7 @@ import { LanguageToggle } from "./language-toggle";
 import { CheckoutButton } from "./settings/billing/billing-buttons";
 import { SupportChatWidget } from "./support-chat-widget";
 import { TrialBanner } from "./trial-banner";
+import { PasswordBanner } from "./password-banner";
 
 // Sets the "dark" class on the dashboard's own wrapper (see id below) before
 // the browser paints it, straight from localStorage -- otherwise a returning
@@ -256,6 +257,9 @@ export default async function DashboardLayout({
           </header>
           {trialDaysLeft !== null && (
             <TrialBanner accountId={current.account.id} daysLeft={trialDaysLeft} />
+          )}
+          {!current.user.password_set && (
+            <PasswordBanner accountId={current.account.id} />
           )}
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </div>
