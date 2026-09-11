@@ -1,5 +1,6 @@
 import "server-only";
 
+import { recordGrowthEventAsAdmin } from "@/lib/growth/record-event-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/slug";
 import { sendEmail } from "@/lib/resend";
@@ -284,4 +285,23 @@ export async function claimStarterKitFromWhop({
     .from("accounts")
     .update({ whop_starter_kit_claimed_at: new Date().toISOString() })
     .eq("id", accountId);
+
+  // Growth OS: el claim gratuito de Whop es un canal de adquisición propio
+  // (marketplace), distinto de alguien que llega orgánicamente a
+  // /starter-kit y usa el Launchpad -- por eso su propio lead_magnet_id en
+  // vez de "launchpad". No hay auth.uid() ni cookie de anónimo acá (esto
+  // corre desde un webhook, sin request de browser detrás), así que usa el
+  // insert directo con el cliente admin en vez de record_growth_event().
+  // Best-effort: nunca debe tumbar el claim ya completado arriba.
+  try {
+    await recordGrowthEventAsAdmin(admin, {
+      eventName: "lead_magnet_completed",
+      accountId,
+      userId: link.user.id,
+      leadMagnetId: "starter_kit",
+      metadata: { membership_id: membershipId },
+    });
+  } catch (err) {
+    console.error(`[whop starter-kit] growth event failed for ${email}:`, err);
+  }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
+import { recordGrowthEvent } from "@/lib/growth/record-event";
 import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
@@ -48,6 +49,22 @@ export async function GET() {
   if (stepsError) {
     console.error("[launchpad/project] step progress load failed:", stepsError);
     return NextResponse.json({ error: "load_failed" }, { status: 500 });
+  }
+
+  // Growth OS: Launchpad como fuente de lead_magnet_id. Sin filas de
+  // progreso todavía es la única señal disponible de "recién creado" (el
+  // RPC get_or_create es idempotente y no distingue create de lectura) --
+  // best-effort, nunca debe tumbar la carga ya resuelta arriba.
+  if ((steps ?? []).length === 0) {
+    try {
+      await recordGrowthEvent(supabase, {
+        eventName: "lead_magnet_started",
+        leadMagnetId: "launchpad",
+        metadata: { project_id: project.id },
+      });
+    } catch (err) {
+      console.error("[launchpad/project] growth event failed:", err);
+    }
   }
 
   return NextResponse.json({

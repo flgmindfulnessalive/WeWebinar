@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
 
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { GROWTH_ANONYMOUS_ID_COOKIE } from "@/lib/growth/anonymous-id";
+import { recordGrowthEvent } from "@/lib/growth/record-event";
 import { syncLaunchpadStepFromExternalTool } from "@/lib/launchpad/external-sync";
 import { PROMPT_TEMPLATE_VERSION } from "@/lib/script-builder/config";
 import { rowToProfile, type WebinarProjectProfileRow } from "@/lib/script-builder/mapping";
@@ -9,6 +12,7 @@ import { buildEvergreenMasterPrompt } from "@/lib/script-builder/prompt-builder"
 import { updateScriptBuilderLeadFlags } from "@/lib/script-builder/brevo";
 import { ScriptBuilderEventSchema } from "@/lib/script-builder/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 // Columnas que necesitamos leer de webinar_projects para reconstruir el
 // perfil + los metadatos de lead, en un solo select.
@@ -117,6 +121,24 @@ export async function POST(request: Request) {
   });
   if (error) {
     console.error("[script-builder/event] insert failed:", error);
+  }
+
+  // Growth OS: Script Builder como fuente de lead_magnet_id -- best-effort,
+  // igual que todo lo demás acá, nunca debe tumbar el tracking liviano de
+  // arriba (ya persistido) ni los side effects debajo.
+  if (eventType === "script_builder_started" || eventType === "script_prompt_generated") {
+    try {
+      const supabase = await createClient();
+      const anonymousId = (await cookies()).get(GROWTH_ANONYMOUS_ID_COOKIE)?.value ?? null;
+      await recordGrowthEvent(supabase, {
+        eventName: eventType === "script_builder_started" ? "lead_magnet_started" : "lead_magnet_completed",
+        anonymousId,
+        leadMagnetId: "script_builder",
+        metadata: { project_id: projectId },
+      });
+    } catch (err) {
+      console.error(`[script-builder/event] growth event for ${eventType} failed:`, err);
+    }
   }
 
   try {

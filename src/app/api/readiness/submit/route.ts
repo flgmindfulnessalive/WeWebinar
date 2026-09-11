@@ -1,8 +1,11 @@
 import { createHash } from "node:crypto";
 
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { getCurrentAccount } from "@/lib/data/account";
+import { GROWTH_ANONYMOUS_ID_COOKIE } from "@/lib/growth/anonymous-id";
+import { recordGrowthEvent } from "@/lib/growth/record-event";
 import { syncLaunchpadStepFromExternalTool } from "@/lib/launchpad/external-sync";
 import { sendReadinessLeadToBrevo } from "@/lib/readiness/brevo";
 import {
@@ -14,6 +17,7 @@ import { buildReadinessReport, reportFromStoredScores } from "@/lib/readiness/sc
 import { ANSWER_POINTS, type CategoryKey, type QuestionAnswers } from "@/lib/readiness/types";
 import { ReadinessSubmitSchema } from "@/lib/readiness/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 // Vercel siempre setea x-forwarded-for; el primer valor es el cliente
 // real (el resto son saltos de proxy internos). No hay ningun helper de
@@ -187,6 +191,21 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error("[readiness/submit] Launchpad sync failed:", err);
+  }
+
+  // Growth OS: Readiness como fuente de lead_magnet_id -- best-effort,
+  // nunca debe tumbar el reporte ya armado más arriba.
+  try {
+    const supabase = await createClient();
+    const anonymousId = (await cookies()).get(GROWTH_ANONYMOUS_ID_COOKIE)?.value ?? null;
+    await recordGrowthEvent(supabase, {
+      eventName: "lead_magnet_completed",
+      anonymousId,
+      leadMagnetId: "readiness",
+      metadata: { assessment_id: payload.assessmentId, readiness_status: report.readinessStatus },
+    });
+  } catch (err) {
+    console.error("[readiness/submit] growth event failed:", err);
   }
 
   return NextResponse.json(report);
