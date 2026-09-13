@@ -106,6 +106,7 @@ export async function registerForWebinar(
   const sessionStartsAt = String(formData.get("session_starts_at") ?? "") || null;
   const offsetRaw = formData.get("offset_minutes");
   const offsetMinutes = offsetRaw ? Number(offsetRaw) : null;
+  const launchpadProjectId = String(formData.get("launchpad_project_id") ?? "") || null;
   const t = await getTranslations("RegisterAction");
   const locale: AccountLocale = (await getLocale()) === "en" ? "en" : "es";
 
@@ -141,6 +142,7 @@ export async function registerForWebinar(
     p_phone: phone,
     p_country: country,
     p_locale: locale,
+    p_launchpad_project_id: launchpadProjectId,
   });
 
   if (error) {

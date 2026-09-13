@@ -220,7 +220,15 @@ export function LiveRoomClient({
     if (completionFiredRef.current) return;
     completionFiredRef.current = true;
     fireWebhookTrigger("completion");
-  }, [fireWebhookTrigger]);
+    // Almost always a no-op server-side (only set when this registrant
+    // came from the Launchpad's own demo link) -- see
+    // /api/launchpad/demo/auto-complete for the actual check.
+    fetch("/api/launchpad/demo/auto-complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken }),
+    }).catch(() => {});
+  }, [fireWebhookTrigger, accessToken]);
 
   useEffect(() => {
     mountedAtRef.current = Date.now();
