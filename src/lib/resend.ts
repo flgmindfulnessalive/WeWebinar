@@ -17,13 +17,19 @@ export async function sendEmail({
   subject,
   html,
   headers,
+  from: fromOverride,
 }: {
   to: string;
   subject: string;
   html: string;
   headers?: Record<string, string>;
+  // Lets a caller send from a different verified address than the default
+  // transactional one -- e.g. the Partner Engine's dedicated outreach
+  // subdomain, kept separate so a cold-outreach bounce/complaint can't hurt
+  // the deliverability of registration/reminder emails.
+  from?: string;
 }) {
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = fromOverride || process.env.RESEND_FROM_EMAIL;
   if (!from) {
     throw new Error("RESEND_FROM_EMAIL is not configured");
   }

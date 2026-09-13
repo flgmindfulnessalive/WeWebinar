@@ -106,6 +106,23 @@ export function unsubscribeHeaders(url: string): Record<string, string> {
   };
 }
 
+// Partner Engine outreach emails (Slice 5) are cold-email-style, not the
+// host-branded webinar shell above -- a plain look reads as a real person
+// writing, not a marketing blast, which matters for reply rates. Just the
+// message plus the RFC 8058 unsubscribe link footer.
+export function wrapPartnerOutreachEmail(bodyHtml: string, unsubscribeUrl: string): string {
+  return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:${FONT_STACK};color:#18181b;font-size:14px;line-height:1.6;">
+<div style="max-width:560px;margin:0 auto;padding:24px 20px;">
+${bodyHtml}
+<p style="margin:32px 0 0;font-size:12px;color:#a1a1aa;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">Unsubscribe</a></p>
+</div>
+</body>
+</html>`;
+}
+
 export function resolveEmailBranding(
   account: { name: string; branding: unknown } | null | undefined
 ): EmailBranding {
