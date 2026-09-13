@@ -14,10 +14,12 @@ export async function Checkout({
   plan,
   billingPeriod,
   accountId,
+  promoCode,
 }: {
   plan: SelfServePlanKey;
   billingPeriod: BillingPeriod;
   accountId: string;
+  promoCode?: string;
 }) {
   const config = await createTrialCheckoutConfig({ planKey: plan, billingPeriod, accountId });
 
@@ -25,5 +27,5 @@ export async function Checkout({
     return <p>No se pudo iniciar el checkout. Intenta de nuevo en unos minutos.</p>;
   }
 
-  return <CheckoutEmbed sessionId={config.configId} />;
+  return <CheckoutEmbed sessionId={config.configId} promoCode={promoCode} />;
 }

@@ -15,16 +15,15 @@ import { Checkout } from "@/components/checkout";
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; billing?: string }>;
+  searchParams: Promise<{ plan?: string; billing?: string; promo?: string }>;
 }) {
-  const { plan, billing } = await searchParams;
+  const { plan, billing, promo } = await searchParams;
   const billingPeriod = billing && isBillingPeriod(billing) ? billing : "monthly";
 
   const current = await getCurrentAccount();
   if (!current) {
-    redirect(
-      `/login?next=/checkout${plan ? `?plan=${plan}&billing=${billingPeriod}` : ""}`
-    );
+    const params = plan ? `?plan=${plan}&billing=${billingPeriod}${promo ? `&promo=${promo}` : ""}` : "";
+    redirect(`/login?next=/checkout${params}`);
   }
 
   if (!plan || !isSelfServePlanKey(plan)) {
@@ -44,7 +43,7 @@ export default async function CheckoutPage({
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
       <div className="w-full max-w-md">
-        <Checkout plan={plan} billingPeriod={billingPeriod} accountId={current.account.id} />
+        <Checkout plan={plan} billingPeriod={billingPeriod} accountId={current.account.id} promoCode={promo} />
       </div>
     </div>
   );

@@ -27,10 +27,12 @@ export function OnboardingForm({
   plan,
   billing,
   source,
+  promo,
 }: {
   plan?: SelfServePlanKey;
   billing: BillingPeriod;
   source?: "launchpad";
+  promo?: string;
 }) {
   const t = useTranslations("OnboardingForm");
   const [state, formAction, isPending] = useActionState(createAccount, null);
@@ -62,6 +64,7 @@ export function OnboardingForm({
             </>
           )}
           {source && <input type="hidden" name="source" value={source} />}
+          {promo && <input type="hidden" name="promo" value={promo} />}
           {plan && (
             <p className="rounded-lg border bg-accent p-4 text-sm text-muted-foreground">
               {t("planNote", { plan: PLAN_LABEL[plan] })}

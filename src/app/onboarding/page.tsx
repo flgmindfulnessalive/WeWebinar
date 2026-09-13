@@ -10,9 +10,9 @@ import { OnboardingForm } from "./onboarding-form";
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; billing?: string; source?: string }>;
+  searchParams: Promise<{ plan?: string; billing?: string; source?: string; promo?: string }>;
 }) {
-  const { plan, billing, source } = await searchParams;
+  const { plan, billing, source, promo } = await searchParams;
   const selectedPlan = plan && isSelfServePlanKey(plan) ? plan : undefined;
   const billingPeriod = billing && isBillingPeriod(billing) ? billing : "monthly";
   const signupSource = source === "launchpad" ? "launchpad" : undefined;
@@ -75,7 +75,7 @@ export default async function OnboardingPage({
             {t("emailConfirmedBadge")}
           </div>
         </div>
-        <OnboardingForm plan={selectedPlan} billing={billingPeriod} source={signupSource} />
+        <OnboardingForm plan={selectedPlan} billing={billingPeriod} source={signupSource} promo={promo} />
       </div>
     </div>
   );

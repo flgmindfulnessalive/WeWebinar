@@ -64,6 +64,7 @@ export async function signUpWithPassword(
   // ya hacen para no confiar en un string de formulario sin validar.
   const rawSource = String(formData.get("source") ?? "");
   const source = rawSource === "launchpad" ? rawSource : null;
+  const promo = String(formData.get("promo") ?? "").trim() || null;
   // Populated by the Cloudflare Turnstile widget's own hidden input (see
   // signup-form.tsx) once it's solved -- Supabase Auth verifies it
   // server-side against the secret key configured in its own dashboard
@@ -84,6 +85,7 @@ export async function signUpWithPassword(
     onboardingParams.set("billing", billingPeriod);
   }
   if (source) onboardingParams.set("source", source);
+  if (promo) onboardingParams.set("promo", promo);
   const next = onboardingParams.size > 0 ? `/onboarding?${onboardingParams.toString()}` : "/onboarding";
 
   let hasSession: boolean;

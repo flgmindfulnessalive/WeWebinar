@@ -36,6 +36,7 @@ export async function createAccount(
   const billingPeriod = isBillingPeriod(rawBilling) ? rawBilling : "monthly";
   const rawSource = String(formData.get("source") ?? "");
   const fromLaunchpad = rawSource === "launchpad";
+  const promo = String(formData.get("promo") ?? "").trim();
   // next-intl's routing only serves "es"/"en" (see i18n/routing.ts), so this
   // request-scoped locale always narrows to one of the two -- the account's
   // locale is set once here, at creation time, matching the path the host
@@ -141,6 +142,7 @@ export async function createAccount(
           // this is just an on-site redirect, no Whop API call here.
           if (selectedPlanKey) {
             redirectTo = `/checkout?plan=${selectedPlanKey}&billing=${billingPeriod}`;
+            if (promo) redirectTo += `&promo=${promo}`;
           }
         } else if (error.code === "23505") {
           attempt += 1;
@@ -195,4 +197,44 @@ export async function updateAccountGeneral(
   revalidatePath("/dashboard/settings/general");
   revalidatePath("/dashboard", "layout");
   return { success: true };
+}
+
+export type UpdateAccountSlugState = { error: string } | { success: true; slug: string } | null;
+
+// The slug is the account's public identity in every /w/<slug>/<webinarSlug>
+// link -- nothing in the schema or RLS blocks changing it (accounts.slug is
+// just `text unique`, and accounts_update_owner already lets the owner
+// update the row), this action + the field in General is what was missing.
+// Renaming does NOT preserve the old slug as a redirect/alias: any link
+// already shared with the previous slug stops resolving the moment this
+// saves, which the UI warns about before submitting.
+export async function updateAccountSlug(
+  _prevState: UpdateAccountSlugState,
+  formData: FormData
+): Promise<UpdateAccountSlugState> {
+  const t = await getTranslations("AccountActions");
+  const current = await getCurrentAccount();
+  if (!current || current.user.role !== "owner") {
+    return { error: t("noPermission") };
+  }
+
+  const slug = slugify(String(formData.get("slug") ?? ""));
+  if (!slug) {
+    return { error: t("slugRequired") };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("accounts")
+    .update({ slug })
+    .eq("id", current.account.id);
+
+  if (error) {
+    if (error.code === "23505") return { error: t("slugTaken") };
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/settings/general");
+  revalidatePath("/dashboard", "layout");
+  return { success: true, slug };
 }

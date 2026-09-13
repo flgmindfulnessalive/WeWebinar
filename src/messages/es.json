@@ -1,12 +1,29 @@
 {
   "MarketingLayout": {
     "pricing": "Precios",
+    "demo": "Ver Demo",
     "login": "Ingresar",
     "signup": "Empezar ahora",
     "language": "Idioma",
     "footer": "© {year} WeWebinars. Todos los derechos reservados.",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú"
+  },
+  "DemoOffer": {
+    "eyebrow": "Oferta por tiempo limitado",
+    "title": "10% de descuento por ver la demo",
+    "body": "Válido por 1 hora: 10% en tus primeros 3 meses en cualquier plan mensual, o 10% en el plan anual.",
+    "countdownLabel": "Tiempo restante",
+    "startCta": "Empezar ahora con 10% off",
+    "upgradeCta": "Actualizar mi plan con 10% off",
+    "fineprint": "El descuento se aplica solo, no hace falta que escribas ningún código.",
+    "expiredTitle": "Tu oferta venció",
+    "expiredBody": "La hora ya pasó, pero podés seguir explorando los planes de WeWebinars cuando quieras.",
+    "expiredCta": "Ver planes y precios",
+    "invalidTitle": "Este link no es válido",
+    "invalidBody": "Volvé a la demo oficial de WeWebinars para conseguir un link nuevo.",
+    "unavailableTitle": "Tu código está en camino",
+    "unavailableBody": "Hubo un problema generando tu descuento. Escribinos a operaciones@wewebinars.com y te lo enviamos."
   },
   "AuthLayout": {
     "tagline": "Webinars evergreen con el pulso de un evento real."
@@ -784,7 +801,12 @@
     "accountNameTitle": "Nombre de la cuenta",
     "accountNameDescription": "Se muestra en el panel y no afecta tu plan actual (<planKey>{plan}</planKey>). Para cambiar de plan, ve a Facturación y plan.",
     "nameLabel": "Nombre",
-    "timezoneLabel": "Zona horaria"
+    "timezoneLabel": "Zona horaria",
+    "slugTitle": "URL pública",
+    "slugDescription": "Se usa en el link de tus webinars públicos (wewebinars.com/w/tu-url/...).",
+    "slugLabel": "URL",
+    "slugWarning": "Si la cambias, los links que ya compartiste con la URL anterior dejan de funcionar.",
+    "slugChangeConfirm": "¿Seguro? Los links que ya compartiste con tu URL actual van a dejar de funcionar."
   },
   "ProfileSettings": {
     "title": "Perfil",
@@ -815,7 +837,9 @@
   },
   "AccountActions": {
     "noPermission": "No tienes permisos para editar la cuenta.",
-    "nameRequired": "El nombre de la cuenta es obligatorio."
+    "nameRequired": "El nombre de la cuenta es obligatorio.",
+    "slugRequired": "La URL pública es obligatoria.",
+    "slugTaken": "Esa URL ya está en uso, prueba con otra."
   },
   "ProfileActions": {
     "sessionNotFound": "No pudimos identificar tu sesión.",

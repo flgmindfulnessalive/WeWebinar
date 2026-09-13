@@ -410,6 +410,44 @@ export function launchpadReminderEmail(
   };
 }
 
+// Respaldo del código mostrado en /demo/oferta -- ver
+// createDemoDiscountCode en lib/whop.ts. `offerUrl` vuelve a la misma
+// página de la oferta (no directo a un checkout) porque esa página es la
+// que decide, según si quien la abre ya tiene sesión o no, si el próximo
+// paso es signup o "cambiar de plan" -- este email nunca precalcula eso.
+export function demoDiscountEmail(
+  offerUrl: string,
+  code: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
+  const safeUrl = escapeHtml(offerUrl);
+  const safeCode = escapeHtml(code);
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Your discount from today's demo</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">10% off, for the next hour only</h1>
+<p style="margin:0 0 20px;">Thanks for watching the WeWebinars demo. Your code <strong style="color:#18181b;font-family:monospace;">${safeCode}</strong> is ready -- 10% off your first 3 months on any monthly plan, or 10% off the annual plan. It expires in one hour, so use it now.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${offerUrl}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Use my discount</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">If the button doesn't work, copy and paste this link into your browser:<br /><a href="${offerUrl}" style="color:${BRAND};word-break:break-all;">${safeUrl}</a></p>`;
+    return {
+      subject: "Your 10% discount expires in 1 hour",
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Tu descuento de la demo de hoy</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">10% de descuento, por la próxima hora nada más</h1>
+<p style="margin:0 0 20px;">Gracias por ver la demo de WeWebinars. Tu código <strong style="color:#18181b;font-family:monospace;">${safeCode}</strong> ya está listo -- 10% de descuento en tus primeros 3 meses en cualquier plan mensual, o 10% en el plan anual. Vence en una hora, así que úsalo ahora.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${offerUrl}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Usar mi descuento</a>
+</td></tr></table>
+<p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Si el botón no funciona, copia y pega este link en tu navegador:<br /><a href="${offerUrl}" style="color:${BRAND};word-break:break-all;">${safeUrl}</a></p>`;
+  return {
+    subject: "Tu 10% de descuento vence en 1 hora",
+    html: wrapPlatformEmailShell(inner, locale),
+  };
+}
+
 export function starterKitAccessEmail(
   magicLink: string,
   locale: AccountLocale
