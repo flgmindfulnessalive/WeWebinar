@@ -17,6 +17,7 @@ import { sendEmail } from "@/lib/resend";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
 import { syncBrevoContact } from "@/lib/brevo";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
+import type { AccountLocale } from "@/lib/supabase/database.types";
 
 export type RegisterActionState = { error: string } | null;
 
@@ -41,7 +42,7 @@ async function sendConfirmationEmail({
   visitorTimezone: string | null;
   accessToken: string;
   accessLink: string;
-  locale: string;
+  locale: AccountLocale;
 }) {
   const admin = createAdminClient();
 
@@ -60,6 +61,7 @@ async function sendConfirmationEmail({
     accountId,
     webinarId,
     type: "registration_confirmation",
+    locale,
   });
 
   const branding = resolveEmailBranding(account);
@@ -76,7 +78,7 @@ async function sendConfirmationEmail({
   await sendEmail({
     to: email,
     subject: renderTemplate(template.subject, vars),
-    html: wrapEmailShell(renderTemplate(template.body, vars), branding, unsubscribeUrl),
+    html: wrapEmailShell(renderTemplate(template.body, vars), branding, locale, unsubscribeUrl),
     headers: unsubscribeHeaders(unsubscribeUrl),
   });
 
@@ -105,7 +107,7 @@ export async function registerForWebinar(
   const offsetRaw = formData.get("offset_minutes");
   const offsetMinutes = offsetRaw ? Number(offsetRaw) : null;
   const t = await getTranslations("RegisterAction");
-  const locale = await getLocale();
+  const locale: AccountLocale = (await getLocale()) === "en" ? "en" : "es";
 
   if (!name || name.length < 2) {
     return { error: t("nameEmailRequired") };
@@ -138,6 +140,7 @@ export async function registerForWebinar(
     p_offset_minutes: offsetMinutes,
     p_phone: phone,
     p_country: country,
+    p_locale: locale,
   });
 
   if (error) {

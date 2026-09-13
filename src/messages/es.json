@@ -349,6 +349,7 @@
     "reserveSubtitle": "Elige un horario y guarda tu cupo gratis.",
     "presentedBy": "Presenta {name}",
     "audienceHeading": "¿Para quién es este webinario?",
+    "promoVideoTitle": "Video promocional",
     "form": {
       "tabFixed": "Elegir horario",
       "tabJit": "Empezar ahora",
@@ -366,6 +367,10 @@
       "tryLater": "Vuelve a intentarlo más tarde para ver nuevas fechas.",
       "noSchedulesYet": "Este webinar todavía no tiene horarios disponibles. Vuelve a intentarlo más tarde."
     }
+  },
+  "PhoneInput": {
+    "searchPlaceholder": "Buscar país o código...",
+    "noResults": "Sin resultados"
   },
   "WaitingRoom": {
     "defaultHeadline": "Tu webinar está por comenzar",

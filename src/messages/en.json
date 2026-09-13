@@ -349,6 +349,7 @@
     "reserveSubtitle": "Choose a time and save your free spot.",
     "presentedBy": "Presented by {name}",
     "audienceHeading": "Who is this webinar for?",
+    "promoVideoTitle": "Promotional video",
     "form": {
       "tabFixed": "Choose a time",
       "tabJit": "Start now",
@@ -366,6 +367,10 @@
       "tryLater": "Check back later for new dates.",
       "noSchedulesYet": "This webinar doesn't have any available times yet. Check back later."
     }
+  },
+  "PhoneInput": {
+    "searchPlaceholder": "Search country or code...",
+    "noResults": "No results"
   },
   "WaitingRoom": {
     "defaultHeadline": "Your webinar is about to start",

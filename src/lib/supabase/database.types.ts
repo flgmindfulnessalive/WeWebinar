@@ -446,6 +446,7 @@ export interface Database {
           visitor_timezone: string | null;
           unsubscribed_at: string | null;
           country: string | null;
+          locale: string;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["registrants"]["Row"]> & {
@@ -1885,6 +1886,7 @@ export interface Database {
           p_offset_minutes?: number | null;
           p_phone?: string | null;
           p_country?: string | null;
+          p_locale?: string | null;
         };
         Returns: {
           access_token: string;
@@ -2154,6 +2156,7 @@ export interface Database {
           account_slug: string;
           account_name: string;
           account_branding: Json;
+          locale: string;
         }[];
       };
       get_due_replay_recipients: {
@@ -2172,6 +2175,7 @@ export interface Database {
           account_slug: string;
           account_name: string;
           account_branding: Json;
+          locale: string;
         }[];
       };
       is_platform_admin: {

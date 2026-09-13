@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
-import { countries, guessCountryFromTimezone, isoToFlagEmoji, type Country } from "@/lib/countries";
+import { countries, countryName, guessCountryFromTimezone, isoToFlagEmoji, type Country } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_COUNTRY: Country = countries[0]; // México — reasonable fallback default.
@@ -34,6 +35,8 @@ export function PhoneInput({
   id?: string;
   className?: string;
 }) {
+  const t = useTranslations("PhoneInput");
+  const locale = useLocale();
   // Lazy initializer so the timezone-based guess only ever runs once, on
   // first client render, not on every re-render.
   const [country, setCountry] = useState<Country>(() => defaultCountry());
@@ -69,6 +72,7 @@ export function PhoneInput({
     return countries.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
+        c.nameEn.toLowerCase().includes(q) ||
         c.dialCode.includes(q) ||
         c.dialCode.replace("+", "").includes(q)
     );
@@ -115,13 +119,13 @@ export function PhoneInput({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar país o código..."
+              placeholder={t("searchPlaceholder")}
               className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
           <ul role="listbox" className="max-h-56 overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-muted-foreground">Sin resultados</li>
+              <li className="px-3 py-2 text-sm text-muted-foreground">{t("noResults")}</li>
             ) : (
               filtered.map((c) => (
                 <li key={c.iso2}>
@@ -139,7 +143,7 @@ export function PhoneInput({
                     )}
                   >
                     <span aria-hidden="true">{isoToFlagEmoji(c.iso2)}</span>
-                    <span className="flex-1 truncate">{c.name}</span>
+                    <span className="flex-1 truncate">{countryName(c, locale)}</span>
                     <span className="text-muted-foreground">{c.dialCode}</span>
                   </button>
                 </li>
