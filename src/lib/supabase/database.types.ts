@@ -447,6 +447,7 @@ export interface Database {
           unsubscribed_at: string | null;
           country: string | null;
           locale: string;
+          launchpad_project_id: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["registrants"]["Row"]> & {
@@ -462,6 +463,13 @@ export interface Database {
             columns: ["webinar_id"];
             isOneToOne: false;
             referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "registrants_launchpad_project_id_fkey";
+            columns: ["launchpad_project_id"];
+            isOneToOne: false;
+            referencedRelation: "launchpad_projects";
             referencedColumns: ["id"];
           },
         ];
@@ -1887,6 +1895,7 @@ export interface Database {
           p_phone?: string | null;
           p_country?: string | null;
           p_locale?: string | null;
+          p_launchpad_project_id?: string | null;
         };
         Returns: {
           access_token: string;

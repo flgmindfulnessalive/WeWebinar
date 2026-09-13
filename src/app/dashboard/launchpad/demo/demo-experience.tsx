@@ -26,7 +26,16 @@ export function DemoExperience({
   const t = useTranslations("Launchpad.demo");
   const [completed, setCompleted] = useState(initialCompleted);
   const [saving, setSaving] = useState(false);
-  const demoUrl = process.env.NEXT_PUBLIC_LAUNCHPAD_DEMO_WEBINAR_URL;
+  const baseDemoUrl = process.env.NEXT_PUBLIC_LAUNCHPAD_DEMO_WEBINAR_URL;
+  // Carries this project's id onto the registration page (?lp=<id>) so
+  // register_for_webinar can stamp it on the registrant row it creates --
+  // the live room then reads it back by access_token alone to
+  // auto-complete this step once the owner actually finishes the video,
+  // instead of relying only on the manual "I watched the demo" button.
+  const demoUrl =
+    baseDemoUrl && projectId
+      ? `${baseDemoUrl}${baseDemoUrl.includes("?") ? "&" : "?"}lp=${projectId}`
+      : baseDemoUrl;
 
   useEffect(() => {
     if (projectId) trackLaunchpadEvent(projectId, "launchpad_step_started", { step_key: "demo" });

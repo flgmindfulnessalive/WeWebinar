@@ -97,10 +97,10 @@ export default async function RegisterPage({
   searchParams,
 }: {
   params: Promise<RouteParams>;
-  searchParams: Promise<{ preview?: string }>;
+  searchParams: Promise<{ preview?: string; lp?: string }>;
 }) {
   const { accountSlug, webinarSlug } = await params;
-  const { preview } = await searchParams;
+  const { preview, lp: launchpadProjectId } = await searchParams;
   const supabase = await createClient();
   const t = await getTranslations("Register");
 
@@ -272,6 +272,7 @@ export default async function RegisterPage({
       brandColorA={brandColorA}
       brandColorB={brandColorB}
       previewMode={isPreview}
+      launchpadProjectId={launchpadProjectId ?? null}
     />
   );
 

@@ -43,6 +43,7 @@ export function RegistrationForm({
   brandColorA = DEFAULT_BRAND_COLOR_A,
   brandColorB = DEFAULT_BRAND_COLOR_B,
   previewMode = false,
+  launchpadProjectId = null,
 }: {
   webinarId: string;
   scheduleMode: ScheduleMode;
@@ -53,6 +54,12 @@ export function RegistrationForm({
   brandColorA?: string;
   brandColorB?: string;
   previewMode?: boolean;
+  // Set only when this registration page was opened from the Launchpad's
+  // "Watch the evergreen demo" link (?lp=<project_id>) -- carried through
+  // to register_for_webinar so the live room can later auto-complete that
+  // project's "demo" step once this specific viewer finishes the video.
+  // Never set for a real visitor's registration.
+  launchpadProjectId?: string | null;
 }) {
   const t = useTranslations("Register.form");
   const locale = useLocale();
@@ -143,6 +150,9 @@ export function RegistrationForm({
     >
       <input type="hidden" name="webinar_id" value={webinarId} />
       <input type="hidden" name="visitor_timezone" value={visitorTimezone} />
+      {launchpadProjectId && (
+        <input type="hidden" name="launchpad_project_id" value={launchpadProjectId} />
+      )}
 
       {showBothTabs && (
         <div className="flex gap-2">
