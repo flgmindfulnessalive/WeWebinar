@@ -17,6 +17,7 @@ import { FacebookPixel } from "@/components/facebook-pixel";
 import { PoweredByBadge } from "@/components/powered-by-badge";
 import { PromoVideoEmbed } from "@/components/promo-video-embed";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
+import { isBulletIntroLine } from "@/lib/audience-bullets";
 import { RegistrationForm } from "./registration-form";
 
 type RouteParams = { locale: string; accountSlug: string; webinarSlug: string };
@@ -374,23 +375,29 @@ export default async function RegisterPage({
                 <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
                   {t("audienceHeading")}
                 </p>
-                {bullets.map((bullet, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <svg
-                      className="mt-0.5 size-[18px] shrink-0 text-indigo-200"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <span className="text-sm leading-relaxed text-white/75">{bullet}</span>
-                  </div>
-                ))}
+                {bullets.map((bullet, i) =>
+                  isBulletIntroLine(bullet) ? (
+                    <p key={i} className="text-sm font-medium leading-relaxed text-white/90">
+                      {bullet}
+                    </p>
+                  ) : (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <svg
+                        className="mt-0.5 size-[18px] shrink-0 text-indigo-200"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="m9 12 2 2 4-4" />
+                      </svg>
+                      <span className="text-sm leading-relaxed text-white/75">{bullet}</span>
+                    </div>
+                  )
+                )}
               </div>
             )}
           </div>
@@ -453,24 +460,30 @@ export default async function RegisterPage({
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                   {t("audienceHeading")}
                 </p>
-                {bullets.map((bullet, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <svg
-                      className="mt-0.5 size-[18px] shrink-0"
-                      style={{ color: brandColorA }}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <span className="text-sm leading-relaxed text-gray-600">{bullet}</span>
-                  </div>
-                ))}
+                {bullets.map((bullet, i) =>
+                  isBulletIntroLine(bullet) ? (
+                    <p key={i} className="text-sm font-medium leading-relaxed text-gray-700">
+                      {bullet}
+                    </p>
+                  ) : (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <svg
+                        className="mt-0.5 size-[18px] shrink-0"
+                        style={{ color: brandColorA }}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="m9 12 2 2 4-4" />
+                      </svg>
+                      <span className="text-sm leading-relaxed text-gray-600">{bullet}</span>
+                    </div>
+                  )
+                )}
               </div>
             )}
 

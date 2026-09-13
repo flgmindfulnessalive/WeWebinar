@@ -7,6 +7,7 @@ import { Calendar, Clock, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { fakeViewerCount } from "@/lib/fake-viewers";
+import { isBulletIntroLine } from "@/lib/audience-bullets";
 import { buildIcsDataUri, googleCalendarUrl } from "@/lib/ics";
 import { formatDurationLabel } from "@/lib/time";
 import { DEFAULT_BRAND_COLOR_A, DEFAULT_BRAND_COLOR_B } from "@/lib/brand-colors";
@@ -211,23 +212,29 @@ export function WaitingRoomClient({
       <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
         {t("audienceHeading")}
       </p>
-      {bullets.map((bullet, i) => (
-        <div key={i} className="flex items-start gap-2.5">
-          <svg
-            className="mt-0.5 size-4 shrink-0 text-indigo-200"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="m9 12 2 2 4-4" />
-          </svg>
-          <span className="text-sm leading-relaxed text-white/75">{bullet}</span>
-        </div>
-      ))}
+      {bullets.map((bullet, i) =>
+        isBulletIntroLine(bullet) ? (
+          <p key={i} className="text-sm font-medium leading-relaxed text-white/90">
+            {bullet}
+          </p>
+        ) : (
+          <div key={i} className="flex items-start gap-2.5">
+            <svg
+              className="mt-0.5 size-4 shrink-0 text-indigo-200"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            <span className="text-sm leading-relaxed text-white/75">{bullet}</span>
+          </div>
+        )
+      )}
     </div>
   );
 

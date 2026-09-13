@@ -1671,7 +1671,7 @@
     "typeImage": "Image",
     "typeVideo": "Video",
     "bulletsLabel": "Who is this webinar for? (one item per line)",
-    "bulletsHint": "Helps the visitor recognize themselves before registering. Example: \"Coaches who want to fill their calendar with 1:1 clients\".",
+    "bulletsHint": "Helps the visitor recognize themselves before registering. Example: \"Coaches who want to fill their calendar with 1:1 clients\". End a line with \":\" (for example \"This webinar is for you if:\") and it shows as an intro for the list, without an icon, instead of as another item.",
     "testimonialsLabel": "Testimonials (optional) — format \"Name: text\", one per line",
     "calendarButtonLabel": "\"Add to my calendar\" button",
     "fakeCounterLabel": "Connected viewers counter",
