@@ -137,6 +137,15 @@ export function LiveRoomClient({
   const [isEnded, setIsEnded] = useState(
     durationSeconds > 0 && initialElapsedSeconds >= durationSeconds
   );
+  // Set when the periodic resync learns the host has archived/unpublished
+  // this webinar mid-session -- distinct from isEnded (which means the
+  // video itself finished): an already-open tab used to keep polling and
+  // recording heartbeats against a webinar that no longer represents a
+  // live session, discovered only if the visitor happened to refresh.
+  // Deliberately does *not* fire the completion webhook the way a real
+  // isEnded does -- the host pulling the webinar isn't the same signal as
+  // an attendee watching it through.
+  const [isHostEnded, setIsHostEnded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showPanel, setShowPanel] = useState(true);
   // "Theater mode" -- expands the video to cover the whole viewport,
@@ -262,32 +271,36 @@ export function LiveRoomClient({
   // getElapsedSeconds above), which is what produced attendees showing
   // absurd watch times (20+ hours) in analytics.
   useEffect(() => {
-    if (isEnded) return;
+    if (isEnded || isHostEnded) return;
     const interval = setInterval(() => {
       recordViewerEvent("heartbeat", { videoTimestampSeconds: Math.round(getElapsedSeconds()) });
     }, HEARTBEAT_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [isEnded, recordViewerEvent, getElapsedSeconds]);
+  }, [isEnded, isHostEnded, recordViewerEvent, getElapsedSeconds]);
 
   // Periodic server resync — corrects drift from sleep/backgrounding and
   // catches the ended state even if this tab never fires 'ended'. Same
-  // stop-on-end guard as the heartbeat above: once isEnded is true there's
-  // nothing left to resync.
+  // stop-on-end guard as the heartbeat above: once isEnded/isHostEnded is
+  // true there's nothing left to resync.
   useEffect(() => {
-    if (isEnded) return;
+    if (isEnded || isHostEnded) return;
     const interval = setInterval(async () => {
       const { data } = await supabase.rpc("get_registrant_playback_state", {
         p_access_token: accessToken,
       });
       const state = data?.[0];
       if (!state) return;
+      if (state.webinar_status !== "published") {
+        setIsHostEnded(true);
+        return;
+      }
       elapsedAnchorRef.current = state.elapsed_seconds;
       mountedAtRef.current = Date.now();
       if (state.duration_seconds !== null) setDurationSeconds(state.duration_seconds);
       if (state.is_ended) setIsEnded(true);
     }, RESYNC_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [isEnded, supabase, accessToken]);
+  }, [isEnded, isHostEnded, supabase, accessToken]);
 
   const handleLoadedMetadata = (playerDurationSeconds: number) => {
     if (playerRef.current) playerRef.current.currentTime = getElapsedSeconds();
@@ -456,7 +469,9 @@ export function LiveRoomClient({
             isTheaterMode && "fixed inset-0 z-50"
           )}
         >
-          {isEnded ? (
+          {isHostEnded ? (
+            <HostEndedState />
+          ) : isEnded ? (
             <EndedState
               webinarTitle={webinarTitle}
               ctas={ctas}
@@ -1243,6 +1258,16 @@ function CtaOverlay({
   }
 
   return null;
+}
+
+function HostEndedState() {
+  const t = useTranslations("LiveRoom");
+  return (
+    <div className="flex flex-col items-center gap-4 px-6 text-center text-white">
+      <p className="text-xl font-semibold">{t("hostEndedTitle")}</p>
+      <p className="text-sm text-white/70">{t("hostEndedBody")}</p>
+    </div>
+  );
 }
 
 function EndedState({

@@ -406,6 +406,8 @@
     "alreadyVoted": "Ya votaste",
     "thanksForJoining": "Gracias por acompañarnos en {title}",
     "webinarEnded": "El webinar terminó.",
+    "hostEndedTitle": "Esta sesión ya no está disponible",
+    "hostEndedBody": "El anfitrión finalizó o archivó este webinar.",
     "seeMore": "Ver más",
     "sendReaction": "Enviar reacción {emoji}",
     "openReactions": "Abrir reacciones",
