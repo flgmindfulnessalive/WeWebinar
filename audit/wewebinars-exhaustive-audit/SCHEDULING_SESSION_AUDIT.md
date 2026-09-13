@@ -2,6 +2,8 @@
 
 Phase 2 synthesis. Full evidence trail for every finding lives in `SCHEDULING_SESSION_AUDIT_RAW.md`; full template (evidence/condition/reproduction/impact/remediation/regression-test) for each finding lives in `FINDINGS.md`. This file is the curated summary: what was checked, what's confirmed, what's still open.
 
+**Remediation status (2026-09-13):** WW-P1-001 was retracted as a false positive (see its own note below/in `FINDINGS.md`). WW-P2-001 (mid-session edits/archiving) and WW-P3-001 (spots-left display) are both now **FIXED** — the latter turned out worse than originally scoped: the anon-role query behind it was fully blocked by RLS (always 0 rows), so the registration page always showed full availability regardless of real registration counts; fixed via a new SECURITY DEFINER RPC. See `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for both resolutions.
+
 ## Scope
 
 The full attendee-facing state machine: fixed-slot and just-in-time (JIT) scheduling, timezone conversion, the waiting room, the live room's server-anchored timing, and the `register_for_webinar()` RPC's validation. Method: static code review of `src/lib/scheduling.ts`, `src/lib/actions/register.ts`, every RLS policy and trigger touching `registrants`/`webinar_schedules`/`webinar_sessions`, and the room pages/RPCs. No live database or browser access.

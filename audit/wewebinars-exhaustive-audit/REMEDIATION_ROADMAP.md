@@ -17,32 +17,40 @@ Findings that are either actively risking real data loss, or free to fix (a one-
 
 ---
 
-## Before scaling paid ad-traffic campaigns
+## Before scaling paid ad-traffic campaigns — ✅ 13/15 DONE 2026-09-13 (2 deliberately deferred)
 
-Findings that don't threaten the platform in its current, presumably-modest traffic state, but would directly undermine the specific thing ad spend is supposed to produce: reliable registrations, trustworthy conversion metrics, and video that plays. Ship all of these before meaningfully increasing ad spend or running a launch-scale campaign.
+Findings that don't threaten the platform in its current, presumably-modest traffic state, but would directly undermine the specific thing ad spend is supposed to produce: reliable registrations, trustworthy conversion metrics, and video that plays. **13 of the 15 items below are now shipped.** The remaining two (WW-P2-013, WW-P2-018) are explicitly deferred with reasoning — see their rows.
 
 **Registration integrity:**
-- WW-P2-001 (video/duration edits or archiving mid-session)
-- WW-P3-001 (spots-left display mismatch — cosmetic but visible during a high-traffic launch)
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P2-001 | Video/duration edits or archiving mid-session. | **FIXED.** Live room now re-checks `webinar_status` on resync and shows a dedicated "host ended this session" state (`live-room-client.tsx`), instead of continuing to play a webinar the host archived or unpublished mid-session. |
+| WW-P3-001 | Spots-left display mismatch — cosmetic but visible during a high-traffic launch. | **FIXED — and worse than originally scoped.** The anon-role query behind this display was silently blocked entirely by `registrants_select_members` RLS (always 0 rows), so the registration page always showed full availability regardless of real registration counts, not just an occasional undercount. Fixed via a new SECURITY DEFINER RPC, `get_webinar_occurrence_spots_taken`, called from `page.tsx`. |
 
 **Metric integrity — the numbers a host will use to judge whether the ad spend worked:**
-- WW-P1-004 / WW-P2-007 (CTA conversion can exceed 100%, undeduped)
-- WW-P1-005 (watch time / lead score trivially fabricated)
-- WW-P2-004 (inconsistent "attendee" definition across the dashboard)
-- WW-P2-005 (exports silently ignore the date filter)
-- WW-P2-006 (no rate limit on the analytics write path)
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P1-004 / WW-P2-007 | CTA conversion can exceed 100%, undeduped. | **FIXED.** `get_webinar_cta_stats` now dedupes clicks per registrant and caps the reported rate, and standardizes the "attendee" denominator (see WW-P2-004). |
+| WW-P1-005 | Watch time / lead score trivially fabricated. | **FIXED.** `record_viewer_event` now rate-limits and clamps client-reported progress server-side instead of trusting whatever the client sends. |
+| WW-P2-004 | Inconsistent "attendee" definition across the dashboard. | **FIXED** as part of the `get_webinar_cta_stats` migration — one shared attendee definition used everywhere that RPC's stats are read. |
+| WW-P2-005 | Exports silently ignore the date filter. | **FIXED.** `/api/webinars/[id]/export` and `/api/webinars/[id]/report` now thread the `?range=` query param through to every underlying query/RPC call and to the report's own date-range label; the dashboard's download links now pass `?range=${range}`. |
+| WW-P2-006 | No rate limit on the analytics write path. | **FIXED** in the same `record_viewer_event` migration as WW-P1-005 — the fix is one rate-limit/clamp change covering both findings. |
 
 **Video reliability — a broken video during a paid-traffic launch is the single worst outcome this audit can name:**
-- WW-P1-006, WW-P1-007, WW-P1-008 (no error handling, any provider)
-- WW-P1-009 (video source publicly exposed pre-registration — also a cost-control issue for direct-URL hosts once real traffic hits their storage bill)
-- WW-P1-010 (broken video still counts as a full "completion")
-- WW-P2-013 (no monitoring/alerting when a video breaks)
-- WW-P2-011 (stale duration on a silent file swap)
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P1-006, WW-P1-007, WW-P1-008 | No error handling, any provider. | **FIXED.** All three locked players (`locked-youtube-player.tsx`, `locked-vimeo-player.tsx`, `locked-video-player.tsx`) now listen for their provider's real error event (YouTube `onError`, Vimeo `"error"`, native `<video>` `error`) and render a distinct "video unavailable" state instead of silently freezing. |
+| WW-P1-009 | Video source publicly exposed pre-registration — also a cost-control issue for direct-URL hosts once real traffic hits their storage bill. | **FIXED.** `anon` no longer has table-wide SELECT on `webinars`; a new column-restricted grant excludes `video_provider`/`video_source`, and a new token-gated RPC, `get_webinar_video_for_registrant`, is the only way to read those two columns pre-registration. |
+| WW-P1-010 | Broken video still counts as a full "completion". | **FIXED.** The new player error handler wires into the live room's completion logic (`fireCompletionOnce` guard) so a video-unavailable event can no longer be counted as a completed watch. |
+| WW-P2-011 | Stale duration on a silent file swap. | **FIXED.** `handleTimeUpdate` now allows for a 30-second (`STALE_DURATION_GRACE_SECONDS`) grace window past the recorded duration before treating playback as anomalous, instead of a swap silently producing a stuck/incorrect progress bar. |
+| WW-P2-013 | No monitoring/alerting when a video breaks. | **NOT ATTEMPTED.** Out of scope for this pass — a real fix needs new infrastructure (a health-check job and an owner-alerting channel), not a code-level change alongside the others in this batch. Left for a dedicated follow-up. |
 
 **Billing correctness — matters the moment real subscriptions are flowing at volume:**
-- WW-P1-003 (scheduled-cancellation access handling — verify against live Whop first, per `OPEN_QUESTIONS.md`)
-- WW-P2-002 (plan-limit race conditions — more likely to trigger under real concurrent traffic)
-- WW-P2-018 (Whop webhook idempotency — Whop redelivery is confirmed to happen in production)
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P1-003 | Scheduled-cancellation access handling — verify against live Whop first, per `OPEN_QUESTIONS.md`. | **FIXED.** `mapWhopStatus` (`src/app/api/webhooks/whop/route.ts`) now maps Whop's `canceling` status to `active` (previously fell into the default "suspended" branch, which could cut off a host's public pages the moment they scheduled a future cancellation instead of at the period's actual end) and `drafted` to a no-op (previously could incorrectly suspend a real active account on an unrelated drafted-membership event). |
+| WW-P2-002 | Plan-limit race conditions — more likely to trigger under real concurrent traffic. | **FIXED.** `enforce_webinar_publish_limit()` and `enforce_invitation_user_limit()` now take a row lock before counting, closing the TOCTOU window two concurrent requests could otherwise race through. |
+| WW-P2-018 | Whop webhook idempotency — Whop redelivery is confirmed to happen in production. | **DELIBERATELY DEFERRED — the audit's own recommended fix would introduce a worse bug.** The obvious fix (a `membership_id`-keyed claim table, mirroring `whop_starter_kit_webhook_claims`) is unsafe here: unlike the Starter Kit's genuine one-time claim, the same `membership_id` legitimately recurs across a real subscription lifecycle (e.g. active → past_due → active again is a valid re-transition, not a duplicate). A naive `(membership_id, status)` claim would silently drop the second "active" event after the first was ever claimed months earlier, turning a cosmetic duplicate-email bug into a real stuck-subscription-status bug. Needs live Whop sandbox verification of the actual redelivery signal shape (per `OPEN_QUESTIONS.md`) before a safe idempotency key can be chosen. |
 
 ---
 

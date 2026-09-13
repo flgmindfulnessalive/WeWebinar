@@ -6,13 +6,16 @@ Phase 2 synthesis deliverable. Every finding below is drawn from one of the six 
 
 **Total: 49 confirmed findings** (48 standing, 1 retracted as a false positive during remediation — see WW-P1-001 below). Original breakdown: 0 P0 · 12 P1 (11 standing) · 17 P2 · 19 P3 · 1 P4.
 
-**Remediation status (updated 2026-09-13):** the four "Immediate (24–48h)" items from `REMEDIATION_ROADMAP.md` have been addressed:
+**Remediation status (updated 2026-09-13):** the "Immediate (24–48h)" horizon (4 items) and the "before scaling paid ad-traffic campaigns" horizon (15 items) from `REMEDIATION_ROADMAP.md` have both been addressed — 17 fixed, 1 retracted as a false positive, 2 deliberately deferred:
 - **WW-P1-001** — investigated while preparing the fix; turned out to be **already fixed upstream** by a later migration the original scan didn't trace forward. Retracted as a false positive, no code change needed. See the entry below for the full account.
 - **WW-P1-002** — **FIXED.** `reactivateAccount` now clears `canceled_at`/`deletion_warning_sent_at` (`src/lib/actions/admin.ts`).
 - **WW-P1-011** — **FIXED.** `next` redirect params are now validated as same-origin relative paths via a new `sanitizeRedirectPath()` helper (`src/lib/safe-redirect.ts`, with a regression test), used in both `src/app/auth/callback/route.ts` and `src/app/auth/confirm/confirm-client.tsx`.
 - **WW-P1-012 / WW-P2-014 / WW-P3-013** — **FIXED.** A new migration (`supabase/migrations/20260913000006_revoke_ungranted_security_definer_functions.sql`) explicitly revokes EXECUTE on all three functions from `public`/`anon`/`authenticated`, closing the ambiguity permanently regardless of what the live-DB verification query in `OPEN_QUESTIONS.md` would have found.
+- **WW-P2-001, WW-P3-001, WW-P1-004/WW-P2-007, WW-P1-005, WW-P2-004, WW-P2-005, WW-P2-006, WW-P1-006/007/008, WW-P1-009, WW-P1-010, WW-P2-011, WW-P1-003, WW-P2-002** — **FIXED.** See each entry below for its specific resolution, or `REMEDIATION_ROADMAP.md` for the full itemized list.
+- **WW-P2-013** — **NOT ATTEMPTED.** Needs new health-check/alerting infrastructure, out of scope for a code-level remediation pass. See its entry below.
+- **WW-P2-018** — **DELIBERATELY DEFERRED.** The audit's own recommended fix (a naive claim table) was found to be unsafe for a membership status that legitimately recurs across a real subscription lifecycle; needs live Whop verification of the actual redelivery signal shape first. See its entry below and `REMEDIATION_ROADMAP.md` for the full reasoning.
 
-The other 44 findings are unchanged and still open — see `REMEDIATION_ROADMAP.md` for what's next.
+The remaining findings (not in either horizon above) are unchanged and still open — see `REMEDIATION_ROADMAP.md` for what's next.
 
 ---
 
@@ -42,7 +45,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** `reactivateAccount` should clear `canceled_at` and `deletion_warning_sent_at` to `null`, mirroring the webhook's own `else if (before.canceled_at)` branch.
 - **Regression test:** Reactivate an account with stale `canceled_at`/`deletion_warning_sent_at`, assert both are null afterward; simulate a subsequent cancellation + cron run and assert a warning email is queued before any purge.
 
-### WW-P1-003 — `membership.cancel_at_period_end_changed` is never handled; a scheduled cancellation may cut off access immediately instead of at period end
+### WW-P1-003 — `membership.cancel_at_period_end_changed` is never handled; a scheduled cancellation may cut off access immediately instead of at period end — **FIXED 2026-09-13**
 - **Domain:** Whop · **Source:** WHOP_AUDIT_RAW.md, W-04
 - **File/Function:** `src/app/api/webhooks/whop/route.ts:34` (`SYNCED_EVENTS`), `:36-52` (`mapWhopStatus`)
 - **Evidence:** `SYNCED_EVENTS` omits `membership.cancel_at_period_end_changed` (confirmed present in `@whop/sdk`'s `WebhookEvent` enum). `mapWhopStatus`'s `switch` has no case for the SDK's real `canceling`/`drafted` membership statuses — both fall into `default: return "suspended"`. `cancelSelfServeMembership` (`src/lib/whop.ts:174-183`) explicitly documents the intent: "keeps access until the period the customer already paid for ends."
@@ -54,7 +57,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Add explicit handling for `canceling` (map to active/past_due, persist a `cancel_at_period_end`/`scheduled_cancellation_at` flag for the UI) and `drafted` (should not affect `subscription_status`); subscribe to `membership.cancel_at_period_end_changed` explicitly. Confirm Whop's actual event sequence in a sandbox before shipping the fix.
 - **Regression test:** Webhook-handler unit test asserting a `canceling`-status event does not flip `subscription_status` away from `active`/`trialing`.
 
-### WW-P1-004 — CTA click conversion percentage can exceed 100%, because clicks are never deduped per registrant
+### WW-P1-004 — CTA click conversion percentage can exceed 100%, because clicks are never deduped per registrant — **FIXED 2026-09-13**
 - **Domain:** Analytics Integrity · **Source:** ANALYTICS_INTEGRITY_AUDIT_RAW.md, F-01
 - **File/Function:** `get_webinar_cta_stats` (`supabase/migrations/20260903000004_separate_cta_poll_analytics.sql:43-60`); `record_viewer_event` (`20260822000003_functions_and_triggers.sql:445-447`)
 - **Evidence:** `record_viewer_event` bare-inserts `cta_click` events with no idempotency key. `get_webinar_cta_stats` computes `clicks` as raw `count(*)`, not `count(distinct registrant_id)`, and `conversion_pct = 100.0 * clicks / attendee_count` has no `LEAST(...,100)` cap. The same CTA is independently clickable from two live UI surfaces at once (the on-video overlay and the "Avisos" notifications tab), so a single normal attendee re-checking a notification produces two click events for one registrant.
@@ -66,7 +69,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Dedupe `clicks` via `count(distinct registrant_id)` for the conversion-rate numerator (same pattern already used for poll votes), keep raw count separately if wanted as "total clicks," and cap `conversion_pct` at 100 defensively.
 - **Regression test:** SQL/RPC test: two `cta_click` events for one registrant → `get_webinar_cta_stats` returns `conversion_pct <= 100` and a click-count of 1 (or clearly-labeled 2 "total clicks" separate from a 1-registrant conversion count).
 
-### WW-P1-005 — "Watch time" is a self-reported wall-clock value with no server-side plausibility check, trivially gameable
+### WW-P1-005 — "Watch time" is a self-reported wall-clock value with no server-side plausibility check, trivially gameable — **FIXED 2026-09-13**
 - **Domain:** Analytics Integrity · **Source:** ANALYTICS_INTEGRITY_AUDIT_RAW.md, F-04
 - **File/Function:** `getElapsedSeconds()` (`live-room-client.tsx:168-176`); `record_viewer_event` (`20260822000003_functions_and_triggers.sql:425-451`)
 - **Evidence:** Every `video_timestamp_seconds` sent to `record_viewer_event` is `Math.round(getElapsedSeconds())` — a client-computed wall-clock timer, never `player.currentTime`. The server function does no monotonicity check, no bound against `duration_seconds`, no rate limit, and is granted to `anon`, reachable with only a registrant's `access_token` (present in the room URL / every reminder email, not a strong secret).
@@ -76,7 +79,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Clamp `p_video_timestamp_seconds` server-side to `[0, duration_seconds]` and to a plausible delta since the registrant's last event; reject/flag anomalous jumps; add a per-registrant rate limit mirroring the one already built for chat messages.
 - **Regression test:** RPC test asserting a `heartbeat` call reporting a timestamp far beyond any plausible elapsed-time-since-last-event is rejected or capped, not recorded verbatim.
 
-### WW-P1-006 — YouTube player has no `onError` handling; a dead video shows a misleading "check your ad blocker" message forever
+### WW-P1-006 — YouTube player has no `onError` handling; a dead video shows a misleading "check your ad blocker" message forever — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** VIDEO_AUDIT_RAW.md, F-YT-1
 - **File/Function:** `src/components/locked-youtube-player.tsx:343-387`
 - **Evidence:** Only `onReady`/`onStateChange`/`onPlaybackRateChange` are wired on the `YT.Player` instance; the IFrame API's `onError` event (fired for deleted/private/embedding-disabled videos) is never registered. `onReady` still fires even when the video itself errors, so after `STUCK_INITIAL_MS` (10s) the misleading `showBlockedWarning` — *"revisa que no tengas un bloqueador de anuncios activo"* — displays with a "Reintentar" button that will retry forever and never succeed.
@@ -87,7 +90,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Register an `onError` handler on `YT.Player`, surface a distinct, accurate "video unavailable" message (not the ad-blocker message), and ideally alert the account owner (ties to WW-P2-013).
 - **Regression test:** Component test that simulates the IFrame API's `onError` callback firing and asserts a distinct "unavailable" UI state (not `showBlockedWarning`) is rendered.
 
-### WW-P1-007 — Vimeo player has no `error`/domain-restriction handling; falls into the same misleading ad-blocker message
+### WW-P1-007 — Vimeo player has no `error`/domain-restriction handling; falls into the same misleading ad-blocker message — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** VIDEO_AUDIT_RAW.md, F-VIM-2
 - **File/Function:** `src/components/locked-vimeo-player.tsx:285-291`
 - **Evidence:** Registers `timeupdate, play, pause, ended, bufferstart, bufferend, playbackratechange` — no `error` listener, even though the Vimeo Player SDK emits one for domain-restricted embeds, wrong/missing privacy hash, or a deleted video. Falls into the same `STUCK_INITIAL_MS` (10s) → `showBlockedWarning` path as YouTube — doubly misleading here since Vimeo's own domain-restriction feature (a legitimate host-configured Vimeo setting) is a very plausible real-world cause with nothing to do with ad blockers.
@@ -97,7 +100,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Register the SDK's `error` event, surface Vimeo's actual error/type where possible, specifically call out domain-restriction as a distinct, actionable case.
 - **Regression test:** Component test simulating the Vimeo SDK's `error` event and asserting a distinct UI state from the generic ad-blocker warning.
 
-### WW-P1-008 — Direct-URL (`video_propio`) player has no `error` listener at all; a dead file shows a "tap to resume" prompt with no real recovery path
+### WW-P1-008 — Direct-URL (`video_propio`) player has no `error` listener at all; a dead file shows a "tap to resume" prompt with no real recovery path — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** VIDEO_AUDIT_RAW.md, F-DIR-1
 - **File/Function:** `src/components/locked-video-player.tsx:113-155`
 - **Evidence:** Registers only `playing`, `waiting`, `pause` — no `error` listener on the `<video>` element, even though `HTMLMediaElement` fires a real `error` event with `MediaError` codes for exactly this case. `loadedmetadata`/`playing` never fire on a 404/CORS-blocked/corrupted source, so after `STUCK_INITIAL_MS` (4000ms — deliberately shorter than YouTube's 10s) the viewer sees **"▶️ Toca para reanudar el video"**, i.e. WeWebinars tells the registrant the video is merely *paused* when it is permanently broken; tapping it silently fails again (`.catch(() => {})`). Unlike YouTube/Vimeo, this provider has **no generic "something's wrong" message at all**.
@@ -107,7 +110,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Add a `video.addEventListener("error", ...)` handler, surface a distinct "this video can't be played" message, and strongly consider periodic server-side health checks (HEAD/Range request) against `direct_url` sources with owner alerting — this is the one provider where nothing upstream (YouTube/Vimeo) will ever report the failure on WeWebinars' behalf.
 - **Regression test:** Component test simulating a `<video>` `error` event and asserting a distinct UI state, not the resume prompt.
 
-### WW-P1-009 — `webinars` table RLS exposes the raw video URL/ID to any anonymous visitor of the public registration page, before registration or the live window
+### WW-P1-009 — `webinars` table RLS exposes the raw video URL/ID to any anonymous visitor of the public registration page, before registration or the live window — **FIXED 2026-09-13**
 - **Domain:** Video (cross-cutting) · **Source:** VIDEO_AUDIT_RAW.md, F-CROSS-1
 - **File/Function:** `supabase/migrations/20260822000004_rls_policies.sql:87-89` (`webinars_select_public`)
 - **Evidence:**
@@ -124,7 +127,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Create a `webinar_public_profile`-style view exposing only registration-page-safe columns (title, description, schedule) and grant `anon`/`authenticated` select on the view, not the base table; restrict `video_provider`/`video_source`/`duration_seconds` to `is_account_member()` and the already-correct token-gated RPCs. Fix the live room's own server-side fetch (which also selects directly from `webinars`) at the same single point (the RLS/view layer), not per call site.
 - **Regression test:** RLS test asserting an anonymous `select video_source from webinars where id = ...` on a published webinar returns no rows (or null for that column) once the view-based fix ships, while the registration page's own required columns remain readable.
 
-### WW-P1-010 — Chat/CTAs/completion webhook are driven by a wall clock independent of whether video ever actually played, so a totally broken video still fires a full "attended/completed" signal
+### WW-P1-010 — Chat/CTAs/completion webhook are driven by a wall clock independent of whether video ever actually played, so a totally broken video still fires a full "attended/completed" signal — **FIXED 2026-09-13**
 - **Domain:** Video (cross-cutting) · **Source:** VIDEO_AUDIT_RAW.md, F-CROSS-4
 - **File/Function:** `getElapsedSeconds()`, `handleTimeUpdate()` (`live-room-client.tsx:168-176, 299-317`)
 - **Evidence:** `getElapsedSeconds()` — not `player.currentTime` — drives CTA/poll windows, chat message timing, the fake viewer counter, and `isEnded`/`fireCompletionOnce()` (which fires the `completion` webhook and the "attended a full webinar" analytics signal). This is a deliberate, documented tradeoff for tolerating ordinary cross-origin player reporting lag — but has no fallback for *total, permanent* video failure (any of WW-P1-006/007/008).
@@ -170,14 +173,14 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 
 *(condensed template — all required fields present, terser prose; full writeups in the cited `*_RAW.md`)*
 
-### WW-P2-001 — No enforcement when a host edits a live webinar's video/duration or archives it mid-session
+### WW-P2-001 — No enforcement when a host edits a live webinar's video/duration or archives it mid-session — **FIXED 2026-09-13**
 - **Domain:** Scheduling · **Source:** SESS-03 · **File:** `src/lib/actions/webinars.ts:311-356`, `live/[token]/page.tsx:23-31`
 - **Condition → Impact:** Host edits video/duration or archives a webinar while a registrant's tab is already open → the open tab keeps the old video while server-anchored timing reflects the new duration (CTAs can misfire), and archiving never kicks an already-open tab (only a refresh/new tab 404s) — an undocumented, asymmetric behavior.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Medium
 - **Fix:** Have `get_registrant_playback_state`/`get_registrant_session` check and surface `webinars.status`; redirect/show "ended by host" instead of silently continuing — or explicitly document current behavior as intentional.
 - **Regression test:** Simulate a status change mid-session and assert the live room either reflects it or the behavior is asserted-intentional in a test.
 
-### WW-P2-002 — Two plan-limit triggers (`max_active_webinars`, `max_users`) have no row lock: exploitable TOCTOU races
+### WW-P2-002 — Two plan-limit triggers (`max_active_webinars`, `max_users`) have no row lock: exploitable TOCTOU races — **FIXED 2026-09-13**
 - **Domain:** Whop · **Source:** W-02 · **File:** `supabase/migrations/20260822000003_functions_and_triggers.sql:204-239, 284-316`
 - **Condition → Impact:** Two concurrent publish/invite requests at `limit - 1` both read the same pre-commit count and both succeed, exceeding the plan's real limit — unlike the two *other* limit triggers (`enforce_monthly_registrant_limit`, `enforce_attendee_limit`), which already lock correctly.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
@@ -190,25 +193,25 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** High (schema); Medium (business-realism of the scenario, needs a product decision — see Open Questions) · **Detectability:** Low · **Effort:** Small
 - **Fix:** Verify against product/live Whop whether this is realistic; if so, drop the bare-column `UNIQUE` or scope it to `(billing_customer_id, plan_id)`.
 
-### WW-P2-004 — "Attendee" has two different denominators across analytics RPCs
+### WW-P2-004 — "Attendee" has two different denominators across analytics RPCs — **FIXED 2026-09-13**
 - **Domain:** Analytics · **Source:** F-02 · **File:** `get_webinar_cta_stats` vs. every other analytics RPC
 - **Condition → Impact:** A registrant who disconnects before the first 15s heartbeat is excluded from the main "attendee" KPI/funnel/retention/lead-score population but *included* in `get_webinar_cta_stats`'s own attendee count — producing a CTA conversion % computed against a different population than the funnel shown right above it on the same page.
 - **Confidence:** High · **Detectability:** Medium (visible if a host cross-checks numbers by hand) · **Effort:** Small
 - **Fix:** Standardize "attendee" as "≥1 event with non-null `video_timestamp_seconds`" everywhere, including `get_webinar_cta_stats`'s `attendees` CTE.
 
-### WW-P2-005 — CSV export and PDF report always report all-time totals, silently ignoring the dashboard's active date-range filter
+### WW-P2-005 — CSV export and PDF report always report all-time totals, silently ignoring the dashboard's active date-range filter — **FIXED 2026-09-13**
 - **Domain:** Analytics · **Source:** F-03 · **File:** `src/app/api/webinars/[id]/export/route.ts:61-64`, `.../report/route.tsx:75-89`
 - **Condition → Impact:** Host filters the dashboard to "This month," sees filtered numbers on screen, downloads CSV/PDF expecting a matching document — gets all-time totals instead, with no UI warning that the export ignores the visible filter.
 - **Confidence:** High · **Detectability:** Medium (host would notice a mismatch, but only after the fact) · **Effort:** Small–Medium
 - **Fix:** Thread `range`/`p_start_date`/`p_end_date` through both export routes, or explicitly label the buttons "(all time)" if that's the intended permanent behavior.
 
-### WW-P2-006 — `record_viewer_event` has no rate limit, enabling unbounded write amplification and self-serve lead-score inflation
+### WW-P2-006 — `record_viewer_event` has no rate limit, enabling unbounded write amplification and self-serve lead-score inflation — **FIXED 2026-09-13**
 - **Domain:** Analytics · **Source:** F-05 · **File:** `supabase/migrations/20260822000003_functions_and_triggers.sql:425-453`
 - **Condition → Impact:** Unlike `post_registrant_message` (rate-limited after a prior cost incident), any registrant/script can call `record_viewer_event` unbounded times/second, inflating both row volume and their own `lead_score` to "hot" with zero real engagement.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
 - **Fix:** Apply the same per-registrant/per-minute rate limit already built for chat messages.
 
-### WW-P2-007 — CTA click totals aren't deduped, the same bug class explicitly fixed for poll votes
+### WW-P2-007 — CTA click totals aren't deduped, the same bug class explicitly fixed for poll votes — **FIXED 2026-09-13**
 - **Domain:** Analytics · **Source:** F-06 · **File:** `get_webinar_cta_stats`, `get_webinar_cta_clickers` vs. `20260828000005_dedupe_poll_votes.sql`
 - **Condition → Impact:** Same root cause as WW-P1-004, called out separately because the fix pattern (dedup via `DISTINCT ON`) already exists in this exact codebase for polls and just needs to be applied consistently.
 - **Confidence:** High · **Detectability:** Medium · **Effort:** Small
@@ -220,19 +223,19 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** Medium-High · **Detectability:** Low · **Effort:** Small
 - **Fix:** Reject (return `null`) rather than silently truncate when a hash is present but fails its pattern check.
 
-### WW-P2-009 — No tab-visibility-change recovery for Vimeo playback (present for YouTube, absent here)
+### WW-P2-009 — No tab-visibility-change recovery for Vimeo playback (present for YouTube, absent here) — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** F-VIM-3 · **File:** `locked-vimeo-player.tsx` (grepped, no `visibilitychange` listener)
 - **Condition → Impact:** Mobile viewers backgrounding the tab get no automatic resume attempt for Vimeo, only the manual 8s resume prompt — YouTube gets both.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
 - **Fix:** Add the same `visibilitychange` → `player.play()` best-effort retry already present for YouTube.
 
-### WW-P2-010 — Same visibility-change recovery gap for direct-URL video
+### WW-P2-010 — Same visibility-change recovery gap for direct-URL video — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** F-DIR-2 · **File:** `locked-video-player.tsx`
 - **Condition → Impact:** Same as WW-P2-009, for the direct-URL provider.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
 - **Fix:** Same as WW-P2-009.
 
-### WW-P2-011 — Stale `duration_seconds` after a host silently swaps the file at the same URL can cut a longer video off mid-content
+### WW-P2-011 — Stale `duration_seconds` after a host silently swaps the file at the same URL can cut a longer video off mid-content — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** F-DIR-3 · **File:** `webinars.ts:311-334` (write), `live-room-client.tsx:299-317` (`handleTimeUpdate`)
 - **Condition → Impact:** `duration_seconds` is written once at save time from a client-reported value and never re-verified; a host re-uploading a longer cut to the same URL (nothing stops this in a bring-your-own-URL model) causes the wall-clock end-check to fire and show "gracias por asistir" before the video visually finishes, for every registrant. (Asymmetric: a *shorter* replacement resolves correctly via the native `ended` event.)
 - **Confidence:** Medium-High · **Detectability:** Low · **Effort:** Medium
@@ -244,7 +247,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
 - **Fix:** Re-validate `videoProvider`/`videoSource` server-side inside `setWebinarVideo` using the same three pure parser functions.
 
-### WW-P2-013 — No video-availability monitoring or account-owner notification for any provider
+### WW-P2-013 — No video-availability monitoring or account-owner notification for any provider — **NOT ATTEMPTED 2026-09-13** (needs new monitoring/alerting infrastructure, out of scope for this remediation pass)
 - **Domain:** Video (cross-cutting) · **Source:** F-CROSS-3 · **File:** N/A — confirmed absent platform-wide
 - **Condition → Impact:** A broken video (any of WW-P1-006/007/008) is invisible to WeWebinars and to the host until a registrant complains or the host happens to watch their own live room — contrasts with the platform's otherwise-thorough outbound-webhook delivery-failure system, which has nothing equivalent for "video failed to load."
 - **Confidence:** High · **Detectability:** Low (that's the finding) · **Effort:** Medium
@@ -274,7 +277,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** Medium (architecture is intentionally an anonymous capability-token model; the account-reassignment side effect appears unintentional) · **Detectability:** Low · **Effort:** Small
 - **Fix:** If `existing.account_id` is already set and differs from the caller's account, do not overwrite it.
 
-### WW-P2-018 — Whop `membership.activated`/`deactivated` webhook processing has no per-membership idempotency guard, risking duplicate lifecycle emails on redelivery
+### WW-P2-018 — Whop `membership.activated`/`deactivated` webhook processing has no per-membership idempotency guard, risking duplicate lifecycle emails on redelivery — **DELIBERATELY DEFERRED 2026-09-13** (the recommended claim-table fix was found unsafe for a status that legitimately recurs across a real lifecycle — see `REMEDIATION_ROADMAP.md`)
 - **Domain:** API Security · **Source:** A.3 #5 · **File:** `src/app/api/webhooks/whop/route.ts:90-183` (`syncMembership`)
 - **Condition → Impact:** Whop redelivers a webhook (confirmed to happen in production — the Starter Kit path has an explicit `whop_starter_kit_webhook_claims` table built specifically to fix this exact race for a sibling code path); two concurrent invocations for the same membership both read the same pre-transition `before.subscription_status` and both send `accountActivatedEmail`/`paymentFailedEmail`.
 - **Confidence:** Medium-High (the race class is proven to occur against this same provider, in this same codebase) · **Detectability:** Low · **Effort:** Small–Medium
@@ -286,7 +289,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 
 *(condensed template)*
 
-### WW-P3-001 — Displayed "spots left" uses a narrower query than the real capacity trigger
+### WW-P3-001 — Displayed "spots left" uses a narrower query than the real capacity trigger — **FIXED 2026-09-13 (worse than originally scoped — see resolution note in entry)**
 - **Domain:** Scheduling · **Source:** SESS-02 · **File:** `.../[webinarSlug]/page.tsx:198-217` · **Confidence:** High · **Effort:** Small
 - The registration page's displayed count ignores JIT registrants entirely, while the real `enforce_attendee_limit()` trigger counts them — the page can show availability the RPC then rejects. Not a security issue (the RPC re-checks atomically); fix by computing `spotsLeft` server-side with the same overlap-window logic.
 

@@ -2,6 +2,8 @@
 
 Phase 2 synthesis. Full evidence trail for every finding lives in `VIDEO_AUDIT_RAW.md`; full finding template lives in `FINDINGS.md`. This file is the curated summary.
 
+**Remediation status (2026-09-13):** WW-P1-006/007/008 (no error handling, any provider), WW-P1-009 (public video-source exposure), WW-P1-010 (broken video still counts as completion), WW-P2-009/010 (Vimeo/direct-URL visibility-change recovery), and WW-P2-011 (stale duration on file swap) are all **FIXED** — see `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for each resolution. **WW-P2-013 (no monitoring/alerting when a video breaks) was not attempted** — a real fix needs new infrastructure (a health-check job + an owner-alerting channel), not a code-level change; deferred to a dedicated follow-up.
+
 ## What "video propio" actually is — the discovery this audit was scoped to make
 
 **There is no upload feature and no WeWebinars-owned storage/CDN/transcoding infrastructure for video, for any of the three providers.** All three are 100% bring-your-own-link models:

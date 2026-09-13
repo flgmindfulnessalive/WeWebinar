@@ -2,6 +2,8 @@
 
 Phase 2 synthesis. Full evidence trail lives in `ANALYTICS_INTEGRITY_AUDIT_RAW.md`; full finding template lives in `FINDINGS.md`. This file is the curated summary.
 
+**Remediation status (2026-09-13):** every metric-integrity finding in this file is now **FIXED** — WW-P1-004/WW-P2-007 (CTA conversion dedup + 100% cap), WW-P1-005/WW-P2-006 (watch-time/lead-score rate-limit + clamp), WW-P2-004 (unified "attendee" definition), and WW-P2-005 (exports now respect the active date range). See `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for each resolution.
+
 ## Scope
 
 Every write path that feeds `viewer_events`/`page_views`/`registrant_messages`, every analytics RPC that reads them back, and the CSV/PDF export routes. The question this domain answers: **can a host trust the numbers WeWebinars shows them** — for ad-spend decisions, lead-scoring, and sales follow-up?

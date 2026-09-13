@@ -2,6 +2,8 @@
 
 Phase 2 synthesis. Full evidence trail for every finding lives in `WHOP_AUDIT_RAW.md`; full finding template lives in `FINDINGS.md`. This file is the curated summary.
 
+**Remediation status (2026-09-13):** WW-P1-002 (silent-deletion risk), WW-P1-003 (`canceling`/`drafted` status handling), and WW-P2-002 (plan-limit row locks) are **FIXED** — see `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for each resolution. WW-P2-018 (main-path webhook idempotency) is **deliberately deferred**: the obvious claim-table fix, modeled on the Starter Kit path this file recommends as a template, turned out to be unsafe here — the same `membership_id` legitimately recurs across a real lifecycle (e.g. active → past_due → active again), so a naive claim would silently drop a real re-transition rather than just a duplicate. Needs live Whop verification of the actual redelivery signal shape before a safe key can be chosen.
+
 ## Scope
 
 Whop is confirmed (per the audit brief's own framing) as the **sole** payment/plan/membership/access authority for WeWebinars — not Stripe, not any other provider. Method: full read of the Whop webhook handler, checkout/cancel routes, `src/lib/whop.ts`, every plan-limit trigger, and the `@whop/sdk` package's own type definitions (to establish the real Whop event/status catalog, since no live Whop sandbox was available). No real Whop purchase, cancellation, or refund was executed.
