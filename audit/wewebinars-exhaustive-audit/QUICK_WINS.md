@@ -2,16 +2,23 @@
 
 Findings from `FINDINGS.md` that are genuinely small (single-file or single-migration changes, no architectural discussion needed, no product decision required first) ranked by impact-per-effort. "Small" here means what the finding's own `estimated_effort` field says — verified against the actual fix described, not just the severity label. Every item links back to its full write-up in `FINDINGS.md`.
 
-## Ship these first — high impact, small effort, zero ambiguity
+## ✅ Shipped 2026-09-13
+
+The first five rows of this list were the audit's "Immediate (24-48h)" batch and are now done — see `REMEDIATION_ROADMAP.md` for the resolution of each:
+
+| ID | Fix | Status |
+|---|---|---|
+| WW-P1-001 | ~~Drop the `registrants_insert_public` RLS policy~~ | **Retracted** — already dropped by a later migration; false positive, no fix needed |
+| WW-P1-011 | Validate `next` is a same-origin relative path before redirecting | **Done** — `src/lib/safe-redirect.ts` + regression test |
+| WW-P1-012 | `revoke execute` on `growth_account_milestones` | **Done** — `supabase/migrations/20260913000006_revoke_ungranted_security_definer_functions.sql` |
+| WW-P1-002 | Clear `canceled_at`/`deletion_warning_sent_at` in `reactivateAccount` | **Done** — `src/lib/actions/admin.ts` |
+| WW-P2-014 | `revoke execute` on `insert_readiness_assessment` | **Done** — same migration as WW-P1-012 |
+| WW-P3-013 | `revoke execute` on `snapshot_platform_metrics` | **Done** — same migration as WW-P1-012 |
+
+## Ship these next — high impact, small effort, zero ambiguity
 
 | ID | Fix | Why it's a quick win |
 |---|---|---|
-| WW-P1-001 | Drop the `registrants_insert_public` RLS policy (one `DROP POLICY` statement) | Closes a no-auth DoS vector; the policy is provably unused by any app code |
-| WW-P1-011 | Validate `next` is a same-origin relative path before redirecting in `auth/callback/route.ts` and `confirm-client.tsx` | Closes an open redirect with a few lines of validation logic; no architecture change |
-| WW-P1-012 | `revoke execute on function public.growth_account_milestones(uuid) from public, anon, authenticated;` | One migration line, removes the ambiguity permanently regardless of the live-DB answer |
-| WW-P1-002 | Clear `canceled_at`/`deletion_warning_sent_at` to `null` in `reactivateAccount` | Two extra fields in one existing UPDATE call; prevents the worst outcome in this entire audit (silent permanent data loss) |
-| WW-P2-014 | `revoke execute on function public.insert_readiness_assessment(...) from public, anon, authenticated;` | Same one-line fix as WW-P1-012, same reasoning |
-| WW-P3-013 | `revoke execute on function public.snapshot_platform_metrics() from public, anon, authenticated;` | Same one-line fix, batch with the two above in a single migration |
 | WW-P2-002 | Add `for update` row lock to `enforce_webinar_publish_limit`/`enforce_invitation_user_limit` | Copy-paste the lock pattern already used correctly by the other two limit triggers in the same file |
 | WW-P1-004 / WW-P2-007 | Dedupe CTA clicks via `count(distinct registrant_id)`; cap `conversion_pct` at 100 | The exact fix pattern (`DISTINCT ON`) already exists in this codebase for poll votes — copy it |
 | WW-P4-001 | Add `headers: unsubscribeHeaders(unsubscribeUrl)` to the confirmation email's `sendEmail()` call | One line, matches every other registrant-facing send |

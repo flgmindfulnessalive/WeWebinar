@@ -7,6 +7,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeRedirectPath } from "@/lib/safe-redirect";
 import { Button } from "@/components/ui/button";
 
 const EMAIL_OTP_TYPES: EmailOtpType[] = [
@@ -60,7 +61,7 @@ export function AuthConfirmClient() {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const otpType = searchParams.get("type");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = sanitizeRedirectPath(searchParams.get("next"));
   // "checking": looking for an existing/just-exchanged (code path) session.
   // "ready": token_hash + type present, waiting on the user's click.
   // "verifying": the click happened, verifyOtp is in flight.

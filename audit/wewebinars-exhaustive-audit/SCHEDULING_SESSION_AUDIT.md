@@ -14,14 +14,14 @@ The full attendee-facing state machine: fixed-slot and just-in-time (JIT) schedu
 
 | ID | Title | Severity | Confidence |
 |---|---|---|---|
-| WW-P1-001 | `registrants` RLS INSERT policy allows forging registrant rows — no-auth capacity-exhaustion DoS | P1 | High |
+| WW-P1-001 | ~~`registrants` RLS INSERT policy allows forging registrant rows — no-auth capacity-exhaustion DoS~~ **RETRACTED 2026-09-13, false positive** | P1 | High |
 | WW-P2-001 | No enforcement when a host edits a live webinar's video/duration or archives it mid-session | P2 | High |
 | WW-P3-001 | Displayed "spots left" uses a narrower query than the real capacity trigger | P3 | High |
 | WW-P3-002 | DST spring-forward gap not specially handled in `zonedWallTimeToUtc` | P3 | Medium |
 
 Full field-by-field detail for each: `FINDINGS.md`.
 
-**WW-P1-001 is the headline finding of this entire audit's scheduling domain** — it is not a theoretical weakness in `register_for_webinar()`'s own logic (which is well-designed: it validates schedule/day/time matches, rejects already-started fixed sessions, and computes JIT start times server-side from a whitelisted offset set, all confirmed correct). It is a second, forgotten write path into the same table that requires none of that validation. See `FINDINGS.md` for the full reproduction.
+**Update, 2026-09-13: WW-P1-001 has been retracted as a false positive.** While preparing its fix, a full sequential migration read found `supabase/migrations/20260822000008_register_for_webinar_rpc.sql:113` dropping the `registrants_insert_public` policy four migrations after it was created — in the same migration that introduces `register_for_webinar()` as "now the only sanctioned way to create a registrant." No later migration re-creates it. Since migrations apply strictly in order, the policy does not exist in the resulting schema. No code change was needed. `register_for_webinar()`'s own logic remains well-designed (it validates schedule/day/time matches, rejects already-started fixed sessions, and computes JIT start times server-side from a whitelisted offset set, all confirmed correct) — the original finding's concern (a second, forgotten write path bypassing that validation) does not exist in the current codebase. Full account in `FINDINGS.md`.
 
 ## Confirmed correct (not findings — verified so they aren't re-investigated)
 

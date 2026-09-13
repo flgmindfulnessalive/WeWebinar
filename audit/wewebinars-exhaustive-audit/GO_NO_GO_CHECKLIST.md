@@ -11,7 +11,7 @@ Each question is scored **PASS** / **CONDITIONAL PASS** / **FAIL** / **NOT VERIF
 | Is every table protected by RLS? | **PASS** | 53/53 tables confirmed RLS-enabled (`MULTI_TENANT_SECURITY_AUDIT.md`). |
 | Are `SECURITY DEFINER` functions safe from `search_path` hijacking? | **PASS** | 41/41 audited functions pin `search_path = public`. |
 | Can one account read another account's registrant/analytics/billing data through the app's normal UI and RPCs? | **PASS** | No confirmed cross-tenant leak found through any RPC, server action, or RLS policy actually exercised in this audit. |
-| Is every `SECURITY DEFINER` function's access correctly restricted? | **CONDITIONAL PASS** | 3 of ~41 functions (`growth_account_milestones`, `insert_readiness_assessment`, `snapshot_platform_metrics`, WW-P1-012/WW-P2-014/WW-P3-013) have no explicit GRANT and no internal auth check — safe only if Supabase's live default PUBLIC-execute has been revoked, which cannot be confirmed statically. One read-only query (`OPEN_QUESTIONS.md` §1) resolves this before the score can move to a flat PASS. **Fix is free regardless of the answer — no reason this stays conditional past the next deploy.** |
+| Is every `SECURITY DEFINER` function's access correctly restricted? | **PASS** *(2026-09-13)* | Was CONDITIONAL PASS: 3 of ~41 functions (`growth_account_milestones`, `insert_readiness_assessment`, `snapshot_platform_metrics`, WW-P1-012/WW-P2-014/WW-P3-013) had no explicit GRANT and no internal auth check. **FIXED** — migration `20260913000006_revoke_ungranted_security_definer_functions.sql` explicitly revokes EXECUTE from `public`/`anon`/`authenticated` on all three, closing the gap regardless of what the live-DB default turns out to be. |
 | Do the ~19 RPCs that rely on RLS alone (no internal ownership check) have defense-in-depth? | **NOT VERIFIED** | Architecturally sound as traced by hand (WW-RLS-H1), but not confirmed against a live database, and has zero second layer of defense against a future RLS regression. |
 
 ## Registration & scheduling
@@ -19,7 +19,7 @@ Each question is scored **PASS** / **CONDITIONAL PASS** / **FAIL** / **NOT VERIF
 | Question | Score | Basis |
 |---|---|---|
 | Can a registrant's session be forged or hijacked? | **PASS** | `access_token` is a cryptographically random UUID; every RPC scopes strictly on it. |
-| Can registration capacity be exhausted by an attacker with no account? | **FAIL** | WW-P1-001 — a direct, unauthenticated Supabase REST call bypasses all registration validation and trips the real capacity trigger. **This must be fixed before running any ad campaign that depends on registration capacity being reliable.** |
+| Can registration capacity be exhausted by an attacker with no account? | **PASS** *(2026-09-13)* | Was scored FAIL on WW-P1-001 (a direct, unauthenticated Supabase REST call bypassing all registration validation). Investigation while preparing the fix found this was a **false positive**: the vulnerable RLS policy was already dropped by a later migration (`20260822000008_register_for_webinar_rpc.sql:113`) the original scan didn't trace forward. No code change was needed; `register_for_webinar()` is the only write path into `registrants`. |
 | Is server-anchored session timing resistant to client manipulation? | **PASS** | No localStorage/URL-param skip-ahead vector found; timing is always re-derived from server state. |
 | Does editing a live webinar mid-session behave predictably for already-connected viewers? | **CONDITIONAL PASS** | WW-P2-001 — behavior exists but is undocumented and asymmetric (edits propagate silently, archiving doesn't kick open tabs). Not a security issue; a real UX/support-clarity gap. |
 
@@ -48,7 +48,7 @@ Each question is scored **PASS** / **CONDITIONAL PASS** / **FAIL** / **NOT VERIF
 | Question | Score | Basis |
 |---|---|---|
 | Is the webhook signature verification sound? | **PASS** | Confirmed correct via `@whop/sdk`'s `unwrapWebhook`. |
-| Can a canceled account be permanently, silently deleted with no warning? | **FAIL** | WW-P1-002 — via the admin-reactivation path. The single worst-case finding in this audit. |
+| Can a canceled account be permanently, silently deleted with no warning? | **PASS** *(2026-09-13)* | Was WW-P1-002 (the single worst-case finding in this audit) — via the admin-reactivation path. **FIXED** — `reactivateAccount` now clears `canceled_at`/`deletion_warning_sent_at` on reactivation. |
 | Does a scheduled ("cancel at period end") cancellation correctly preserve access until the period ends? | **NOT VERIFIED** | WW-P1-003 — the code gap is confirmed; whether it's live-impacting depends on Whop's actual event sequence, unconfirmed without a live sandbox test. |
 | Are plan limits (webinars, seats) enforced atomically under concurrent requests? | **CONDITIONAL PASS** | 2 of 4 limit triggers correctly lock; 2 (WW-P2-002) do not. |
 | Is Whop webhook processing idempotent against redelivery? | **CONDITIONAL PASS** | Starter Kit path: yes, confirmed correct. Main billing path (WW-P2-018): no dedicated claim table, though the underlying account state itself stays correct — only duplicate emails are at risk. |
@@ -59,7 +59,7 @@ Each question is scored **PASS** / **CONDITIONAL PASS** / **FAIL** / **NOT VERIF
 | Question | Score | Basis |
 |---|---|---|
 | Is authentication enforced consistently across every `/api/**` route? | **PASS** | Every route independently authenticates correctly per its own trust model (session, capability token, or explicitly anonymous by design) — spot-checked across all 25 route handlers. |
-| Is the platform's own login/signup flow free of redirect-based phishing vectors? | **FAIL** | WW-P1-011 — open redirect in the OAuth/confirmation callback. |
+| Is the platform's own login/signup flow free of redirect-based phishing vectors? | **PASS** *(2026-09-13)* | Was WW-P1-011 (open redirect in the OAuth/confirmation callback). **FIXED** — `sanitizeRedirectPath()` now validates `next` is a same-origin relative path before every redirect. |
 | Is server-side authorization free of IDOR/cross-tenant write vulnerabilities? | **CONDITIONAL PASS** | Two confirmed gaps (WW-P2-016 Launchpad, WW-P2-017 script-builder) — both narrow in scope (require knowing another party's resource id) and both cheap to fix; no broader pattern of missing authorization found elsewhere. |
 | Is outbound network access (webhooks) safe from SSRF? | **FAIL** | WW-P2-015 — bypassable scheme check, no private-address denylist. |
 

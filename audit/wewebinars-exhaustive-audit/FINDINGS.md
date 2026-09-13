@@ -4,7 +4,15 @@ Phase 2 synthesis deliverable. Every finding below is drawn from one of the six 
 
 **Scoring key** — Severity: P0 (critical, business-stopping) · P1 (high) · P2 (medium) · P3 (low) · P4 (informational). Confidence: High / Medium / Low, reflecting how much of the finding rests on static code reading (High) vs. an assumption about live-system or live-provider behavior this sandbox could not execute (Medium/Low — see each finding's Confidence line for why). Scope: cross-tenant (breaks isolation between WeWebinars accounts) / single-tenant (affects one account, still real) / platform-wide (affects WeWebinars' own internal data, not a customer's). Status: **CONFIRMED** (reproducible from the code alone) or **HYPOTHESIS** (plausible, stated explicitly as needing live verification — none of the 49 findings below are hypotheses; the hypothesis-only items live in each domain file's own "Hypotheses / Needs Live Testing" section and in `OPEN_QUESTIONS.md`).
 
-**Total: 49 confirmed findings.** 0 P0 · 12 P1 · 17 P2 · 19 P3 · 1 P4.
+**Total: 49 confirmed findings** (48 standing, 1 retracted as a false positive during remediation — see WW-P1-001 below). Original breakdown: 0 P0 · 12 P1 (11 standing) · 17 P2 · 19 P3 · 1 P4.
+
+**Remediation status (updated 2026-09-13):** the four "Immediate (24–48h)" items from `REMEDIATION_ROADMAP.md` have been addressed:
+- **WW-P1-001** — investigated while preparing the fix; turned out to be **already fixed upstream** by a later migration the original scan didn't trace forward. Retracted as a false positive, no code change needed. See the entry below for the full account.
+- **WW-P1-002** — **FIXED.** `reactivateAccount` now clears `canceled_at`/`deletion_warning_sent_at` (`src/lib/actions/admin.ts`).
+- **WW-P1-011** — **FIXED.** `next` redirect params are now validated as same-origin relative paths via a new `sanitizeRedirectPath()` helper (`src/lib/safe-redirect.ts`, with a regression test), used in both `src/app/auth/callback/route.ts` and `src/app/auth/confirm/confirm-client.tsx`.
+- **WW-P1-012 / WW-P2-014 / WW-P3-013** — **FIXED.** A new migration (`supabase/migrations/20260913000006_revoke_ungranted_security_definer_functions.sql`) explicitly revokes EXECUTE on all three functions from `public`/`anon`/`authenticated`, closing the ambiguity permanently regardless of what the live-DB verification query in `OPEN_QUESTIONS.md` would have found.
+
+The other 44 findings are unchanged and still open — see `REMEDIATION_ROADMAP.md` for what's next.
 
 ---
 
@@ -16,25 +24,13 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 
 ## P1 — High
 
-### WW-P1-001 — Anyone can forge `registrants` rows directly via the Supabase REST API, bypassing all registration validation and enabling a no-auth capacity-exhaustion DoS
-- **Domain:** Scheduling/Session · **Source:** SCHEDULING_SESSION_AUDIT_RAW.md, SESS-01
-- **File/Function:** `supabase/migrations/20260822000004_rls_policies.sql:160-162` (`registrants_insert_public` RLS policy)
-- **Evidence:**
-  ```sql
-  create policy registrants_insert_public on public.registrants
-    for insert to anon, authenticated
-    with check (exists (select 1 from public.webinars w where w.id = webinar_id and w.status = 'published'));
-  ```
-  The only check is "the webinar is published" — nothing ties `computed_session_start`, `session_id`, or `email` to a real schedule. `registrants.computed_session_start` is `not null` with no default, so a direct INSERT may supply any value. `enforce_attendee_limit()` and `enforce_monthly_registrant_limit()` (the plan-limit triggers) fire on **any** insert into `registrants` regardless of path — they don't check that the row came through `register_for_webinar()`. Confirmed via `grep -rn "\.from(\"registrants\")\.insert" src` → zero results: no app code needs this policy at all; the only real writer is the `SECURITY DEFINER` RPC `register_for_webinar()`, which bypasses RLS on its own.
-- **Condition:** Any unauthenticated client holding the public `anon` key (embedded in every page WeWebinars ships) plus a `webinar_id` and a target `computed_session_start` (both visible in the registration page's own HTML).
-- **Expected vs Actual:** Expected: every `registrants` row is created through `register_for_webinar()`'s validation (schedule match, "already started" rejection, dedup). Actual: a direct `POST /rest/v1/registrants` with a fake email and a target slot's timestamp creates a real row that trips the real capacity trigger — from outside the app entirely.
-- **Reproduction:** `POST {SUPABASE_URL}/rest/v1/registrants` with header `apikey: <public anon key>`, body `{"webinar_id": "<target>", "email": "x1@example.com", "name": "x", "computed_session_start": "<target slot ISO time>"}`, repeated N times (N = the account's `max_attendees_per_webinar`) with a fresh email each time. Confirm the account's real registration page now returns `plan_limit_exceeded` for that slot with zero real registrants.
-- **Impact:** Technical: a full RLS policy provides an alternate write path around the app's only server-side registration validation. User: a competitor or bad actor can lock a host's session (or entire account for the month, via the monthly-limit variant) out of new registrations with a scripted loop and no authentication. Business: this is a **direct, wide-impact block on paid ad traffic converting to registrations** — the single most consequential finding in this audit for "is this safe to run ad campaigns against."
-- **Severity:** P1 · **Confidence:** High · **Scope:** single-tenant (per-attack), repeatable across every tenant · **Detectability:** Low (no rate-limit/anomaly alerting exists anywhere in the registration path) · **Estimated effort:** Small (drop one policy)
-- **Recommended solution:** Drop `registrants_insert_public` entirely — `register_for_webinar()` is `SECURITY DEFINER` and needs no RLS grant to write. Add basic rate limiting/CAPTCHA to the registration Server Action as defense in depth, since the RPC itself has no rate limit either.
-- **Regression test:** A Vitest/integration test (or a Supabase RLS test using `pgTAP`) that attempts `insert into registrants (...)` as `anon`/`authenticated` directly and asserts it is rejected once the policy is dropped; a second test confirming `register_for_webinar()` still succeeds for a legitimate slot afterward.
+### WW-P1-001 — RETRACTED (false positive) — `registrants` RLS INSERT policy was already dropped by a later migration the original scan didn't trace forward
+- **Domain:** Scheduling/Session · **Source:** SCHEDULING_SESSION_AUDIT_RAW.md, SESS-01 · **Status:** ~~CONFIRMED~~ **RETRACTED during remediation, 2026-09-13**
+- **What happened:** The original finding cited `registrants_insert_public` being *created* at `supabase/migrations/20260822000004_rls_policies.sql:160-162` as live, exploitable RLS. While preparing the fix, a full sequential read of the migration history turned up `supabase/migrations/20260822000008_register_for_webinar_rpc.sql:113`: `drop policy if exists registrants_insert_public on public.registrants;` — four migrations later, in the same file that introduces `register_for_webinar()` as "now the only sanctioned way to create a registrant" (the migration's own comment). `grep`-ing every subsequent migration for any re-creation of this policy or any other `insert`-granting policy on `registrants` returns nothing. Since Supabase migrations apply strictly in filename order, **the policy does not exist in the resulting schema** — the vulnerable window only existed between migrations `20260822000004` and `20260822000008`, both applied together long before this audit, never in any deployed state.
+- **Why the original scan missed it:** the domain audit agent's evidence block quoted the `CREATE POLICY` statement and reasoned from the table's *initial* RLS setup migration without tracing whether a later migration altered it — the exact same category of mistake the audit's own methodology (full sequential migration read) is meant to catch, and did catch here during remediation.
+- **No code change was needed or made for this finding.** It is retained here (rather than deleted) so the retraction itself is on record, and the ID is not reused. See `MISSING_TESTS.md`/`QUICK_WINS.md` for the one real follow-up this episode still motivates: a regression test asserting `registrants_insert_public` (or any equivalent direct-insert policy) never returns, since nothing currently prevents a *future* migration from reintroducing it silently.
 
-### WW-P1-002 — Admin account reactivation doesn't clear the cancellation clock, risking silent premature deletion with no warning email
+### WW-P1-002 — Admin account reactivation doesn't clear the cancellation clock, risking silent premature deletion with no warning email — **FIXED 2026-09-13**
 - **Domain:** Whop · **Source:** WHOP_AUDIT_RAW.md, W-01
 - **File/Function:** `src/lib/actions/admin.ts:122-140` (`reactivateAccount`)
 - **Evidence:** `reactivateAccount` only sets `subscription_status: "active"` and `suspended_at: null` — it never clears `canceled_at`/`deletion_warning_sent_at`. The webhook's own re-cancellation path (`src/app/api/webhooks/whop/route.ts:124-129`) pins `canceled_at` to whatever was already there if non-null, rather than distinguishing "continuously canceled" from "reactivated, now canceled again." The deletion-warning cron (`send-reminders/route.ts:474-480`) filters `.is("deletion_warning_sent_at", null)` — a stale non-null value permanently suppresses the warning. The purge cron (`:523-528`) checks only `subscription_status`/`canceled_at`, never `deletion_warning_sent_at`.
@@ -138,7 +134,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Track whether `onLoadedMetadata`/first `playing` ever fired for a session; suppress or flag the `completion` webhook (or tag the analytics record) when the video visibly never started.
 - **Regression test:** Simulate a session where no `playing` event ever fires; assert `fireCompletionOnce()`/the `completion` webhook does not fire (or fires tagged as "video never started").
 
-### WW-P1-011 — Open redirect in the OAuth / email-confirmation callback
+### WW-P1-011 — Open redirect in the OAuth / email-confirmation callback — **FIXED 2026-09-13**
 - **Domain:** API Security · **Source:** API_SECURITY_DEADCODE_EMAIL_AUDIT_RAW.md, A.3 #1
 - **File/Function:** `src/app/auth/callback/route.ts:9,16`
 - **Evidence:**
@@ -156,7 +152,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Validate `next` is a same-origin relative path (reject anything starting with `//`, containing `://`, or not starting with `/`) before use in both the server redirect and the client `router.replace`.
 - **Regression test:** Route test asserting `next=https://evil.example.com` and `next=//evil.example.com` are both rejected/normalized to `/dashboard`, while `next=/dashboard/webinars` passes through unchanged.
 
-### WW-P1-012 — `growth_account_milestones()` (SECURITY DEFINER) has no internal auth check and no explicit GRANT anywhere in 116 migrations
+### WW-P1-012 — `growth_account_milestones()` (SECURITY DEFINER) has no internal auth check and no explicit GRANT anywhere in 116 migrations — **FIXED 2026-09-13** (explicit `REVOKE EXECUTE` shipped, closing the ambiguity regardless of the live-DB answer)
 - **Domain:** Multi-Tenant Security · **Source:** MULTI_TENANT_SECURITY_AUDIT_RAW.md, WW-RLS-001 — **carried forward with confidence downgraded from the source report's own framing; see note below**
 - **File/Function:** `supabase/migrations/20260910000004_growth_activation.sql:28-79`
 - **Evidence:** The function body has no `auth.uid()`/`is_account_member`/`is_platform_admin`/`is_growth_operator` check. `grep -n "growth_account_milestones" supabase/migrations/*.sql` shows exactly three hits: the `CREATE` and its two checked wrappers (`get_account_activation_milestones`, `get_growth_funnel_counts`) — no `grant execute on function public.growth_account_milestones` exists anywhere. **I independently re-verified this**: confirmed the function body directly, confirmed no grant references it, and confirmed there is no schema-level `alter default privileges ... revoke execute from public` statement anywhere in the 116 migrations either.
@@ -254,7 +250,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** High · **Detectability:** Low (that's the finding) · **Effort:** Medium
 - **Fix:** Add a health-check job for `direct_url` sources and/or a "did playback ever start" signal (ties to WW-P1-010) with owner alerting.
 
-### WW-P2-014 — `insert_readiness_assessment()` (SECURITY DEFINER) trusts every client-supplied parameter, including computed scores, with the same ungranted-function ambiguity as WW-P1-012
+### WW-P2-014 — `insert_readiness_assessment()` (SECURITY DEFINER) trusts every client-supplied parameter, including computed scores, with the same ungranted-function ambiguity as WW-P1-012 — **FIXED 2026-09-13**
 - **Domain:** Multi-Tenant Security · **Source:** WW-RLS-002 · **File:** `supabase/migrations/20260908000003_insert_readiness_assessment_rpc.sql:1-11,112-172`
 - **Condition → Impact:** If the live database's default PUBLIC-execute state matches the vanilla-Postgres assumption (same open question as WW-P1-012), an anonymous caller can `POST /rest/v1/rpc/insert_readiness_assessment` with arbitrary, self-serving scores (`p_score_percentage`, `p_readiness_status`, etc.) that don't correspond to the submitted `p_answers` at all — bypassing the entire "recompute server-side, never trust the browser" guarantee the table's own migration comment promises, and forging `marketing_consent=true` attributed to an email the caller doesn't own. This is platform-internal lead-magnet data (no `account_id`/tenant), so the risk is fraud/spam, not cross-tenant disclosure.
 - **Confidence:** Medium (same live-DB dependency as WW-P1-012) · **Detectability:** Low · **Effort:** Small
@@ -338,7 +334,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Video · **Source:** F-DIR-5 · **File:** `direct-video.ts:18` · **Confidence:** Medium · **Effort:** Small
 - Not server-side SSRF (no WeWebinars server ever fetches this URL — only the registrant's own browser via `<video src>`), so blast radius is narrow (a weak side-channel at most, no readable response body cross-origin). Worth having on record as unvalidated input regardless.
 
-### WW-P3-013 — `snapshot_platform_metrics()` (SECURITY DEFINER) has no `is_platform_admin()` guard and no grant — same ambiguity class as WW-P1-012, lower impact
+### WW-P3-013 — `snapshot_platform_metrics()` (SECURITY DEFINER) has no `is_platform_admin()` guard and no grant — same ambiguity class as WW-P1-012, lower impact — **FIXED 2026-09-13**
 - **Domain:** Multi-Tenant Security · **Source:** WW-RLS-003 · **File:** `20260902000001_platform_daily_brief.sql:37-84` · **Confidence:** Medium · **Effort:** Small
 - If live-callable, worst case is an authenticated user forcing an out-of-schedule (but correctly-computed) snapshot upsert — a minor DB-load nuisance, not a confidentiality leak (the table itself stays admin-only-readable). `revoke execute ...` regardless, plus an explicit `is_platform_admin()` guard as defense in depth.
 

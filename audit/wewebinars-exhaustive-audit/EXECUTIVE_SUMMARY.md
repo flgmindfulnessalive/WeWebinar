@@ -2,6 +2,8 @@
 
 **Scope:** full static, read-only code audit of the WeWebinars repository (branch `claude/supabase-schema-rls-e1b1n7`) — architecture, multi-tenant security, Whop billing, all three video providers, scheduling/sessions, analytics integrity, and API security/dead code/email. No production changes were made, no real payments or purchases occurred, no real emails were sent to real customers, and no destructive actions were taken anywhere. Six parallel domain audits plus this synthesis pass; every finding in this audit's 15 deliverable files traces to specific file/line evidence, and every finding is labeled with a confidence level reflecting how much of it rests on static reading vs. an assumption about live-system behavior this sandbox could not execute.
 
+**Update, 2026-09-13:** the four "Immediate (24-48h)" items below have been remediated. Three (WW-P1-002, WW-P1-011, WW-P1-012/WW-P2-014/WW-P3-013) are fixed and validated (tsc/eslint/vitest all green, 130/130 tests passing). The fourth (WW-P1-001) turned out to be a **false positive** — investigation while preparing its fix found the vulnerable RLS policy had already been dropped by a later migration the original scan didn't trace forward; no code change was needed. See `REMEDIATION_ROADMAP.md` and `FINDINGS.md` for the full account of each. The rest of this document is preserved as originally written (Phase 2 synthesis) except where marked with a 2026-09-13 update note.
+
 ## Headline numbers
 
 **49 confirmed findings. 0 P0 · 12 P1 · 17 P2 · 19 P3 · 1 P4.** All 49 are CONFIRMED (reproducible from the code itself, not speculative) — though three of the P1/P2/P3 findings (WW-P1-012, WW-P2-014, WW-P3-013) carry an explicit caveat: their real-world exploitability hinges on one fact this static audit could not observe (a live database grant state), resolvable with a single read-only query specified in `OPEN_QUESTIONS.md`. A further ~25 hypotheses across the six domain files describe plausible risks that need live testing (a Whop sandbox, a real browser, load data) before they can be scored as findings at all — these are not counted in the 49.
@@ -20,8 +22,8 @@
 
 In priority order, from `REMEDIATION_ROADMAP.md`'s "Immediate" and "before scaling" horizons:
 
-1. **WW-P1-002 — an account reactivated by admin support can later be permanently, silently deleted with no warning email.** The single worst-case outcome in this entire audit. Fix is small (clear two fields on reactivation); ship immediately regardless of traffic plans.
-2. **WW-P1-001 — anyone with the (necessarily public) anon key can flood a webinar's registration capacity with zero authentication**, bypassing every validation the actual registration flow performs. A single `DROP POLICY` closes it. Must ship before any campaign that depends on registration capacity being real.
+1. ~~**WW-P1-002 — an account reactivated by admin support can later be permanently, silently deleted with no warning email.**~~ **✅ Fixed 2026-09-13** — `reactivateAccount` now clears both fields on reactivation.
+2. ~~**WW-P1-001 — registration-capacity DoS.**~~ **✅ Retracted 2026-09-13** — the cited RLS policy was already dropped by a later migration; this was never live-exploitable in the current schema.
 3. **Video reliability across all three providers is not launch-ready.** No provider surfaces an accurate error when a video is genuinely broken (WW-P1-006/007/008); nothing alerts the host when this happens (WW-P2-013); and the platform still records a full "attended/completed" signal even when the video never played at all (WW-P1-010). A broken video during a paid launch is misdiagnosed to every affected viewer and invisible to the host — the platform's worst-case failure mode for its core value proposition.
 4. **The metrics a host would use to judge whether the ad spend worked are not trustworthy by default.** CTA conversion can exceed 100% from an ordinary double-click (WW-P1-004); watch time and lead score are fully self-reported with no server-side sanity check and can be fabricated with one unauthenticated HTTP call (WW-P1-005); exports silently disagree with the dashboard they're downloaded from (WW-P2-005).
 5. **The raw video source is publicly readable before a visitor even registers** (WW-P1-009), which both defeats Vimeo's own privacy-hash protection entirely and, for direct-URL hosts, exposes their storage bill to unauthenticated hotlinking the moment real ad traffic starts hitting shared links.
@@ -36,10 +38,10 @@ None of these require an architectural rewrite. All five clusters above are Smal
 
 ## Top 10 priority actions
 
-1. Fix WW-P1-002 (admin reactivation / silent deletion risk) — today.
-2. Drop the `registrants_insert_public` RLS policy (WW-P1-001) — today.
-3. Run the three `REVOKE EXECUTE` statements for WW-P1-012/WW-P2-014/WW-P3-013 — today, regardless of the pending live-DB verification.
-4. Fix the open redirect in the auth callback (WW-P1-011) — today.
+1. ~~Fix WW-P1-002 (admin reactivation / silent deletion risk) — today.~~ **✅ Done 2026-09-13.**
+2. ~~Drop the `registrants_insert_public` RLS policy (WW-P1-001) — today.~~ **✅ Investigated 2026-09-13 — retracted as a false positive, already fixed by a later migration; no action needed.**
+3. ~~Run the three `REVOKE EXECUTE` statements for WW-P1-012/WW-P2-014/WW-P3-013 — today.~~ **✅ Done 2026-09-13.**
+4. ~~Fix the open redirect in the auth callback (WW-P1-011) — today.~~ **✅ Done 2026-09-13.**
 5. Add `onError`/`error` handlers to all three video players and wire a distinct "video unavailable" state (WW-P1-006/007/008) — before any traffic push.
 6. Restrict `webinars.video_provider`/`video_source` from the public RLS policy via a dedicated safe view (WW-P1-009) — before any traffic push.
 7. Dedupe CTA clicks and cap conversion at 100% (WW-P1-004/WW-P2-007), and add plausibility bounds to `record_viewer_event` (WW-P1-005) — before any traffic push.

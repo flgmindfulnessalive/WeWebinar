@@ -4,16 +4,16 @@ All 49 confirmed findings from `FINDINGS.md`, organized into the four horizons t
 
 ---
 
-## Immediate (24–48 hours)
+## Immediate (24–48 hours) — ✅ DONE 2026-09-13
 
-Findings that are either actively risking real data loss, or free to fix (a one-line revoke/edit) and therefore have no reason to wait.
+Findings that are either actively risking real data loss, or free to fix (a one-line revoke/edit) and therefore have no reason to wait. **All four items below are now shipped** (see each row for what changed); nothing further is required from this horizon.
 
-| ID | Why it can't wait |
-|---|---|
-| WW-P1-002 | The one finding in this audit that leads to **permanent, unannounced customer data loss** on an ordinary support workflow (reactivate → later cancel). Any account that has ever been reactivated by an admin is at risk right now if its original cancellation is already old. |
-| WW-P1-012, WW-P2-014, WW-P3-013 | Free, one-line-each `REVOKE EXECUTE` fixes that permanently close an ambiguity this audit could not resolve without live-DB access. No reason to wait for the verification query in `OPEN_QUESTIONS.md` §1 — ship the revoke regardless of what it finds. |
-| WW-P1-001 | No-auth capacity-exhaustion DoS reachable by anyone with the (necessarily public) anon key. A single `DROP POLICY` statement. Ship before any paid traffic push, since this is exactly the kind of thing a competitor or troll finds during a launch. |
-| WW-P1-011 | Open redirect in the login flow — cheap to fix, and actively usable for phishing against WeWebinars' own users today. |
+| ID | Why it couldn't wait | Resolution |
+|---|---|---|
+| WW-P1-002 | The one finding in this audit that leads to **permanent, unannounced customer data loss** on an ordinary support workflow (reactivate → later cancel). Any account that has ever been reactivated by an admin was at risk if its original cancellation was already old. | **FIXED.** `reactivateAccount` (`src/lib/actions/admin.ts`) now also clears `canceled_at`/`deletion_warning_sent_at` on reactivation. |
+| WW-P1-012, WW-P2-014, WW-P3-013 | Free, one-line-each `REVOKE EXECUTE` fixes that permanently close an ambiguity this audit could not resolve without live-DB access. | **FIXED.** New migration `supabase/migrations/20260913000006_revoke_ungranted_security_definer_functions.sql` explicitly revokes EXECUTE on all three functions from `public`/`anon`/`authenticated`. The live-DB verification query in `OPEN_QUESTIONS.md` §1 is no longer load-bearing — it can still be run out of curiosity, but the fix no longer depends on its answer. |
+| WW-P1-001 | Suspected no-auth capacity-exhaustion DoS. | **RETRACTED, not fixed** — investigation while preparing this fix found the vulnerable RLS policy was already dropped by a later migration (`20260822000008_register_for_webinar_rpc.sql:113`) the original scan didn't trace forward. No code change was needed. See `FINDINGS.md` for the full account. |
+| WW-P1-011 | Open redirect in the login flow — cheap to fix, and actively usable for phishing against WeWebinars' own users. | **FIXED.** New `sanitizeRedirectPath()` helper (`src/lib/safe-redirect.ts`, with a regression test) validates `next` is a same-origin relative path before every redirect, used in both `src/app/auth/callback/route.ts` and `src/app/auth/confirm/confirm-client.tsx`. |
 
 ---
 
