@@ -14,39 +14,55 @@ const AUTH_PAGES = ["/login", "/signup"];
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  let user = null;
-  try {
-    const supabase = createServerClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            for (const { name, value } of cookiesToSet) {
-              request.cookies.set(name, value);
-            }
-            response = NextResponse.next({ request });
-            for (const { name, value, options } of cookiesToSet) {
-              response.cookies.set(name, value, options);
-            }
-          },
-        },
-        cookieOptions: { domain: getSupabaseCookieDomain() },
-      }
-    );
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
+  const isAuthPage = AUTH_PAGES.some((prefix) => pathname.startsWith(prefix));
 
-    // IMPORTANT: avoid writing logic between createServerClient and
-    // getUser(). A stray early return can drop the session refresh.
-    const result = await supabase.auth.getUser();
-    user = result.data.user;
-  } catch (error) {
-    // Don't let a Supabase outage/misconfiguration 500 every page on the
-    // site (including the public marketing pages) — degrade to
-    // unauthenticated instead, and log the real cause for diagnosis.
-    console.error("[middleware] Supabase session check failed:", error);
+  let user = null;
+  // getUser() is the only thing `user` is used for below (deciding the two
+  // redirects), and it makes a real network round-trip to Supabase's Auth
+  // server to re-validate the JWT on every single call -- so only pay that
+  // cost on the routes that can actually redirect based on it. Every public
+  // page (marketing, blog, /demo, the webinar registration page...) used to
+  // eat this latency unconditionally, most visibly on /demo: it redirects
+  // to another page that repeated the exact same round-trip, so a visitor
+  // paid for it twice before anything could paint.
+  if (isProtected || isAuthPage) {
+    try {
+      const supabase = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              for (const { name, value } of cookiesToSet) {
+                request.cookies.set(name, value);
+              }
+              response = NextResponse.next({ request });
+              for (const { name, value, options } of cookiesToSet) {
+                response.cookies.set(name, value, options);
+              }
+            },
+          },
+          cookieOptions: { domain: getSupabaseCookieDomain() },
+        }
+      );
+
+      // IMPORTANT: avoid writing logic between createServerClient and
+      // getUser(). A stray early return can drop the session refresh.
+      const result = await supabase.auth.getUser();
+      user = result.data.user;
+    } catch (error) {
+      // Don't let a Supabase outage/misconfiguration 500 every protected
+      // page on the site — degrade to unauthenticated instead, and log the
+      // real cause for diagnosis.
+      console.error("[middleware] Supabase session check failed:", error);
+    }
   }
 
   // Growth OS identity resolution: every visitor gets one durable,
@@ -69,12 +85,6 @@ export async function updateSession(request: NextRequest) {
     }
     return res;
   }
-
-  const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
-  const isAuthPage = AUTH_PAGES.some((prefix) => pathname.startsWith(prefix));
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
