@@ -57,7 +57,7 @@ export default async function WaitingRoomPage({
     supabase
       .from("webinars")
       .select(
-        "id, title, description, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio, duration_seconds"
+        "id, title, description, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio, duration_seconds, fake_viewer_min, fake_viewer_max"
       )
       .eq("id", session.webinar_id)
       .eq("status", "published")
@@ -86,6 +86,8 @@ export default async function WaitingRoomPage({
       config={waitingRoom}
       presenter={presenter}
       durationSeconds={webinar.duration_seconds}
+      fakeViewerMin={webinar.fake_viewer_min}
+      fakeViewerMax={webinar.fake_viewer_max}
       isFixedSchedule={session.session_id !== null}
       accountName={account?.name ?? null}
       accountLogoUrl={branding.logo_url ?? null}
