@@ -564,10 +564,13 @@ export function whopMembershipUnresolvedEmail(details: {
 
 // WW-P3-003: refunds/chargebacks/disputes had zero explicit handling --
 // access only changed if a *separate* membership.deactivated event also
-// happened to fire. This is the minimum viable response (an ops alert, not
-// an automated access change, since a dispute doesn't always mean the
-// membership itself will be revoked) so a dispute/refund is never silently
-// missed.
+// happened to fire. WeWebinars has no refund policy (confirmed with the
+// product owner 2026-09-13), so as of this fix the account is suspended
+// automatically alongside this alert (see suspendAccountForDispute in the
+// webhook route) -- this is a heads-up for ops to review, not an
+// "act on this" ask, unless details.accountId is empty (no
+// metadata.account_id to resolve), in which case nothing could be
+// suspended automatically and this alert is the only record of the event.
 export function whopDisputeOrRefundEmail(details: {
   eventType: string;
   membershipId: string | null;
@@ -583,9 +586,12 @@ export function whopDisputeOrRefundEmail(details: {
   <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/accounts/${details.accountId}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ver cuenta en /admin</a>
 </td></tr></table>`
     : "";
+  const statusNote = details.accountId
+    ? "Como no tenemos política de reembolsos, la cuenta ya quedó suspendida automáticamente. Este email es un aviso para revisar el caso, no hace falta actuar para cortar el acceso."
+    : "Este evento no trae metadata.account_id, así que no se pudo suspender ninguna cuenta automáticamente -- revisar a mano quién es el comprador.";
   const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#dc2626;">Whop -- disputa o reembolso</p>
 <h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Whop reportó una disputa o un reembolso</h1>
-<p style="margin:0 0 16px;">El acceso de la cuenta no cambia automáticamente por este evento -- revisar a mano si corresponde suspenderla.</p>
+<p style="margin:0 0 16px;">${statusNote}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px;">${rows.join("")}</table>
 ${accountLink}`;
   return {
