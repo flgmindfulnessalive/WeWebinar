@@ -20,15 +20,25 @@ export default async function LiveRoomPage({
   const session = sessions?.[0];
   if (error || !session) notFound();
 
-  const { data: webinar } = await supabase
-    .from("webinars")
-    .select(
-      "id, title, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio, video_provider, video_source, duration_seconds, fake_viewer_min, fake_viewer_max, account_id"
-    )
-    .eq("id", session.webinar_id)
-    .eq("status", "published")
-    .maybeSingle();
-  if (!webinar || !webinar.video_source || !webinar.video_provider) notFound();
+  // video_provider/video_source are deliberately not selected here --
+  // webinars_select_public only grants anon the non-video columns (see
+  // 20260913000008_restrict_public_video_columns.sql); those two fields
+  // come from get_webinar_video_for_registrant below instead, which is
+  // token-gated rather than reachable by anyone who merely knows the
+  // webinar's id.
+  const [{ data: webinar }, { data: videoRows }] = await Promise.all([
+    supabase
+      .from("webinars")
+      .select(
+        "id, title, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio, duration_seconds, fake_viewer_min, fake_viewer_max, account_id"
+      )
+      .eq("id", session.webinar_id)
+      .eq("status", "published")
+      .maybeSingle(),
+    supabase.rpc("get_webinar_video_for_registrant", { p_access_token: token }),
+  ]);
+  const video = videoRows?.[0];
+  if (!webinar || !video?.video_source || !video?.video_provider) notFound();
 
   // Same publishability gate as registration/waiting room -- a registrant
   // who already has a valid room link from before the account was
@@ -88,8 +98,8 @@ export default async function LiveRoomPage({
       accessToken={token}
       webinarId={webinar.id}
       webinarTitle={webinar.title}
-      videoProvider={webinar.video_provider}
-      videoSource={webinar.video_source}
+      videoProvider={video.video_provider}
+      videoSource={video.video_source}
       durationSeconds={webinar.duration_seconds ?? 0}
       initialElapsedSeconds={initialElapsedSeconds}
       fakeViewerMin={webinar.fake_viewer_min}

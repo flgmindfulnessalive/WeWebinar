@@ -1917,6 +1917,10 @@ export interface Database {
           webinar_status: WebinarStatus;
         }[];
       };
+      get_webinar_video_for_registrant: {
+        Args: { p_access_token: string };
+        Returns: { video_provider: VideoProvider | null; video_source: string | null }[];
+      };
       get_cta_poll_results: {
         Args: { p_access_token: string; p_cta_id: string };
         Returns: { option: string | null; votes: number }[];
