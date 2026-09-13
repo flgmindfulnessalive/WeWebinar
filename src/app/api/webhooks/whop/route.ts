@@ -33,7 +33,11 @@ type WhopWebhookPayload = {
 
 const SYNCED_EVENTS = new Set(["membership.activated", "membership.deactivated"]);
 
-function mapWhopStatus(status: string): SubscriptionStatus {
+// null means "this status doesn't map to any subscription_status change at
+// all" (currently only "drafted") -- distinct from returning a concrete
+// status, since the caller needs to skip the sync entirely rather than
+// write some default value.
+function mapWhopStatus(status: string): SubscriptionStatus | null {
   switch (status) {
     case "trialing":
       return "trialing";
@@ -46,6 +50,23 @@ function mapWhopStatus(status: string): SubscriptionStatus {
     case "canceled":
     case "expired":
       return "canceled";
+    case "canceling":
+      // Whop's "cancel at period end" state, set by
+      // cancelSelfServeMembership's own cancel_at_period_end: true call.
+      // The membership is still paid-through and access should continue
+      // exactly as that function's own comment documents ("keeps access
+      // until the period the customer already paid for ends") --
+      // previously fell into the default "suspended" branch below, which
+      // could cut a host's public pages off the moment they scheduled a
+      // future cancellation instead of at the period's actual end.
+      return "active";
+    case "drafted":
+      // A membership that hasn't gone live yet has no bearing on this
+      // account's current subscription_status -- previously also fell
+      // into "suspended" by default, which could incorrectly suspend a
+      // real, currently-active account the moment an unrelated drafted
+      // membership event arrived for it.
+      return null;
     default:
       return "suspended";
   }
@@ -98,6 +119,7 @@ async function syncMembership(payload: WhopWebhookPayload) {
   }
 
   const newStatus = mapWhopStatus(payload.data.status);
+  if (newStatus === null) return; // "drafted" -- nothing to sync yet
   const planKey = payload.data.plan ? planKeyForWhopPlanId(payload.data.plan.id) : undefined;
 
   const { data: before } = await admin
