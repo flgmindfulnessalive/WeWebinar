@@ -13,9 +13,33 @@ import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/p
 import { webinarPublishedEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { recordGrowthEvent } from "@/lib/growth/record-event";
+import { YOUTUBE_ID_PATTERN } from "@/lib/youtube";
+import { VIMEO_ID_PATTERN, VIMEO_HASH_PATTERN } from "@/lib/vimeo";
+import { parseDirectVideoUrl } from "@/lib/direct-video";
 import type { VideoProvider } from "@/lib/supabase/database.types";
 
 export type WebinarActionState = { error: string } | null;
+
+// setWebinarVideo is a Server Action -- reachable by a direct POST that
+// skips the browser UI entirely, so the client-side parsers in
+// VideoSection (extractYouTubeVideoId/extractVimeoVideoId/
+// parseDirectVideoUrl) are not a real gate on their own. This re-validates
+// the *already-parsed* videoSource server-side against the same shape
+// those parsers produce (WW-P2-012) -- bounded by RLS
+// (webinars_update_editor) to the caller's own account either way, so this
+// is a data-integrity backstop, not a cross-tenant concern.
+function isValidVideoSource(provider: VideoProvider, source: string): boolean {
+  if (provider === "youtube") return YOUTUBE_ID_PATTERN.test(source);
+  if (provider === "vimeo") {
+    const parts = source.split(":");
+    if (parts.length > 2) return false;
+    const [id, hash] = parts;
+    if (!VIMEO_ID_PATTERN.test(id)) return false;
+    if (hash !== undefined && !VIMEO_HASH_PATTERN.test(hash)) return false;
+    return true;
+  }
+  return parseDirectVideoUrl(source) !== null;
+}
 
 export async function createWebinar(
   _prevState: WebinarActionState,
@@ -314,6 +338,11 @@ export async function setWebinarVideo(
   videoSource: string,
   durationSeconds: number
 ): Promise<WebinarActionState> {
+  if (!isValidVideoSource(videoProvider, videoSource)) {
+    const t = await getTranslations("WebinarActions");
+    return { error: t("invalidVideoSource") };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("webinars")

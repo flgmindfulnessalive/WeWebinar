@@ -537,6 +537,63 @@ export function starterKitClaimFailedEmail(details: {
   };
 }
 
+// WW-P3-004: previously only a console.error when a Whop webhook's
+// membership couldn't be resolved to an account (no metadata.account_id) --
+// the main billing path had nothing equivalent to the Starter Kit's own
+// notifyOpsOfClaimFailure alert above, so a misconfigured checkout could
+// silently never activate the paying account with zero record anywhere.
+export function whopMembershipUnresolvedEmail(details: {
+  membershipId: string;
+  productId: string | null;
+  status: string;
+}): { subject: string; html: string } {
+  const rows = [
+    statRow("Membership", escapeHtml(details.membershipId)),
+    statRow("Product", escapeHtml(details.productId ?? "—")),
+    statRow("Status", escapeHtml(details.status)),
+  ];
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#dc2626;">Whop -- membership sin cuenta</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Un webhook de Whop no se pudo asociar a ninguna cuenta</h1>
+<p style="margin:0 0 16px;">Este membership no trae <code>metadata.account_id</code> -- puede haberse creado fuera de <code>createTrialCheckoutConfig</code>/<code>createUpgradeCheckoutUrl</code>, o Whop lo redisparó después de que la cuenta se eliminó. Revisar a mano si el comprador quedó sin acceso.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px;">${rows.join("")}</table>`;
+  return {
+    subject: "Whop: un membership no se pudo asociar a una cuenta",
+    html: wrapPlatformEmailShell(inner, "es"),
+  };
+}
+
+// WW-P3-003: refunds/chargebacks/disputes had zero explicit handling --
+// access only changed if a *separate* membership.deactivated event also
+// happened to fire. This is the minimum viable response (an ops alert, not
+// an automated access change, since a dispute doesn't always mean the
+// membership itself will be revoked) so a dispute/refund is never silently
+// missed.
+export function whopDisputeOrRefundEmail(details: {
+  eventType: string;
+  membershipId: string | null;
+  accountId: string | null;
+}): { subject: string; html: string } {
+  const rows = [
+    statRow("Evento", escapeHtml(details.eventType)),
+    statRow("Membership", escapeHtml(details.membershipId ?? "—")),
+    statRow("Cuenta", escapeHtml(details.accountId ?? "—")),
+  ];
+  const accountLink = details.accountId
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/accounts/${details.accountId}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ver cuenta en /admin</a>
+</td></tr></table>`
+    : "";
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#dc2626;">Whop -- disputa o reembolso</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Whop reportó una disputa o un reembolso</h1>
+<p style="margin:0 0 16px;">El acceso de la cuenta no cambia automáticamente por este evento -- revisar a mano si corresponde suspenderla.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 4px;">${rows.join("")}</table>
+${accountLink}`;
+  return {
+    subject: `Whop: ${details.eventType}`,
+    html: wrapPlatformEmailShell(inner, "es"),
+  };
+}
+
 function statRow(label: string, value: string): string {
   return `<tr>
     <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:13px;color:#71717a;">${label}</td>

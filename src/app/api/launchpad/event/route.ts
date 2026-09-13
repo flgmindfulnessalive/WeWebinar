@@ -62,6 +62,24 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
+
+  // WW-P2-016: projectId came straight from the request body with no
+  // ownership check, unlike every sibling Launchpad route -- any
+  // authenticated user who obtained another account's launchpad_projects.id
+  // (a leakable-but-not-brute-forceable v4 UUID) could pollute that
+  // account's analytics and flip its step-progress state via this
+  // admin-client write, bypassing RLS entirely. Confirm the project
+  // actually belongs to the caller's own account before writing anything.
+  const { data: project } = await admin
+    .from("launchpad_projects")
+    .select("id")
+    .eq("id", parsed.data.projectId)
+    .eq("account_id", current.account.id)
+    .maybeSingle();
+  if (!project) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
   const { error } = await admin.from("launchpad_events").insert({
     project_id: parsed.data.projectId,
     event_type: parsed.data.eventType,

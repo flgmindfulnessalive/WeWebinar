@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAccount } from "@/lib/data/account";
+import { findUnknownTemplateVariables } from "@/lib/email-templates";
 
 export type EmailTemplateActionState = { error: string } | null;
 
@@ -23,6 +24,10 @@ export async function upsertSingletonTemplate(
   }
   if (!subject || !body) {
     return { error: t("subjectAndBodyRequired") };
+  }
+  const unknownVars = findUnknownTemplateVariables(`${subject} ${body}`);
+  if (unknownVars.length > 0) {
+    return { error: t("unknownVariable", { variable: unknownVars[0] }) };
   }
 
   const current = await getCurrentAccount();
@@ -110,6 +115,10 @@ export async function addReminderTemplate(
   }
   if (!subject || !body) {
     return { error: t("subjectAndBodyRequired") };
+  }
+  const unknownVars = findUnknownTemplateVariables(`${subject} ${body}`);
+  if (unknownVars.length > 0) {
+    return { error: t("unknownVariable", { variable: unknownVars[0] }) };
   }
 
   const current = await getCurrentAccount();

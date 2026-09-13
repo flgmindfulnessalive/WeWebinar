@@ -334,7 +334,15 @@ export default async function WebinarAnalyticsPage({
           value={String(visitCount)}
           sublabel={
             visitToRegistrantPct !== null
-              ? t("visitConversionSublabel", { pct: visitToRegistrantPct })
+              ? // WW-P3-007: visit_count filters by page_views.occurred_at,
+                // registrant_count by registrants.created_at -- with a
+                // narrowed date range these aren't necessarily the same
+                // visitors (someone can visit in one period and register in
+                // another for an evergreen/JIT webinar), so the ratio reads
+                // as a real per-visitor conversion rate only for "all time".
+                range === "all"
+                ? t("visitConversionSublabel", { pct: visitToRegistrantPct })
+                : t("visitConversionSublabelFiltered", { pct: visitToRegistrantPct })
               : undefined
           }
         />

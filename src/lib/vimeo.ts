@@ -1,5 +1,9 @@
-const ID_PATTERN = /^\d+$/;
-const HASH_PATTERN = /^[a-zA-Z0-9]+$/;
+// Exported for server-side re-validation of an already-parsed video_source
+// (see isValidVideoSource in lib/actions/webinars.ts).
+export const VIMEO_ID_PATTERN = /^\d+$/;
+export const VIMEO_HASH_PATTERN = /^[a-zA-Z0-9]+$/;
+const ID_PATTERN = VIMEO_ID_PATTERN;
+const HASH_PATTERN = VIMEO_HASH_PATTERN;
 
 /**
  * Accepts a pasted Vimeo URL (vimeo.com/<id>, vimeo.com/<id>/<hash> for a
@@ -26,12 +30,21 @@ export function extractVimeoVideoId(input: string): string | null {
   if (host === "player.vimeo.com") {
     if (segments[0] !== "video" || !ID_PATTERN.test(segments[1] ?? "")) return null;
     const hash = url.searchParams.get("h");
-    return hash && HASH_PATTERN.test(hash) ? `${segments[1]}:${hash}` : segments[1];
+    // A present-but-malformed hash used to fall through to the bare id --
+    // the wizard would then save a "hidden" video with no hash at all,
+    // which 403s live instead of failing the save with a clear error.
+    if (hash !== null && !HASH_PATTERN.test(hash)) return null;
+    return hash ? `${segments[1]}:${hash}` : segments[1];
   }
 
   if (host === "vimeo.com") {
     if (!ID_PATTERN.test(segments[0] ?? "")) return null;
-    if (segments[1] && HASH_PATTERN.test(segments[1])) return `${segments[0]}:${segments[1]}`;
+    if (segments[1] !== undefined) {
+      // Same reasoning as above: a segment is present but fails the hash
+      // pattern (e.g. contains a non-alphanumeric char) -- reject rather
+      // than silently drop it.
+      return HASH_PATTERN.test(segments[1]) ? `${segments[0]}:${segments[1]}` : null;
+    }
     return segments[0];
   }
 

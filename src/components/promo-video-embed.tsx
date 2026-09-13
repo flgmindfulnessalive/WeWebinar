@@ -50,6 +50,25 @@ export function PromoVideoEmbed({ url, className }: { url: string; className?: s
             className="absolute inset-0 size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
           />
         )}
+        {vimeoSource && (
+          // WW-P3-011: only the YouTube branch had a real thumbnail --
+          // Vimeo/direct showed a plain black background with just the play
+          // icon. vumbnail.com is a public, unofficial thumbnail proxy keyed
+          // by Vimeo video id (no API key/round-trip needed); a hidden
+          // video's privacy hash isn't part of its thumbnail lookup, so this
+          // can 404 for some hidden videos -- onError hides the broken image
+          // and the black background + play icon below is the fallback,
+          // same as today.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`https://vumbnail.com/${parseVimeoSource(vimeoSource).id}.jpg`}
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+            className="absolute inset-0 size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+          />
+        )}
         <span className="relative flex size-14 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform group-hover:scale-110">
           <Play className="size-6 translate-x-0.5 fill-black text-black" />
         </span>

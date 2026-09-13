@@ -43,6 +43,22 @@ export function renderTemplate(template: string, vars: TemplateVars): string {
   });
 }
 
+// WW-P3-016: renderTemplate above leaves any unknown {{var}} verbatim in
+// the actual outbound email -- a host typo like {{nombree}} or a variable
+// that doesn't apply to this template type ships to every registrant with
+// zero validation. Used at save time (not render time, where it's too
+// late) to reject a template containing a placeholder outside the known
+// set -- only reachable for host-customized templates, the built-in
+// DEFAULT_TEMPLATES below are all valid by construction.
+export function findUnknownTemplateVariables(text: string): string[] {
+  const knownKeys = new Set<string>(["nombre", "webinar_titulo", "hora_webinar", "link_acceso", "marca_color"]);
+  const found = new Set<string>();
+  for (const match of text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)) {
+    if (!knownKeys.has(match[1])) found.add(match[1]);
+  }
+  return [...found];
+}
+
 // Wraps a rendered template body (just the message -- a few paragraphs and
 // a button, same as a host would type into the "Cuerpo" editor) in the
 // branded email shell: a header band in the host's own brand color with

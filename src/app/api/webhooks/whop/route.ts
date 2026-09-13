@@ -3,7 +3,12 @@ import { unwrapWebhook, WebhookVerificationError } from "@whop/sdk/helpers";
 
 import { planKeyForWhopPlanId, STARTER_KIT_PRODUCT_ID } from "@/lib/whop";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { accountActivatedEmail, paymentFailedEmail } from "@/lib/platform-email";
+import {
+  accountActivatedEmail,
+  paymentFailedEmail,
+  whopDisputeOrRefundEmail,
+  whopMembershipUnresolvedEmail,
+} from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { claimStarterKitFromWhop } from "@/lib/launchpad/whop-starter-kit-claim";
 import { recordGrowthEventAsAdmin } from "@/lib/growth/record-event-admin";
@@ -32,6 +37,19 @@ type WhopWebhookPayload = {
 };
 
 const SYNCED_EVENTS = new Set(["membership.activated", "membership.deactivated"]);
+
+// WW-P3-003: refunds/chargebacks/disputes had zero explicit handling --
+// access only changed if a *separate* membership.deactivated event also
+// happened to fire. Not synced to any account_status change here (a
+// dispute doesn't always mean the membership itself gets revoked -- that
+// still flows through the real membership.deactivated event if/when Whop
+// sends one), just an ops alert so it's never silently missed.
+const DISPUTE_EVENTS = new Set(["dispute.created", "refund.created"]);
+
+// Same ops inbox every other internal alert in this codebase uses (see
+// lib/actions/leads.ts, lib/launchpad/whop-starter-kit-claim.ts) -- no
+// shared export for it, each caller redefines it locally.
+const OPERATIONS_EMAIL = "operaciones@wewebinars.com";
 
 // null means "this status doesn't map to any subscription_status change at
 // all" (currently only "drafted") -- distinct from returning a concrete
@@ -115,6 +133,20 @@ async function syncMembership(payload: WhopWebhookPayload) {
     console.error(
       `[whop webhook] membership ${payload.data.id} (product ${payload.data.product?.id ?? "?"}) has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl?`
     );
+    // WW-P3-004: previously just the console.error above -- the Starter
+    // Kit path already has the right pattern (notifyOpsOfClaimFailure) for
+    // exactly this class of "silently stopped, buyer gets nothing"
+    // failure; extend it to the main billing path too.
+    try {
+      const { subject, html } = whopMembershipUnresolvedEmail({
+        membershipId: payload.data.id,
+        productId: payload.data.product?.id ?? null,
+        status: payload.data.status,
+      });
+      await sendEmail({ to: OPERATIONS_EMAIL, subject, html });
+    } catch (err) {
+      console.error("[whop webhook] unresolved-membership alert itself failed to send:", err);
+    }
     return;
   }
 
@@ -226,6 +258,21 @@ export async function POST(request: Request): Promise<Response> {
   // non-2xx (or at least a logged error before responding) rather than
   // vanishing silently after an immediate 200, since nothing else surfaces
   // a billing-sync failure otherwise.
+  if (DISPUTE_EVENTS.has(event.type)) {
+    // Best-effort, same reasoning as every other ops alert in this route --
+    // a failure here must never surface as a webhook-processing error.
+    try {
+      const { subject, html } = whopDisputeOrRefundEmail({
+        eventType: event.type,
+        membershipId: event.data.id ?? null,
+        accountId: resolveAccountId(event),
+      });
+      await sendEmail({ to: OPERATIONS_EMAIL, subject, html });
+    } catch (err) {
+      console.error("[whop webhook] dispute/refund alert failed:", err);
+    }
+  }
+
   if (SYNCED_EVENTS.has(event.type)) {
     if (event.data.product?.id === STARTER_KIT_PRODUCT_ID) {
       // Free marketplace listing, not a checkout we created -- no

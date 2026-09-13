@@ -51,6 +51,25 @@ async function sendConfirmationEmail({
     admin.from("account_public_profile").select("name, branding").eq("id", accountId).maybeSingle(),
   ]);
 
+  // WW-P3-015: insert-before-send claim, same pattern the reminders cron
+  // already uses -- previously the email_sends row was written *after* the
+  // email had already gone out, purely as an informational log. A retried
+  // or double-clicked registration hits register_for_webinar's correct
+  // row-level dedup on `registrants` and returns the *same* registrant, but
+  // that log-after-send order did nothing to stop the email itself firing
+  // twice for it. Only the request that actually inserts the claim row
+  // sends; a losing concurrent/retried call sees the unique-violation and
+  // returns without sending.
+  if (registrant) {
+    const { error: claimError } = await admin
+      .from("email_sends")
+      .insert({ registrant_id: registrant.id, webinar_id: webinarId, kind: "confirmation" });
+    if (claimError) {
+      if (claimError.code === "23505") return; // already sent for this registrant
+      console.error("[register] email_sends claim failed:", claimError);
+    }
+  }
+
   const horaWebinar = new Intl.DateTimeFormat(locale, {
     dateStyle: "full",
     timeStyle: "short",
@@ -81,16 +100,6 @@ async function sendConfirmationEmail({
     html: wrapEmailShell(renderTemplate(template.body, vars), branding, locale, unsubscribeUrl),
     headers: unsubscribeHeaders(unsubscribeUrl),
   });
-
-  if (registrant) {
-    // Best-effort log — a duplicate here (e.g. a retried request) is
-    // harmless since this is informational, not a de-dupe gate like the
-    // reminders cron relies on.
-    await admin.from("email_sends").upsert(
-      { registrant_id: registrant.id, webinar_id: webinarId, kind: "confirmation" },
-      { onConflict: "registrant_id,kind", ignoreDuplicates: true }
-    );
-  }
 }
 
 export async function registerForWebinar(
