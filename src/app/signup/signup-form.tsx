@@ -41,11 +41,13 @@ export function SignupForm({
   plan,
   billing,
   source,
+  promo,
 }: {
   initialEmail?: string;
   plan?: SelfServePlanKey;
   billing: BillingPeriod;
   source?: "launchpad";
+  promo?: string;
 }) {
   const t = useTranslations("SignupForm");
   const [state, formAction, isPending] = useActionState(
@@ -63,6 +65,7 @@ export function SignupForm({
     onboardingNextParams.set("billing", billing);
   }
   if (source) onboardingNextParams.set("source", source);
+  if (promo) onboardingNextParams.set("promo", promo);
   const onboardingNext =
     onboardingNextParams.size > 0 ? `/onboarding?${onboardingNextParams.toString()}` : "/onboarding";
   const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
@@ -122,6 +125,7 @@ export function SignupForm({
                 </>
               )}
               {source && <input type="hidden" name="source" value={source} />}
+              {promo && <input type="hidden" name="promo" value={promo} />}
               <div className="grid gap-2">
                 <Label htmlFor="full_name">{t("nameLabel")}</Label>
                 <Input id="full_name" name="full_name" type="text" required autoComplete="name" />

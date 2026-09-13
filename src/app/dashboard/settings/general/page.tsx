@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GeneralForm } from "./general-form";
+import { SlugForm } from "./slug-form";
 
 export default async function GeneralSettingsPage() {
   const current = await getCurrentAccount();
@@ -33,6 +34,15 @@ export default async function GeneralSettingsPage() {
             name={current.account.name}
             timezone={current.account.timezone_default}
           />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">{t("slugTitle")}</CardTitle>
+          <CardDescription>{t("slugDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SlugForm slug={current.account.slug} />
         </CardContent>
       </Card>
     </div>

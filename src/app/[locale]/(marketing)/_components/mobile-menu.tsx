@@ -28,10 +28,12 @@ const LOCALES = ["es", "en"] as const;
 // at every width.
 export function MobileMenu({
   pricingLabel,
+  demoLabel,
   blogLabel,
   loginLabel,
 }: {
   pricingLabel: string;
+  demoLabel: string;
   blogLabel: string;
   loginLabel: string;
 }) {
@@ -71,6 +73,12 @@ export function MobileMenu({
               className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
             >
               {pricingLabel}
+            </Link>
+            <Link
+              href="/demo"
+              className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              {demoLabel}
             </Link>
             <Link
               href="/blog"

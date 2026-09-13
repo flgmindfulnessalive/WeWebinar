@@ -37,6 +37,21 @@ type Cta = {
 
 type PanelTab = "chat" | "connected" | "presenter" | "notifications";
 
+// A CTA "link" URL is a fixed string in `ctas.config.url`, identical for
+// every registrant of this webinar (see ctas-section.tsx's plain
+// `type="url"` input -- no per-viewer templating exists anywhere else in
+// the app). This is the one opt-in placeholder: an account owner can paste
+// `{access_token}` anywhere in their own link and it resolves here, at
+// render time, to the token that already identifies this registrant
+// everywhere else in the room (get_registrant_session, record_viewer_event
+// RPCs). Safe to do unconditionally -- unlike a third-party site, this
+// token is only ever useful to a WeWebinars page the owner controls, and
+// it's already visible to this visitor's own browser via the room's own
+// URL, so resolving it into a link they click adds no new exposure.
+function resolveCtaLinkUrl(rawUrl: string, accessToken: string): string {
+  return rawUrl.replaceAll("{access_token}", accessToken);
+}
+
 const RESYNC_INTERVAL_MS = 20_000;
 const HEARTBEAT_INTERVAL_MS = 15_000;
 // Nothing else in the room actually needs the video's real playhead to
@@ -406,7 +421,12 @@ export function LiveRoomClient({
       <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
         <div className="relative flex flex-1 items-center justify-center bg-black">
           {isEnded ? (
-            <EndedState webinarTitle={webinarTitle} ctas={ctas} onCtaClick={recordCtaClick} />
+            <EndedState
+              webinarTitle={webinarTitle}
+              ctas={ctas}
+              onCtaClick={recordCtaClick}
+              accessToken={accessToken}
+            />
           ) : (
             <>
               <LiveBadge />
@@ -445,6 +465,7 @@ export function LiveRoomClient({
                   answeredOption={pollAnswers[cta.id]}
                   results={pollResults[cta.id]}
                   getElapsedSeconds={getElapsedSeconds}
+                  accessToken={accessToken}
                   onClose={
                     cta.type === "poll"
                       ? () => setDismissedPollIds((prev) => new Set(prev).add(cta.id))
@@ -522,6 +543,7 @@ export function LiveRoomClient({
                   onPollAnswer={recordPollResponse}
                   pollAnswers={pollAnswers}
                   pollResults={pollResults}
+                  accessToken={accessToken}
                 />
               )}
             </div>
@@ -710,12 +732,14 @@ function NotificationsTab({
   onPollAnswer,
   pollAnswers,
   pollResults,
+  accessToken,
 }: {
   ctas: Cta[];
   onLinkClick: (ctaId: string) => void;
   onPollAnswer: (ctaId: string, option: string) => void;
   pollAnswers: Record<string, string>;
   pollResults: Record<string, { option: string; votes: number }[]>;
+  accessToken: string;
 }) {
   const t = useTranslations("LiveRoom");
   if (ctas.length === 0) {
@@ -736,6 +760,7 @@ function NotificationsTab({
           onPollAnswer={(option) => onPollAnswer(cta.id, option)}
           answeredOption={pollAnswers[cta.id]}
           results={pollResults[cta.id]}
+          accessToken={accessToken}
         />
       ))}
     </div>
@@ -748,12 +773,14 @@ function NotificationCard({
   onPollAnswer,
   answeredOption,
   results,
+  accessToken,
 }: {
   cta: Cta;
   onLinkClick: () => void;
   onPollAnswer: (option: string) => void;
   answeredOption?: string;
   results?: { option: string; votes: number }[];
+  accessToken: string;
 }) {
   const t = useTranslations("LiveRoom");
   const config = (cta.config ?? {}) as Record<string, unknown>;
@@ -797,7 +824,7 @@ function NotificationCard({
 
   if (cta.type === "link") {
     const text = String(config.text ?? "");
-    const url = String(config.url ?? "#");
+    const url = resolveCtaLinkUrl(String(config.url ?? "#"), accessToken);
     return (
       <a
         href={url}
@@ -814,7 +841,7 @@ function NotificationCard({
 
   const text = config.text ? String(config.text) : null;
   const imageUrl = config.image_url ? String(config.image_url) : null;
-  const linkUrl = config.url ? String(config.url) : null;
+  const linkUrl = config.url ? resolveCtaLinkUrl(String(config.url), accessToken) : null;
   const content = (
     <>
       {imageUrl && (
@@ -974,6 +1001,7 @@ function CtaOverlay({
   results,
   getElapsedSeconds,
   onClose,
+  accessToken,
 }: {
   cta: Cta;
   onLinkClick: () => void;
@@ -982,6 +1010,7 @@ function CtaOverlay({
   results?: { option: string; votes: number }[];
   getElapsedSeconds: () => number;
   onClose?: () => void;
+  accessToken: string;
 }) {
   const config = (cta.config ?? {}) as Record<string, unknown>;
   const t = useTranslations("LiveRoom");
@@ -1012,7 +1041,7 @@ function CtaOverlay({
   if (cta.type === "link") {
     const style = String(config.style ?? "banner");
     const text = String(config.text ?? "");
-    const url = String(config.url ?? "#");
+    const url = resolveCtaLinkUrl(String(config.url ?? "#"), accessToken);
     const isClosed = remainingSeconds === 0;
     const isPill = style === "fixed_button";
     const isBanner = style === "banner";
@@ -1090,7 +1119,7 @@ function CtaOverlay({
   if (cta.type === "overlay") {
     const text = config.text ? String(config.text) : null;
     const imageUrl = config.image_url ? String(config.image_url) : null;
-    const linkUrl = config.url ? String(config.url) : null;
+    const linkUrl = config.url ? resolveCtaLinkUrl(String(config.url), accessToken) : null;
     const cardClass =
       "absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 rounded-md bg-black/80 p-4 text-white shadow-lg";
     const content = (
@@ -1174,10 +1203,12 @@ function EndedState({
   webinarTitle,
   ctas,
   onCtaClick,
+  accessToken,
 }: {
   webinarTitle: string;
   ctas: Cta[];
   onCtaClick: (ctaId: string) => void;
+  accessToken: string;
 }) {
   const t = useTranslations("LiveRoom");
   const linkCtas = ctas.filter((c) => c.type === "link");
@@ -1193,7 +1224,7 @@ function EndedState({
             return (
               <GlowCtaBorder key={cta.id}>
                 <a
-                  href={String(config.url ?? "#")}
+                  href={resolveCtaLinkUrl(String(config.url ?? "#"), accessToken)}
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => onCtaClick(cta.id)}

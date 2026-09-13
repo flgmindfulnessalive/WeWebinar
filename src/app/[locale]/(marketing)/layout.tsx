@@ -51,6 +51,12 @@ export default async function MarketingLayout({
               {t("pricing")}
             </Link>
             <Link
+              href="/demo"
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
+            >
+              {t("demo")}
+            </Link>
+            <Link
               href="/blog"
               className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
             >
@@ -72,6 +78,7 @@ export default async function MarketingLayout({
             </Button>
             <MobileMenu
               pricingLabel={t("pricing")}
+              demoLabel={t("demo")}
               blogLabel={tBlog("navLabel")}
               loginLabel={t("login")}
             />

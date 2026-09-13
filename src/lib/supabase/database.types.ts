@@ -497,6 +497,46 @@ export interface Database {
           },
         ];
       };
+      demo_discount_offers: {
+        Row: {
+          id: string;
+          registrant_id: string;
+          webinar_id: string;
+          email: string;
+          whop_promo_code_id: string;
+          code: string;
+          amount_off: number;
+          issued_at: string;
+          expires_at: string;
+          redeemed_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["demo_discount_offers"]["Row"]> & {
+          registrant_id: string;
+          webinar_id: string;
+          email: string;
+          whop_promo_code_id: string;
+          code: string;
+          expires_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["demo_discount_offers"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "demo_discount_offers_registrant_id_fkey";
+            columns: ["registrant_id"];
+            isOneToOne: true;
+            referencedRelation: "registrants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "demo_discount_offers_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       chat_messages: {
         Row: {
           id: string;

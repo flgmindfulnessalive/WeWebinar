@@ -1,5 +1,7 @@
 import "server-only";
 
+import { randomBytes } from "node:crypto";
+
 import { WhopClient } from "@whop/sdk";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -177,6 +179,74 @@ export async function cancelSelfServeMembership(membershipId: string): Promise<b
   } catch (err) {
     console.error("[whop] cancelSelfServeMembership failed:", err);
     return false;
+  }
+}
+
+// All monthly + annual plan ids across every self-serve tier, in both
+// plan sets (PRICING_PLANS for a fresh signup checkout, CONVERT_PLANS for
+// an existing account upgrading) -- the demo offer below doesn't know in
+// advance which checkout path the person who claims it will take, so the
+// code is scoped to every plan_id either path could land on.
+function allSelfServePlanIds(): string[] {
+  const ids: string[] = [];
+  for (const map of [PRICING_PLANS, CONVERT_PLANS]) {
+    for (const byPeriod of Object.values(map)) {
+      ids.push(byPeriod.monthly, byPeriod.annual);
+    }
+  }
+  return ids;
+}
+
+export type DemoDiscountCode = {
+  code: string;
+  whopPromoCodeId: string;
+};
+
+// "Oferta de la demo oficial" (ver /demo/oferta): 10% real y único por
+// persona, con vencimiento real en Whop (no solo en nuestra propia base) --
+// nadie puede canjearlo después de esa hora aunque de algún modo consiga
+// el código. promo_duration_months: 3 resuelve los dos casos del negocio
+// con un solo código, sin branching acá: en un plan mensual descuenta las
+// primeras 3 facturas; en el anual, como el próximo cobro recién ocurre a
+// los 12 meses (bien afuera de esa ventana de 3 meses), el descuento
+// naturalmente solo llega a pegar en el único pago que hay -- "10% los
+// primeros 3 meses o 10% en el anual" sin necesitar dos códigos.
+//
+// amount_off acá es 0-100 (entero), no una fracción decimal -- el único
+// ejemplo real en el SDK (@whop/sdk/reference.md, "AFFILIATE25") usa
+// amount_off: 25 para un cupón del 25%, aunque el docstring del tipo
+// PromoCode (el objeto que se lee, no este request) dice lo contrario
+// ("decimal fraction"). Seguimos el ejemplo concreto, no el comentario --
+// pero conviene confirmarlo una vez contra un checkout real de Whop antes
+// de confiar en esto a escala.
+export async function createDemoDiscountCode({
+  email,
+  expiresAt,
+}: {
+  email: string;
+  expiresAt: string;
+}): Promise<DemoDiscountCode | null> {
+  if (!whopConfigured() || !process.env.WHOP_ACCOUNT_ID) return null;
+
+  const code = `DEMO${randomBytes(4).toString("hex").toUpperCase()}`;
+
+  try {
+    const promo = await whopClient().promoCodes.create({
+      account_id: process.env.WHOP_ACCOUNT_ID,
+      code,
+      amount_off: 10,
+      base_currency: "usd",
+      promo_type: "percentage",
+      promo_duration_months: 3,
+      new_users_only: false,
+      one_per_customer: true,
+      expires_at: expiresAt,
+      plan_ids: allSelfServePlanIds(),
+    });
+    return { code: promo.code ?? code, whopPromoCodeId: promo.id };
+  } catch (err) {
+    console.error(`[whop] createDemoDiscountCode failed for ${email}:`, err);
+    return null;
   }
 }
 

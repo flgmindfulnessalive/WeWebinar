@@ -1,12 +1,29 @@
 {
   "MarketingLayout": {
     "pricing": "Pricing",
+    "demo": "Watch Demo",
     "login": "Log in",
     "signup": "Get started",
     "language": "Language",
     "footer": "© {year} WeWebinars. All rights reserved.",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
+  },
+  "DemoOffer": {
+    "eyebrow": "Limited-time offer",
+    "title": "10% off for watching the demo",
+    "body": "Valid for 1 hour: 10% off your first 3 months on any monthly plan, or 10% off the annual plan.",
+    "countdownLabel": "Time left",
+    "startCta": "Start now with 10% off",
+    "upgradeCta": "Upgrade my plan with 10% off",
+    "fineprint": "The discount applies automatically -- no code to type in.",
+    "expiredTitle": "Your offer expired",
+    "expiredBody": "The hour's up, but you can still explore WeWebinars' plans whenever you're ready.",
+    "expiredCta": "See plans and pricing",
+    "invalidTitle": "This link isn't valid",
+    "invalidBody": "Head back to the official WeWebinars demo to get a fresh link.",
+    "unavailableTitle": "Your code is on its way",
+    "unavailableBody": "Something went wrong generating your discount. Email us at operaciones@wewebinars.com and we'll send it to you."
   },
   "AuthLayout": {
     "tagline": "Evergreen webinars with the pulse of a real event."
@@ -784,7 +801,12 @@
     "accountNameTitle": "Account name",
     "accountNameDescription": "Shown in the panel and doesn't affect your current plan (<planKey>{plan}</planKey>). To change plans, go to Billing and plan.",
     "nameLabel": "Name",
-    "timezoneLabel": "Time zone"
+    "timezoneLabel": "Time zone",
+    "slugTitle": "Public URL",
+    "slugDescription": "Used in the link to your public webinars (wewebinars.com/w/your-url/...).",
+    "slugLabel": "URL",
+    "slugWarning": "If you change it, links you already shared with the previous URL stop working.",
+    "slugChangeConfirm": "Are you sure? Links you already shared with your current URL will stop working."
   },
   "ProfileSettings": {
     "title": "Profile",
@@ -815,7 +837,9 @@
   },
   "AccountActions": {
     "noPermission": "You don't have permission to edit the account.",
-    "nameRequired": "The account name is required."
+    "nameRequired": "The account name is required.",
+    "slugRequired": "The public URL is required.",
+    "slugTaken": "That URL is already taken, try another one."
   },
   "ProfileActions": {
     "sessionNotFound": "We couldn't identify your session.",

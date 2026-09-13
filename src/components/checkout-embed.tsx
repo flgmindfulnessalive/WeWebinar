@@ -9,7 +9,7 @@ function goToComplete(receiptOrSetupIntentId?: string) {
   window.location.href = `/checkout/complete?status=success&receipt=${receiptOrSetupIntentId}`;
 }
 
-export function CheckoutEmbed({ sessionId }: { sessionId: string }) {
+export function CheckoutEmbed({ sessionId, promoCode }: { sessionId: string; promoCode?: string }) {
   // The express button resolves to "none" on any device/browser without
   // Apple Pay or Google Pay available (desktop Firefox, Safari/Chrome with
   // no card saved to Wallet/Google Pay, etc.) -- shown only once we know it
@@ -40,6 +40,7 @@ export function CheckoutEmbed({ sessionId }: { sessionId: string }) {
       )}
       <WhopCheckoutEmbed
         sessionId={sessionId}
+        promoCode={promoCode}
         returnUrl={RETURN_URL}
         theme="light"
         fallback={<>Cargando checkout…</>}
