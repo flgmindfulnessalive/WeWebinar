@@ -312,13 +312,13 @@ export default async function WebinarAnalyticsPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" className="w-fit">
-            <a href={`/api/webinars/${webinarId}/report`}>
+            <a href={`/api/webinars/${webinarId}/report?range=${range}`}>
               <FileDown className="size-4" />
               {t("downloadReport")}
             </a>
           </Button>
           <Button asChild variant="outline" className="w-fit">
-            <a href={`/api/webinars/${webinarId}/export`}>
+            <a href={`/api/webinars/${webinarId}/export?range=${range}`}>
               <Download className="size-4" />
               {t("exportCsv")}
             </a>
@@ -334,7 +334,15 @@ export default async function WebinarAnalyticsPage({
           value={String(visitCount)}
           sublabel={
             visitToRegistrantPct !== null
-              ? t("visitConversionSublabel", { pct: visitToRegistrantPct })
+              ? // WW-P3-007: visit_count filters by page_views.occurred_at,
+                // registrant_count by registrants.created_at -- with a
+                // narrowed date range these aren't necessarily the same
+                // visitors (someone can visit in one period and register in
+                // another for an evergreen/JIT webinar), so the ratio reads
+                // as a real per-visitor conversion rate only for "all time".
+                range === "all"
+                ? t("visitConversionSublabel", { pct: visitToRegistrantPct })
+                : t("visitConversionSublabelFiltered", { pct: visitToRegistrantPct })
               : undefined
           }
         />

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
   const { data: existing } = await admin
     .from("webinar_projects")
-    .select("id, status, lead_email, lead_name")
+    .select("id, account_id, status, lead_email, lead_name")
     .eq("id", payload.projectId)
     .maybeSingle();
 
@@ -99,8 +99,17 @@ export async function POST(request: Request) {
   // webinar_projects_select_owner) para retomarlo desde el dashboard más
   // adelante. Anónimo -> account_id null, el resume sigue funcionando
   // solo por localStorage/projectId, igual que hoy.
+  //
+  // WW-P2-017: `existing` ya viene cargado arriba (sin filtro de
+  // ownership) y account_id se pisaba sin condición en cada guardado --
+  // un atacante autenticado que conozca el id de un proyecto ajeno
+  // (capability-token model, id filtrable) podía re-parentarlo a su
+  // propia cuenta, incluyendo el lead_email/lead_name ya recolectado. Si
+  // el proyecto ya tiene dueño y es otra cuenta, no lo pisamos.
   const currentAccount = await getCurrentAccount().catch(() => null);
-  if (currentAccount) row.account_id = currentAccount.account.id;
+  if (currentAccount && (!existing?.account_id || existing.account_id === currentAccount.account.id)) {
+    row.account_id = currentAccount.account.id;
+  }
 
   if (payload.lead) {
     row.lead_email = payload.lead.email;

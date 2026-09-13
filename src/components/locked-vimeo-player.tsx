@@ -120,9 +120,13 @@ export const LockedVimeoPlayer = forwardRef<
     onPause?: () => void;
     onRateChange?: () => void;
     onEnded?: () => void;
+    /** Fired once when Vimeo reports the video itself is unplayable
+     * (domain-restricted, wrong/missing privacy hash, deleted) -- distinct
+     * from the generic "might be an ad blocker" stuck-timeout case below. */
+    onUnavailable?: () => void;
   }
 >(function LockedVimeoPlayer(
-  { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded },
+  { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -130,8 +134,8 @@ export const LockedVimeoPlayer = forwardRef<
   const currentTimeRef = useRef(0);
   const mutedRef = useRef(Boolean(muted));
   const playbackRateRef = useRef(1);
-  const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded });
-  callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded };
+  const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable });
+  callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable };
 
   const [coverVisible, setCoverVisible] = useState(Boolean(autoPlay));
   const hasPlayedOnceRef = useRef(false);
@@ -144,6 +148,10 @@ export const LockedVimeoPlayer = forwardRef<
   const stuckSinceRef = useRef<number | null>(null);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [showBlockedWarning, setShowBlockedWarning] = useState(false);
+  // Set only by a real Vimeo SDK "error" event (domain restriction, wrong
+  // privacy hash, deleted video) -- a confirmed-broken video, not a "might
+  // be an ad blocker" guess.
+  const [showUnavailable, setShowUnavailable] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
   useImperativeHandle(
@@ -197,6 +205,7 @@ export const LockedVimeoPlayer = forwardRef<
     playbackRateRef.current = 1;
     setShowResumePrompt(false);
     setShowBlockedWarning(false);
+    setShowUnavailable(false);
 
     const stuckTimer = autoPlay
       ? window.setTimeout(() => {
@@ -246,6 +255,16 @@ export const LockedVimeoPlayer = forwardRef<
       playbackRateRef.current = data.playbackRate ?? playbackRateRef.current;
       callbacksRef.current.onRateChange?.();
     };
+    const onErrorEvent = () => {
+      gaveUpRef.current = true;
+      hasPlayedOnceRef.current = false;
+      isPlayingRef.current = false;
+      setCoverVisible(false);
+      setShowResumePrompt(false);
+      setShowBlockedWarning(false);
+      setShowUnavailable(true);
+      callbacksRef.current.onUnavailable?.();
+    };
 
     loadVimeoPlayerApi().then((Vimeo) => {
       if (cancelled || !containerRef.current) return;
@@ -289,6 +308,7 @@ export const LockedVimeoPlayer = forwardRef<
       player.on("bufferstart", onBufferStart);
       player.on("bufferend", onBufferEnd);
       player.on("playbackratechange", onRateChangeEvent);
+      player.on("error", onErrorEvent);
     });
 
     return () => {
@@ -302,6 +322,7 @@ export const LockedVimeoPlayer = forwardRef<
         player.off("bufferstart", onBufferStart);
         player.off("bufferend", onBufferEnd);
         player.off("playbackratechange", onRateChangeEvent);
+        player.off("error", onErrorEvent);
         player.destroy().catch(() => {});
       }
       playerRef.current = null;
@@ -333,6 +354,21 @@ export const LockedVimeoPlayer = forwardRef<
       if (Date.now() - playingSinceRef.current >= REVEAL_HOLD_MS) setCoverVisible(false);
     }, 200);
     return () => window.clearInterval(poll);
+  }, [autoPlay]);
+
+  // Best-effort automatic recovery when the tab regains visibility -- same
+  // rationale and pattern as the YouTube player's own effect of the same
+  // name (mobile browsers often suspend a backgrounded tab's video and
+  // refuse to resume it without this).
+  useEffect(() => {
+    if (!autoPlay) return;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && !isPlayingRef.current) {
+        playerRef.current?.play().catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [autoPlay]);
 
   const handleRetry = () => {
@@ -427,6 +463,31 @@ export const LockedVimeoPlayer = forwardRef<
           >
             🔄 Reintentar
           </button>
+        </div>
+      )}
+      {/* Confirmed-broken video (Vimeo's own "error" event -- domain
+          restriction, wrong/missing privacy hash, deleted), not a guess
+          about an ad blocker. No retry button: won't resolve on its own. */}
+      {showUnavailable && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            background: "rgba(0, 0, 0, 0.9)",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
+            Este video ya no está disponible. Contactá al organizador del
+            webinar.
+          </p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the Vimeo iframe

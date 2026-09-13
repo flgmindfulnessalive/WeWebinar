@@ -132,7 +132,24 @@ export async function reactivateAccount(accountId: string): Promise<AdminActionS
 
   const { error } = await supabase
     .from("accounts")
-    .update({ subscription_status: "active", suspended_at: null })
+    // Clearing canceled_at/deletion_warning_sent_at here (not just
+    // suspended_at) matters even though this account isn't canceled right
+    // now: the Whop webhook's own re-cancellation handler
+    // (src/app/api/webhooks/whop/route.ts) only overwrites canceled_at when
+    // it was previously null, so a stale value surviving a reactivation
+    // stays pinned at the *original* cancellation date through any later
+    // real cancellation. Combined with deletion_warning_sent_at also
+    // staying non-null (which permanently suppresses the warning email --
+    // see the deletion-warning cron's `.is("deletion_warning_sent_at",
+    // null)` filter), that stale pair can make a reactivated account look
+    // eligible for the 90-day retention purge immediately after a *new*
+    // cancellation, with no warning email ever sent for that new cycle.
+    .update({
+      subscription_status: "active",
+      suspended_at: null,
+      canceled_at: null,
+      deletion_warning_sent_at: null,
+    })
     .eq("id", accountId);
 
   revalidatePath("/admin/accounts");

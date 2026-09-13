@@ -1,4 +1,8 @@
-const ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
+// Exported for server-side re-validation of an already-parsed id (see
+// isValidVideoSource in lib/actions/webinars.ts) -- distinct from the URL
+// parsing below, which only ever runs against a raw pasted link.
+export const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
+const ID_PATTERN = YOUTUBE_ID_PATTERN;
 
 /**
  * Accepts a pasted YouTube URL (watch, youtu.be, embed, shorts) or a bare

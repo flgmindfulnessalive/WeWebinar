@@ -406,6 +406,8 @@
     "alreadyVoted": "Ya votaste",
     "thanksForJoining": "Gracias por acompañarnos en {title}",
     "webinarEnded": "El webinar terminó.",
+    "hostEndedTitle": "Esta sesión ya no está disponible",
+    "hostEndedBody": "El anfitrión finalizó o archivó este webinar.",
     "seeMore": "Ver más",
     "sendReaction": "Enviar reacción {emoji}",
     "openReactions": "Abrir reacciones",
@@ -1148,6 +1150,7 @@
     "previewTitlePlaceholder": "El título de tu webinar va a aparecer acá"
   },
   "WebinarActions": {
+    "invalidVideoSource": "Esa fuente de video no es válida. Intenta cargarla de nuevo.",
     "titleRequired": "El título es obligatorio.",
     "brevoListIdInteger": "El List ID de Brevo debe ser un número entero.",
     "marketingPlanBlocked": "El marketing (pixel de Meta y Brevo) está disponible en los planes Pro, Business y Enterprise. Actualiza tu plan desde Facturación para activarlo.",
@@ -1257,6 +1260,7 @@
     "customHint": "Útil cuando quien presenta no tiene cuenta en la plataforma."
   },
   "VideoSection": {
+    "previewUnavailable": "No pudimos cargar este video. Puede estar privado, eliminado o restringido — revisa su visibilidad e intenta cargarlo de nuevo.",
     "unlistedHint": "Pega el link de un video de YouTube \"no listado\" (Visibilidad → Oculto, en YouTube Studio). No hace falta que sea público.",
     "youtubeLinkLabel": "Link de YouTube",
     "load": "Cargar",
@@ -1403,6 +1407,7 @@
   },
   "EmailTemplateActions": {
     "invalidTemplateType": "Tipo de plantilla inválido.",
+    "unknownVariable": "El placeholder \"{variable}\" no es una variable que esta plantilla soporte. Revisa que no tenga un error de tipeo.",
     "subjectAndBodyRequired": "Asunto y cuerpo son obligatorios.",
     "notAuthenticated": "No autenticado.",
     "saveFailedRetry": "No pudimos guardar la plantilla. Prueba de nuevo.",
@@ -1442,6 +1447,7 @@
     "typePollFallback": "Encuesta",
     "visitsLabel": "Visitas",
     "visitConversionSublabel": "{pct}% se registró",
+    "visitConversionSublabelFiltered": "{pct}% se registró en este período (pueden ser visitantes distintos)",
     "registrantsLabel": "Registrados",
     "actualAttendeesLabel": "Asistentes reales",
     "attendanceRateSublabel": "{pct}% tasa de asistencia",
@@ -1540,6 +1546,7 @@
   "WebinarReport": {
     "generatedOn": "Generado el {date}",
     "dataRangeAll": "Datos: todo el histórico",
+    "dataRangeLabel": "Datos: {range}",
     "scheduleModeFixed": "Programado",
     "scheduleModeBoth": "Programado + bajo demanda",
     "footerBrand": "WeWebinars · wewebinars.com",

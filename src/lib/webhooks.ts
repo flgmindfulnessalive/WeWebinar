@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { safeFetch } from "@/lib/ssrf-guard";
 
 export type WebhookEventType = "registration" | "attendance" | "cta_click" | "completion" | "test";
 
@@ -23,7 +24,11 @@ async function deliverToEndpoint(
 
   try {
     const signature = createHmac("sha256", endpoint.secret).update(body).digest("hex");
-    const response = await fetch(endpoint.url, {
+    // safeFetch (not plain fetch) -- resolves and re-checks the address on
+    // every hop, including redirects, so a URL that 302s to an internal
+    // address can't slip past the https-only check made at creation time
+    // (see WW-P2-015).
+    const response = await safeFetch(endpoint.url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

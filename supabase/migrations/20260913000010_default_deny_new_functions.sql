@@ -1,0 +1,18 @@
+-- =========================================================================
+-- Systemic fix recommended alongside WW-P1-012/WW-P2-014/WW-P3-013 (three
+-- SECURITY DEFINER functions found with no explicit GRANT and no internal
+-- auth check -- closed individually in 20260913000006_
+-- revoke_ungranted_security_definer_functions.sql). Vanilla Postgres grants
+-- EXECUTE on every newly created function to PUBLIC by default, so a
+-- migration author who forgets the explicit `grant execute ... to
+-- authenticated` this codebase's own convention requires leaves the
+-- function open to every role (including anon) rather than closed.
+--
+-- This flips that default going forward: every function created from here
+-- on starts with no EXECUTE grant at all, and a migration must explicitly
+-- grant it to whichever role should actually be able to call it -- the
+-- same "closed by default" posture RLS already gives every table. Existing
+-- functions are unaffected; this only changes what a *future* `create
+-- function` gets by default.
+-- =========================================================================
+alter default privileges in schema public revoke execute on functions from public;

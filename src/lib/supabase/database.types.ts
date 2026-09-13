@@ -1914,7 +1914,12 @@ export interface Database {
           elapsed_seconds: number;
           duration_seconds: number | null;
           is_ended: boolean;
+          webinar_status: WebinarStatus;
         }[];
+      };
+      get_webinar_video_for_registrant: {
+        Args: { p_access_token: string };
+        Returns: { video_provider: VideoProvider | null; video_source: string | null }[];
       };
       get_cta_poll_results: {
         Args: { p_access_token: string; p_cta_id: string };
@@ -2069,6 +2074,10 @@ export interface Database {
           clicks: number;
           conversion_pct: number;
         }[];
+      };
+      get_webinar_occurrence_spots_taken: {
+        Args: { p_webinar_id: string; p_session_starts: string[] };
+        Returns: { session_start: string; concurrent_count: number }[];
       };
       get_webinar_poll_results: {
         Args: { p_webinar_id: string; p_start_date?: string | null; p_end_date?: string | null };

@@ -406,6 +406,8 @@
     "alreadyVoted": "You already voted",
     "thanksForJoining": "Thanks for joining {title}",
     "webinarEnded": "The webinar has ended.",
+    "hostEndedTitle": "This session is no longer available",
+    "hostEndedBody": "The host ended or archived this webinar.",
     "seeMore": "See more",
     "sendReaction": "Send {emoji} reaction",
     "openReactions": "Open reactions",
@@ -1148,6 +1150,7 @@
     "previewTitlePlaceholder": "Your webinar's title will show up here"
   },
   "WebinarActions": {
+    "invalidVideoSource": "That video source isn't valid. Try loading it again.",
     "titleRequired": "Title is required.",
     "brevoListIdInteger": "The Brevo List ID must be a whole number.",
     "marketingPlanBlocked": "Marketing (Meta pixel and Brevo) is available on the Pro, Business and Enterprise plans. Upgrade your plan from Billing to enable it.",
@@ -1257,6 +1260,7 @@
     "customHint": "Useful when the presenter doesn't have an account on the platform."
   },
   "VideoSection": {
+    "previewUnavailable": "This video couldn't be loaded. It may be private, deleted, or restricted — check its visibility and try loading it again.",
     "unlistedHint": "Paste the link to an \"unlisted\" YouTube video (Visibility → Hidden, in YouTube Studio). It doesn't need to be public.",
     "youtubeLinkLabel": "YouTube link",
     "load": "Load",
@@ -1403,6 +1407,7 @@
   },
   "EmailTemplateActions": {
     "invalidTemplateType": "Invalid template type.",
+    "unknownVariable": "The placeholder \"{variable}\" isn't a variable this template supports. Check it for typos.",
     "subjectAndBodyRequired": "Subject and body are required.",
     "notAuthenticated": "Not authenticated.",
     "saveFailedRetry": "We couldn't save the template. Please try again.",
@@ -1442,6 +1447,7 @@
     "typePollFallback": "Poll",
     "visitsLabel": "Visits",
     "visitConversionSublabel": "{pct}% registered",
+    "visitConversionSublabelFiltered": "{pct}% registered in this period (may include different visitors)",
     "registrantsLabel": "Registrants",
     "actualAttendeesLabel": "Actual attendees",
     "attendanceRateSublabel": "{pct}% attendance rate",
@@ -1540,6 +1546,7 @@
   "WebinarReport": {
     "generatedOn": "Generated on {date}",
     "dataRangeAll": "Data: full history",
+    "dataRangeLabel": "Data: {range}",
     "scheduleModeFixed": "Scheduled",
     "scheduleModeBoth": "Scheduled + on demand",
     "footerBrand": "WeWebinars · wewebinars.com",

@@ -48,6 +48,22 @@ export async function GET(
 ) {
   const { locale, slug } = await params;
   const post = getPost(locale as Locale, slug);
+
+  // A post with a static cover image (uploaded artwork) skips the
+  // Satori-generated design entirely and serves that file's bytes
+  // directly -- same route, same OG/Twitter wiring in page.tsx's
+  // generateMetadata, no caller-side change needed.
+  if (post?.coverImage) {
+    const imagePath = join(process.cwd(), "public", post.coverImage);
+    const image = await readFile(imagePath);
+    return new Response(new Uint8Array(image), {
+      headers: {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  }
+
   const rawTitle = post?.title ?? "WeWebinars Blog";
   const title =
     rawTitle.length > TITLE_MAX_LENGTH ? `${rawTitle.slice(0, TITLE_MAX_LENGTH - 1)}…` : rawTitle;

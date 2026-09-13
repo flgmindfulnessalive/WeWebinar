@@ -67,6 +67,11 @@ export function VideoSection({
     }
   }
 
+  function handleUnavailable() {
+    setError(t("previewUnavailable"));
+    setPendingSource(null);
+  }
+
   async function handleDurationReady(durationSeconds: number) {
     if (!pendingSource || durationSeconds <= 0) return;
     setIsSaving(true);
@@ -137,7 +142,9 @@ export function VideoSection({
                 provider={provider}
                 source={pendingSource}
                 muted
+                autoPlay
                 onLoadedMetadata={handleDurationReady}
+                onUnavailable={handleUnavailable}
               />
             </div>
             <p className="text-sm text-muted-foreground">

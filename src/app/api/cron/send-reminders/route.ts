@@ -27,6 +27,17 @@ import type { AccountLocale, Database } from "@/lib/supabase/database.types";
 
 const TRIAL_WARNING_WINDOW_DAYS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
+// WW-P3-005: this cron and Whop's own trial-activation webhook are
+// independently clocked -- a Whop activation that lands just after
+// trial_ends_at passes (checkout completed right at the wire, or the
+// webhook itself was briefly delayed) used to race this check and get
+// briefly canceled (public pages go dark) before the webhook's own
+// syncMembership call self-healed the status back to active. This cron
+// runs every 5 minutes (see the route's own module comment), so a grace
+// window a little wider than that tick interval absorbs the realistic
+// delay without meaningfully widening how long a genuinely-expired trial
+// stays accessible.
+const TRIAL_EXPIRY_GRACE_MS = 15 * 60 * 1000;
 const LAUNCHPAD_REMINDER_INACTIVITY_DAYS = 3;
 
 // Mismas palabras que Launchpad.dashboard.stepName en es.json/en.json -- el
@@ -287,7 +298,7 @@ export async function GET(request: Request) {
     .from("accounts")
     .select("id, name, locale")
     .eq("subscription_status", "trialing")
-    .lte("trial_ends_at", new Date().toISOString());
+    .lte("trial_ends_at", new Date(Date.now() - TRIAL_EXPIRY_GRACE_MS).toISOString());
 
   for (const account of expiredTrials ?? []) {
     const { data: claimed, error: claimError } = await admin

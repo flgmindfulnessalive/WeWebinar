@@ -3,7 +3,12 @@ import { unwrapWebhook, WebhookVerificationError } from "@whop/sdk/helpers";
 
 import { planKeyForWhopPlanId, STARTER_KIT_PRODUCT_ID } from "@/lib/whop";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { accountActivatedEmail, paymentFailedEmail } from "@/lib/platform-email";
+import {
+  accountActivatedEmail,
+  paymentFailedEmail,
+  whopDisputeOrRefundEmail,
+  whopMembershipUnresolvedEmail,
+} from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { claimStarterKitFromWhop } from "@/lib/launchpad/whop-starter-kit-claim";
 import { recordGrowthEventAsAdmin } from "@/lib/growth/record-event-admin";
@@ -33,7 +38,28 @@ type WhopWebhookPayload = {
 
 const SYNCED_EVENTS = new Set(["membership.activated", "membership.deactivated"]);
 
-function mapWhopStatus(status: string): SubscriptionStatus {
+// WW-P3-003: refunds/chargebacks/disputes had zero explicit handling --
+// access only changed if a *separate* membership.deactivated event also
+// happened to fire. WeWebinars has no refund policy (confirmed with the
+// product owner 2026-09-13): every dollar taken back through Whop --
+// self-service dispute or a manually-issued refund alike -- is by
+// definition outside anything WeWebinars agreed to, so it's treated the
+// same as a suspension-worthy violation rather than an ordinary
+// cancellation. Suspending (not canceling) matches WW-P1-002's own
+// distinction: 'suspended' is the support-only dead end reserved for a
+// real violation, not the self-serve-reactivation 'canceled' state.
+const DISPUTE_EVENTS = new Set(["dispute.created", "refund.created"]);
+
+// Same ops inbox every other internal alert in this codebase uses (see
+// lib/actions/leads.ts, lib/launchpad/whop-starter-kit-claim.ts) -- no
+// shared export for it, each caller redefines it locally.
+const OPERATIONS_EMAIL = "operaciones@wewebinars.com";
+
+// null means "this status doesn't map to any subscription_status change at
+// all" (currently only "drafted") -- distinct from returning a concrete
+// status, since the caller needs to skip the sync entirely rather than
+// write some default value.
+function mapWhopStatus(status: string): SubscriptionStatus | null {
   switch (status) {
     case "trialing":
       return "trialing";
@@ -46,8 +72,54 @@ function mapWhopStatus(status: string): SubscriptionStatus {
     case "canceled":
     case "expired":
       return "canceled";
+    case "canceling":
+      // Whop's "cancel at period end" state, set by
+      // cancelSelfServeMembership's own cancel_at_period_end: true call.
+      // The membership is still paid-through and access should continue
+      // exactly as that function's own comment documents ("keeps access
+      // until the period the customer already paid for ends") --
+      // previously fell into the default "suspended" branch below, which
+      // could cut a host's public pages off the moment they scheduled a
+      // future cancellation instead of at the period's actual end.
+      return "active";
+    case "drafted":
+      // A membership that hasn't gone live yet has no bearing on this
+      // account's current subscription_status -- previously also fell
+      // into "suspended" by default, which could incorrectly suspend a
+      // real, currently-active account the moment an unrelated drafted
+      // membership event arrived for it.
+      return null;
     default:
       return "suspended";
+  }
+}
+
+// WW-P3-003: no refund policy exists, so a dispute/refund always means
+// access should stop -- suspend immediately rather than waiting on ops to
+// read the alert email and act by hand. Idempotent against redelivery
+// (only writes if the account isn't already suspended/canceled) and
+// best-effort, same as every other side effect in this route: a failure
+// here must never surface as a webhook-processing error, since the ops
+// alert above already guarantees a human sees this regardless.
+async function suspendAccountForDispute(admin: ReturnType<typeof createAdminClient>, accountId: string) {
+  try {
+    const { data: account } = await admin
+      .from("accounts")
+      .select("subscription_status")
+      .eq("id", accountId)
+      .maybeSingle();
+    if (!account || account.subscription_status === "suspended" || account.subscription_status === "canceled") {
+      return;
+    }
+    const { error } = await admin
+      .from("accounts")
+      .update({ subscription_status: "suspended", suspended_at: new Date().toISOString() })
+      .eq("id", accountId);
+    if (error) {
+      console.error(`[whop webhook] failed to suspend account ${accountId} for dispute/refund:`, error.message);
+    }
+  } catch (err) {
+    console.error(`[whop webhook] suspend-for-dispute itself failed for account ${accountId}:`, err);
   }
 }
 
@@ -94,10 +166,25 @@ async function syncMembership(payload: WhopWebhookPayload) {
     console.error(
       `[whop webhook] membership ${payload.data.id} (product ${payload.data.product?.id ?? "?"}) has no metadata.account_id -- was it created outside createTrialCheckoutConfig/createUpgradeCheckoutUrl?`
     );
+    // WW-P3-004: previously just the console.error above -- the Starter
+    // Kit path already has the right pattern (notifyOpsOfClaimFailure) for
+    // exactly this class of "silently stopped, buyer gets nothing"
+    // failure; extend it to the main billing path too.
+    try {
+      const { subject, html } = whopMembershipUnresolvedEmail({
+        membershipId: payload.data.id,
+        productId: payload.data.product?.id ?? null,
+        status: payload.data.status,
+      });
+      await sendEmail({ to: OPERATIONS_EMAIL, subject, html });
+    } catch (err) {
+      console.error("[whop webhook] unresolved-membership alert itself failed to send:", err);
+    }
     return;
   }
 
   const newStatus = mapWhopStatus(payload.data.status);
+  if (newStatus === null) return; // "drafted" -- nothing to sync yet
   const planKey = payload.data.plan ? planKeyForWhopPlanId(payload.data.plan.id) : undefined;
 
   const { data: before } = await admin
@@ -204,6 +291,27 @@ export async function POST(request: Request): Promise<Response> {
   // non-2xx (or at least a logged error before responding) rather than
   // vanishing silently after an immediate 200, since nothing else surfaces
   // a billing-sync failure otherwise.
+  if (DISPUTE_EVENTS.has(event.type)) {
+    const disputeAccountId = resolveAccountId(event);
+
+    // Best-effort, same reasoning as every other ops alert in this route --
+    // a failure here must never surface as a webhook-processing error.
+    try {
+      const { subject, html } = whopDisputeOrRefundEmail({
+        eventType: event.type,
+        membershipId: event.data.id ?? null,
+        accountId: disputeAccountId,
+      });
+      await sendEmail({ to: OPERATIONS_EMAIL, subject, html });
+    } catch (err) {
+      console.error("[whop webhook] dispute/refund alert failed:", err);
+    }
+
+    if (disputeAccountId) {
+      await suspendAccountForDispute(createAdminClient(), disputeAccountId);
+    }
+  }
+
   if (SYNCED_EVENTS.has(event.type)) {
     if (event.data.product?.id === STARTER_KIT_PRODUCT_ID) {
       // Free marketplace listing, not a checkout we created -- no
