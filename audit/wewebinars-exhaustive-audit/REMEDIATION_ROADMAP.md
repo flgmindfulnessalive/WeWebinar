@@ -54,19 +54,60 @@ Findings that don't threaten the platform in its current, presumably-modest traf
 
 ---
 
-## Next 30 days
+## Next 30 days — ✅ 15/21 DONE 2026-09-13 (2 partial, 4 deliberately deferred)
 
-Real findings worth fixing, but none of them are actively bleeding today and none of them block a near-term ad push. Good backlog for the sprint immediately after the "before scaling" batch ships.
+Real findings worth fixing, but none of them were actively bleeding and none blocked a near-term ad push (WW-P2-009/WW-P2-010 had already shipped in the "before scaling" batch). **15 of the remaining 19 items are now shipped** (2 more partially). The rest are explicitly deferred with reasoning — see their rows.
 
-- WW-P2-003 (billing_customer_id UNIQUE constraint) — **pending the product decision in `OPEN_QUESTIONS.md` §5.1**
-- WW-P2-008, WW-P2-009, WW-P2-010 (Vimeo hash rejection, visibility-change recovery for Vimeo and direct video)
-- WW-P2-012 (server-side video validation in `setWebinarVideo`)
-- WW-P2-015 (webhook SSRF)
-- WW-P2-016 (Launchpad event IDOR)
-- WW-P2-017 (script-builder cross-account re-parenting)
-- WW-P3-002 through WW-P3-012 (DST gap, Whop refund/dispute/ops-alert gaps, trial-cron race, analytics denominator/index/retention issues, minor video UX gaps)
-- WW-P3-015, WW-P3-016 (duplicate confirmation email, unreplaced template variables)
-- WW-RLS-H1's regression-test recommendation (see `MISSING_TESTS.md`) — not a code fix, but the CI safety net that would catch a future regression on the ~19 analytics RPCs that currently rely on RLS alone with no defense-in-depth.
+**API security:**
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P2-012 | `setWebinarVideo()` had zero server-side validation. | **FIXED.** Now re-validates the already-parsed `videoSource` server-side against the same shape the client parsers produce. |
+| WW-P2-015 | SSRF in the outbound-webhooks feature. | **FIXED.** New `src/lib/ssrf-guard.ts` (`safeFetch`) resolves the hostname and rejects private/loopback/link-local/multicast ranges before every request, including on each redirect hop. |
+| WW-P2-016 | IDOR in `/api/launchpad/event` — cross-tenant write via the service-role client. | **FIXED.** Now confirms the project belongs to the caller's own account before writing, mirroring every sibling Launchpad route. |
+| WW-P2-017 | `script-builder/save` allowed silent cross-account re-parenting of a draft project, including collected lead PII. | **FIXED.** No longer overwrites `account_id` when the project already belongs to a different account. |
+| WW-P3-012 | `parseDirectVideoUrl`'s https-only check didn't restrict private/internal addresses. | **FIXED.** Rejects literal private/loopback/link-local hostnames (defense-in-depth; no server ever fetches this URL). |
+
+**Video:**
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P2-008 | A malformed Vimeo privacy hash was silently dropped instead of rejected. | **FIXED.** `extractVimeoVideoId` now rejects a present-but-malformed hash instead of falling back to the bare id. |
+| WW-P3-010 | Wizard video preview gave no diagnostic when a broken video couldn't be saved. | **FIXED.** Preview now passes `autoPlay` and wires the player's `onUnavailable` handler, so a broken/private/deleted video surfaces a real error instead of hanging on "loading duration" forever. |
+| WW-P3-011 | No thumbnail for direct-URL/Vimeo promo videos on the public registration page. | **PARTIALLY FIXED.** Vimeo now gets a real thumbnail (vumbnail.com, by video id). Direct-URL thumbnails left as a deliberate product call, per `QUICK_WINS.md`'s own note. |
+
+**Whop billing:**
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P3-003 | Refunds/chargebacks/disputes had zero handling. | **FIXED (minimum viable).** `dispute.created`/`refund.created` now trigger an ops alert email — not an automated access change, since a dispute doesn't always mean the membership itself gets revoked. |
+| WW-P3-004 | No ops alert when a webhook's membership couldn't be resolved to an account. | **FIXED.** Now alerts ops, matching the Starter Kit path's existing `notifyOpsOfClaimFailure` pattern. |
+| WW-P3-005 | Trial-expiry cron and Whop's own trial timing are independently clocked, causing a visible false-cancellation window. | **FIXED (mitigated, not eliminated).** The cancellation check now waits a 15-minute grace period past `trial_ends_at`, absorbing the realistic delay of a just-in-time Whop activation webhook. |
+| WW-P2-003 | `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account. | **DEFERRED** — pending the product decision in `OPEN_QUESTIONS.md` §5.1. |
+
+**Analytics:**
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P3-007 | `get_webinar_summary`'s date range is applied against two different timestamp columns for different rows. | **FIXED (clarified, not restructured).** The analytics page now shows a different sublabel on the visit-conversion stat when a date filter is active, since page_views and registrants aren't necessarily the same cohort in a narrow window — a true same-visitor fix would need new visitor-identity linkage that doesn't exist today. |
+| WW-P3-008 | No retention/archival policy on high-volume analytics tables, plus a missing supporting index. | **PARTIALLY FIXED.** New migration adds the missing `registrants(created_at)` and `viewer_events` indexes. A retention/archival policy is still a product/ops decision, not attempted. |
+| WW-P3-009 | Concurrent-viewer presence counting can over-count across a disconnect/reconnect gap. | **DEFERRED** — the metric is currently disabled in the UI (`SHOW_CONCURRENT_VIEWERS = false`), so nothing is misled by it today; fix before re-enabling, not before. |
+
+**Scheduling:**
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P3-002 | DST "spring-forward" gap not specially handled. | **DEFERRED** — this finding's own guidance is to flag for live testing rather than fix blind; no live-DST scenario was verifiable in this sandbox. |
+
+**Email:**
+| ID | Issue | Resolution |
+|---|---|---|
+| WW-P3-015 | `registration_confirmation` email could be sent twice for one logical registration. | **FIXED.** Now uses an insert-before-send claim on `email_sends` (same pattern the reminders cron already uses) instead of logging after the send. |
+| WW-P3-016 | Host-authored custom email templates could ship with literal, unreplaced `{{typo}}` placeholders. | **FIXED.** Template saves now reject a subject/body containing an unknown `{{variable}}` at save time. |
+
+**Testing infrastructure:**
+| Item | Resolution |
+|---|---|
+| WW-RLS-H1's regression-test recommendation (see `MISSING_TESTS.md`) | **NOT ATTEMPTED.** Real RLS regression tests need a live Postgres instance with the schema's actual policies applied; this sandbox has no Supabase CLI/Docker access to stand one up. Stays a `Next 90 days` item — faking it with a mocked-client test wouldn't actually catch an RLS regression, which is the entire point of the recommendation. |
+
+Also shipped from earlier in this horizon: WW-P2-009 and WW-P2-010 (Vimeo/direct-URL visibility-change recovery) — see the "before scaling" section above, they landed in that batch.
+
+Validated: `tsc --noEmit` clean, `eslint` clean on every touched file, `vitest run` 152/152 passing (130 prior + 22 new regression tests).
 
 ---
 

@@ -15,7 +15,7 @@ The first five rows of this list were the audit's "Immediate (24-48h)" batch and
 | WW-P2-014 | `revoke execute` on `insert_readiness_assessment` | **Done** — same migration as WW-P1-012 |
 | WW-P3-013 | `revoke execute` on `snapshot_platform_metrics` | **Done** — same migration as WW-P1-012 |
 
-The "before scaling paid ad-traffic campaigns" batch is also now shipped (13 of 15 — see `REMEDIATION_ROADMAP.md` for the full itemized list, including the two deliberately-deferred items, WW-P2-013 and WW-P2-018). The rows below that overlap with that batch are marked **Done** in place; everything else in this file is unchanged from the original ranking.
+The "before scaling paid ad-traffic campaigns" batch is also now shipped (13 of 15 — see `REMEDIATION_ROADMAP.md` for the full itemized list, including the two deliberately-deferred items, WW-P2-013 and WW-P2-018), and the "Next 30 days" batch is 15 of 19 shipped (2 more partially). The rows below that overlap with either batch are marked **Done** in place; everything else in this file is unchanged from the original ranking.
 
 ## Ship these next — high impact, small effort, zero ambiguity
 
@@ -26,20 +26,20 @@ The "before scaling paid ad-traffic campaigns" batch is also now shipped (13 of 
 | WW-P4-001 | Add `headers: unsubscribeHeaders(unsubscribeUrl)` to the confirmation email's `sendEmail()` call | One line, matches every other registrant-facing send |
 | WW-P3-006 | Delete the 6 dead Lemon Squeezy lines from `.env.example`; add `WHOP_API_KEY`/`WHOP_WEBHOOK_SECRET` | Pure documentation edit, prevents a broken fresh deployment |
 | WW-P3-014 | Correct the factually-wrong `platform_admins` RLS-history comment | Pure comment edit |
-| WW-P2-016 | Add `.eq("account_id", current.account.id)` check before the `launchpad_projects` write in `/api/launchpad/event` | One filter clause, mirrors every sibling Launchpad route already in the codebase |
-| WW-P2-017 | Guard the `account_id` overwrite in `script-builder/save` with an "already set to a different account → don't overwrite" check | One conditional |
+| WW-P2-016 | Add `.eq("account_id", current.account.id)` check before the `launchpad_projects` write in `/api/launchpad/event` | **Done 2026-09-13** — now confirms project ownership before writing |
+| WW-P2-017 | Guard the `account_id` overwrite in `script-builder/save` with an "already set to a different account → don't overwrite" check | **Done 2026-09-13** — no longer overwrites a different account's project |
 
 ## Ship next — small effort, but touches a shared component (test before shipping)
 
 | ID | Fix | Note |
 |---|---|---|
 | WW-P1-006 / WW-P1-007 / WW-P1-008 | Register `onError`/`error` listeners on all three video player components | **Done 2026-09-13** — all three players now render a distinct "video unavailable" state |
-| WW-P2-008 | Reject (`return null`) instead of silently truncating a malformed Vimeo hash | One-line change to `extractVimeoVideoId`'s return statement |
+| WW-P2-008 | Reject (`return null`) instead of silently truncating a malformed Vimeo hash | **Done 2026-09-13** — both `vimeo.com` and `player.vimeo.com` branches now reject a malformed hash |
 | WW-P2-009 / WW-P2-010 | Add `visibilitychange` → `player.play()` recovery to the Vimeo and direct-URL players, copying the existing YouTube implementation | **Done 2026-09-13** — both players gained the recovery effect |
-| WW-P2-012 | Re-validate `videoProvider`/`videoSource` server-side in `setWebinarVideo` using the existing pure parser functions | The parsers already exist and are pure — just call them server-side too |
-| WW-P3-015 | Skip `sendConfirmationEmail` when `register_for_webinar` returned an existing (not newly-created) registrant | Needs the RPC to also return an `is_new` flag — small migration + one server-action conditional |
-| WW-P3-016 | Reject a saved custom email template containing an unknown `{{variable}}` at save time | Small validation addition to the existing template-save action |
-| WW-P3-011 | Add a thumbnail fetch for Vimeo/direct-URL promo videos, matching the existing YouTube branch | Vimeo has a thumbnail API; direct-URL can extract a video frame or simply skip (product call) |
+| WW-P2-012 | Re-validate `videoProvider`/`videoSource` server-side in `setWebinarVideo` using the existing pure parser functions | **Done 2026-09-13** — re-validates against the same shape the client parsers produce |
+| WW-P3-015 | Skip `sendConfirmationEmail` when `register_for_webinar` returned an existing (not newly-created) registrant | **Done 2026-09-13** — implemented as an insert-before-send claim on `email_sends` instead (same pattern the reminders cron already uses), rather than an `is_new` RPC flag |
+| WW-P3-016 | Reject a saved custom email template containing an unknown `{{variable}}` at save time | **Done 2026-09-13** — both the singleton and reminder-step template saves now reject an unknown variable |
+| WW-P3-011 | Add a thumbnail fetch for Vimeo/direct-URL promo videos, matching the existing YouTube branch | **Partially done 2026-09-13** — Vimeo now uses vumbnail.com; direct-URL left as a product call, per this file's own note |
 
 ## Deliberately excluded from this list
 

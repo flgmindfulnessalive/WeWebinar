@@ -6,16 +6,18 @@ Phase 2 synthesis deliverable. Every finding below is drawn from one of the six 
 
 **Total: 49 confirmed findings** (48 standing, 1 retracted as a false positive during remediation — see WW-P1-001 below). Original breakdown: 0 P0 · 12 P1 (11 standing) · 17 P2 · 19 P3 · 1 P4.
 
-**Remediation status (updated 2026-09-13):** the "Immediate (24–48h)" horizon (4 items) and the "before scaling paid ad-traffic campaigns" horizon (15 items) from `REMEDIATION_ROADMAP.md` have both been addressed — 17 fixed, 1 retracted as a false positive, 2 deliberately deferred:
+**Remediation status (updated 2026-09-13):** three of `REMEDIATION_ROADMAP.md`'s four horizons have now been worked — "Immediate (24–48h)" (4 items), "before scaling paid ad-traffic campaigns" (15 items), and "Next 30 days" (21 items) — 32 fixed (2 of those partially), 1 retracted as a false positive, 7 deliberately deferred:
 - **WW-P1-001** — investigated while preparing the fix; turned out to be **already fixed upstream** by a later migration the original scan didn't trace forward. Retracted as a false positive, no code change needed. See the entry below for the full account.
 - **WW-P1-002** — **FIXED.** `reactivateAccount` now clears `canceled_at`/`deletion_warning_sent_at` (`src/lib/actions/admin.ts`).
 - **WW-P1-011** — **FIXED.** `next` redirect params are now validated as same-origin relative paths via a new `sanitizeRedirectPath()` helper (`src/lib/safe-redirect.ts`, with a regression test), used in both `src/app/auth/callback/route.ts` and `src/app/auth/confirm/confirm-client.tsx`.
 - **WW-P1-012 / WW-P2-014 / WW-P3-013** — **FIXED.** A new migration (`supabase/migrations/20260913000006_revoke_ungranted_security_definer_functions.sql`) explicitly revokes EXECUTE on all three functions from `public`/`anon`/`authenticated`, closing the ambiguity permanently regardless of what the live-DB verification query in `OPEN_QUESTIONS.md` would have found.
-- **WW-P2-001, WW-P3-001, WW-P1-004/WW-P2-007, WW-P1-005, WW-P2-004, WW-P2-005, WW-P2-006, WW-P1-006/007/008, WW-P1-009, WW-P1-010, WW-P2-011, WW-P1-003, WW-P2-002** — **FIXED.** See each entry below for its specific resolution, or `REMEDIATION_ROADMAP.md` for the full itemized list.
+- **WW-P2-001, WW-P3-001, WW-P1-004/WW-P2-007, WW-P1-005, WW-P2-004, WW-P2-005, WW-P2-006, WW-P1-006/007/008, WW-P1-009, WW-P1-010, WW-P2-011, WW-P1-003, WW-P2-002, WW-P2-008, WW-P2-012, WW-P2-015, WW-P2-016, WW-P2-017, WW-P3-003, WW-P3-004, WW-P3-005, WW-P3-007, WW-P3-010, WW-P3-012, WW-P3-015, WW-P3-016** — **FIXED.** See each entry below for its specific resolution, or `REMEDIATION_ROADMAP.md` for the full itemized list.
+- **WW-P3-008, WW-P3-011** — **PARTIALLY FIXED.** WW-P3-008: the missing indexes are added; a retention/archival policy is still a product/ops decision, not attempted. WW-P3-011: Vimeo now gets a real thumbnail; direct-URL is left as a deliberate product call (per `QUICK_WINS.md`'s own note).
 - **WW-P2-013** — **NOT ATTEMPTED.** Needs new health-check/alerting infrastructure, out of scope for a code-level remediation pass. See its entry below.
-- **WW-P2-018** — **DELIBERATELY DEFERRED.** The audit's own recommended fix (a naive claim table) was found to be unsafe for a membership status that legitimately recurs across a real subscription lifecycle; needs live Whop verification of the actual redelivery signal shape first. See its entry below and `REMEDIATION_ROADMAP.md` for the full reasoning.
+- **WW-P2-018, WW-P2-003, WW-P3-002, WW-P3-009** — **DELIBERATELY DEFERRED**, each for a different reason (unsafe fix pending live Whop verification; pending a product decision; the finding's own guidance to verify live before fixing DST blind; the underlying metric is currently disabled in the UI). See each entry below.
+- **WW-RLS-H1's regression-test recommendation** — **NOT ATTEMPTED.** Building real RLS regression tests needs a live Postgres instance with the schema's actual policies applied; this sandbox has no Supabase CLI/Docker access to stand one up, so this stays a `Next 90 days` item rather than being faked with something that wouldn't actually catch a regression.
 
-The remaining findings (not in either horizon above) are unchanged and still open — see `REMEDIATION_ROADMAP.md` for what's next.
+The remaining findings (not in any horizon above) are unchanged and still open — see `REMEDIATION_ROADMAP.md` for what's next.
 
 ---
 
@@ -187,7 +189,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Fix:** Add `select ... from accounts where id = new.account_id for update` before the count, matching the two already-correct triggers.
 - **Regression test:** Fire two concurrent publish/invite transactions at `limit-1` from two DB connections; assert only one succeeds.
 
-### WW-P2-003 — `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account
+### WW-P2-003 — `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account — **DEFERRED** (pending the product decision in `OPEN_QUESTIONS.md` §5.1)
 - **Domain:** Whop · **Source:** W-03 · **File:** `supabase/migrations/20260822000002_tables.sql:30` (constraint, inherited from Stripe-era schema)
 - **Condition → Impact:** Same Whop login activates a second, separate WeWebinars account (e.g. an agency running two client brands) → second `syncMembership` UPDATE fails `23505`, second account never activates despite Whop having accepted payment.
 - **Confidence:** High (schema); Medium (business-realism of the scenario, needs a product decision — see Open Questions) · **Detectability:** Low · **Effort:** Small
@@ -217,7 +219,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** High · **Detectability:** Medium · **Effort:** Small
 - **Fix:** Same as WW-P1-004.
 
-### WW-P2-008 — A malformed Vimeo privacy hash is silently dropped instead of rejected, producing a URL that 403s live
+### WW-P2-008 — A malformed Vimeo privacy hash is silently dropped instead of rejected, producing a URL that 403s live — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** F-VIM-1 · **File:** `src/lib/vimeo.ts:29,34`
 - **Condition → Impact:** A Vimeo "hidden" video whose privacy hash contains a non-alphanumeric character has its hash silently truncated rather than the parse rejected — the wizard preview tries to load the video without its (required) hash and hangs with no diagnostic.
 - **Confidence:** Medium-High · **Detectability:** Low · **Effort:** Small
@@ -241,7 +243,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** Medium-High · **Detectability:** Low · **Effort:** Medium
 - **Fix:** Periodically re-probe `direct_url` duration, or only end on the real `ended`/near-end event rather than the wall-clock estimate when the mismatch is large.
 
-### WW-P2-012 — `setWebinarVideo()` performs zero server-side validation; client-side parsers are the only line of defense and are bypassable via direct Server Action call
+### WW-P2-012 — `setWebinarVideo()` performs zero server-side validation; client-side parsers are the only line of defense and are bypassable via direct Server Action call — **FIXED 2026-09-13**
 - **Domain:** Video (cross-cutting) · **Source:** F-CROSS-2 · **File:** `src/lib/actions/webinars.ts:311-325`
 - **Condition → Impact:** A direct POST to the Server Action bypassing the browser UI can store `video_provider: "direct_url"` with an `http://` (non-https) URL or a malformed Vimeo id:hash string. Bounded by RLS (`webinars_update_editor`) to the account's own owner/editor — self-service data-integrity gap, not cross-tenant.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
@@ -259,19 +261,19 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Confidence:** Medium (same live-DB dependency as WW-P1-012) · **Detectability:** Low · **Effort:** Small
 - **Fix:** `revoke execute on function public.insert_readiness_assessment(...) from public, anon, authenticated;` matching the function's own stated (but unenforced) intent; consider moving score recomputation into the SQL function itself so the guarantee holds regardless of caller.
 
-### WW-P2-015 — SSRF in the outbound-webhooks feature via a trivially bypassable `https://`-only check
+### WW-P2-015 — SSRF in the outbound-webhooks feature via a trivially bypassable `https://`-only check — **FIXED 2026-09-13**
 - **Domain:** API Security · **Source:** A.3 #2 · **File:** `src/lib/actions/webhooks.ts:30-33`, `src/lib/webhooks.ts:26`
 - **Condition → Impact:** An account owner/editor configures a webhook URL that 302-redirects to an internal/metadata address (`169.254.169.254`, `localhost`, RFC1918); Node's default `fetch` follows redirects including scheme downgrades, so the `https://` gate doesn't hold across a hop. Response status/error message is readable back by the same account via `webhook_deliveries`, enabling internal-network probing from wherever the serverless function's egress can reach.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Medium
 - **Fix:** Resolve the hostname and reject private/loopback/link-local/multicast ranges before the first request; set `redirect: "manual"` and re-validate on every hop.
 
-### WW-P2-016 — IDOR in `/api/launchpad/event`: cross-tenant write to another account's Launchpad project via the service-role client
+### WW-P2-016 — IDOR in `/api/launchpad/event`: cross-tenant write to another account's Launchpad project via the service-role client — **FIXED 2026-09-13**
 - **Domain:** API Security · **Source:** A.3 #3 · **File:** `src/app/api/launchpad/event/route.ts:48-83`
 - **Condition → Impact:** `projectId` is accepted from the request body with no check that it belongs to `current.account.id` — unlike every sibling Launchpad route. Any authenticated user who obtains another account's `launchpad_projects.id` (a v4 UUID, not brute-forceable but leakable via a screenshot/support ticket/shared machine) can pollute that account's analytics and flip its step-progress state via the admin client, bypassing RLS entirely.
 - **Confidence:** High · **Detectability:** Low · **Effort:** Small
 - **Fix:** Look up `launchpad_projects` by `projectId` **and** `.eq("account_id", current.account.id)` before writing, mirroring every sibling route.
 
-### WW-P2-017 — `script-builder/save` allows silent cross-account re-parenting of a draft project, including already-collected lead PII
+### WW-P2-017 — `script-builder/save` allows silent cross-account re-parenting of a draft project, including already-collected lead PII — **FIXED 2026-09-13**
 - **Domain:** API Security · **Source:** A.3 #4 · **File:** `src/app/api/script-builder/save/route.ts:50-54,97-103`
 - **Condition → Impact:** `existing` is fetched by `id` only (no ownership filter); `account_id` is overwritten unconditionally on every save, including when a different account already owns it and real lead PII (`lead_email`/`lead_name`) is already stored. A signed-in attacker holding the id can make the project — and its PII — show up persistently inside their own dashboard, rather than only transiently via the intended anonymous capability-token flow.
 - **Confidence:** Medium (architecture is intentionally an anonymous capability-token model; the account-reassignment side effect appears unintentional) · **Detectability:** Low · **Effort:** Small
@@ -293,19 +295,19 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Scheduling · **Source:** SESS-02 · **File:** `.../[webinarSlug]/page.tsx:198-217` · **Confidence:** High · **Effort:** Small
 - The registration page's displayed count ignores JIT registrants entirely, while the real `enforce_attendee_limit()` trigger counts them — the page can show availability the RPC then rejects. Not a security issue (the RPC re-checks atomically); fix by computing `spotsLeft` server-side with the same overlap-window logic.
 
-### WW-P3-002 — DST "spring-forward" gap not specially handled in `zonedWallTimeToUtc`
+### WW-P3-002 — DST "spring-forward" gap not specially handled in `zonedWallTimeToUtc` — **DEFERRED** (this entry's own guidance is to flag for live testing rather than fix blind — no live-DST scenario was verifiable in this sandbox)
 - **Domain:** Scheduling · **Source:** SESS-08 · **File:** `src/lib/scheduling.ts:46-53` · **Confidence:** Medium · **Effort:** Small (if fixed at all)
 - A `time_of_day` that falls inside a DST spring-forward gap (nonexistent wall time) converges on *some* nearby real instant rather than raising/clamping — narrow window, 1-2x/year, DST zones only. Flag for live testing rather than fixing blind.
 
-### WW-P3-003 — Refunds, chargebacks/disputes, and raw payment failures have zero handling
+### WW-P3-003 — Refunds, chargebacks/disputes, and raw payment failures have zero handling — **FIXED 2026-09-13** (ops alert, not automated access change — see resolution note)
 - **Domain:** Whop · **Source:** W-05 · **File:** `SYNCED_EVENTS` set · **Confidence:** High · **Effort:** Small–Medium
 - No `refund.*`/`dispute.*`/`payment.failed` events are handled at all; access only changes if a *separate* `membership.deactivated` event happens to also fire. Add at minimum an ops alert on `dispute.created`/`refund.created`, mirroring the Starter Kit path's alert pattern.
 
-### WW-P3-004 — No ops-facing alert when a webhook's membership can't be resolved to an account (main billing path)
+### WW-P3-004 — No ops-facing alert when a webhook's membership can't be resolved to an account (main billing path) — **FIXED 2026-09-13**
 - **Domain:** Whop · **Source:** W-06 · **File:** `src/app/api/webhooks/whop/route.ts:93-98` · **Confidence:** High · **Effort:** Small
 - Only `console.error`; the Starter Kit path already has the right pattern (`notifyOpsOfClaimFailure`) — extend it here.
 
-### WW-P3-005 — Local trial-expiry cron and Whop's own trial timing are independently clocked, with a self-healing but visible false-cancellation window
+### WW-P3-005 — Local trial-expiry cron and Whop's own trial timing are independently clocked, with a self-healing but visible false-cancellation window — **FIXED 2026-09-13** (grace window, not a full architectural fix — see resolution note)
 - **Domain:** Whop · **Source:** W-07 · **File:** `send-reminders/route.ts:286-304` · **Confidence:** High (mechanism); Medium (real-world frequency) · **Effort:** Medium (architectural) or Small (shrink the window)
 - A delayed Whop activation webhook can race the cron's own expiry check, briefly canceling a just-paid account (public pages go dark) before the webhook arrives and self-heals the state. Shrink the window or add a grace buffer past `trial_ends_at`.
 
@@ -313,27 +315,27 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Whop / API Security · **Source:** W-08, B.6 #1-2 · **File:** `.env.example:38-44` · **Confidence:** High · **Effort:** Small
 - Six dead Lemon Squeezy vars remain documented; the two vars the live billing path actually requires are absent. A fresh deploy following the example file has non-functional billing.
 
-### WW-P3-007 — `get_webinar_summary`'s single date range is applied against two different timestamp columns for different rows in the same result
+### WW-P3-007 — `get_webinar_summary`'s single date range is applied against two different timestamp columns for different rows in the same result — **FIXED 2026-09-13** (clarified in the UI, not a schema change — see resolution note)
 - **Domain:** Analytics · **Source:** F-07 · **File:** `20260830000010_registration_page_views.sql:63-98` · **Confidence:** Medium · **Effort:** Small
 - Registrant/attendee counts filter by `registrants.created_at`; visit count filters by `page_views.occurred_at` — for evergreen/JIT webinars where visit and registration can be days apart, a narrow date filter mixes cohorts. Low severity for same-session registration (the common case).
 
-### WW-P3-008 — No retention/archival policy on `viewer_events`/`page_views`/`registrant_messages`; unbounded growth, plus a missing supporting index
+### WW-P3-008 — No retention/archival policy on `viewer_events`/`page_views`/`registrant_messages`; unbounded growth, plus a missing supporting index — **PARTIALLY FIXED 2026-09-13** (missing indexes added; retention/archival policy is a product/ops decision, still open)
 - **Domain:** Analytics · **Source:** F-08 · **File:** N/A (absence confirmed across all 116 migrations) · **Confidence:** Medium · **Effort:** Medium
 - No archival job exists for the highest-volume tables (heartbeats every 15s/active viewer). Compounded by missing indexes: `registrants` has no index on `created_at` (used by every date-range RPC), `viewer_events` has none covering `video_timestamp_seconds is not null` or `occurred_at`. Needs load data to size real impact; add the indexes regardless, they're cheap.
 
-### WW-P3-009 — Concurrent-viewer presence counting can over-count across a disconnect/reconnect gap
+### WW-P3-009 — Concurrent-viewer presence counting can over-count across a disconnect/reconnect gap — **DEFERRED** (the metric is currently disabled in the UI, `SHOW_CONCURRENT_VIEWERS = false`, so nothing is misled by it today; fix before re-enabling, not before)
 - **Domain:** Analytics · **Source:** F-10 · **File:** `20260828000003...sql:116-135` · **Confidence:** Low (no live data) · **Effort:** Medium
 - Currently disabled in the UI (`SHOW_CONCURRENT_VIEWERS = false`) so not currently misleading anyone — fix before re-enabling by building multiple join/leave sub-intervals per registrant instead of min/max.
 
-### WW-P3-010 — Wizard video preview gives no diagnostic when a broken video can't be saved (YouTube)
+### WW-P3-010 — Wizard video preview gives no diagnostic when a broken video can't be saved (YouTube) — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** F-YT-3 · **File:** `video-section.tsx:70-71` · **Confidence:** High · **Effort:** Small
 - Working-as-intended fail-safe (can't publish with `duration_seconds=0`), but presents as an indefinite hang with zero explanation. Pass `autoPlay` (muted) in the preview too, or add explicit error surfacing.
 
-### WW-P3-011 — No thumbnail for direct-URL/Vimeo promo videos on the public registration page
+### WW-P3-011 — No thumbnail for direct-URL/Vimeo promo videos on the public registration page — **PARTIALLY FIXED 2026-09-13** (Vimeo done; direct-URL thumbnail left as a product call, per this file's own note)
 - **Domain:** Video · **Source:** F-DIR-4 · **File:** `promo-video-embed.tsx:44-59` · **Confidence:** High · **Effort:** Small
 - Only the YouTube branch fetches a real thumbnail; Vimeo/direct show a black background with a play icon. Cosmetic, inconsistent, separate from the main gated video (which has no thumbnail concept at all by design).
 
-### WW-P3-012 — `parseDirectVideoUrl`'s https-only check doesn't restrict private/internal addresses
+### WW-P3-012 — `parseDirectVideoUrl`'s https-only check doesn't restrict private/internal addresses — **FIXED 2026-09-13**
 - **Domain:** Video · **Source:** F-DIR-5 · **File:** `direct-video.ts:18` · **Confidence:** Medium · **Effort:** Small
 - Not server-side SSRF (no WeWebinars server ever fetches this URL — only the registrant's own browser via `<video src>`), so blast radius is narrow (a weak side-channel at most, no readable response body cross-origin). Worth having on record as unvalidated input regardless.
 
@@ -345,11 +347,11 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Multi-Tenant Security · **Source:** WW-RLS-004 · **File:** `20260909000002_partner_engine_base.sql:7-8` · **Confidence:** High · **Effort:** Trivial
 - `platform_admins` has had RLS enabled with zero policies (correctly default-deny) since the very first RLS migration; a later comment incorrectly claims otherwise while justifying an unrelated table's design. No functional impact — correct the comment so it doesn't mislead a future engineer.
 
-### WW-P3-015 — `registration_confirmation` email can be sent twice for one logical registration
+### WW-P3-015 — `registration_confirmation` email can be sent twice for one logical registration — **FIXED 2026-09-13**
 - **Domain:** API Security (Email) · **Source:** C.8 #1 · **File:** `src/lib/actions/register.ts:85-93,96-207` · **Confidence:** High · **Effort:** Small
 - Unlike the reminders cron's insert-before-send claim pattern, the confirmation email's dedup row is written *after* the send — a retried/double-click registration hits the RPC's correct row-level dedup but the email still fires twice. Self-limiting, deliverability annoyance only.
 
-### WW-P3-016 — Host-authored custom email templates can ship with literal, unreplaced `{{typo}}` placeholders
+### WW-P3-016 — Host-authored custom email templates can ship with literal, unreplaced `{{typo}}` placeholders — **FIXED 2026-09-13**
 - **Domain:** API Security (Email) · **Source:** C.8 #2 · **File:** `src/lib/email-templates.ts:40-44` · **Confidence:** High · **Effort:** Small
 - `renderTemplate()` leaves any `{{unknown_var}}` verbatim in real outbound email with no save-time validation. Confirmed not reachable for the built-in default templates — scoped entirely to host-customized ones. Add a save-time check rejecting unknown variable names.
 

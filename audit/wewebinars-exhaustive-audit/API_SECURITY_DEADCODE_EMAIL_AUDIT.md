@@ -4,6 +4,8 @@ Phase 2 synthesis. Full evidence trail lives in `API_SECURITY_DEADCODE_EMAIL_AUD
 
 **Note on provenance:** the background agent that produced this domain's raw report hit a session rate-limit and was marked "failed" partway through its run — but it had already completed and written its full 261-line report (all three parts: API security matrix, dead-code sweep, email deliverability) before the failure interrupted only its final wrap-up message. The report itself is complete and was independently spot-checked (see the multi-tenant/grant-related cross-references below) before being included here.
 
+**Remediation status (2026-09-13):** WW-P1-011 (open redirect), WW-P2-015 (SSRF in outbound webhooks), WW-P2-016 (Launchpad event IDOR), WW-P2-017 (script-builder cross-account re-parenting), WW-P3-015 (duplicate confirmation email), and WW-P3-016 (unreplaced template variables) are all **FIXED** — see `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for each resolution. WW-P3-003 (refunds/disputes) is fixed as a minimum-viable ops alert, not an automated access change.
+
 ## Scope
 
 25 `src/app/api/**/route.ts(x)` handlers, 26 `src/lib/actions/*.ts` server-action files, the platform's dead-integration history (Stripe/Mux/Lemon Squeezy), and every `sendEmail()` call site.

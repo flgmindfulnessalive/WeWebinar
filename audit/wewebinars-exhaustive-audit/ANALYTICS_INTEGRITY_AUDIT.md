@@ -2,7 +2,7 @@
 
 Phase 2 synthesis. Full evidence trail lives in `ANALYTICS_INTEGRITY_AUDIT_RAW.md`; full finding template lives in `FINDINGS.md`. This file is the curated summary.
 
-**Remediation status (2026-09-13):** every metric-integrity finding in this file is now **FIXED** — WW-P1-004/WW-P2-007 (CTA conversion dedup + 100% cap), WW-P1-005/WW-P2-006 (watch-time/lead-score rate-limit + clamp), WW-P2-004 (unified "attendee" definition), and WW-P2-005 (exports now respect the active date range). See `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for each resolution.
+**Remediation status (2026-09-13):** every metric-integrity finding in this file is now **FIXED** — WW-P1-004/WW-P2-007 (CTA conversion dedup + 100% cap), WW-P1-005/WW-P2-006 (watch-time/lead-score rate-limit + clamp), WW-P2-004 (unified "attendee" definition), and WW-P2-005 (exports now respect the active date range). WW-P3-007 (mixed timestamp columns in `get_webinar_summary`) is fixed via a clarifying UI sublabel rather than a schema change — a true same-visitor fix would need new visitor-identity linkage between `page_views` and `registrants` that doesn't exist today. WW-P3-008 (missing indexes) is partially fixed — the indexes are added, a retention/archival policy is still a product/ops decision. WW-P3-009 (concurrent-viewer overcount) stays deferred — the metric is currently disabled in the UI. See `FINDINGS.md`/`REMEDIATION_ROADMAP.md` for each resolution.
 
 ## Scope
 
