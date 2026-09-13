@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import NextLink from "next/link";
 
 import { Link } from "@/i18n/navigation";
@@ -34,6 +34,11 @@ export default async function MarketingLayout({
 }) {
   const t = await getTranslations("MarketingLayout");
   const tBlog = await getTranslations("Blog");
+  // The demo webinar itself isn't localized into Spanish yet -- following
+  // this link from the Spanish site would land an es visitor on an
+  // English-only page. Hide it there until the demo has a Spanish version;
+  // remove this gate then.
+  const showDemo = (await getLocale()) === "en";
 
   return (
     <div className="marketing-theme flex min-h-svh flex-col">
@@ -50,12 +55,14 @@ export default async function MarketingLayout({
             >
               {t("pricing")}
             </Link>
-            <Link
-              href="/demo"
-              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
-            >
-              {t("demo")}
-            </Link>
+            {showDemo && (
+              <Link
+                href="/demo"
+                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
+              >
+                {t("demo")}
+              </Link>
+            )}
             <Link
               href="/blog"
               className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
@@ -78,7 +85,7 @@ export default async function MarketingLayout({
             </Button>
             <MobileMenu
               pricingLabel={t("pricing")}
-              demoLabel={t("demo")}
+              demoLabel={showDemo ? t("demo") : null}
               blogLabel={tBlog("navLabel")}
               loginLabel={t("login")}
             />

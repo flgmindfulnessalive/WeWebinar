@@ -33,7 +33,7 @@ export function MobileMenu({
   loginLabel,
 }: {
   pricingLabel: string;
-  demoLabel: string;
+  demoLabel: string | null;
   blogLabel: string;
   loginLabel: string;
 }) {
@@ -74,12 +74,14 @@ export function MobileMenu({
             >
               {pricingLabel}
             </Link>
-            <Link
-              href="/demo"
-              className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
-            >
-              {demoLabel}
-            </Link>
+            {demoLabel && (
+              <Link
+                href="/demo"
+                className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+              >
+                {demoLabel}
+              </Link>
+            )}
             <Link
               href="/blog"
               className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
