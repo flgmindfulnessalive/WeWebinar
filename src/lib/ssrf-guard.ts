@@ -36,7 +36,9 @@ function isPrivateIPv6(ip: string): boolean {
   return false;
 }
 
-function isPrivateAddress(ip: string): boolean {
+// Exported for regression testing (see ssrf-guard.test.ts) -- pure and
+// synchronous, unlike safeFetch itself which needs a real DNS lookup.
+export function isPrivateAddress(ip: string): boolean {
   const version = isIP(ip);
   if (version === 4) return isPrivateIPv4(ip);
   if (version === 6) return isPrivateIPv6(ip);

@@ -4,13 +4,12 @@
 -- Herramienta interna (sin account_id): un solo "tenant" implícito, el
 -- propio equipo de WeWebinars. El acceso se controla con una tabla
 -- allowlist (growth_operators) + funciones security definer, siguiendo el
--- mismo idioma que platform_admins/is_platform_admin() ya usa en el resto
--- del schema -- pero, a diferencia de platform_admins (creada sin `enable
--- row level security`, lo que la deja legible por cualquier cliente
--- autenticado vía los grants por defecto de Supabase a `authenticated`),
--- growth_operators SÍ habilita RLS sin policies: así queda bloqueada para
--- todo cliente y solo accesible con el service role, que es la forma
--- correcta de lograr "allowlist, solo gestionable por backend".
+-- mismo patrón que platform_admins/is_platform_admin() ya usa en el resto
+-- del schema: igual que platform_admins (que habilita RLS sin policies
+-- desde 20260822000004_rls_policies.sql), growth_operators también
+-- habilita RLS sin policies -- así queda bloqueada para todo cliente y
+-- solo accesible con el service role, que es la forma correcta de lograr
+-- "allowlist, solo gestionable por backend".
 
 create type public.growth_operator_role as enum ('owner', 'growth_admin', 'growth_operator', 'viewer');
 

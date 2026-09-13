@@ -49,6 +49,30 @@ export function zonedWallTimeToUtc(wall: WallTime, timeZone: string): Date {
   let instant = naive - offset;
   offset = tzOffsetMs(new Date(instant), timeZone);
   instant = naive - offset;
+
+  // WW-P3-002: a wall time that falls inside a DST "spring forward" gap
+  // (e.g. 02:30 on the day clocks jump from 02:00 to 03:00) doesn't exist,
+  // so the two-pass correction above -- which assumes the offset it finds
+  // is stable -- silently converges on the *pre-transition* offset,
+  // returning a real instant that reads back an hour earlier than what was
+  // actually requested (02:30 becomes 01:30). Detect that mismatch and
+  // shift forward by the gap, landing just after the transition instead
+  // (02:30 -> 03:30) -- the same convention Luxon/date-fns-tz use. A
+  // fall-back "ambiguous" time (occurs twice) isn't a gap and is left as
+  // whichever of the two valid instants the two-pass correction already
+  // finds -- there's no "wrong" choice there.
+  const resolved = getCivilPartsInZone(new Date(instant), timeZone);
+  const resolvedMinutes = resolved.hour * 60 + resolved.minute;
+  const requestedMinutes = wall.hour * 60 + wall.minute;
+  if (
+    resolved.year === wall.year &&
+    resolved.month === wall.month &&
+    resolved.day === wall.day &&
+    resolvedMinutes < requestedMinutes
+  ) {
+    instant += (requestedMinutes - resolvedMinutes) * 60_000;
+  }
+
   return new Date(instant);
 }
 
