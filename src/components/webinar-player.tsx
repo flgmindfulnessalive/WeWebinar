@@ -40,6 +40,7 @@ export const WebinarPlayer = forwardRef<
     onPause?: () => void;
     onRateChange?: () => void;
     onEnded?: () => void;
+    onUnavailable?: () => void;
   }
 >(function WebinarPlayer({ provider, source, ...rest }, ref) {
   if (provider === "direct_url") {

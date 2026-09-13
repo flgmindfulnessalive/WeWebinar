@@ -88,6 +88,20 @@ const DRIFT_TOLERANCE_SECONDS = 6;
 // video real time to settle before it's judged again, so one correction
 // resolves the desync instead of triggering another.
 const CORRECTION_COOLDOWN_MS = 12_000;
+// How far the real player position is allowed to lag the wall-clock
+// "expected" position before the wall-clock end check below stops
+// trusting it. Far wider than DRIFT_TOLERANCE_SECONDS (6s, which the
+// corrective-seek logic keeps player.currentTime within under normal
+// buffering/lag) -- this specifically catches the case where a host
+// silently swaps a direct_url's file for a longer one after saving
+// (nothing prevents this in this bring-your-own-URL model, and
+// duration_seconds is only ever recorded once, at save time). If the
+// real player is still this far behind when the stored duration says
+// the video should be over, it's still genuinely playing real content,
+// not merely buffering -- cutting the session there would end it mid-
+// content for every registrant. Wait for the video's own native "ended"
+// event instead in that case.
+const STALE_DURATION_GRACE_SECONDS = 30;
 
 export function LiveRoomClient({
   accessToken,
@@ -225,8 +239,20 @@ export function LiveRoomClient({
     [accessToken]
   );
   const completionFiredRef = useRef(false);
+  // Set once by handleVideoUnavailable below (a real player error -- see
+  // WW-P1-006/007/008), never cleared: once the video is confirmed broken
+  // for this session, the wall-clock "ended" check in handleTimeUpdate
+  // below still fires on schedule regardless of whether anything ever
+  // actually played -- without this guard, a registrant who never saw a
+  // single frame would still be recorded as a full "completion" the
+  // moment enough wall-clock time passed, identical to someone who
+  // genuinely watched the whole thing.
+  const videoUnavailableRef = useRef(false);
+  const handleVideoUnavailable = useCallback(() => {
+    videoUnavailableRef.current = true;
+  }, []);
   const fireCompletionOnce = useCallback(() => {
-    if (completionFiredRef.current) return;
+    if (completionFiredRef.current || videoUnavailableRef.current) return;
     completionFiredRef.current = true;
     fireWebhookTrigger("completion");
     // Almost always a no-op server-side (only set when this registrant
@@ -323,7 +349,11 @@ export function LiveRoomClient({
         lastCorrectionAtRef.current = now;
       }
     }
-    if (durationSeconds > 0 && expected >= durationSeconds) {
+    if (
+      durationSeconds > 0 &&
+      expected >= durationSeconds &&
+      player.currentTime >= durationSeconds - STALE_DURATION_GRACE_SECONDS
+    ) {
       setIsEnded(true);
       fireCompletionOnce();
     }
@@ -500,6 +530,7 @@ export function LiveRoomClient({
                 onTimeUpdate={handleTimeUpdate}
                 onPause={handlePause}
                 onRateChange={handleRateChange}
+                onUnavailable={handleVideoUnavailable}
                 onEnded={() => {
                   setIsEnded(true);
                   fireCompletionOnce();
