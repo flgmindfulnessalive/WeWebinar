@@ -77,10 +77,10 @@ Real findings worth fixing, but none of them were actively bleeding and none blo
 **Whop billing:**
 | ID | Issue | Resolution |
 |---|---|---|
-| WW-P3-003 | Refunds/chargebacks/disputes had zero handling. | **FIXED (minimum viable).** `dispute.created`/`refund.created` now trigger an ops alert email — not an automated access change, since a dispute doesn't always mean the membership itself gets revoked. |
+| WW-P3-003 | Refunds/chargebacks/disputes had zero handling. | **FIXED — fully, as of 2026-09-13.** Originally shipped as an ops-alert-only response (an automated access change was withheld pending the chargeback-policy question in `OPEN_QUESTIONS.md` §5.4). The product owner has since confirmed WeWebinars has no refund policy, so `dispute.created`/`refund.created` now also suspend the account automatically alongside the ops alert — see `suspendAccountForDispute` in `src/app/api/webhooks/whop/route.ts`. |
 | WW-P3-004 | No ops alert when a webhook's membership couldn't be resolved to an account. | **FIXED.** Now alerts ops, matching the Starter Kit path's existing `notifyOpsOfClaimFailure` pattern. |
 | WW-P3-005 | Trial-expiry cron and Whop's own trial timing are independently clocked, causing a visible false-cancellation window. | **FIXED (mitigated, not eliminated).** The cancellation check now waits a 15-minute grace period past `trial_ends_at`, absorbing the realistic delay of a just-in-time Whop activation webhook. |
-| WW-P2-003 | `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account. | **DEFERRED** — pending the product decision in `OPEN_QUESTIONS.md` §5.1. |
+| WW-P2-003 | `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account. | **CLOSED 2026-09-13 — informational, working as designed.** Product owner confirmed this isn't a real friction point: a customer who wants a second account just uses a different email. No code change. |
 
 **Analytics:**
 | ID | Issue | Resolution |
@@ -126,7 +126,7 @@ Hygiene, documentation, and structural improvements — real value, but genuinel
 
 **Still open, not attempted:**
 - Building out the missing test coverage identified in `MISSING_TESTS.md` for the core webinar/scheduling/video/CTA/RLS/Whop domains (items 1-10, mostly RLS- and live-Whop-dependent) and the full e2e/integration test framework (item 15) — currently near-zero beyond individual findings' own regression tests. The RLS/Whop items specifically need a live Postgres instance with the schema's actual policies applied; this sandbox has no Supabase CLI/Docker access to stand one up. Two items that didn't need a live DB were added anyway during this pass: `src/lib/scheduling.test.ts` (DST edge cases, item 11) and `src/lib/ssrf-guard.test.ts` (the private-address classifier behind WW-P2-015's fix, item 13's spirit if not its exact letter).
-- Revisiting the open product questions in `OPEN_QUESTIONS.md` §5 — specifically WW-P2-003 (multi-account-per-Whop-user support) and the chargeback/refund policy behind WW-P3-003's ops-alert-only fix. (§5's other two questions — export-date-range behavior and the wall-clock completion signal's scope — were already resolved as part of the "before scaling" batch: exports now always match the dashboard's range, and completion tracking was scoped to the edge-case fix, matching the assumed intent.) These need the product owner, not engineering time.
+- ~~Revisiting the open product questions in `OPEN_QUESTIONS.md` §5 — specifically WW-P2-003 (multi-account-per-Whop-user support) and the chargeback/refund policy behind WW-P3-003's ops-alert-only fix.~~ **Both answered 2026-09-13.** WW-P2-003: not a real scenario, closed as informational, no code change. WW-P3-003: no refund policy exists, so the fix was upgraded from ops-alert-only to alert + automatic suspension (see the "before scaling" table above). (§5's other two questions — export-date-range behavior and the wall-clock completion signal's scope — were already resolved as part of the "before scaling" batch: exports now always match the dashboard's range, and completion tracking was scoped to the edge-case fix, matching the assumed intent.) All four `OPEN_QUESTIONS.md` §5 product questions are now closed.
 
 ---
 

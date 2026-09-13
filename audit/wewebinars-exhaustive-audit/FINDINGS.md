@@ -191,11 +191,11 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Fix:** Add `select ... from accounts where id = new.account_id for update` before the count, matching the two already-correct triggers.
 - **Regression test:** Fire two concurrent publish/invite transactions at `limit-1` from two DB connections; assert only one succeeds.
 
-### WW-P2-003 — `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account — **DEFERRED** (pending the product decision in `OPEN_QUESTIONS.md` §5.1)
+### WW-P2-003 — `billing_customer_id` UNIQUE constraint blocks one Whop user from owning a second WeWebinars account — **CLOSED 2026-09-13 (informational, working as designed)**
 - **Domain:** Whop · **Source:** W-03 · **File:** `supabase/migrations/20260822000002_tables.sql:30` (constraint, inherited from Stripe-era schema)
 - **Condition → Impact:** Same Whop login activates a second, separate WeWebinars account (e.g. an agency running two client brands) → second `syncMembership` UPDATE fails `23505`, second account never activates despite Whop having accepted payment.
 - **Confidence:** High (schema); Medium (business-realism of the scenario, needs a product decision — see Open Questions) · **Detectability:** Low · **Effort:** Small
-- **Fix:** Verify against product/live Whop whether this is realistic; if so, drop the bare-column `UNIQUE` or scope it to `(billing_customer_id, plan_id)`.
+- **Resolution:** Product owner confirmed (2026-09-13, see `OPEN_QUESTIONS.md` §5.1) this isn't a real friction point — a customer who wants a second account simply uses a different email address. No code change; the `billing_customer_id` UNIQUE constraint stays exactly as it is.
 
 ### WW-P2-004 — "Attendee" has two different denominators across analytics RPCs — **FIXED 2026-09-13**
 - **Domain:** Analytics · **Source:** F-02 · **File:** `get_webinar_cta_stats` vs. every other analytics RPC
@@ -301,9 +301,10 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Scheduling · **Source:** SESS-08 · **File:** `src/lib/scheduling.ts:46-53` · **Confidence:** Medium · **Effort:** Small (if fixed at all)
 - A `time_of_day` that falls inside a DST spring-forward gap (nonexistent wall time) converges on *some* nearby real instant rather than raising/clamping — narrow window, 1-2x/year, DST zones only. Flag for live testing rather than fixing blind.
 
-### WW-P3-003 — Refunds, chargebacks/disputes, and raw payment failures have zero handling — **FIXED 2026-09-13** (ops alert, not automated access change — see resolution note)
+### WW-P3-003 — Refunds, chargebacks/disputes, and raw payment failures have zero handling — **FIXED 2026-09-13** (now suspends the account automatically, per the product owner's answer to `OPEN_QUESTIONS.md` §5.4 — see resolution note)
 - **Domain:** Whop · **Source:** W-05 · **File:** `SYNCED_EVENTS` set · **Confidence:** High · **Effort:** Small–Medium
-- No `refund.*`/`dispute.*`/`payment.failed` events are handled at all; access only changes if a *separate* `membership.deactivated` event happens to also fire. Add at minimum an ops alert on `dispute.created`/`refund.created`, mirroring the Starter Kit path's alert pattern.
+- No `refund.*`/`dispute.*`/`payment.failed` events are handled at all; access only changes if a *separate* `membership.deactivated` event happens to also fire.
+- **Resolution:** Shipped in two steps. First pass (before this policy answer existed) added an ops alert on `dispute.created`/`refund.created`, mirroring the Starter Kit path's alert pattern. Once the product owner confirmed (2026-09-13) that WeWebinars has no refund policy, `dispute.created`/`refund.created` now also suspend the account automatically (`subscription_status: "suspended"`, same shape as the admin `suspendAccount` action) whenever the event resolves to an account, alongside the existing ops alert — see `suspendAccountForDispute` in `src/app/api/webhooks/whop/route.ts`.
 
 ### WW-P3-004 — No ops-facing alert when a webhook's membership can't be resolved to an account (main billing path) — **FIXED 2026-09-13**
 - **Domain:** Whop · **Source:** W-06 · **File:** `src/app/api/webhooks/whop/route.ts:93-98` · **Confidence:** High · **Effort:** Small
