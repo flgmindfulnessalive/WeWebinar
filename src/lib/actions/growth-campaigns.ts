@@ -70,10 +70,32 @@ export async function assignProspectToCampaign(prospectId: string, campaignId: s
   if (!campaignId) return { error: t("selectCampaign") };
 
   const supabase = await createClient();
-  const { error } = await supabase
+
+  // Ya enrolado (re-click sobre "agregar a campaña" desde la UI) -- no
+  // tocar su progreso de secuencia (status/current_step/next_send_at):
+  // solo el insert inicial arranca la secuencia.
+  const { data: existing } = await supabase
     .from("partner_campaign_prospects")
-    .upsert({ campaign_id: campaignId, prospect_id: prospectId }, { onConflict: "campaign_id,prospect_id" });
-  if (error) return { error: error.message };
+    .select("campaign_id")
+    .eq("campaign_id", campaignId)
+    .eq("prospect_id", prospectId)
+    .maybeSingle();
+
+  if (!existing) {
+    // next_send_at=now(): queda elegible para el paso 0 de la secuencia
+    // (si la campaña tiene sequence steps) en la próxima corrida del cron.
+    // Una campaña sin steps configurados simplemente no tiene nada que
+    // enviar -- el enrollment queda "active" sin efecto hasta que se
+    // agregue el primer paso.
+    const { error } = await supabase.from("partner_campaign_prospects").insert({
+      campaign_id: campaignId,
+      prospect_id: prospectId,
+      status: "active",
+      current_step: 0,
+      next_send_at: new Date().toISOString(),
+    });
+    if (error) return { error: error.message };
+  }
 
   revalidatePath(`/growth/prospects/${prospectId}`);
   revalidatePath(`/growth/campaigns/${campaignId}`);

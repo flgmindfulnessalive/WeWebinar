@@ -130,8 +130,8 @@ export function MessagesSection({
                   messageId={message.id}
                   prospectId={prospectId}
                   label={t("markSent")}
-                  doneLabel={t("sent")}
-                  alreadySent={message.status === "marked_sent"}
+                  doneLabel={message.status === "failed" ? t("sendFailed") : t("sent")}
+                  alreadySent={message.status === "marked_sent" || message.status === "sent" || message.status === "failed"}
                 />
               </div>
             </div>

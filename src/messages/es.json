@@ -639,6 +639,7 @@
     "copy": "Copiar",
     "markSent": "Marcar como enviado",
     "sent": "Enviado",
+    "sendFailed": "Falló el envío",
     "channel": {
       "email": "Email",
       "instagram_dm": "Instagram DM",
@@ -686,7 +687,32 @@
       "active": "Activa",
       "paused": "Pausada",
       "completed": "Completada"
-    }
+    },
+    "sequenceTitle": "Secuencia de seguimiento",
+    "noSteps": "Todavía no hay pasos en la secuencia. Los prospects asignados no reciben nada hasta que agregues al menos uno.",
+    "stepLabel": "Paso {number}",
+    "sendImmediately": "Enviar apenas se enrola",
+    "delayDaysValue": "{days, plural, one {a los # día} other {a los # días}}",
+    "removeStep": "Quitar paso",
+    "delayDaysLabel": "Días de espera",
+    "stepSubjectLabel": "Asunto (email)",
+    "stepSubjectPlaceholder": "Ej: ¿Charlamos sobre una colaboración?",
+    "stepBodyLabel": "Mensaje",
+    "stepBodyPlaceholder": "Hola {{nombre}}, te escribo porque...",
+    "stepBodyHint": "Usa {{nombre}} para insertar el nombre del prospect automáticamente.",
+    "addStep": "Agregar paso",
+    "addingStep": "Agregando...",
+    "sequenceProgress": "Paso {current}/{total}",
+    "nextSendAt": "próximo envío {date}",
+    "sequencePaused": "secuencia pausada",
+    "sequenceCompleted": "secuencia completada",
+    "pauseSequence": "Pausar secuencia",
+    "resumeSequence": "Reanudar secuencia"
+  },
+  "GrowthSequences": {
+    "noPermission": "No tienes permiso para hacer esto.",
+    "missingFields": "Completa los campos requeridos.",
+    "stepAdded": "Paso agregado a la secuencia."
   },
   "GrowthTasks": {
     "title": "Tareas",

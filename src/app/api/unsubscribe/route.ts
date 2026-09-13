@@ -11,6 +11,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 //   - "digest": stops the monthly digest for one account, keyed by its
 //     dedicated unsubscribe_token (not the account id, so this link can't
 //     be used to probe/guess real account ids).
+//   - "partner_outreach": stops future Partner Engine sequence emails for
+//     one prospect, keyed by its dedicated unsubscribe_token (see
+//     20260913000005_partner_sequences.sql). The next cron run treats an
+//     unsubscribed prospect as having nothing left to send.
 // GET handles a human clicking the visible footer link (shows a plain
 // confirmation page); POST handles RFC 8058 one-click unsubscribe, fired
 // automatically by mail clients that show a native "Unsubscribe" button --
@@ -19,7 +23,7 @@ async function processUnsubscribe(request: Request): Promise<boolean> {
   const url = new URL(request.url);
   const scope = url.searchParams.get("scope");
   const token = url.searchParams.get("token");
-  if (!token || (scope !== "reminders" && scope !== "digest")) {
+  if (!token || (scope !== "reminders" && scope !== "digest" && scope !== "partner_outreach")) {
     return false;
   }
 
@@ -28,8 +32,10 @@ async function processUnsubscribe(request: Request): Promise<boolean> {
 
   if (scope === "reminders") {
     await admin.from("registrants").update({ unsubscribed_at: now }).eq("access_token", token);
-  } else {
+  } else if (scope === "digest") {
     await admin.from("accounts").update({ digest_unsubscribed_at: now }).eq("unsubscribe_token", token);
+  } else {
+    await admin.from("partner_prospects").update({ unsubscribed_at: now }).eq("unsubscribe_token", token);
   }
 
   return true;

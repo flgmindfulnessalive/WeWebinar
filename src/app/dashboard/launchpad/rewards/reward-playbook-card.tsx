@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { LAUNCHPAD_PLAYBOOK_URL } from "@/lib/launchpad/config";
 import { trackLaunchpadEvent } from "@/lib/launchpad/track";
 import type { LaunchpadRewardStatus } from "@/lib/launchpad/types";
 import { buildPlaybookMarkdown, downloadPlaybookFile } from "./playbook-download";
@@ -32,8 +33,15 @@ export function RewardPlaybookCard({
       if (response.ok) {
         setStatus("redeemed");
         trackLaunchpadEvent(projectId, "playbook_downloaded");
-        const markdown = buildPlaybookMarkdown(t, tBlueprint, tImplementation);
-        downloadPlaybookFile(markdown, "playbook-evergreen-webinar-2026.md");
+        if (LAUNCHPAD_PLAYBOOK_URL) {
+          // Archivo real (PDF en Drive) -- se abre en una pestaña nueva en
+          // vez de forzar una descarga, ya que un link de "view" de Drive
+          // no es una URL de descarga directa.
+          window.open(LAUNCHPAD_PLAYBOOK_URL, "_blank", "noopener,noreferrer");
+        } else {
+          const markdown = buildPlaybookMarkdown(t, tBlueprint, tImplementation);
+          downloadPlaybookFile(markdown, "playbook-evergreen-webinar-2026.md");
+        }
       }
     } finally {
       setDownloading(false);

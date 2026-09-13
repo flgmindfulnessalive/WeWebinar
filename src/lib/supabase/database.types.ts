@@ -73,7 +73,8 @@ export type PartnerActivityType =
   | "referral_code_generated";
 export type PartnerChannel = "email" | "instagram_dm" | "linkedin_dm" | "tiktok_dm" | "whatsapp" | "other";
 export type PartnerMessageKind = "opening" | "full_message" | "follow_up" | "proposal";
-export type PartnerMessageStatus = "draft" | "copied" | "marked_sent";
+export type PartnerMessageStatus = "draft" | "copied" | "marked_sent" | "scheduled" | "sent" | "failed";
+export type PartnerEnrollmentStatus = "active" | "paused" | "completed";
 export type PartnerCampaignStatus = "active" | "paused" | "completed";
 export type PartnerTaskStatus = "open" | "done" | "cancelled";
 
@@ -1389,6 +1390,8 @@ export interface Database {
           touches_count: number;
           source: string;
           referral_code: string | null;
+          unsubscribed_at: string | null;
+          unsubscribe_token: string;
           archived_at: string | null;
           created_at: string;
           updated_at: string;
@@ -1538,6 +1541,11 @@ export interface Database {
           created_by: string | null;
           created_at: string;
           sent_at: string | null;
+          campaign_id: string | null;
+          sequence_step_id: string | null;
+          scheduled_for: string | null;
+          sent_via: string | null;
+          resend_message_id: string | null;
         };
         Insert: Partial<Database["public"]["Tables"]["partner_messages"]["Row"]> & {
           prospect_id: string;
@@ -1552,6 +1560,48 @@ export interface Database {
             columns: ["prospect_id"];
             isOneToOne: false;
             referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_messages_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_campaigns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_messages_sequence_step_id_fkey";
+            columns: ["sequence_step_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_sequence_steps";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_sequence_steps: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          step_order: number;
+          delay_days: number;
+          channel: PartnerChannel;
+          kind: PartnerMessageKind;
+          subject: string | null;
+          body_template: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["partner_sequence_steps"]["Row"]> & {
+          campaign_id: string;
+          step_order: number;
+          body_template: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["partner_sequence_steps"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "partner_sequence_steps_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "partner_campaigns";
             referencedColumns: ["id"];
           },
         ];
@@ -1580,11 +1630,21 @@ export interface Database {
           campaign_id: string;
           prospect_id: string;
           added_at: string;
+          status: PartnerEnrollmentStatus;
+          current_step: number;
+          next_send_at: string | null;
+          enrolled_at: string;
+          paused_at: string | null;
         };
         Insert: {
           campaign_id: string;
           prospect_id: string;
           added_at?: string;
+          status?: PartnerEnrollmentStatus;
+          current_step?: number;
+          next_send_at?: string | null;
+          enrolled_at?: string;
+          paused_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["partner_campaign_prospects"]["Row"]>;
         Relationships: [
@@ -2260,6 +2320,7 @@ export interface Database {
       partner_message_status: PartnerMessageStatus;
       partner_campaign_status: PartnerCampaignStatus;
       partner_task_status: PartnerTaskStatus;
+      partner_enrollment_status: PartnerEnrollmentStatus;
       growth_event_name: GrowthEventName;
     };
     CompositeTypes: Record<string, never>;
