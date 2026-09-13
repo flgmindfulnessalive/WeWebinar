@@ -41,6 +41,8 @@ export function WaitingRoomClient({
   brandColorB = DEFAULT_BRAND_COLOR_B,
   showPoweredBy = true,
   durationSeconds,
+  fakeViewerMin,
+  fakeViewerMax,
 }: {
   webinarId: string;
   webinarTitle: string;
@@ -60,6 +62,8 @@ export function WaitingRoomClient({
   brandColorB?: string;
   showPoweredBy?: boolean;
   durationSeconds: number | null;
+  fakeViewerMin: number;
+  fakeViewerMax: number;
 }) {
   const router = useRouter();
   const t = useTranslations("WaitingRoom");
@@ -92,8 +96,8 @@ export function WaitingRoomClient({
     seed: `${webinarId}:${sessionStart}`,
     elapsedSeconds: -(remainingMs / 1000),
     durationSeconds: 0,
-    min: 12,
-    max: 60,
+    min: fakeViewerMin,
+    max: fakeViewerMax,
   });
 
   const bullets = (Array.isArray(config?.bullets) ? config.bullets : []) as string[];
