@@ -1671,7 +1671,7 @@
     "typeImage": "Imagen",
     "typeVideo": "Video",
     "bulletsLabel": "¿Para quién es este webinario? (un ítem por línea)",
-    "bulletsHint": "Ayuda a que el visitante se reconozca antes de registrarse. Ejemplo: \"Coaches que quieren llenar su agenda con clientes 1:1\".",
+    "bulletsHint": "Ayuda a que el visitante se reconozca antes de registrarse. Ejemplo: \"Coaches que quieren llenar su agenda con clientes 1:1\". Si terminás una línea con \":\" (por ejemplo \"Este webinario es para vos si:\"), se muestra como introducción del listado, sin ícono, en vez de como un ítem más.",
     "testimonialsLabel": "Testimonios (opcional) — formato \"Nombre: texto\", uno por línea",
     "calendarButtonLabel": "Botón \"Agregar a mi calendario\"",
     "fakeCounterLabel": "Contador de conectados",
