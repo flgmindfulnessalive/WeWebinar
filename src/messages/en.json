@@ -384,6 +384,8 @@
   "LiveRoom": {
     "hidePanel": "Hide panel",
     "showPanel": "Show panel",
+    "expandVideo": "Expand video",
+    "collapseVideo": "Collapse video",
     "viewersConnected": "{count} watching",
     "clickToUnmute": "🔇 Click anywhere on the video to unmute",
     "live": "Live",
