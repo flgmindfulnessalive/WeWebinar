@@ -38,9 +38,16 @@ export const LockedVideoPlayer = forwardRef<
     onPause?: () => void;
     onRateChange?: () => void;
     onEnded?: () => void;
+    /** Fired once when the <video> element itself reports an error
+     * (404/CORS-blocked/corrupted source) -- distinct from an ordinary
+     * "still buffering" stuck timeout. Unlike YouTube/Vimeo, there is no
+     * generic ad-blocker-style warning for this provider at all today, so
+     * without this a dead direct-URL file only ever showed a misleading
+     * "tap to resume" prompt, as if the video were merely paused. */
+    onUnavailable?: () => void;
   }
 >(function LockedVideoPlayer(
-  { src, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded },
+  { src, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -50,6 +57,7 @@ export const LockedVideoPlayer = forwardRef<
   // ever needs to cover the initial load/any rebuffer, no reveal-hold delay.
   const [coverVisible, setCoverVisible] = useState(Boolean(autoPlay));
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [showUnavailable, setShowUnavailable] = useState(false);
   const hasPlayedOnceRef = useRef(false);
 
   useImperativeHandle(
@@ -116,6 +124,7 @@ export const LockedVideoPlayer = forwardRef<
 
     hasPlayedOnceRef.current = false;
     setShowResumePrompt(false);
+    setShowUnavailable(false);
 
     const reveal = () => {
       hasPlayedOnceRef.current = true;
@@ -133,19 +142,38 @@ export const LockedVideoPlayer = forwardRef<
       cover();
       onPause?.();
     };
+    // A real MediaError (MEDIA_ERR_SRC_NOT_SUPPORTED, MEDIA_ERR_NETWORK,
+    // etc.) -- the source is confirmed broken, not just still loading.
+    const onErrorEvent = () => {
+      hasPlayedOnceRef.current = false;
+      setCoverVisible(false);
+      setShowResumePrompt(false);
+      setShowUnavailable(true);
+      onUnavailable?.();
+    };
 
     video.addEventListener("playing", reveal);
     video.addEventListener("waiting", onWaiting);
     video.addEventListener("pause", onPauseEvent);
+    video.addEventListener("error", onErrorEvent);
 
     const stuckTimer = window.setTimeout(() => {
       if (!hasPlayedOnceRef.current) setShowResumePrompt(true);
     }, STUCK_INITIAL_MS);
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && video.paused && hasPlayedOnceRef.current) {
+        video.play().catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
       video.removeEventListener("playing", reveal);
       video.removeEventListener("waiting", onWaiting);
       video.removeEventListener("pause", onPauseEvent);
+      video.removeEventListener("error", onErrorEvent);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       window.clearTimeout(stuckTimer);
     };
     // onPause intentionally omitted -- it's a stable callback from the
@@ -224,6 +252,34 @@ export const LockedVideoPlayer = forwardRef<
               ▶️ Toca para reanudar el video
             </button>
           )}
+        </div>
+      )}
+      {/* Confirmed-broken source (a real MediaError -- 404/removed/CORS-
+          blocked/corrupted), not merely paused. Unlike YouTube/Vimeo this
+          provider has no upstream to blame (it's the host's own storage),
+          so this is the only failure-adjacent message this provider shows
+          at all -- previously there was none, only the misleading "tap to
+          resume" prompt above. */}
+      {showUnavailable && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            background: "rgba(0, 0, 0, 0.9)",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
+            Este video ya no está disponible. Contactá al organizador del
+            webinar.
+          </p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the <video> underneath

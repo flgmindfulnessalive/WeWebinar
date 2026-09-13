@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCurrentAccount } from "@/lib/data/account";
 import { createClient } from "@/lib/supabase/server";
 import { secondsToClock } from "@/lib/time";
+import { analyticsRangeToDates, parseAnalyticsRange } from "@/app/dashboard/webinars/[id]/analytics/date-range";
 
 function csvEscape(value: string): string {
   // Registrant-controlled fields (name, custom_fields) land straight in a
@@ -24,7 +25,7 @@ function toCsvRow(values: string[]): string {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: webinarId } = await params;
@@ -49,6 +50,17 @@ export async function GET(
     (current.plan.features as Record<string, boolean> | null)?.lead_scoring
   );
 
+  // Match whatever date range the host had selected on the dashboard when
+  // they clicked "Exportar CSV" -- this export used to always run all-time
+  // regardless of the visible filter, silently disagreeing with the
+  // numbers on screen.
+  const { searchParams } = new URL(request.url);
+  const range = parseAnalyticsRange(searchParams.get("range") ?? undefined);
+  const { start: p_start_date, end: p_end_date } = analyticsRangeToDates(
+    range,
+    current.account.timezone_default
+  );
+
   const [{ data: registrants, error }, { data: watchPositionRows }, { data: leadScoreRows }] =
     await Promise.all([
       supabase
@@ -57,10 +69,12 @@ export async function GET(
           "id, name, email, phone, custom_fields, computed_session_start, visitor_timezone, created_at"
         )
         .eq("webinar_id", webinarId)
+        .gte("created_at", p_start_date ?? "1970-01-01")
+        .lt("created_at", p_end_date ?? "9999-12-31")
         .order("created_at", { ascending: true }),
-      supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
+      supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
       leadScoringAllowed
-        ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId })
+        ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId, p_start_date, p_end_date })
         : Promise.resolve({ data: null }),
     ]);
 

@@ -312,13 +312,13 @@ export default async function WebinarAnalyticsPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" className="w-fit">
-            <a href={`/api/webinars/${webinarId}/report`}>
+            <a href={`/api/webinars/${webinarId}/report?range=${range}`}>
               <FileDown className="size-4" />
               {t("downloadReport")}
             </a>
           </Button>
           <Button asChild variant="outline" className="w-fit">
-            <a href={`/api/webinars/${webinarId}/export`}>
+            <a href={`/api/webinars/${webinarId}/export?range=${range}`}>
               <Download className="size-4" />
               {t("exportCsv")}
             </a>

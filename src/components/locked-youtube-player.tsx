@@ -44,6 +44,11 @@ interface YTNamespace {
         onReady?: (e: YTPlayerEvent) => void;
         onStateChange?: (e: YTPlayerEvent) => void;
         onPlaybackRateChange?: (e: YTPlayerEvent) => void;
+        // Fired for a deleted/private/embedding-disabled video (error
+        // codes 2/5/100/101/150) -- onReady still fires in this case, so
+        // without this the player just hangs with no video and, after
+        // STUCK_INITIAL_MS, misleadingly blames the viewer's ad blocker.
+        onError?: (e: { data: number }) => void;
       };
     }
   ) => YTPlayer;
@@ -130,17 +135,21 @@ export const LockedYouTubePlayer = forwardRef<
     onPause?: () => void;
     onRateChange?: () => void;
     onEnded?: () => void;
+    /** Fired once when YouTube reports the video itself is unplayable
+     * (deleted/private/embedding-disabled) -- distinct from the generic
+     * "might be an ad blocker" stuck-timeout case below. */
+    onUnavailable?: () => void;
   }
 >(function LockedYouTubePlayer(
-  { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded },
+  { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Latest callbacks, read from effects/intervals only — never during render.
-  const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded });
-  callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded };
+  const callbacksRef = useRef({ onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable });
+  callbacksRef.current = { onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable };
 
   // Covers the player (with a branded loading mark) any time YouTube isn't
   // actually reporting PLAYING -- not just on initial load. YouTube shows
@@ -185,6 +194,11 @@ export const LockedYouTubePlayer = forwardRef<
   // practice. Surface that explicitly instead of silently revealing
   // whatever broken placeholder is underneath.
   const [showBlockedWarning, setShowBlockedWarning] = useState(false);
+  // Set only by a real onError from YouTube (deleted/private/embedding-
+  // disabled) -- a confirmed-broken video, not a "might be an ad blocker"
+  // guess. Mutually exclusive with showBlockedWarning: whichever fires
+  // first wins for this mount (retryKey resets both).
+  const [showUnavailable, setShowUnavailable] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
   useImperativeHandle(
@@ -299,6 +313,7 @@ export const LockedYouTubePlayer = forwardRef<
     stuckSinceRef.current = null;
     setShowResumePrompt(false);
     setShowBlockedWarning(false);
+    setShowUnavailable(false);
 
     // Last-resort escape hatch: if PLAYING never fires at all (autoplay
     // fully blocked, video unavailable), don't leave the viewer stuck on
@@ -384,6 +399,17 @@ export const LockedYouTubePlayer = forwardRef<
             if (e.data === YT.PlayerState.ENDED) callbacksRef.current.onEnded?.();
           },
           onPlaybackRateChange: () => callbacksRef.current.onRateChange?.(),
+          onError: () => {
+            gaveUpRef.current = true;
+            hasPlayedOnceRef.current = false;
+            if (tickRef.current) clearInterval(tickRef.current);
+            tickRef.current = null;
+            setCoverVisible(false);
+            setShowResumePrompt(false);
+            setShowBlockedWarning(false);
+            setShowUnavailable(true);
+            callbacksRef.current.onUnavailable?.();
+          },
         },
       });
     });
@@ -497,6 +523,32 @@ export const LockedYouTubePlayer = forwardRef<
           >
             🔄 Reintentar
           </button>
+        </div>
+      )}
+      {/* Confirmed-broken video (YouTube's own onError -- deleted, private,
+          or embedding disabled), not a guess about an ad blocker. No retry
+          button: unlike a stuck-timeout, YouTube telling us the video
+          itself is unplayable won't resolve on its own. */}
+      {showUnavailable && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            background: "rgba(0, 0, 0, 0.9)",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
+            Este video ya no está disponible. Contactá al organizador del
+            webinar.
+          </p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the YouTube iframe

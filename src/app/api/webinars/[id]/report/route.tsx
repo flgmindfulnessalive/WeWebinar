@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { secondsToClock } from "@/lib/time";
 import { countryDisplayName } from "@/lib/country";
 import { registerReportFonts } from "@/lib/pdf-report/fonts";
+import { analyticsRangeToDates, parseAnalyticsRange } from "@/app/dashboard/webinars/[id]/analytics/date-range";
 import {
   WebinarReportDocument,
   type ReportBar,
@@ -27,7 +28,7 @@ const DAY_KEYS = [
 ] as const;
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: webinarId } = await params;
@@ -58,6 +59,18 @@ export async function GET(
     (current.plan.features as Record<string, boolean> | null)?.lead_scoring
   );
 
+  // Match whatever date range the host had selected on the dashboard when
+  // they clicked "Descargar reporte" -- this report used to always run
+  // all-time regardless of the visible filter, silently disagreeing with
+  // the numbers on screen (only its own internal caption said "all",
+  // which the host never saw before downloading).
+  const { searchParams } = new URL(request.url);
+  const range = parseAnalyticsRange(searchParams.get("range") ?? undefined);
+  const { start: p_start_date, end: p_end_date } = analyticsRangeToDates(
+    range,
+    current.account.timezone_default
+  );
+
   const [
     { data: summaryRows },
     { data: retentionRows },
@@ -72,19 +85,19 @@ export async function GET(
     { data: reactionRows },
     { data: leadScoreRows },
   ] = await Promise.all([
-    supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_registrants", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_country_breakdown", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId }),
-    supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId }),
+    supabase.rpc("get_webinar_summary", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_retention_curve", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_cta_stats", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_poll_results", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_registrants", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_cta_clickers", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_watch_positions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_schedule_performance", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_country_breakdown", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_registrant_messages", { p_webinar_id: webinarId, p_start_date, p_end_date }),
+    supabase.rpc("get_webinar_reactions", { p_webinar_id: webinarId, p_start_date, p_end_date }),
     leadScoringAllowed
-      ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId })
+      ? supabase.rpc("get_webinar_lead_scores", { p_webinar_id: webinarId, p_start_date, p_end_date })
       : Promise.resolve({ data: null }),
   ]);
 
@@ -288,7 +301,17 @@ export async function GET(
         webinarTitle: webinar.title,
         presenterName: webinar.presenter_name,
         scheduleModeLabel,
-        dataRangeLabel: tReport("dataRangeAll"),
+        dataRangeLabel: tReport("dataRangeLabel", {
+          range: t(
+            range === "today"
+              ? "rangeToday"
+              : range === "week"
+                ? "rangeWeek"
+                : range === "month"
+                  ? "rangeMonth"
+                  : "rangeAll"
+          ),
+        }),
         generatedAtLabel: tReport("generatedOn", {
           date: new Date().toLocaleString(locale, { dateStyle: "long", timeStyle: "short" }),
         }),

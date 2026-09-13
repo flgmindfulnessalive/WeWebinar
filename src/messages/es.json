@@ -1542,6 +1542,7 @@
   "WebinarReport": {
     "generatedOn": "Generado el {date}",
     "dataRangeAll": "Datos: todo el histórico",
+    "dataRangeLabel": "Datos: {range}",
     "scheduleModeFixed": "Programado",
     "scheduleModeBoth": "Programado + bajo demanda",
     "footerBrand": "WeWebinars · wewebinars.com",
