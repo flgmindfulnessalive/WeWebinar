@@ -19,6 +19,9 @@ export type BlogFrontmatter = {
   // string). Optional: a post with no counterpart yet just gets no
   // hreflang alternate for the other locale.
   translationKey?: string;
+  // Path under /public to a static cover image (e.g. "/blog/covers/foo.png").
+  // Optional: a post with none falls back to the Satori-generated cover.
+  coverImage?: string;
 };
 
 export type BlogPost = BlogFrontmatter & {
