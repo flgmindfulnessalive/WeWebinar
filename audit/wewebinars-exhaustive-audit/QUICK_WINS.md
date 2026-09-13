@@ -23,9 +23,9 @@ The "before scaling paid ad-traffic campaigns" batch is also now shipped (13 of 
 |---|---|---|
 | WW-P2-002 | Add `for update` row lock to `enforce_webinar_publish_limit`/`enforce_invitation_user_limit` | **Done 2026-09-13** — both triggers now lock, same pattern as the other two |
 | WW-P1-004 / WW-P2-007 | Dedupe CTA clicks via `count(distinct registrant_id)`; cap `conversion_pct` at 100 | **Done 2026-09-13** — `get_webinar_cta_stats` now dedupes and caps |
-| WW-P4-001 | Add `headers: unsubscribeHeaders(unsubscribeUrl)` to the confirmation email's `sendEmail()` call | One line, matches every other registrant-facing send |
-| WW-P3-006 | Delete the 6 dead Lemon Squeezy lines from `.env.example`; add `WHOP_API_KEY`/`WHOP_WEBHOOK_SECRET` | Pure documentation edit, prevents a broken fresh deployment |
-| WW-P3-014 | Correct the factually-wrong `platform_admins` RLS-history comment | Pure comment edit |
+| WW-P4-001 | Add `headers: unsubscribeHeaders(unsubscribeUrl)` to the confirmation email's `sendEmail()` call | **Retracted 2026-09-13** — already there; git blame shows it was added 2026-08-27, three weeks before this audit ran. False positive, no fix needed |
+| WW-P3-006 | Delete the 6 dead Lemon Squeezy lines from `.env.example`; add `WHOP_API_KEY`/`WHOP_WEBHOOK_SECRET` | **Done 2026-09-13** |
+| WW-P3-014 | Correct the factually-wrong `platform_admins` RLS-history comment | **Done 2026-09-13** |
 | WW-P2-016 | Add `.eq("account_id", current.account.id)` check before the `launchpad_projects` write in `/api/launchpad/event` | **Done 2026-09-13** — now confirms project ownership before writing |
 | WW-P2-017 | Guard the `account_id` overwrite in `script-builder/save` with an "already set to a different account → don't overwrite" check | **Done 2026-09-13** — no longer overwrites a different account's project |
 

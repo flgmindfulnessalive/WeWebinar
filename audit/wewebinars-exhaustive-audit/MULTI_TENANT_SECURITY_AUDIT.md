@@ -2,6 +2,8 @@
 
 Phase 2 synthesis. Full evidence trail lives in `MULTI_TENANT_SECURITY_AUDIT_RAW.md`; full finding template lives in `FINDINGS.md`. This file is the curated summary.
 
+**Remediation status (2026-09-13):** WW-P1-012/WW-P2-014/WW-P3-013 (ungranted `SECURITY DEFINER` functions) are **FIXED**, both individually (explicit `REVOKE EXECUTE` on all three) and systemically — a new migration now runs `alter default privileges in schema public revoke execute on functions from public;`, so every function created from here on defaults closed instead of depending on each migration author remembering an explicit revoke. WW-P3-014 (the factually-wrong `platform_admins` RLS-history comment) is also **FIXED**. WW-RLS-H1's regression-test recommendation (the ~19 RPCs relying on RLS alone with no defense-in-depth) remains **NOT ATTEMPTED** — it needs a live Postgres instance with the schema's actual policies applied, which this sandbox has no Supabase CLI/Docker access to stand up.
+
 ## Scope and method
 
 Every RLS policy across all 116 migrations; every `SECURITY DEFINER` function's `search_path` pinning and internal authorization; every `createAdminClient()` (service-role, RLS-bypassing) call site; storage bucket policies; Realtime usage. Full-text read of all 116 migration files in chronological order (not a sample). No live database access — every "is this callable" question that depends on the live project's actual grant state is flagged as a hypothesis, not asserted as fact, per this audit's evidentiary standard.

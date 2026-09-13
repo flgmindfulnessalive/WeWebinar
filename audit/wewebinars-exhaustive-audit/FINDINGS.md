@@ -4,18 +4,20 @@ Phase 2 synthesis deliverable. Every finding below is drawn from one of the six 
 
 **Scoring key** — Severity: P0 (critical, business-stopping) · P1 (high) · P2 (medium) · P3 (low) · P4 (informational). Confidence: High / Medium / Low, reflecting how much of the finding rests on static code reading (High) vs. an assumption about live-system or live-provider behavior this sandbox could not execute (Medium/Low — see each finding's Confidence line for why). Scope: cross-tenant (breaks isolation between WeWebinars accounts) / single-tenant (affects one account, still real) / platform-wide (affects WeWebinars' own internal data, not a customer's). Status: **CONFIRMED** (reproducible from the code alone) or **HYPOTHESIS** (plausible, stated explicitly as needing live verification — none of the 49 findings below are hypotheses; the hypothesis-only items live in each domain file's own "Hypotheses / Needs Live Testing" section and in `OPEN_QUESTIONS.md`).
 
-**Total: 49 confirmed findings** (48 standing, 1 retracted as a false positive during remediation — see WW-P1-001 below). Original breakdown: 0 P0 · 12 P1 (11 standing) · 17 P2 · 19 P3 · 1 P4.
+**Total: 49 confirmed findings** (47 standing, 2 retracted as false positives during remediation — see WW-P1-001 and WW-P4-001 below). Original breakdown: 0 P0 · 12 P1 (11 standing) · 17 P2 · 19 P3 · 1 P4 (0 standing).
 
-**Remediation status (updated 2026-09-13):** three of `REMEDIATION_ROADMAP.md`'s four horizons have now been worked — "Immediate (24–48h)" (4 items), "before scaling paid ad-traffic campaigns" (15 items), and "Next 30 days" (21 items) — 32 fixed (2 of those partially), 1 retracted as a false positive, 7 deliberately deferred:
-- **WW-P1-001** — investigated while preparing the fix; turned out to be **already fixed upstream** by a later migration the original scan didn't trace forward. Retracted as a false positive, no code change needed. See the entry below for the full account.
+**Remediation status (updated 2026-09-13):** all four of `REMEDIATION_ROADMAP.md`'s horizons have now been worked — "Immediate (24–48h)" (4 items), "before scaling paid ad-traffic campaigns" (15 items), "Next 30 days" (21 items), and the concrete engineering items in "Next 90 days" — 36 fixed (2 of those partially), 2 retracted as false positives, 5 deliberately deferred:
+- **WW-P1-001, WW-P4-001** — investigated while preparing their fixes; both turned out to be **already fixed upstream** by changes that predate this audit. Retracted as false positives, no code change needed. See each entry below for the full account.
 - **WW-P1-002** — **FIXED.** `reactivateAccount` now clears `canceled_at`/`deletion_warning_sent_at` (`src/lib/actions/admin.ts`).
 - **WW-P1-011** — **FIXED.** `next` redirect params are now validated as same-origin relative paths via a new `sanitizeRedirectPath()` helper (`src/lib/safe-redirect.ts`, with a regression test), used in both `src/app/auth/callback/route.ts` and `src/app/auth/confirm/confirm-client.tsx`.
-- **WW-P1-012 / WW-P2-014 / WW-P3-013** — **FIXED.** A new migration (`supabase/migrations/20260913000006_revoke_ungranted_security_definer_functions.sql`) explicitly revokes EXECUTE on all three functions from `public`/`anon`/`authenticated`, closing the ambiguity permanently regardless of what the live-DB verification query in `OPEN_QUESTIONS.md` would have found.
-- **WW-P2-001, WW-P3-001, WW-P1-004/WW-P2-007, WW-P1-005, WW-P2-004, WW-P2-005, WW-P2-006, WW-P1-006/007/008, WW-P1-009, WW-P1-010, WW-P2-011, WW-P1-003, WW-P2-002, WW-P2-008, WW-P2-012, WW-P2-015, WW-P2-016, WW-P2-017, WW-P3-003, WW-P3-004, WW-P3-005, WW-P3-007, WW-P3-010, WW-P3-012, WW-P3-015, WW-P3-016** — **FIXED.** See each entry below for its specific resolution, or `REMEDIATION_ROADMAP.md` for the full itemized list.
+- **WW-P1-012 / WW-P2-014 / WW-P3-013** — **FIXED**, both individually (explicit `REVOKE EXECUTE` on all three) and systemically (`alter default privileges` now closes every future function by default) — see the entry below.
+- **WW-P2-001, WW-P3-001, WW-P1-004/WW-P2-007, WW-P1-005, WW-P2-004, WW-P2-005, WW-P2-006, WW-P1-006/007/008, WW-P1-009, WW-P1-010, WW-P2-011, WW-P1-003, WW-P2-002, WW-P2-008, WW-P2-012, WW-P2-015, WW-P2-016, WW-P2-017, WW-P3-002, WW-P3-003, WW-P3-004, WW-P3-005, WW-P3-006, WW-P3-007, WW-P3-010, WW-P3-012, WW-P3-014, WW-P3-015, WW-P3-016** — **FIXED.** See each entry below for its specific resolution, or `REMEDIATION_ROADMAP.md` for the full itemized list. (WW-P3-002's DST fix reverses an earlier deferral — it turned out fully testable/fixable statically, not needing live verification as first assumed.)
 - **WW-P3-008, WW-P3-011** — **PARTIALLY FIXED.** WW-P3-008: the missing indexes are added; a retention/archival policy is still a product/ops decision, not attempted. WW-P3-011: Vimeo now gets a real thumbnail; direct-URL is left as a deliberate product call (per `QUICK_WINS.md`'s own note).
 - **WW-P2-013** — **NOT ATTEMPTED.** Needs new health-check/alerting infrastructure, out of scope for a code-level remediation pass. See its entry below.
-- **WW-P2-018, WW-P2-003, WW-P3-002, WW-P3-009** — **DELIBERATELY DEFERRED**, each for a different reason (unsafe fix pending live Whop verification; pending a product decision; the finding's own guidance to verify live before fixing DST blind; the underlying metric is currently disabled in the UI). See each entry below.
-- **WW-RLS-H1's regression-test recommendation** — **NOT ATTEMPTED.** Building real RLS regression tests needs a live Postgres instance with the schema's actual policies applied; this sandbox has no Supabase CLI/Docker access to stand one up, so this stays a `Next 90 days` item rather than being faked with something that wouldn't actually catch a regression.
+- **WW-P2-018, WW-P2-003, WW-P3-009** — **DELIBERATELY DEFERRED**, each for a different reason (unsafe fix pending live Whop verification; pending a product decision — see `OPEN_QUESTIONS.md` §5; the underlying metric is currently disabled in the UI). See each entry below.
+- **WW-RLS-H1's regression-test recommendation** — **NOT ATTEMPTED.** Building real RLS regression tests needs a live Postgres instance with the schema's actual policies applied; this sandbox has no Supabase CLI/Docker access to stand one up. Some real coverage was added elsewhere instead where it didn't need a live DB (DST scheduling logic, SSRF address classification — see `src/lib/scheduling.test.ts`/`src/lib/ssrf-guard.test.ts`).
+- **Full e2e/integration test framework, and the broader test-coverage buildout beyond individual findings' own regression tests** — **NOT ATTEMPTED.** A tooling investment (`MISSING_TESTS.md` item 15), not a quick addition.
+- **`OPEN_QUESTIONS.md` §5 product decisions** (WW-P2-003 multi-account support, WW-P3-003's underlying chargeback policy) — **NOT ATTEMPTED.** These need the product owner, not engineering time.
 
 The remaining findings (not in any horizon above) are unchanged and still open — see `REMEDIATION_ROADMAP.md` for what's next.
 
@@ -157,7 +159,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Recommended solution:** Validate `next` is a same-origin relative path (reject anything starting with `//`, containing `://`, or not starting with `/`) before use in both the server redirect and the client `router.replace`.
 - **Regression test:** Route test asserting `next=https://evil.example.com` and `next=//evil.example.com` are both rejected/normalized to `/dashboard`, while `next=/dashboard/webinars` passes through unchanged.
 
-### WW-P1-012 — `growth_account_milestones()` (SECURITY DEFINER) has no internal auth check and no explicit GRANT anywhere in 116 migrations — **FIXED 2026-09-13** (explicit `REVOKE EXECUTE` shipped, closing the ambiguity regardless of the live-DB answer)
+### WW-P1-012 — `growth_account_milestones()` (SECURITY DEFINER) has no internal auth check and no explicit GRANT anywhere in 116 migrations — **FIXED 2026-09-13** (explicit `REVOKE EXECUTE` shipped, closing the ambiguity regardless of the live-DB answer; the systemic `alter default privileges` fix recommended alongside this finding also shipped 2026-09-13, in `20260913000010_default_deny_new_functions.sql` — every function created from now on defaults closed instead of depending on each migration author remembering an explicit revoke)
 - **Domain:** Multi-Tenant Security · **Source:** MULTI_TENANT_SECURITY_AUDIT_RAW.md, WW-RLS-001 — **carried forward with confidence downgraded from the source report's own framing; see note below**
 - **File/Function:** `supabase/migrations/20260910000004_growth_activation.sql:28-79`
 - **Evidence:** The function body has no `auth.uid()`/`is_account_member`/`is_platform_admin`/`is_growth_operator` check. `grep -n "growth_account_milestones" supabase/migrations/*.sql` shows exactly three hits: the `CREATE` and its two checked wrappers (`get_account_activation_milestones`, `get_growth_funnel_counts`) — no `grant execute on function public.growth_account_milestones` exists anywhere. **I independently re-verified this**: confirmed the function body directly, confirmed no grant references it, and confirmed there is no schema-level `alter default privileges ... revoke execute from public` statement anywhere in the 116 migrations either.
@@ -295,7 +297,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Scheduling · **Source:** SESS-02 · **File:** `.../[webinarSlug]/page.tsx:198-217` · **Confidence:** High · **Effort:** Small
 - The registration page's displayed count ignores JIT registrants entirely, while the real `enforce_attendee_limit()` trigger counts them — the page can show availability the RPC then rejects. Not a security issue (the RPC re-checks atomically); fix by computing `spotsLeft` server-side with the same overlap-window logic.
 
-### WW-P3-002 — DST "spring-forward" gap not specially handled in `zonedWallTimeToUtc` — **DEFERRED** (this entry's own guidance is to flag for live testing rather than fix blind — no live-DST scenario was verifiable in this sandbox)
+### WW-P3-002 — DST "spring-forward" gap not specially handled in `zonedWallTimeToUtc` — **FIXED 2026-09-13** (reversed an earlier deferral — this turned out fully testable/fixable statically, see resolution note)
 - **Domain:** Scheduling · **Source:** SESS-08 · **File:** `src/lib/scheduling.ts:46-53` · **Confidence:** Medium · **Effort:** Small (if fixed at all)
 - A `time_of_day` that falls inside a DST spring-forward gap (nonexistent wall time) converges on *some* nearby real instant rather than raising/clamping — narrow window, 1-2x/year, DST zones only. Flag for live testing rather than fixing blind.
 
@@ -311,7 +313,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Whop · **Source:** W-07 · **File:** `send-reminders/route.ts:286-304` · **Confidence:** High (mechanism); Medium (real-world frequency) · **Effort:** Medium (architectural) or Small (shrink the window)
 - A delayed Whop activation webhook can race the cron's own expiry check, briefly canceling a just-paid account (public pages go dark) before the webhook arrives and self-heals the state. Shrink the window or add a grace buffer past `trial_ends_at`.
 
-### WW-P3-006 — `.env.example` stale: documents removed Lemon Squeezy vars, missing required `WHOP_API_KEY`/`WHOP_WEBHOOK_SECRET`
+### WW-P3-006 — `.env.example` stale: documents removed Lemon Squeezy vars, missing required `WHOP_API_KEY`/`WHOP_WEBHOOK_SECRET` — **FIXED 2026-09-13**
 - **Domain:** Whop / API Security · **Source:** W-08, B.6 #1-2 · **File:** `.env.example:38-44` · **Confidence:** High · **Effort:** Small
 - Six dead Lemon Squeezy vars remain documented; the two vars the live billing path actually requires are absent. A fresh deploy following the example file has non-functional billing.
 
@@ -343,7 +345,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 - **Domain:** Multi-Tenant Security · **Source:** WW-RLS-003 · **File:** `20260902000001_platform_daily_brief.sql:37-84` · **Confidence:** Medium · **Effort:** Small
 - If live-callable, worst case is an authenticated user forcing an out-of-schedule (but correctly-computed) snapshot upsert — a minor DB-load nuisance, not a confidentiality leak (the table itself stays admin-only-readable). `revoke execute ...` regardless, plus an explicit `is_platform_admin()` guard as defense in depth.
 
-### WW-P3-014 — Migration comment about `platform_admins`' own RLS history is factually wrong (documentation-only)
+### WW-P3-014 — Migration comment about `platform_admins`' own RLS history is factually wrong (documentation-only) — **FIXED 2026-09-13**
 - **Domain:** Multi-Tenant Security · **Source:** WW-RLS-004 · **File:** `20260909000002_partner_engine_base.sql:7-8` · **Confidence:** High · **Effort:** Trivial
 - `platform_admins` has had RLS enabled with zero policies (correctly default-deny) since the very first RLS migration; a later comment incorrectly claims otherwise while justifying an unrelated table's design. No functional impact — correct the comment so it doesn't mislead a future engineer.
 
@@ -359,7 +361,7 @@ None found. No cross-tenant data leak, unauthorized admin access, membership/pla
 
 ## P4 — Informational
 
-### WW-P4-001 — `registration_confirmation` omits the RFC 8058 `List-Unsubscribe` headers every other registrant-facing send includes
+### WW-P4-001 — `registration_confirmation` omits the RFC 8058 `List-Unsubscribe` headers every other registrant-facing send includes — **RETRACTED 2026-09-13 (false positive)** — `sendConfirmationEmail` already passes `headers: unsubscribeHeaders(unsubscribeUrl)`; git blame shows this line was added 2026-08-27, three weeks before this audit ran. Stale finding, no code change needed.
 - **Domain:** API Security (Email) · **Source:** C.8 #3 · **File:** `src/lib/actions/register.ts` (`sendConfirmationEmail`) · **Confidence:** High · **Effort:** Trivial
 - The footer unsubscribe link works; only the one-click header is missing, weighted by some mailbox providers in spam scoring. Add `headers: unsubscribeHeaders(unsubscribeUrl)` to match every other send.
 

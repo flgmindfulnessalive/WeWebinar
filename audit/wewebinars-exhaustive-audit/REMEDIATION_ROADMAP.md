@@ -92,7 +92,7 @@ Real findings worth fixing, but none of them were actively bleeding and none blo
 **Scheduling:**
 | ID | Issue | Resolution |
 |---|---|---|
-| WW-P3-002 | DST "spring-forward" gap not specially handled. | **DEFERRED** — this finding's own guidance is to flag for live testing rather than fix blind; no live-DST scenario was verifiable in this sandbox. |
+| WW-P3-002 | DST "spring-forward" gap not specially handled. | **FIXED 2026-09-13** — reverses this file's own earlier deferral. Node's `Intl` ships the real IANA tz-transition database, so the gap is fully reproducible and fixable with a deterministic unit test, no live system needed. `zonedWallTimeToUtc` previously converged on the pre-transition offset for a nonexistent wall time (e.g. 02:30 on a day that jumps 02:00→03:00), silently returning an instant an hour *earlier* than requested; it now detects that mismatch and shifts forward past the gap, matching Luxon/date-fns-tz convention. See `src/lib/scheduling.test.ts`. |
 
 **Email:**
 | ID | Issue | Resolution |
@@ -111,16 +111,22 @@ Validated: `tsc --noEmit` clean, `eslint` clean on every touched file, `vitest r
 
 ---
 
-## Next 90 days
+## Next 90 days — ✅ 4/4 concrete engineering items DONE 2026-09-13 (test-coverage buildout + product decisions remain)
 
-Hygiene, documentation, and structural improvements — real value, but genuinely low urgency and best batched with other work rather than fast-tracked.
+Hygiene, documentation, and structural improvements — real value, but genuinely low urgency and best batched with other work rather than fast-tracked. **All four concrete, code-level items are now shipped** (one retracted as a false positive). What's left in this horizon is a tooling investment and two product decisions, neither of which is an engineering task.
 
-- WW-P3-006 (`.env.example` cleanup)
-- WW-P3-014 (documentation-only comment correction)
-- WW-P4-001 (missing List-Unsubscribe header)
-- The systemic fix recommended alongside WW-P1-012: `alter default privileges in schema public revoke execute on functions from public;` so every future function defaults closed instead of depending on each migration author remembering an explicit revoke.
-- Building out the missing test coverage identified in `MISSING_TESTS.md` for the core webinar/scheduling/video/CTA/RLS/Whop domains — currently near-zero, and every P1/P2 fix above should ship with a regression test per its `FINDINGS.md` entry, but a broader coverage investment (beyond just the findings' own regression tests) belongs in this horizon.
-- Revisiting the open product questions in `OPEN_QUESTIONS.md` §5 that don't block any of the above but should eventually get a real answer (multi-account-per-Whop-user support, permanent export-date-range behavior, chargeback policy).
+| Item | Resolution |
+|---|---|
+| WW-P3-006 (`.env.example` cleanup) | **FIXED.** Removed the 6 dead Lemon Squeezy vars, added `WHOP_API_KEY`/`WHOP_WEBHOOK_SECRET` — the two the live billing path actually requires. |
+| WW-P3-014 (documentation-only comment correction) | **FIXED.** Corrected the `20260909000002_partner_engine_base.sql` comment that claimed `platform_admins` was created without RLS — it has had RLS enabled with zero policies since `20260822000004_rls_policies.sql`, re-verified against both migrations before editing. |
+| WW-P4-001 (missing List-Unsubscribe header) | **RETRACTED — false positive.** `sendConfirmationEmail` already passes `headers: unsubscribeHeaders(unsubscribeUrl)`; git blame shows this was added 2026-08-27, three weeks before the audit ran. No code change needed. |
+| The systemic fix recommended alongside WW-P1-012 | **FIXED.** New migration `20260913000010_default_deny_new_functions.sql` runs `alter default privileges in schema public revoke execute on functions from public;` — every function created from here on defaults closed instead of depending on each migration author remembering an explicit revoke. |
+
+**Also fixed in this pass, moved up from this horizon:** WW-P3-002 (DST spring-forward gap) — this file previously deferred it here assuming it needed live testing; that assumption was wrong. Node's `Intl` ships the real IANA tz-transition database, so the bug (a nonexistent wall time silently resolving to an instant an hour earlier than requested) was fully reproducible and fixable with a deterministic unit test. See `src/lib/scheduling.test.ts` and the "Next 30 days" table above.
+
+**Still open, not attempted:**
+- Building out the missing test coverage identified in `MISSING_TESTS.md` for the core webinar/scheduling/video/CTA/RLS/Whop domains (items 1-10, mostly RLS- and live-Whop-dependent) and the full e2e/integration test framework (item 15) — currently near-zero beyond individual findings' own regression tests. The RLS/Whop items specifically need a live Postgres instance with the schema's actual policies applied; this sandbox has no Supabase CLI/Docker access to stand one up. Two items that didn't need a live DB were added anyway during this pass: `src/lib/scheduling.test.ts` (DST edge cases, item 11) and `src/lib/ssrf-guard.test.ts` (the private-address classifier behind WW-P2-015's fix, item 13's spirit if not its exact letter).
+- Revisiting the open product questions in `OPEN_QUESTIONS.md` §5 — specifically WW-P2-003 (multi-account-per-Whop-user support) and the chargeback/refund policy behind WW-P3-003's ops-alert-only fix. (§5's other two questions — export-date-range behavior and the wall-clock completion signal's scope — were already resolved as part of the "before scaling" batch: exports now always match the dashboard's range, and completion tracking was scoped to the edge-case fix, matching the assumed intent.) These need the product owner, not engineering time.
 
 ---
 
