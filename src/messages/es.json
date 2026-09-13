@@ -341,6 +341,9 @@
     "copyLink": "Copiar enlace",
     "linkCopied": "¡Enlace copiado!"
   },
+  "RedirectLoading": {
+    "message": "Cargando tu webinar..."
+  },
   "Register": {
     "preview": "Vista previa — este webinar todavía no está publicado. Solo tú puedes ver esta página.",
     "presents": "{name} presenta",

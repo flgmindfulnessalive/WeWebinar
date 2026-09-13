@@ -341,6 +341,9 @@
     "copyLink": "Copy link",
     "linkCopied": "Link copied!"
   },
+  "RedirectLoading": {
+    "message": "Loading your webinar..."
+  },
   "Register": {
     "preview": "Preview — this webinar isn't published yet. Only you can see this page.",
     "presents": "{name} presents",
