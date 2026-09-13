@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Bell, MessageSquare, User, Users, Volume2, X } from "lucide-react";
+import { Bell, Maximize2, MessageSquare, Minimize2, User, Users, Volume2, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -139,6 +139,15 @@ export function LiveRoomClient({
   );
   const [isMuted, setIsMuted] = useState(true);
   const [showPanel, setShowPanel] = useState(true);
+  // "Theater mode" -- expands the video to cover the whole viewport,
+  // hiding the header and side panel. Mobile landscape is the main case
+  // this fixes: the header otherwise eats a fixed chunk of an already-short
+  // viewport height, competing with the video for space. A CSS-only
+  // fixed-position overlay (not the browser's Fullscreen API) since Safari
+  // on iPhone doesn't support requestFullscreen() on arbitrary elements --
+  // only on <video> itself, which would hand control to the native player
+  // chrome and defeat the restricted-player seek-blocking this room relies on.
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [activeTab, setActiveTab] = useState<PanelTab>("chat");
   // Which option this viewer picked per poll cta, and the live tally to
   // show back once they have. Session-only (not persisted) -- the server
@@ -218,6 +227,15 @@ export function LiveRoomClient({
     const interval = setInterval(() => setElapsedSeconds(getElapsedSeconds()), 1000);
     return () => clearInterval(interval);
   }, [getElapsedSeconds]);
+
+  useEffect(() => {
+    if (!isTheaterMode) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsTheaterMode(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isTheaterMode]);
 
   // join event once, best-effort leave event on unload.
   useEffect(() => {
@@ -372,7 +390,12 @@ export function LiveRoomClient({
 
   return (
     <div className="flex h-svh flex-col">
-      <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3 sm:px-4">
+      <header
+        className={cn(
+          "flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3 sm:px-4",
+          isTheaterMode && "hidden"
+        )}
+      >
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           {accountLogoUrl && (
             <Image
@@ -419,7 +442,12 @@ export function LiveRoomClient({
       </header>
 
       <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-        <div className="relative flex flex-1 items-center justify-center bg-black">
+        <div
+          className={cn(
+            "relative flex flex-1 items-center justify-center bg-black",
+            isTheaterMode && "fixed inset-0 z-50"
+          )}
+        >
           {isEnded ? (
             <EndedState
               webinarTitle={webinarTitle}
@@ -430,6 +458,14 @@ export function LiveRoomClient({
           ) : (
             <>
               <LiveBadge />
+              <button
+                type="button"
+                onClick={() => setIsTheaterMode((v) => !v)}
+                aria-label={isTheaterMode ? t("collapseVideo") : t("expandVideo")}
+                className="absolute right-3 top-3 z-20 rounded-full bg-black/60 p-2 text-white transition-colors hover:bg-black/80"
+              >
+                {isTheaterMode ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+              </button>
               <WebinarPlayer
                 ref={playerRef}
                 provider={videoProvider}
@@ -478,7 +514,7 @@ export function LiveRoomClient({
           )}
         </div>
 
-        {showPanel && (
+        {showPanel && !isTheaterMode && (
           <div className="flex h-64 w-full shrink-0 flex-col border-t bg-background md:h-auto md:w-80 md:border-t-0 md:border-l">
             <div className="flex shrink-0 border-b">
               <PanelTabButton
