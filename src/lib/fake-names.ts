@@ -26,6 +26,25 @@ const SURNAMES = [
   "Ross", "Mejía", "Fuentes", "Salazar", "Cordero", "Delgado", "Peña", "Núñez", "Vega", "Campos",
 ];
 
+// English pool, used when the webinar is being viewed in English (the
+// visitor's own locale, not the account's) -- same rough idea as the
+// Spanish pool above, just names an English-speaking audience reads as
+// plausible instead of obviously mismatched with the rest of the page.
+const FIRST_NAMES_EN = [
+  "James", "Emily", "Michael", "Olivia", "David", "Sophia", "Daniel", "Emma", "Matthew", "Ava",
+  "Christopher", "Isabella", "Andrew", "Mia", "Joshua", "Charlotte", "Ryan", "Amelia", "Brandon", "Harper",
+  "Justin", "Evelyn", "Kevin", "Abigail", "Brian", "Ella", "Jason", "Grace", "Eric", "Chloe",
+  "Nathan", "Victoria", "Adam", "Lily", "Jacob", "Hannah", "Tyler", "Zoe", "Aaron", "Natalie",
+  "Sean", "Samantha", "Jonathan", "Madison", "Nicholas", "Layla", "Benjamin", "Aria", "Ethan", "Scarlett",
+];
+
+const SURNAMES_EN = [
+  "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Wilson", "Anderson",
+  "Taylor", "Thomas", "Moore", "Jackson", "Martin", "Lee", "Thompson", "White", "Harris", "Clark",
+  "Lewis", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Green", "Baker", "Adams",
+  "Nelson", "Hill", "Campbell", "Mitchell", "Roberts", "Carter", "Phillips", "Evans", "Turner", "Parker",
+];
+
 const LAST_INITIALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 /**
@@ -37,13 +56,17 @@ export function fakeConnectedNames({
   seed,
   count,
   exclude,
+  locale = "es",
 }: {
   seed: string;
   count: number;
   exclude: Set<string>;
+  locale?: string;
 }): string[] {
   if (count <= 0) return [];
 
+  const firstNames = locale === "en" ? FIRST_NAMES_EN : FIRST_NAMES;
+  const surnames = locale === "en" ? SURNAMES_EN : SURNAMES;
   const rand = mulberry32(hash32(seed));
   const used = new Set(exclude);
   const result: string[] = [];
@@ -52,7 +75,7 @@ export function fakeConnectedNames({
   // without ever risking an infinite loop.
   const maxAttempts = count * 20 + 100;
   for (let attempts = 0; result.length < count && attempts < maxAttempts; attempts++) {
-    const first = FIRST_NAMES[Math.floor(rand() * FIRST_NAMES.length)];
+    const first = firstNames[Math.floor(rand() * firstNames.length)];
     const formatRoll = rand();
     let name: string;
     if (formatRoll < 0.4) {
@@ -61,11 +84,11 @@ export function fakeConnectedNames({
       name = `${first} ${initial}.`;
     } else if (formatRoll < 0.7) {
       // "Nombre Apellido" -- ~30% of the time
-      const surname = SURNAMES[Math.floor(rand() * SURNAMES.length)];
+      const surname = surnames[Math.floor(rand() * surnames.length)];
       name = `${first} ${surname}`;
     } else {
       // "Nombre Apellido I." -- ~30% of the time
-      const surname = SURNAMES[Math.floor(rand() * SURNAMES.length)];
+      const surname = surnames[Math.floor(rand() * surnames.length)];
       const initial = LAST_INITIALS[Math.floor(rand() * LAST_INITIALS.length)];
       name = `${first} ${surname} ${initial}.`;
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
   upsertSingletonTemplate,
@@ -49,13 +49,15 @@ function TemplateBodyEditor({
   rows?: number;
 }) {
   const t = useTranslations("EmailTemplatesSection");
+  const locale = useLocale();
   const [body, setBody] = useState(defaultValue);
   const [mode, setMode] = useState<"preview" | "code">("preview");
   const [copied, setCopied] = useState(false);
 
   const previewHtml = wrapEmailShell(
     renderTemplate(body, { ...SAMPLE_VARS, marca_color: branding.brandColor }),
-    branding
+    branding,
+    locale === "en" ? "en" : "es"
   );
 
   return (

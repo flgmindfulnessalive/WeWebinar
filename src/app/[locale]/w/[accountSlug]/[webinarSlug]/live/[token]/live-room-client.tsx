@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Bell, MessageSquare, User, Users, Volume2, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
 import { secondsToClock } from "@/lib/time";
@@ -632,6 +632,7 @@ function ConnectedTab({
   elapsedSeconds: number;
 }) {
   const t = useTranslations("LiveRoom");
+  const locale = useLocale();
   const seen = new Set<string>([visitorName]);
   if (presenterName) seen.add(presenterName);
   const chatNames: string[] = [];
@@ -659,6 +660,7 @@ function ConnectedTab({
     seed: `${seed}:${rotationBucket}`,
     count: fillerSlots,
     exclude: seen,
+    locale,
   });
 
   const shownCount = 1 + (showHost ? 1 : 0) + shownChatNames.length + fillerNames.length;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { extractVimeoVideoId, parseVimeoSource } from "@/lib/vimeo";
@@ -15,6 +16,7 @@ import { extractVimeoVideoId, parseVimeoSource } from "@/lib/vimeo";
 // critical registration page), and avoids the autoplay-with-sound mess
 // entirely -- nothing plays until the visitor clicks play.
 export function PromoVideoEmbed({ url, className }: { url: string; className?: string }) {
+  const t = useTranslations("Register");
   const [playing, setPlaying] = useState(false);
 
   const youtubeId = extractYouTubeVideoId(url);
@@ -60,7 +62,7 @@ export function PromoVideoEmbed({ url, className }: { url: string; className?: s
       <div className={className}>
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0`}
-          title="Video promocional"
+          title={t("promoVideoTitle")}
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
           className="size-full rounded-[inherit] border-0"

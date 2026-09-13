@@ -52,7 +52,10 @@ export async function generateMetadata({
 
   const title = `${webinar.title} · ${account.name}`;
   const description =
-    webinar.description || `Webinar gratuito presentado por ${account.name}. Reserva tu lugar.`;
+    webinar.description ||
+    (locale === "en"
+      ? `Free webinar hosted by ${account.name}. Reserve your spot.`
+      : `Webinar gratuito presentado por ${account.name}. Reserva tu lugar.`);
   // The URL shared/scraped by Slack/WhatsApp previews and search engines --
   // without this, Next falls back to metadataBase (always the platform's
   // own domain) even when the account has an active custom domain, so a

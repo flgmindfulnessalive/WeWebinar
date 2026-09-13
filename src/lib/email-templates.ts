@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { resolveBrandColors } from "@/lib/brand-colors";
-import type { Database, EmailTemplateType } from "@/lib/supabase/database.types";
+import type { AccountLocale, Database, EmailTemplateType } from "@/lib/supabase/database.types";
 
 export type TemplateVars = {
   nombre: string;
@@ -53,6 +53,7 @@ export function renderTemplate(template: string, vars: TemplateVars): string {
 export function wrapEmailShell(
   innerHtml: string,
   branding: EmailBranding,
+  locale: AccountLocale = "es",
   unsubscribeUrl?: string
 ): string {
   const safeName = escapeHtml(branding.accountName);
@@ -60,9 +61,11 @@ export function wrapEmailShell(
   const logoCell = branding.logoUrl
     ? `<img src="${escapeHtml(branding.logoUrl)}" alt="${safeName}" width="26" height="26" style="display:block;border-radius:6px;object-fit:contain;background:#ffffff;" />`
     : `<table role="presentation" width="26" height="26" cellpadding="0" cellspacing="0"><tr><td style="width:26px;height:26px;background:#ffffff;border-radius:6px;text-align:center;font-size:12px;font-weight:700;color:${branding.brandColor};line-height:26px;font-family:${FONT_STACK};">${initials}</td></tr></table>`;
+  const unsubscribeLabel = locale === "en" ? "Unsubscribe from reminders" : "Darse de baja de recordatorios";
   const unsubscribeLine = unsubscribeUrl
-    ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">Darse de baja de recordatorios</a>`
+    ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#a1a1aa;text-decoration:underline;">${unsubscribeLabel}</a>`
     : "";
+  const sentByLabel = locale === "en" ? `Sent by ${safeName} via WeWebinars` : `Enviado por ${safeName} vía WeWebinars`;
 
   return `<!doctype html>
 <html>
@@ -81,7 +84,7 @@ export function wrapEmailShell(
 ${innerHtml}
 </td></tr>
 <tr><td style="background:#ffffff;border-radius:0 0 12px 12px;padding:0 32px 32px;text-align:center;font-size:12px;color:#a1a1aa;font-family:${FONT_STACK};">
-  Enviado por ${safeName} vía WeWebinars${unsubscribeLine}
+  ${sentByLabel}${unsubscribeLine}
 </td></tr>
 </table>
 </td></tr>
@@ -147,6 +150,43 @@ export const DEFAULT_TEMPLATES: Record<EmailTemplateType, { subject: string; bod
   },
 };
 
+// English counterpart to DEFAULT_TEMPLATES above, picked by resolveTemplate()
+// when the registrant's own locale is "en". Not exported for the dashboard
+// editor's placeholder text (that stays Spanish, matching the host's own
+// dashboard language) -- this only feeds the actual outbound fallback.
+const DEFAULT_TEMPLATES_EN: Record<EmailTemplateType, { subject: string; body: string }> = {
+  registration_confirmation: {
+    subject: "You're confirmed for {{webinar_titulo}}",
+    body: `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:{{marca_color}};">Reservation confirmed</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Hi {{nombre}}, your spot is ready</h1>
+<p style="margin:0 0 20px;">We've confirmed your registration for <strong style="color:#18181b;">{{webinar_titulo}}</strong>.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#fafafa;border-radius:8px;margin:0 0 24px;"><tr><td style="padding:14px 16px;font-size:13px;color:#52525b;"><strong style="color:#18181b;">When:</strong> {{hora_webinar}}</td></tr></table>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:{{marca_color}};border-radius:8px;"><a href="{{link_acceso}}" style="display:block;padding:12px 26px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Access the webinar</a></td></tr></table>
+<p style="margin:22px 0 0;font-size:13px;color:#71717a;">See you there!</p>`,
+  },
+  reminder: {
+    subject: "{{webinar_titulo}} is starting soon",
+    body: `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:{{marca_color}};">Reminder</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Hi {{nombre}}, it's almost time</h1>
+<p style="margin:0 0 20px;">Just a reminder that <strong style="color:#18181b;">{{webinar_titulo}}</strong> is on {{hora_webinar}}.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:{{marca_color}};border-radius:8px;"><a href="{{link_acceso}}" style="display:block;padding:12px 26px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Access the webinar</a></td></tr></table>`,
+  },
+  replay_missed: {
+    subject: "You missed {{webinar_titulo}} — watch the replay",
+    body: `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:{{marca_color}};">You missed it</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Hi {{nombre}}, you can still watch it</h1>
+<p style="margin:0 0 20px;">We didn't see you at <strong style="color:#18181b;">{{webinar_titulo}}</strong>, but you can watch the replay now.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:{{marca_color}};border-radius:8px;"><a href="{{link_acceso}}" style="display:block;padding:12px 26px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Watch the replay</a></td></tr></table>`,
+  },
+};
+
+function defaultTemplateFor(
+  type: EmailTemplateType,
+  locale: AccountLocale
+): { subject: string; body: string } {
+  return locale === "en" ? DEFAULT_TEMPLATES_EN[type] : DEFAULT_TEMPLATES[type];
+}
+
 // Resolution order: a template scoped to this exact webinar, then the
 // account's default (webinar_id null), then the built-in fallback above --
 // so registration/reminders/replay emails always send something, even if
@@ -158,11 +198,13 @@ export async function resolveTemplate(
     webinarId,
     type,
     offsetMinutes,
+    locale = "es",
   }: {
     accountId: string;
     webinarId: string;
     type: EmailTemplateType;
     offsetMinutes?: number;
+    locale?: AccountLocale;
   }
 ): Promise<{ subject: string; body: string }> {
   let query = supabase
@@ -182,5 +224,5 @@ export async function resolveTemplate(
   const accountDefault = data?.find((t) => t.webinar_id === null);
   const match = specific ?? accountDefault;
 
-  return match ?? DEFAULT_TEMPLATES[type];
+  return match ?? defaultTemplateFor(type, locale);
 }

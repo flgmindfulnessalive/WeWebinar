@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { ArrowRight, Calendar, Lock, Mail, User, Zap } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { registerForWebinar } from "@/lib/actions/register";
 import { Label } from "@/components/ui/label";
@@ -55,6 +55,7 @@ export function RegistrationForm({
   previewMode?: boolean;
 }) {
   const t = useTranslations("Register.form");
+  const locale = useLocale();
   const [state, formAction, isPending] = useActionState(registerForWebinar, null);
   const [previewSubmitAttempted, setPreviewSubmitAttempted] = useState(false);
   const [selectedOccurrence, setSelectedOccurrence] = useState(() => {
@@ -87,14 +88,14 @@ export function RegistrationForm({
 
   const formatter = useMemo(
     () =>
-      new Intl.DateTimeFormat(undefined, {
+      new Intl.DateTimeFormat(locale, {
         weekday: "short",
         day: "numeric",
         month: "short",
         hour: "numeric",
         minute: "2-digit",
       }),
-    []
+    [locale]
   );
 
   const gradient = `linear-gradient(135deg, ${brandColorA}, ${brandColorB})`;

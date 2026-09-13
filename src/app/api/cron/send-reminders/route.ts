@@ -83,12 +83,16 @@ function digestUnsubscribeUrlFor(unsubscribeToken: string) {
   return `${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?scope=digest&token=${unsubscribeToken}`;
 }
 
-function formatWhen(computedSessionStart: string, visitorTimezone: string | null) {
-  return new Intl.DateTimeFormat("es", {
+function formatWhen(computedSessionStart: string, visitorTimezone: string | null, locale: AccountLocale) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "full",
     timeStyle: "short",
     timeZone: visitorTimezone || "UTC",
   }).format(new Date(computedSessionStart));
+}
+
+function normalizeLocale(locale: string | null | undefined): AccountLocale {
+  return locale === "en" ? "en" : "es";
 }
 
 // Meant to be invoked periodically (every ~5 min) by an external scheduler
@@ -133,17 +137,19 @@ export async function GET(request: Request) {
       continue;
     }
     try {
+      const registrantLocale = normalizeLocale(r.locale);
       const template = await resolveTemplate(admin, {
         accountId: r.account_id,
         webinarId: r.webinar_id,
         type: "reminder",
         offsetMinutes: r.offset_minutes,
+        locale: registrantLocale,
       });
       const branding = resolveEmailBranding({ name: r.account_name, branding: r.account_branding });
       const vars = {
         nombre: r.name,
         webinar_titulo: r.webinar_title,
-        hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone),
+        hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone, registrantLocale),
         link_acceso: await accessLinkFor(admin, domainCache, r),
         marca_color: branding.brandColor,
       };
@@ -151,7 +157,7 @@ export async function GET(request: Request) {
       await sendEmail({
         to: r.email,
         subject: renderTemplate(template.subject, vars),
-        html: wrapEmailShell(renderTemplate(template.body, vars), branding, unsubscribeUrl),
+        html: wrapEmailShell(renderTemplate(template.body, vars), branding, registrantLocale, unsubscribeUrl),
         headers: unsubscribeHeaders(unsubscribeUrl),
       });
       remindersSent++;
@@ -182,16 +188,18 @@ export async function GET(request: Request) {
       continue;
     }
     try {
+      const registrantLocale = normalizeLocale(r.locale);
       const template = await resolveTemplate(admin, {
         accountId: r.account_id,
         webinarId: r.webinar_id,
         type: "replay_missed",
+        locale: registrantLocale,
       });
       const branding = resolveEmailBranding({ name: r.account_name, branding: r.account_branding });
       const vars = {
         nombre: r.name,
         webinar_titulo: r.webinar_title,
-        hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone),
+        hora_webinar: formatWhen(r.computed_session_start, r.visitor_timezone, registrantLocale),
         link_acceso: await accessLinkFor(admin, domainCache, r),
         marca_color: branding.brandColor,
       };
@@ -199,7 +207,7 @@ export async function GET(request: Request) {
       await sendEmail({
         to: r.email,
         subject: renderTemplate(template.subject, vars),
-        html: wrapEmailShell(renderTemplate(template.body, vars), branding, unsubscribeUrl),
+        html: wrapEmailShell(renderTemplate(template.body, vars), branding, registrantLocale, unsubscribeUrl),
         headers: unsubscribeHeaders(unsubscribeUrl),
       });
       replaysSent++;
