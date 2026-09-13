@@ -8,11 +8,13 @@
 export const IMPLEMENTATION_VIDEO_COMPLETION_THRESHOLD = 0.8;
 export const DEMO_COMPLETION_THRESHOLD = 0.9;
 
-// Igual que READINESS_BLUEPRINT_URL: null hasta que exista un archivo real
-// -- mientras sea null, el CTA de descarga no se renderiza en vez de
-// apuntar a un link roto. Configurable por variable de entorno para poder
-// cargar el Playbook real sin un deploy de código.
-export const LAUNCHPAD_PLAYBOOK_URL: string | null = process.env.LAUNCHPAD_PLAYBOOK_URL ?? null;
+// Cuando está seteada, el botón "Descargar Playbook" abre este archivo
+// real en vez de generar un Markdown a partir de las strings de i18n.
+// Configurable por variable de entorno para poder reemplazar el archivo
+// sin un deploy de código; el valor por defecto es el PDF real entregado.
+export const LAUNCHPAD_PLAYBOOK_URL: string | null =
+  process.env.LAUNCHPAD_PLAYBOOK_URL ??
+  "https://drive.google.com/file/d/1LzMRDD4uT-lOEIkcewB9PFb6N7xmDVsW/view?usp=drive_link";
 
 // Descuento de finalización (módulo 16) -- porcentaje fijo, sin contador
 // falso ni vencimiento salvo el que efectivamente se calcule server-side
