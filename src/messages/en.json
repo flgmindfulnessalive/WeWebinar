@@ -408,6 +408,7 @@
     "webinarEnded": "The webinar has ended.",
     "hostEndedTitle": "This session is no longer available",
     "hostEndedBody": "The host ended or archived this webinar.",
+    "videoUnavailable": "This video is no longer available. Contact the webinar host.",
     "seeMore": "See more",
     "sendReaction": "Send {emoji} reaction",
     "openReactions": "Open reactions",

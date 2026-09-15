@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 // Minimal typing for the subset of the Vimeo Player SDK we use -- same
 // reasoning as locked-youtube-player.tsx: avoids pulling in @vimeo/player
@@ -129,6 +130,7 @@ export const LockedVimeoPlayer = forwardRef<
   { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
+  const t = useTranslations("LiveRoom");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<VimeoPlayer | null>(null);
   const currentTimeRef = useRef(0);
@@ -484,10 +486,7 @@ export const LockedVimeoPlayer = forwardRef<
             textAlign: "center",
           }}
         >
-          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
-            Este video ya no está disponible. Contactá al organizador del
-            webinar.
-          </p>
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>{t("videoUnavailable")}</p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the Vimeo iframe

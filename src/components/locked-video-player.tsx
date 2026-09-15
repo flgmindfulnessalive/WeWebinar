@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 // Same imperative-handle shape as LockedYouTubePlayerHandle (structurally,
 // not by import -- see webinar-player.tsx, which picks between the two
@@ -50,6 +51,7 @@ export const LockedVideoPlayer = forwardRef<
   { src, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
+  const t = useTranslations("LiveRoom");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Covers the element (branded loading mark) until playback is actually
   // confirmed -- unlike the YouTube player, there's no cross-origin chrome
@@ -276,10 +278,7 @@ export const LockedVideoPlayer = forwardRef<
             textAlign: "center",
           }}
         >
-          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
-            Este video ya no está disponible. Contactá al organizador del
-            webinar.
-          </p>
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>{t("videoUnavailable")}</p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the <video> underneath

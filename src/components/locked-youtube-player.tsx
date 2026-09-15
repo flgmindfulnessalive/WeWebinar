@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 // Minimal typing for the subset of the YouTube IFrame Player API we use —
 // avoids pulling in a whole @types/youtube dependency for six methods.
@@ -144,6 +145,7 @@ export const LockedYouTubePlayer = forwardRef<
   { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
+  const t = useTranslations("LiveRoom");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -545,10 +547,7 @@ export const LockedYouTubePlayer = forwardRef<
             textAlign: "center",
           }}
         >
-          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
-            Este video ya no está disponible. Contactá al organizador del
-            webinar.
-          </p>
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>{t("videoUnavailable")}</p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the YouTube iframe
