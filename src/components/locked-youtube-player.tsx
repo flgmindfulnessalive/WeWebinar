@@ -95,9 +95,14 @@ const STATE_POLL_INTERVAL_MS = 200;
 // again doesn't mean YouTube's own chrome (its pause/buffering "toast",
 // quality-change badge, etc.) has finished settling -- that's on its own
 // timer we have no visibility into (cross-origin iframe). Revealing the
-// instant the API says PLAYING let that chrome flash through uncovered
-// for a couple more seconds. Waiting this long first absorbs that gap.
-const REVEAL_HOLD_MS = 3000;
+// instant the API says PLAYING let that chrome flash through uncovered.
+// This is a fixed tax paid on every reveal (initial start, every drift-
+// correction re-seek, every unmute), so it's kept at the same value
+// locked-vimeo-player.tsx's own REVEAL_HOLD_MS already settled on for the
+// identical cross-origin-iframe-chrome problem -- long enough to mask the
+// flash, without adding more dead time than that on top of it. Was 3000
+// (visibly slower to start than Vimeo/direct for no corresponding benefit).
+const REVEAL_HOLD_MS = 1500;
 // How long the cover can stay up, continuously, after playback has already
 // started successfully once, before we stop waiting on it to recover by
 // itself and offer a manual tap instead. Needed because mobile browsers
