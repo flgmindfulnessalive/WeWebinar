@@ -37,7 +37,23 @@ export default async function LiveRoomPage({
       .maybeSingle(),
     supabase.rpc("get_webinar_video_for_registrant", { p_access_token: token }),
   ]);
-  const video = videoRows?.[0];
+  let video = videoRows?.[0];
+  if (!video?.video_source || !video?.video_provider) {
+    // Temporary fallback while 20260913000008_restrict_public_video_
+    // columns.sql hasn't been applied to this environment's database yet
+    // (the RPC above doesn't exist there, so it errors and videoRows is
+    // null) -- reads the columns directly the pre-migration way. Once
+    // that migration is applied, get_webinar_video_for_registrant starts
+    // returning real rows and this branch is never reached again; remove
+    // it once the migration backlog is confirmed applied everywhere.
+    const { data: fallback } = await supabase
+      .from("webinars")
+      .select("video_provider, video_source")
+      .eq("id", session.webinar_id)
+      .eq("status", "published")
+      .maybeSingle();
+    video = fallback ?? undefined;
+  }
   if (!webinar || !video?.video_source || !video?.video_provider) notFound();
 
   // Same publishability gate as registration/waiting room -- a registrant

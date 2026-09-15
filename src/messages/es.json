@@ -408,6 +408,7 @@
     "webinarEnded": "El webinar terminó.",
     "hostEndedTitle": "Esta sesión ya no está disponible",
     "hostEndedBody": "El anfitrión finalizó o archivó este webinar.",
+    "videoUnavailable": "Este video ya no está disponible. Contactá al organizador del webinar.",
     "seeMore": "Ver más",
     "sendReaction": "Enviar reacción {emoji}",
     "openReactions": "Abrir reacciones",

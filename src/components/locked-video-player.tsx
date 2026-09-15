@@ -1,6 +1,23 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
+// A resume triggered by our own corrective re-seek or the visibility-change
+// handler isn't a direct user gesture, so the browser can reject it even in
+// a session that already earned audible-autoplay permission once --
+// observed in practice as the video staying silently paused behind the
+// branded loading cover until the visitor taps the screen. Most of these
+// rejections are transient (the seek hadn't fully settled yet, not a hard
+// policy block), so one retry after a short delay recovers the common case.
+const AUTO_RESUME_RETRY_MS = 400;
+function playWithRetry(video: HTMLVideoElement | null) {
+  video?.play().catch(() => {
+    window.setTimeout(() => {
+      video?.play().catch(() => {});
+    }, AUTO_RESUME_RETRY_MS);
+  });
+}
 
 // Same imperative-handle shape as LockedYouTubePlayerHandle (structurally,
 // not by import -- see webinar-player.tsx, which picks between the two
@@ -50,6 +67,7 @@ export const LockedVideoPlayer = forwardRef<
   { src, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
+  const t = useTranslations("LiveRoom");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Covers the element (branded loading mark) until playback is actually
   // confirmed -- unlike the YouTube player, there's no cross-origin chrome
@@ -82,7 +100,7 @@ export const LockedVideoPlayer = forwardRef<
         if (videoRef.current) videoRef.current.playbackRate = rate;
       },
       play: () => {
-        videoRef.current?.play().catch(() => {});
+        playWithRetry(videoRef.current);
       },
       unmuteSmoothly: () => {
         if (videoRef.current) videoRef.current.muted = false;
@@ -163,7 +181,7 @@ export const LockedVideoPlayer = forwardRef<
 
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible" && video.paused && hasPlayedOnceRef.current) {
-        video.play().catch(() => {});
+        playWithRetry(video);
       }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -276,10 +294,7 @@ export const LockedVideoPlayer = forwardRef<
             textAlign: "center",
           }}
         >
-          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
-            Este video ya no está disponible. Contactá al organizador del
-            webinar.
-          </p>
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>{t("videoUnavailable")}</p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the <video> underneath

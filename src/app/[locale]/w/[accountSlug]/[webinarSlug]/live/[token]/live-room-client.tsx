@@ -316,7 +316,16 @@ export function LiveRoomClient({
       });
       const state = data?.[0];
       if (!state) return;
-      if (state.webinar_status !== "published") {
+      // `state.webinar_status` is undefined while this environment's
+      // database hasn't applied 20260913000007_before_scaling_batch_
+      // registration_and_metrics.sql yet -- the pre-migration
+      // get_registrant_playback_state doesn't return that column. Only
+      // treat it as a real "host ended" signal once it's an actual value
+      // that isn't "published"; an undefined/missing field must never be
+      // read as "not published," or every viewer gets kicked to the
+      // host-ended state within one resync tick regardless of whether the
+      // webinar is really still live.
+      if (state.webinar_status && state.webinar_status !== "published") {
         setIsHostEnded(true);
         return;
       }

@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 // Minimal typing for the subset of the YouTube IFrame Player API we use —
 // avoids pulling in a whole @types/youtube dependency for six methods.
@@ -94,9 +95,14 @@ const STATE_POLL_INTERVAL_MS = 200;
 // again doesn't mean YouTube's own chrome (its pause/buffering "toast",
 // quality-change badge, etc.) has finished settling -- that's on its own
 // timer we have no visibility into (cross-origin iframe). Revealing the
-// instant the API says PLAYING let that chrome flash through uncovered
-// for a couple more seconds. Waiting this long first absorbs that gap.
-const REVEAL_HOLD_MS = 3000;
+// instant the API says PLAYING let that chrome flash through uncovered.
+// This is a fixed tax paid on every reveal (initial start, every drift-
+// correction re-seek, every unmute), so it's kept at the same value
+// locked-vimeo-player.tsx's own REVEAL_HOLD_MS already settled on for the
+// identical cross-origin-iframe-chrome problem -- long enough to mask the
+// flash, without adding more dead time than that on top of it. Was 3000
+// (visibly slower to start than Vimeo/direct for no corresponding benefit).
+const REVEAL_HOLD_MS = 1500;
 // How long the cover can stay up, continuously, after playback has already
 // started successfully once, before we stop waiting on it to recover by
 // itself and offer a manual tap instead. Needed because mobile browsers
@@ -105,6 +111,18 @@ const REVEAL_HOLD_MS = 3000;
 // escape hatch here, the viewer was stuck on the cover forever and had to
 // reload the page. A real click always satisfies that gesture requirement.
 const STUCK_RESUME_MS = 8000;
+// How long to wait for the first successful play before assuming the
+// video is blocked and showing the ad-blocker warning. Every mount of
+// this player has to seek to wherever the session's real elapsed time
+// already is (this is a server-anchored "always live" room, never a
+// from-zero playback) -- a session resumed after being backgrounded
+// (mobile tab discard, brief network drop) can need real buffering time
+// to reach that point on top of ordinary connection latency. Was 10000,
+// same value hardcoded below: observed in practice as a false "ad
+// blocker" positive on a slow/resumed mobile connection with no ad
+// blocker involved. Doubled for real headroom, matching the same fix in
+// locked-vimeo-player.tsx's own STUCK_INITIAL_MS.
+const STUCK_INITIAL_MS = 20000;
 
 export type LockedYouTubePlayerHandle = {
   currentTime: number;
@@ -144,6 +162,7 @@ export const LockedYouTubePlayer = forwardRef<
   { videoId, autoPlay, muted, className, onOverlayClick, onLoadedMetadata, onTimeUpdate, onPause, onRateChange, onEnded, onUnavailable },
   ref
 ) {
+  const t = useTranslations("LiveRoom");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -328,7 +347,7 @@ export const LockedYouTubePlayer = forwardRef<
             setCoverVisible(false);
             setShowBlockedWarning(true);
           }
-        }, 10000)
+        }, STUCK_INITIAL_MS)
       : null;
 
     loadYouTubeIframeApi().then((YT) => {
@@ -545,10 +564,7 @@ export const LockedYouTubePlayer = forwardRef<
             textAlign: "center",
           }}
         >
-          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>
-            Este video ya no está disponible. Contactá al organizador del
-            webinar.
-          </p>
+          <p style={{ maxWidth: 320, fontSize: 14, color: "white" }}>{t("videoUnavailable")}</p>
         </div>
       )}
       {/* Blocks every click/right-click from reaching the YouTube iframe
