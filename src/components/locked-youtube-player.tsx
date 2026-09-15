@@ -111,6 +111,18 @@ const REVEAL_HOLD_MS = 1500;
 // escape hatch here, the viewer was stuck on the cover forever and had to
 // reload the page. A real click always satisfies that gesture requirement.
 const STUCK_RESUME_MS = 8000;
+// How long to wait for the first successful play before assuming the
+// video is blocked and showing the ad-blocker warning. Every mount of
+// this player has to seek to wherever the session's real elapsed time
+// already is (this is a server-anchored "always live" room, never a
+// from-zero playback) -- a session resumed after being backgrounded
+// (mobile tab discard, brief network drop) can need real buffering time
+// to reach that point on top of ordinary connection latency. Was 10000,
+// same value hardcoded below: observed in practice as a false "ad
+// blocker" positive on a slow/resumed mobile connection with no ad
+// blocker involved. Doubled for real headroom, matching the same fix in
+// locked-vimeo-player.tsx's own STUCK_INITIAL_MS.
+const STUCK_INITIAL_MS = 20000;
 
 export type LockedYouTubePlayerHandle = {
   currentTime: number;
@@ -335,7 +347,7 @@ export const LockedYouTubePlayer = forwardRef<
             setCoverVisible(false);
             setShowBlockedWarning(true);
           }
-        }, 10000)
+        }, STUCK_INITIAL_MS)
       : null;
 
     loadYouTubeIframeApi().then((YT) => {

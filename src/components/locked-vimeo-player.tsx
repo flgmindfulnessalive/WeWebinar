@@ -108,7 +108,21 @@ function loadVimeoPlayerApi(): Promise<VimeoNamespace> {
 // interruption was the wider drift tolerance/cooldown in live-room-client
 // forcing far fewer corrections in the first place, not this hold.
 const REVEAL_HOLD_MS = 1500;
-const STUCK_INITIAL_MS = 10000;
+// How long to wait for the first successful play before assuming the
+// video is blocked and showing the ad-blocker warning. Every mount of
+// this player has to seek to wherever the session's real elapsed time
+// already is (this is a server-anchored "always live" room, never a
+// from-zero playback) -- a session resumed after being backgrounded
+// (mobile tab discard, brief network drop) can need real buffering time
+// to reach that point before Vimeo's own bufferend event ever fires, on
+// top of ordinary connection latency. Was 10000: observed in practice as
+// a false "bloqueador de anuncios" positive on a slow/resumed mobile
+// connection with no ad blocker involved. Doubled for real headroom;
+// onBufferEnd already marks hasPlayedOnceRef true the moment the first
+// buffer actually completes, so this only ever gets reached by a mount
+// that's still silent after the full window, not one still making
+// progress.
+const STUCK_INITIAL_MS = 20000;
 // How long the cover can stay up, continuously, once playback has already
 // started successfully at least once, before giving up on it recovering by
 // itself and offering a manual tap instead -- same escape hatch as the
