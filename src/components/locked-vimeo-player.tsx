@@ -28,6 +28,25 @@ interface VimeoPlayer {
   destroy(): Promise<void>;
 }
 
+// A resume triggered by our own corrective re-seek (live-room-client's
+// handlePause -> this component's imperative play()) isn't a direct user
+// gesture, so the browser can reject it even in a session that already
+// earned audible-autoplay permission once -- observed in practice as the
+// video staying silently paused behind the branded loading cover until
+// the visitor taps the screen, with no visible explanation for up to
+// STUCK_RESUME_MS. Most of these rejections are transient (the seek
+// hadn't fully settled yet, not a hard policy block), so one retry after
+// a short delay recovers the common case without adding any delay to the
+// normal case (a successful first call never reaches the retry).
+const AUTO_RESUME_RETRY_MS = 400;
+function playWithRetry(player: VimeoPlayer | null) {
+  player?.play().catch(() => {
+    window.setTimeout(() => {
+      player?.play().catch(() => {});
+    }, AUTO_RESUME_RETRY_MS);
+  });
+}
+
 interface VimeoNamespace {
   Player: new (
     el: HTMLElement,
@@ -185,7 +204,7 @@ export const LockedVimeoPlayer = forwardRef<
         playerRef.current?.setPlaybackRate(rate).catch(() => {});
       },
       play: () => {
-        playerRef.current?.play().catch(() => {});
+        playWithRetry(playerRef.current);
       },
       unmuteSmoothly: () => {
         mutedRef.current = false;
@@ -366,7 +385,7 @@ export const LockedVimeoPlayer = forwardRef<
     if (!autoPlay) return;
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible" && !isPlayingRef.current) {
-        playerRef.current?.play().catch(() => {});
+        playWithRetry(playerRef.current);
       }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
