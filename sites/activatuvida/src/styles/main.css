@@ -852,7 +852,7 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 @keyframes drift-b { to { transform: translate3d(5vmax, -4vmax, 0) scale(0.92); } }
 
 /* Campo de luz: espiral de puntos que titilan (canvas) */
-.lightfield { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.9; }
+.lightfield { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero__atmos::after {
   content: ""; position: absolute; inset: 0;
   background: radial-gradient(ellipse at 50% 0%, transparent 45%, rgba(5, 9, 18, 0.55) 100%);

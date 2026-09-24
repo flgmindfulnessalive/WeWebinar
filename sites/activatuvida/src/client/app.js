@@ -251,42 +251,51 @@
     titles.forEach((t) => t.classList.add("is-words"));
   }
 
-  // Campo de luz: espiral de Fibonacci (filotaxis) de puntos que titilan
+  // Cielo de estrellas: pocos puntos, con halo y destellos suaves
   const canvas = document.querySelector("[data-lightfield]");
   if (!canvas || !canvas.getContext) return;
   const ctx = canvas.getContext("2d");
-  let dots = [];
+  let stars = [];
   let w = 0;
   let h = 0;
-  let dpr = 1;
   let visible = true;
-  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+
+  // Pseudoaleatorio con semilla: el cielo es el mismo en cada visita.
+  let seed = 39;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+  // Sprite de halo precalculado (más barato que shadowBlur por estrella).
+  const sprite = document.createElement("canvas");
+  sprite.width = sprite.height = 64;
+  const sg = sprite.getContext("2d");
+  const grad = sg.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, "rgba(255,255,255,1)");
+  grad.addColorStop(0.12, "rgba(236,246,255,0.85)");
+  grad.addColorStop(0.35, "rgba(170,215,255,0.22)");
+  grad.addColorStop(1, "rgba(170,215,255,0)");
+  sg.fillStyle = grad;
+  sg.fillRect(0, 0, 64, 64);
 
   function layout() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     w = canvas.clientWidth;
     h = canvas.clientHeight;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const desktop = w >= 900;
-    const cx = desktop ? w * 0.74 : w * 0.5;
-    const cy = desktop ? h * 0.46 : h * 0.24;
-    const R = Math.min(desktop ? w * 0.42 : w * 0.9, 620);
-    const n = desktop ? 520 : 300;
-    dots = [];
+    seed = 39;
+    const n = w >= 900 ? 70 : 42;
+    stars = [];
     for (let i = 0; i < n; i++) {
-      const r = R * Math.sqrt(i / n);
-      const a = i * GOLDEN;
-      const t = i / n;
-      dots.push({
-        x: cx + r * Math.cos(a),
-        y: cy + r * Math.sin(a) * 0.82,
-        size: 0.6 + (1 - t) * 1.5,
-        base: 0.1 + (1 - t) * 0.4,
-        phase: (i * 0.618) % (Math.PI * 2),
-        speed: 0.6 + ((i * 7) % 10) / 12,
-        mint: i % 7 === 0,
+      const bright = rand() < 0.14; // unas pocas estrellas protagonistas
+      stars.push({
+        x: rand() * w,
+        y: rand() * h * 0.92,
+        r: bright ? 7 + rand() * 5 : 2.5 + rand() * 3.5, // radio del halo
+        base: bright ? 0.55 : 0.18 + rand() * 0.25,
+        speed: 0.25 + rand() * 0.55,
+        phase: rand() * Math.PI * 2,
+        flare: bright,
       });
     }
   }
@@ -294,15 +303,28 @@
   function draw(time) {
     ctx.clearRect(0, 0, w, h);
     const t = time / 1000;
-    for (const d of dots) {
-      const tw = reduced ? 0.7 : 0.45 + 0.55 * Math.sin(t * d.speed + d.phase);
-      ctx.globalAlpha = Math.max(0, d.base * tw);
-      ctx.fillStyle = d.mint ? "#9fe8d9" : "#e6f4ff";
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
-      ctx.fill();
+    ctx.globalCompositeOperation = "lighter";
+    for (const s of stars) {
+      // Titileo suave: pasa casi todo el tiempo tenue y a veces se enciende.
+      const wave = reduced ? 0.6 : Math.pow(0.5 + 0.5 * Math.sin(t * s.speed + s.phase), 3);
+      const a = s.base * (0.35 + 0.65 * wave);
+      ctx.globalAlpha = a;
+      const d = s.r * 2 * (0.85 + 0.3 * wave);
+      ctx.drawImage(sprite, s.x - d / 2, s.y - d / 2, d, d);
+      if (s.flare && wave > 0.25) {
+        // Destello en cruz, como una estrella vista a través de una lente.
+        const len = s.r * (1.1 + 1.5 * wave);
+        ctx.globalAlpha = a * 0.4 * wave;
+        ctx.strokeStyle = "rgba(225,242,255,1)";
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(s.x - len, s.y); ctx.lineTo(s.x + len, s.y);
+        ctx.moveTo(s.x, s.y - len); ctx.lineTo(s.x, s.y + len);
+        ctx.stroke();
+      }
     }
     ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
   }
 
   function loop(time) {
