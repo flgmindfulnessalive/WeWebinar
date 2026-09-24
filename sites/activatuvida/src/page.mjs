@@ -46,20 +46,18 @@ export function renderPage(ctx) {
     ${S.siteHeader(ctx, content.nav)}
     <main id="contenido" tabindex="-1">
       ${S.hero(ctx, content.hero)}
-      ${S.intro(ctx, content.intro, content.category)}
-      ${S.mainVideo(ctx, content.mainVideo)}
+      ${S.intro(ctx, content.intro)}
+      ${S.category(ctx, content.category)}
       ${S.technology(ctx, content.technology)}
-      ${S.ghk(ctx, content.ghk)}
       ${S.benefits(ctx, content.benefits)}
-      ${S.evidence(ctx, content.evidence)}
       ${S.testimonials(ctx, content.testimonials)}
       ${S.usage(ctx, content.usage)}
-      ${S.expectations(ctx, content.expectations)}
       ${S.company(ctx, content.company)}
       ${S.offer(ctx, content.offer)}
       ${S.closing(ctx, content.closing)}
     </main>
     ${S.siteFooter(ctx, content.footer)}
+    ${S.studiesDialog(ctx, content.studies)}
     ${S.videoDialog()}`;
   const notice = S.previewNotice(ctx);
 

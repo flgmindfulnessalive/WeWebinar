@@ -1,5 +1,7 @@
 # Validación (24-sep-2026)
 
+> **Versión simplificada:** 51/51 comprobaciones en navegador superadas (se añade la ventana de estudios con sus 14 PDF). Validación estática superada. HTML de 55,8 KB.
+
 Comandos: `npm run validate` (build + validación estática + Worker + navegador) y `CHECK_LINKS=1 npm run check` (enlaces externos). Resultados detallados en `capturas/resultados.json`.
 
 ## Resultado

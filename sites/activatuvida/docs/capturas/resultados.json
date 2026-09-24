@@ -62,7 +62,12 @@
   {
     "name": "360px carrusel (siguiente)",
     "pass": true,
-    "detail": "1 / 7 → 2 / 7"
+    "detail": "1 / 10 → 2 / 10"
+  },
+  {
+    "name": "360px ventana de estudios (14 PDF)",
+    "pass": true,
+    "detail": ""
   },
   {
     "name": "360px video bajo demanda",
@@ -112,7 +117,12 @@
   {
     "name": "390px carrusel (siguiente)",
     "pass": true,
-    "detail": "1 / 7 → 2 / 7"
+    "detail": "1 / 10 → 2 / 10"
+  },
+  {
+    "name": "390px ventana de estudios (14 PDF)",
+    "pass": true,
+    "detail": ""
   },
   {
     "name": "390px video bajo demanda",
@@ -162,7 +172,12 @@
   {
     "name": "768px carrusel (siguiente)",
     "pass": true,
-    "detail": "1 / 7 → 2 / 7"
+    "detail": "1 / 10 → 2 / 10"
+  },
+  {
+    "name": "768px ventana de estudios (14 PDF)",
+    "pass": true,
+    "detail": ""
   },
   {
     "name": "768px video bajo demanda",
@@ -202,7 +217,12 @@
   {
     "name": "1440px carrusel (siguiente)",
     "pass": true,
-    "detail": "1 / 7 → 2 / 7"
+    "detail": "1 / 10 → 2 / 10"
+  },
+  {
+    "name": "1440px ventana de estudios (14 PDF)",
+    "pass": true,
+    "detail": ""
   },
   {
     "name": "1440px video bajo demanda",

@@ -120,6 +120,14 @@ try {
     const iframesBefore = await page.$$eval("iframe", (f) => f.length);
     await page.click("#video .player__poster");
     const src = await page.$eval("#video iframe", (f) => f.src).catch(() => "");
+    // Ventana de estudios
+    await page.click('#ghk-cu [data-dialog-open="dlg-studies"]');
+    const stOpen = await page.$eval("#dlg-studies", (d) => d.open);
+    const stLinks = await page.$$eval("#dlg-studies a[href$='.pdf']", (a) => a.length);
+    if (width === 390) await page.screenshot({ path: path.join(outDir, `x39-${width}-estudios.jpg`), type: "jpeg", quality: 80 });
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+    ok(`${width}px ventana de estudios (${stLinks} PDF)`, stOpen && stLinks === 14);
     ok(`${width}px video bajo demanda`, iframesBefore === 0 && src.includes("player.vimeo.com/video/1133177065"), src.slice(0, 60));
 
     // Testimonio en diálogo
@@ -150,7 +158,7 @@ try {
   const nojs = await browser.newContext({ viewport: { width: 390, height: 780 }, javaScriptEnabled: false });
   const p2 = await nojs.newPage();
   await p2.goto(`${BASE}/X39`);
-  const visible = await p2.$eval("#ghk-title", (el) => getComputedStyle(el.closest("section")).opacity);
+  const visible = await p2.$eval("#tech-title", (el) => getComputedStyle(el.closest("section")).opacity);
   ok("Sin JavaScript: contenido visible", visible === "1");
   await nojs.close();
 } finally {

@@ -777,3 +777,31 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
   .h-display span:last-child, .tagline, .usage-step__n, .h-display--closing span:last-child { color: CanvasText; background: none; }
   .btn { border: 1px solid ButtonText; }
 }
+
+/* --- Versión simplificada: bloques nuevos ---------------------------- */
+.video-section .category__copy { max-width: 820px; margin-bottom: clamp(2.5rem, 6vw, 4rem); }
+.video-section .tagline { margin-top: clamp(3rem, 7vw, 5rem); }
+.tagline-sub { font-family: var(--font-display); font-size: clamp(1.1rem, 2.4vw, 1.5rem); color: var(--text-2); letter-spacing: -0.02em; margin: 0.6rem 0 0; }
+.tech__clip { align-self: center; }
+.ghk-band {
+  display: grid; gap: 24px; margin-top: clamp(3.5rem, 8vw, 6rem); padding: clamp(24px, 4vw, 44px);
+  border: 1px solid rgba(116, 228, 255, 0.28); border-radius: calc(var(--radius) + 6px);
+  background: radial-gradient(80% 120% at 0% 0%, rgba(116, 228, 255, 0.1), transparent 60%), var(--bg-2);
+}
+.ghk-band .h-sub { margin: 0; max-width: 18ch; }
+.ghk-band .body-lg { margin-bottom: 1.4rem; }
+@media (min-width: 900px) { .ghk-band { grid-template-columns: 0.9fr 1.1fr; gap: 56px; align-items: start; } }
+.usage + .usage, .usage .guarantee { margin-top: clamp(3.5rem, 8vw, 5.5rem); }
+.guarantee .fineprint { margin: 0; }
+.package { text-align: center; }
+.package__verbs { margin: 0; }
+.dialog--wide { max-width: min(720px, 100vw - 24px); }
+.st-group { margin-top: 1.6rem; }
+.st-group__title { font-family: var(--font-display); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ice-2); margin-bottom: 8px; }
+.st-list { list-style: none; border-top: 1px solid var(--line); }
+.st-item a { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.st-item a:hover .st-item__title { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.st-item__title { color: var(--text); font-size: 0.95rem; line-height: 1.4; }
+.st-item__meta { color: var(--text-3); font-size: 0.8rem; }
+.dialog--wide .fineprint { margin-top: 10px; }
+.dialog__panel > .kicker, .dialog__panel > .h-sub { padding-right: 52px; }

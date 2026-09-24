@@ -1,5 +1,7 @@
 # Inventario del sitio de referencia → ubicación final
 
+> **Actualización (versión simplificada):** la página tiene ahora 8 bloques, con la redacción original. Los estudios y patentes están en la ventana `#dlg-studies`, y la cronología y los paneles de detalle se retiraron. Las decisiones vigentes están en REGISTRO-EDITORIAL.md; las tablas de abajo reflejan la auditoría inicial.
+
 **Referencia auditada:** https://whythelight.com/es/ y sus subpáginas enlazadas `/es/ghk-cu/`, `/es/resultados-reales/` y `/es/estudios/`. Revisión del 24-sep-2026 sobre el HTML servido (WordPress + Elementor 4.3). El sitio no tiene menú de navegación: es una sola página larga, con selector de idioma en el pie.
 **Destino:** `https://activatuvida.life/X39` (hoy devuelve 404; la raíz es un sitio de Canva).
 
