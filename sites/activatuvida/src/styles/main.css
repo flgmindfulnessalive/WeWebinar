@@ -902,3 +902,7 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
   .orb { animation: none !important; }
 }
 .btn--primary.btn--pending { background: transparent; box-shadow: none; }
+
+/* Lema X39 */
+.motto { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 1.6rem 0 0; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ice); }
+.motto__dot { color: var(--mint); letter-spacing: 0; }

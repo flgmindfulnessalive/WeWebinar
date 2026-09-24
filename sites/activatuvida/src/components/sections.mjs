@@ -102,6 +102,7 @@ export function category(ctx, c) {
       </div>
       <p class="tagline" ${reveal}>${c.tagline}</p>
       <p class="tagline-sub">${c.taglineSub}</p>
+      <p class="motto" aria-label="${c.motto.join(", ")}">${c.motto.map((m, i) => html`${i ? raw('<span class="motto__dot" aria-hidden="true">·</span>') : ""}<span>${m}</span>`)}</p>
     </div>
   </section>`;
 }

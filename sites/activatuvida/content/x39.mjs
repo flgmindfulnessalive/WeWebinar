@@ -59,6 +59,7 @@ export const category = {
   points: ["Sin medicamentos", "Sin inyecciones", "Sin conjeturas"],
   tagline: "Solo luz.",
   taglineSub: "Una señal que tu cuerpo había olvidado… hasta ahora.",
+  motto: ["Eleva", "Activa", "Regenera"],
   video: "intro",
   poster: "v-intro",
 };
@@ -74,8 +75,8 @@ export const technology = {
   ],
   steps: [
     { n: "01", title: "Tu cuerpo emite calor", text: "Incluida energía infrarroja." },
-    { n: "02", title: "El parche la capta", text: "Sus cristales la recogen sobre la piel." },
-    { n: "03", title: "Y la refleja", text: "Longitudes de onda específicas que activan tus células." },
+    { n: "02", title: "El parche la capta", text: "Sus nanocristales patentados la recogen sobre la piel." },
+    { n: "03", title: "Y la refleja", text: "Devuelve luz visible e infrarroja que estimula la actividad celular." },
   ],
   clip: { video: "patch", caption: "Qué hay dentro del parche · 17 s" },
   ghk: {
@@ -129,7 +130,7 @@ export const usage = {
   kicker: "Cómo llevar el parche",
   title: "Basta con despegar y pegar.",
   steps: [
-    { n: "1", title: "Aplica", text: "Sobre la piel limpia y seca." },
+    { n: "1", title: "Aplica", text: "Sobre la piel limpia y seca, en la nuca o debajo del ombligo." },
     { n: "2", title: "Llévalo", text: "Hasta 12 horas puesto y luego 12 horas sin él." },
     { n: "3", title: "Retira", text: "Quítalo y deséchalo." },
     { n: "4", title: "Repite", text: "Ponte un parche nuevo cada día." },
