@@ -4,6 +4,10 @@ Plataforma SaaS multi-tenant de webinars evergreen (pregrabados que se presentan
 
 Convenciones de UI (color, tipografía, componentes, microcopy): ver [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md).
 
+## Sitios estáticos independientes (`sites/`)
+
+- [`sites/activatuvida`](./sites/activatuvida/README.md): landing de LifeWave X39 para `activatuvida.life/X39`. Es un proyecto estático sin dependencias, con su propio build y despliegue (Cloudflare Worker), ajeno a la app Next.js. `sites/**` está excluido del ESLint de la raíz.
+
 ## Stack
 
 - **Frontend/Backend:** Next.js 14+ (App Router), TypeScript.

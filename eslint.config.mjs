@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sitios estáticos independientes (p. ej. sites/activatuvida → /X39):
+    // tienen su propio build y validación, fuera de la app Next.js.
+    "sites/**",
   ]),
 ]);
 

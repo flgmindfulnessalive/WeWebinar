@@ -1,0 +1,24 @@
+# Cloudflare Worker + Static Assets para activatuvida.life
+# Sirve /X39 y reenvía el resto del dominio al sitio de Canva.
+# Requisitos y orden de pasos: docs/DESPLIEGUE.md.
+# NO desplegar ni cambiar DNS sin autorización del propietario.
+name = "activatuvida-x39"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# El Worker atiende todo el dominio (el DNS apunta a Cloudflare, proxied).
+routes = [
+  { pattern = "activatuvida.life/*", zone_name = "activatuvida.life" },
+]
+
+[vars]
+# PENDIENTE: URL del sitio de Canva en su dominio gratuito, p. ej.
+# "https://activatuvida.my.canva.site" (Canva → Publicar → Dominio gratuito).
+CANVA_ORIGIN = ""
+
+[assets]
+directory = "../dist"
+binding = "ASSETS"
+run_worker_first = true
+html_handling = "auto-trailing-slash"
+not_found_handling = "none"

@@ -1,0 +1,52 @@
+# Registro editorial: correcciones y afirmaciones pendientes
+
+Criterio: se conserva la intención de cada sección de https://whythelight.com/es/. Toda afirmación de salud, cifra o plazo se contrastó con documentación oficial de LifeWave (24-sep-2026) o con los documentos que enlaza la propia referencia. Lo que no pudo respaldarse se reformula de forma descriptiva o no se publica, y queda registrado aquí.
+
+Las referencias `RE-xx` aparecen como comentarios en `content/x39.mjs`.
+
+## Correcciones generales
+
+- **Tratamiento:** el original mezcla «usted» y «tú» («Imagine despertarse…», «Si eres escéptico…»). Se unifica en **tú**.
+- **Traducción:** se corrigen calcos del inglés: «Tu cerebro y tu energía entran en Saldo» («balance»), «Skin suaviza», «GHK apretado piel flácida», «GH-Cu», «X20» (el producto es X2O™) y la puntuación duplicada («...  .», «”.”»).
+- **Frases de una línea:** los párrafos largos se dividen en frases cortas, sin cambiar el sentido.
+
+## Cambios sustanciales
+
+| Ref. | Original | Publicado | Motivo |
+|---|---|---|---|
+| RE-01 | H1 «Después de 10 años de investigación con células madre y más de **250** patentes globales…» / «Descubrimos una manera de estimular la producción de células madre… utilizando luz» | Titular «La luz también es información.» y credenciales: «10 años de investigación en células madre, según LifeWave», «+70 patentes de LifeWave en ciencia regenerativa», premio 2025 | Los «10 años» y las «70 patentes regenerativas» constan en el comunicado de LifeWave (nov. 2025). El «más de 250» no aparece en fuentes oficiales, que dicen «200+». Que X39 **estimule la producción de células madre** no se publica: LifeWave atribuye la afirmación «†» sobre células madre a CyanthOx, un ingrediente de Cellergize™ Morning, no al parche |
+| RE-02 | «Las células reparadoras naturales se ralentizan. Un menor número de células activas significa que su cuerpo se cura más lentamente…» | «Con el tiempo, la producción de energía celular disminuye, el estrés oxidativo se acumula y los procesos de recuperación pierden ritmo.» | Se usa la formulación de la página oficial del Cellular Performance System |
+| RE-03 | «Si pudieras reparar y regenerar de dentro a fuera de forma segura y asequible…» | «¿Y si pudieras apoyar esos procesos con un gesto diario, sencillo y sin fármacos?» | «Reparar y regenerar» es una promesa terapéutica sin respaldo para el parche |
+| RE-04 | «…con resultados reales respaldados por la ciencia, estudios clínicos y patentes mundiales. Sin medicamentos. Sin inyecciones. Sin conjeturas. **Sin efectos secundarios.**» | «Es un parche no transdérmico y patentado…» · Sin fármacos · Sin estimulantes · Sin agujas | Las advertencias oficiales incluyen retirar el parche si aparece irritación, así que «sin efectos secundarios» no se sostiene. Los estudios se presentan aparte, con sus limitaciones |
+| RE-05 | «Es la acupuntura unida a la **biología cuántica**…» / GHK-Cu «**clínicamente probado para reparar y regenerar células madre dañadas**» | Fototerapia + acupresión (descripción oficial). «Según LifeWave, el parche está diseñado para… elevar el péptido GHK-Cu» | «Biología cuántica» no figura en fuentes oficiales. La cita oficial es «designed to elevate the peptide GHK-Cu». Ningún documento prueba la reparación de células madre por el parche |
+| RE-06 | Subpágina GHK-Cu: «GHK causó que las células madre adultas empezaran a producir de nuevo», «reinicio del ciclo de muerte celular en células de rápido crecimiento», «encabeza la lista de 1.309 compuestos para células de colon», «protección pulmonar», «insulina suprimida», «fibrinógeno… ictus», «miostatina… insuficiencia cardíaca», «médulas espinales dañadas» | Solo los hallazgos de piel y cabello, en un panel rotulado «Investigación sobre GHK-Cu: no son resultados del parche», con la revisión de Pickart y Margolina (2018) | Son hallazgos sobre el péptido (in vitro, perfiles génicos o aplicación directa) y se presentaban como beneficios del parche. Las referencias a cáncer, enfermedades pulmonares, cardiovasculares y neurológicas son afirmaciones sobre enfermedades: la propia referencia dice que el producto «no está destinado a diagnosticar, tratar, curar o prevenir ninguna enfermedad» |
+| RE-07 | «**Está clínicamente probado** que nuestro parche eleva GHK-Cu, restaurando este péptido de cobre vital **a niveles juveniles**» | «Lo medido con el X39»: el ECA de 2021 (n = 60) y el piloto (n = 10), con su diseño y muestra | Los estudios miden aumentos en sangre a los 7 días. Ninguno mide «niveles juveniles». Además, están encargados en el entorno de LifeWave |
+| RE-08 | Beneficios: sueño profundo y claridad cerebral; piel más tersa con soporte de colágeno; recuperación más rápida; «regeneración de adentro hacia afuera» | Beneficios oficiales del X39 (flujo de energía y bienestar, producción de energía, fuerza y resistencia, rendimiento en el ejercicio, sin fármacos, fototerapia patentada). Se conservan «Imagina despertar con una energía que no viene de la cafeína…» y «volver a sentirte tú» | Sueño, colágeno y regeneración no están entre las declaraciones oficiales del X39 → **pendientes** |
+| RE-09 | 13 testimonios en video | 7 activos. 3 desactivados (`enabled: false`): tendinitis, túnel carpiano y migrañas. 4 no publicados: diagnóstico en estadio 4, bulto mamario, abandono de tratamientos con células madre y trastorno sanguíneo crónico «indetectable» | Los 4 excluidos atribuyen al parche la mejora de enfermedades graves o sugieren dejar tratamientos médicos, lo que contradice el propio aviso de la referencia. Los 3 desactivados nombran afecciones médicas y requieren revisión de cumplimiento del Brand Partner. Las declaraciones no se editan: se enlaza el video original y solo se añade una etiqueta temática neutra |
+| RE-10 | «Llevar hasta 12 horas encendido, luego 12 horas apagado» / «**Tire el parche o póngaselo a su mascota**» | «Por la mañana… hasta un máximo de 12 horas… Una vez retirado, no lo reutilices… Cada día, uno nuevo» + advertencias oficiales completas | Instrucciones oficiales: «Apply… in the morning. Patches may be worn for up to 12 hours before discarding… Do not reuse patch once removed». El uso en mascotas no tiene respaldo oficial |
+| RE-11 | Cronología: «En los primeros días: **4.000 genes** comienzan a reiniciarse» · «En 4 semanas: se activa la reparación celular» · «En 6 semanas: tu cerebro y tu energía entran en equilibrio» · «En 3–6 meses: aumenta el colágeno» · «Antes de 12 meses: te ves y vives como tal» | «Qué midieron los estudios, y cuándo»: 1–2 h (NIS, n = 12), 24 h (piloto, n = 10), 7 días (ECA, n = 60), 3 semanas (P3, n = 12, preliminar), 4–6 semanas (NIS / P3) | La cifra de 4.000 genes procede de la investigación de perfiles génicos del GHK, no del parche. Ningún estudio del X39 mide colágeno a 3–6 meses ni resultados a 12 meses. Se conservan los plazos de 6 semanas (Psy-Tek) mencionados en la referencia, con su tamaño de muestra |
+| RE-12 | «Lo que comenzó en **2002** como una iniciativa de los **Navy SEAL**…» / «David es titular de más de **250** patentes» / «Fundador, Inventor + CEO» | «Fue invitado por la Marina de los EE. UU. a formar parte de un equipo de investigación… minisubmarinos… Energy Enhancer» · «más de 200 patentes» · «Fundador y CEO» | Versión de la biografía oficial (lifewave.com, The Science) |
+| RE-13 | Ventana emergente con un formulario de pedido que pide datos de tarjeta, más precios mayoristas (Core 295 $, Advanced 535 $, Advanced Plus 975 $, Premium 1.750 $) | Diálogo sin cifras, con formas de compra y botones configurables | No se recogen datos de pago. Los precios de los paquetes no se verificaron en la tienda oficial y varían por país |
+| RE-14 | «Prueba nuestro parche sin riesgos durante 30/90 días*» | Garantía detallada según la ficha oficial: primer pedido, 90 días para clientes minoristas o preferentes y 30 días para Brand Partners, y política general de 30 días | Verificado. Se añade que la política publicada es la de la tienda de EE. UU. y puede variar por país |
+
+## Afirmaciones pendientes de revisión
+
+No se publican, o solo con formulación prudente, hasta contar con respaldo:
+
+1. El X39 **estimula la producción o activación de células madre** por sí solo. La fuente oficial lo vincula a Cellergize™ Morning (CyanthOx).
+2. El X39 **restaura el GHK-Cu a niveles juveniles**.
+3. **Sueño profundo, claridad mental, colágeno, piel más tersa y recuperación más rápida** como beneficios del X39.
+4. Todos los plazos de resultados individuales (primeros días, 3–6 meses, 12 meses).
+5. **«Más de 250 patentes»** (la cifra oficial es de más de 200).
+6. **Historia de 2002 / Navy SEAL** (la fuente oficial dice «Marina de EE. UU.», sin año ni unidad).
+7. **Precios** de paquetes y suscripciones fuera de EE. UU. Los de EE. UU. (149,95 USD compra única, 99,95 USD suscripción, verificados) están en `site.config.mjs` con `showReferencePrices: false`.
+8. **Contenido del video de 17 s «¿Qué hay dentro del parche?»**, producido por el sitio de referencia: materiales (adhesivo de 3M, red cristalina de nanocristales con sal, aminoácidos, oxígeno y agua estabilizados, reflector de poliéster). Se muestra el video, pero no se transcribe como texto propio hasta confirmarlo con una ficha técnica oficial.
+9. **Testimonios desactivados** (tendinitis, túnel carpiano, migrañas): reactivar solo tras revisar la política de cumplimiento de LifeWave para Brand Partners en tu país.
+10. **Relación comercial de las personas de los testimonios** con LifeWave: desconocida. LifeWave indica en sus propias páginas que sus testimonios proceden de Brand Partners con interés económico.
+11. **Reproducción de los videos de Vimeo** fuera de whythelight.com: pendiente de comprobar en un navegador real (ver VALIDACION.md).
+
+## Recursos que requieren autorización
+
+- **Fotografías del producto y de estilo de vida de whythelight.com y de lifewave.com:** no se copian. Si LifeWave ofrece a sus Brand Partners una biblioteca de medios con licencia, puedes sustituir el render vectorial por una foto oficial del parche. Colócala en `assets/img/` como `nombre-640.webp`, `nombre-1280.webp`, etc., y referénciala desde `content/x39.mjs`.
+- **PDF de estudios y patentes:** se enlazan en su ubicación original (whythelight.com). Conviene sustituirlos por las copias oficiales de LifeWave cuando estén disponibles (`site.config.mjs → studies`).
+- **Logo del premio BioTech Breakthrough:** no se usa. Se enlaza el comunicado.

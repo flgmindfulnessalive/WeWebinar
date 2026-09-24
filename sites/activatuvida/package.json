@@ -1,0 +1,20 @@
+{
+  "name": "activatuvida-x39",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ACTIVA TU VIDA · /X39 — sitio estático sobre LifeWave X39 (Brand Partner independiente).",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:production": "SITE_MODE=production node scripts/build.mjs",
+    "preview": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs",
+    "og": "node scripts/og.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "test:worker": "node scripts/test-worker.mjs",
+    "validate": "npm run build && npm run check && npm run test:worker && npm run screenshots"
+  }
+}

@@ -1,0 +1,237 @@
+[
+  {
+    "name": "HTTP /X39",
+    "pass": true,
+    "detail": "200"
+  },
+  {
+    "name": "HTTP /x39",
+    "pass": true,
+    "detail": "301 → /X39"
+  },
+  {
+    "name": "HTTP /X39/",
+    "pass": true,
+    "detail": "301 → /X39"
+  },
+  {
+    "name": "HTTP /x39/?utm=1",
+    "pass": true,
+    "detail": "301 → /X39?utm=1"
+  },
+  {
+    "name": "HTTP /X39/index.html",
+    "pass": true,
+    "detail": "301 → /X39"
+  },
+  {
+    "name": "HTTP /otra-ruta",
+    "pass": true,
+    "detail": "404"
+  },
+  {
+    "name": "360px imágenes cargadas",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "360px sin scroll horizontal",
+    "pass": true,
+    "detail": "exceso 0px"
+  },
+  {
+    "name": "360px sin peticiones externas al cargar",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "360px menú móvil (abrir/foco/Esc/foco)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "360px ancla del menú (#uso)",
+    "pass": true,
+    "detail": "top 76px"
+  },
+  {
+    "name": "360px diálogo de paquetes",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "360px carrusel (siguiente)",
+    "pass": true,
+    "detail": "1 / 7 → 2 / 7"
+  },
+  {
+    "name": "360px video bajo demanda",
+    "pass": true,
+    "detail": "https://player.vimeo.com/video/1133177065?autoplay=1&dnt=1&t"
+  },
+  {
+    "name": "360px testimonio en diálogo (abre y detiene)",
+    "pass": true,
+    "detail": "src=https://player.vimeo.com/video/111842904 cerrado=true"
+  },
+  {
+    "name": "360px sin errores de consola",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "390px imágenes cargadas",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "390px sin scroll horizontal",
+    "pass": true,
+    "detail": "exceso 0px"
+  },
+  {
+    "name": "390px sin peticiones externas al cargar",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "390px menú móvil (abrir/foco/Esc/foco)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "390px ancla del menú (#uso)",
+    "pass": true,
+    "detail": "top 76px"
+  },
+  {
+    "name": "390px diálogo de paquetes",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "390px carrusel (siguiente)",
+    "pass": true,
+    "detail": "1 / 7 → 2 / 7"
+  },
+  {
+    "name": "390px video bajo demanda",
+    "pass": true,
+    "detail": "https://player.vimeo.com/video/1133177065?autoplay=1&dnt=1&t"
+  },
+  {
+    "name": "390px testimonio en diálogo (abre y detiene)",
+    "pass": true,
+    "detail": "src=https://player.vimeo.com/video/111842904 cerrado=true"
+  },
+  {
+    "name": "390px sin errores de consola",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "768px imágenes cargadas",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "768px sin scroll horizontal",
+    "pass": true,
+    "detail": "exceso 0px"
+  },
+  {
+    "name": "768px sin peticiones externas al cargar",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "768px menú móvil (abrir/foco/Esc/foco)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "768px ancla del menú (#uso)",
+    "pass": true,
+    "detail": "top 84px"
+  },
+  {
+    "name": "768px diálogo de paquetes",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "768px carrusel (siguiente)",
+    "pass": true,
+    "detail": "1 / 7 → 2 / 7"
+  },
+  {
+    "name": "768px video bajo demanda",
+    "pass": true,
+    "detail": "https://player.vimeo.com/video/1133177065?autoplay=1&dnt=1&t"
+  },
+  {
+    "name": "768px testimonio en diálogo (abre y detiene)",
+    "pass": true,
+    "detail": "src=https://player.vimeo.com/video/111842904 cerrado=true"
+  },
+  {
+    "name": "768px sin errores de consola",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "1440px imágenes cargadas",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "1440px sin scroll horizontal",
+    "pass": true,
+    "detail": "exceso 0px"
+  },
+  {
+    "name": "1440px sin peticiones externas al cargar",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "1440px diálogo de paquetes",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "1440px carrusel (siguiente)",
+    "pass": true,
+    "detail": "1 / 7 → 2 / 7"
+  },
+  {
+    "name": "1440px video bajo demanda",
+    "pass": true,
+    "detail": "https://player.vimeo.com/video/1133177065?autoplay=1&dnt=1&t"
+  },
+  {
+    "name": "1440px testimonio en diálogo (abre y detiene)",
+    "pass": true,
+    "detail": "src=https://player.vimeo.com/video/111842904 cerrado=true"
+  },
+  {
+    "name": "1440px sin errores de consola",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "prefers-reduced-motion: contenido visible sin animación",
+    "pass": true,
+    "detail": "0 ocultos"
+  },
+  {
+    "name": "Teclado: primer Tab = «Saltar al contenido»",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Sin JavaScript: contenido visible",
+    "pass": true,
+    "detail": ""
+  }
+]
