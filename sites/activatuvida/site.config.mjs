@@ -76,6 +76,7 @@ export default {
     patentTech: "https://patents.google.com/patent/US8734316B2/en",
     patentTechPdf: "https://whythelight.com/wp-content/uploads/2025/11/PatchTechnology-USPatent-8734316B2.pdf",
     ghkReview: "https://pubmed.ncbi.nlm.nih.gov/29986520/",
+    pubmedGhk: "https://pubmed.ncbi.nlm.nih.gov/?term=ghk-cu",
     award: "https://www.globenewswire.com/news-release/2025/11/7/3183858/0/en/lifewave-product-duo-wins-stem-cell-innovation-of-the-year-in-2025-biotech-breakthrough-awards-program.html",
     allStudies: "https://whythelight.com/es/estudios/",
   },

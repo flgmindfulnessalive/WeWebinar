@@ -352,7 +352,7 @@ export function studiesDialog(ctx, s) {
         </ul>
         <p class="fineprint">${s.patentList}</p>
       </div>
-      <p>${docLink(ctx, { key: s.more.doc, label: s.more.label, cls: "doc-link doc-link--quiet" })}</p>
+      <p class="st-more">${docLink(ctx, { key: s.pubmed.doc, label: s.pubmed.label, cls: "doc-link doc-link--quiet" })}${docLink(ctx, { key: s.more.doc, label: s.more.label, cls: "doc-link doc-link--quiet" })}</p>
     </div>
   </dialog>`;
 }

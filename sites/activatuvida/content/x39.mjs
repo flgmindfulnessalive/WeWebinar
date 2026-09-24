@@ -226,6 +226,7 @@ export const studies = {
     { code: "US 8,734,316 B2", name: "Tecnología de parche", doc: "patentTechPdf" },
   ],
   patentList: "Otras patentes de EE. UU.: 9943672 B2, D745504, D746272, D745503, D745502, D745501, 9532942, 9263796, 9258395, 9149451, 8602961.",
+  pubmed: { label: "Artículos sobre GHK-Cu en PubMed", doc: "pubmedGhk" },
   more: { label: "Estudios de otros productos LifeWave", doc: "allStudies" },
 };
 
