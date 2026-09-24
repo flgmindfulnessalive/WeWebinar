@@ -198,3 +198,125 @@
   const pill = $("[data-preview-pill]");
   if (pill) $("[data-preview-dismiss]", pill).addEventListener("click", () => { pill.hidden = true; });
 })();
+
+// --- Capa de «vida»: campo de luz, progreso, líneas y títulos --------------
+(() => {
+  "use strict";
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Barra de progreso de lectura
+  const bar = document.querySelector("[data-progress]");
+  if (bar) {
+    let ticking = false;
+    const paint = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.setProperty("--p", max > 0 ? (window.scrollY / max).toFixed(4) : 0);
+      ticking = false;
+    };
+    window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(paint); } }, { passive: true });
+    paint();
+  }
+
+  // Títulos que aparecen palabra a palabra
+  const titles = document.querySelectorAll(".h-section, .h-statement");
+  titles.forEach((h) => {
+    let i = 0;
+    h.querySelectorAll("span").forEach((line) => {
+      const words = line.textContent.split(/(\s+)/);
+      line.textContent = "";
+      for (const w of words) {
+        if (/^\s+$/.test(w) || !w) { line.append(w); continue; }
+        const s = document.createElement("span");
+        s.className = "w";
+        s.style.setProperty("--wi", i++);
+        s.textContent = w;
+        line.append(s);
+      }
+    });
+  });
+
+  // Líneas de luz por sección y títulos al entrar en pantalla
+  if ("IntersectionObserver" in window && !reduced) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add(e.target.matches(".section") ? "is-lit" : "is-words");
+        io.unobserve(e.target);
+      }
+    }, { rootMargin: "0px 0px -12% 0px" });
+    document.querySelectorAll(".section").forEach((s) => io.observe(s));
+    titles.forEach((t) => io.observe(t));
+  } else {
+    document.querySelectorAll(".section").forEach((s) => s.classList.add("is-lit"));
+    titles.forEach((t) => t.classList.add("is-words"));
+  }
+
+  // Campo de luz: espiral de Fibonacci (filotaxis) de puntos que titilan
+  const canvas = document.querySelector("[data-lightfield]");
+  if (!canvas || !canvas.getContext) return;
+  const ctx = canvas.getContext("2d");
+  let dots = [];
+  let w = 0;
+  let h = 0;
+  let dpr = 1;
+  let visible = true;
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth;
+    h = canvas.clientHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const desktop = w >= 900;
+    const cx = desktop ? w * 0.74 : w * 0.5;
+    const cy = desktop ? h * 0.46 : h * 0.24;
+    const R = Math.min(desktop ? w * 0.42 : w * 0.9, 620);
+    const n = desktop ? 520 : 300;
+    dots = [];
+    for (let i = 0; i < n; i++) {
+      const r = R * Math.sqrt(i / n);
+      const a = i * GOLDEN;
+      const t = i / n;
+      dots.push({
+        x: cx + r * Math.cos(a),
+        y: cy + r * Math.sin(a) * 0.82,
+        size: 0.6 + (1 - t) * 1.5,
+        base: 0.1 + (1 - t) * 0.4,
+        phase: (i * 0.618) % (Math.PI * 2),
+        speed: 0.6 + ((i * 7) % 10) / 12,
+        mint: i % 7 === 0,
+      });
+    }
+  }
+
+  function draw(time) {
+    ctx.clearRect(0, 0, w, h);
+    const t = time / 1000;
+    for (const d of dots) {
+      const tw = reduced ? 0.7 : 0.45 + 0.55 * Math.sin(t * d.speed + d.phase);
+      ctx.globalAlpha = Math.max(0, d.base * tw);
+      ctx.fillStyle = d.mint ? "#9fe8d9" : "#e6f4ff";
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function loop(time) {
+    if (visible) draw(time);
+    requestAnimationFrame(loop);
+  }
+
+  layout();
+  if (reduced) {
+    draw(0);
+  } else {
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(canvas);
+    requestAnimationFrame(loop);
+  }
+  let rt;
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { layout(); draw(performance.now()); }, 150); });
+})();

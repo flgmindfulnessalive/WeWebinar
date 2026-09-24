@@ -12,6 +12,7 @@ const reveal = "data-reveal";
 export function siteHeader(ctx, nav) {
   const brand = ctx.config.site.brand;
   return html`<header class="site-header" data-header>
+    <span class="scroll-progress" data-progress aria-hidden="true"></span>
     <div class="site-header__inner wrap">
       <a class="wordmark" href="#inicio" aria-label="${`${brand} · inicio`}">
         <span class="wordmark__main">${brand}</span><span class="wordmark__sub">X39</span>
@@ -41,7 +42,11 @@ export function siteHeader(ctx, nav) {
 // --- 1 · Hero -------------------------------------------------------------
 export function hero(ctx, c) {
   return html`<section class="hero" id="inicio" aria-labelledby="hero-title">
-    <div class="hero__atmos" aria-hidden="true"><span class="beam"></span><span class="beam beam--2"></span><span class="halo"></span></div>
+    <div class="hero__atmos" aria-hidden="true">
+      <span class="orb orb--sky"></span><span class="orb orb--mint"></span><span class="orb orb--violet"></span>
+      <canvas class="lightfield" data-lightfield></canvas>
+      <span class="beam"></span><span class="beam beam--2"></span><span class="halo"></span>
+    </div>
     <div class="hero__inner wrap">
       <div class="hero__copy">
         ${kicker(c.eyebrow)}
@@ -60,6 +65,7 @@ export function hero(ctx, c) {
         </div>
       </div>
     </div>
+    <a class="scroll-cue" href="#contexto"><span>Desliza para explorar</span><i aria-hidden="true"></i></a>
   </section>`;
 }
 

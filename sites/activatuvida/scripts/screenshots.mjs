@@ -70,12 +70,22 @@ try {
       document.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = "eager"; });
       await Promise.all([...document.images].map((img) => (img.complete ? null : new Promise((r) => { img.onload = img.onerror = r; }))));
       document.querySelectorAll("[data-reveal]").forEach((el) => el.classList.add("is-in"));
+      document.querySelectorAll(".h-section, .h-statement").forEach((el) => el.classList.add("is-words"));
+      document.querySelectorAll(".section").forEach((el) => el.classList.add("is-lit"));
       window.scrollTo(0, 0);
     });
     const broken = await page.$$eval("img", (imgs) => imgs.filter((i) => !i.naturalWidth).map((i) => i.currentSrc || i.src));
     ok(`${width}px imágenes cargadas`, broken.length === 0, broken.slice(0, 3).join(", "));
     await page.waitForTimeout(900);
 
+    if (width === 390) {
+      await page.goto(`${BASE}/X39`, { waitUntil: "networkidle" });
+      await page.$eval("#offer-title", (el) => el.scrollIntoView({ block: "center" }));
+      await page.waitForTimeout(1500);
+      const op = await page.$eval("#offer-title .w", (el) => getComputedStyle(el).opacity);
+      ok("Títulos palabra a palabra se revelan al hacer scroll", parseFloat(op) > 0.95, `opacidad ${op}`);
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     ok(`${width}px sin scroll horizontal`, overflow <= 0, `exceso ${overflow}px`);
     ok(`${width}px sin peticiones externas al cargar`, external.size === 0, [...external].join(", "));

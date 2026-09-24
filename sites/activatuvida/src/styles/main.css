@@ -10,6 +10,12 @@
   font-display: swap;
 }
 @font-face {
+  font-family: "JetBrains Mono";
+  src: url("./fonts/mono-var.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
+@font-face {
   font-family: "Inter";
   src: url("./fonts/inter-var.woff2") format("woff2");
   font-weight: 100 900;
@@ -18,8 +24,8 @@
 
 :root {
   --bg: #05070b;
-  --bg-2: #080d19;
-  --bg-3: #0c1528;
+  --bg-2: #0a1426;
+  --bg-3: #0e1d35;
   --surface: rgba(160, 200, 255, 0.045);
   --surface-2: rgba(160, 200, 255, 0.08);
   --line: rgba(190, 215, 255, 0.12);
@@ -30,6 +36,12 @@
   --ice: #d6ecff;
   --ice-2: #a9d4ff;
   --cyan: #74e4ff;
+  --sky: #5eb3e6;
+  --mint: #9fe8d9;
+  --violet: #8a3a9e;
+  --cobalt: #1f52c4;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --spectrum: linear-gradient(105deg, #b36bc4 0%, #6d8cff 30%, var(--sky) 60%, var(--mint) 100%);
   --glow: rgba(150, 210, 255, 0.34);
   --font-display: "Sora", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -132,7 +144,7 @@ main:focus { outline: none; }
   letter-spacing: -0.04em;
   margin-bottom: 1.5rem;
 }
-.h-statement span:last-child { color: var(--text-2); }
+.h-statement > span:last-child { color: var(--text-2); }
 .h-sub { font-size: clamp(1.5rem, 3.4vw, 2.2rem); line-height: 1.12; letter-spacing: -0.03em; margin-bottom: 0.9rem; }
 .h-card { font-size: 1.08rem; line-height: 1.3; letter-spacing: -0.01em; margin-bottom: 0.4rem; font-weight: 600; }
 .lead { font-size: clamp(1.08rem, 2vw, 1.3rem); color: var(--text-2); line-height: 1.55; max-width: 58ch; }
@@ -805,3 +817,88 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 .st-item__meta { color: var(--text-3); font-size: 0.8rem; }
 .dialog--wide .fineprint { margin-top: 10px; }
 .dialog__panel > .kicker, .dialog__panel > .h-sub { padding-right: 52px; }
+
+/* =====================================================================
+   Capa de «vida»: inspirada en lifewavehealth.com, reinterpretada
+   ===================================================================== */
+
+/* Etiquetas en mono, como rótulos de instrumento */
+.kicker, .st-group__title, .panel__label, .package__tier, .creds span, .t-card__time,
+.player__time, .step__n, .scroll-cue span, .carousel-status, .pending-tag {
+  font-family: var(--font-mono);
+}
+.kicker { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.16em; }
+.kicker::before { background: linear-gradient(90deg, var(--mint), var(--sky), transparent); }
+
+/* Degradado espectral (violeta → cobalto → celeste → aguamarina) */
+.h-display span:last-child, .h-display--closing span:last-child, .tagline {
+  background: var(--spectrum); -webkit-background-clip: text; background-clip: text; color: transparent;
+  background-size: 200% 100%;
+}
+.js .h-display span:last-child, .js .tagline { animation: spectrum-shift 12s ease-in-out infinite alternate; }
+@keyframes spectrum-shift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+.package__verbs { color: var(--mint); }
+.btn--primary { background: linear-gradient(180deg, #ffffff, #d9f2ff 60%, #c9f3ea); }
+
+/* Esferas de luz que flotan detrás del hero */
+.orb { position: absolute; border-radius: 50%; mix-blend-mode: screen; pointer-events: none; filter: blur(70px); opacity: 0.55; }
+.orb--sky { width: 46vmax; height: 46vmax; right: -12vmax; top: -10vmax; background: radial-gradient(circle, rgba(94, 179, 230, 0.75), rgba(94, 179, 230, 0.12) 45%, transparent 65%); }
+.orb--mint { width: 30vmax; height: 30vmax; right: 18vw; bottom: -8vmax; background: radial-gradient(circle, rgba(159, 232, 217, 0.55), rgba(159, 232, 217, 0.1) 45%, transparent 65%); }
+.orb--violet { width: 26vmax; height: 26vmax; left: -8vmax; top: 30%; background: radial-gradient(circle, rgba(138, 58, 158, 0.55), rgba(138, 58, 158, 0.1) 45%, transparent 65%); opacity: 0.4; }
+.js .orb--sky { animation: drift-a 26s ease-in-out infinite alternate; }
+.js .orb--mint { animation: drift-b 32s ease-in-out infinite alternate; }
+.js .orb--violet { animation: drift-a 38s ease-in-out infinite alternate-reverse; }
+@keyframes drift-a { to { transform: translate3d(-6vmax, 5vmax, 0) scale(1.08); } }
+@keyframes drift-b { to { transform: translate3d(5vmax, -4vmax, 0) scale(0.92); } }
+
+/* Campo de luz: espiral de puntos que titilan (canvas) */
+.lightfield { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.9; }
+.hero__atmos::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, transparent 45%, rgba(5, 9, 18, 0.55) 100%);
+}
+
+/* Indicador de scroll */
+.scroll-cue {
+  position: absolute; left: 50%; bottom: 22px; translate: -50% 0; z-index: 3; display: none;
+  flex-direction: column; align-items: center; gap: 10px; text-decoration: none; color: rgba(255, 255, 255, 0.5);
+}
+.scroll-cue span { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.scroll-cue i { width: 1px; height: 34px; background: linear-gradient(180deg, var(--mint), transparent); }
+.js .scroll-cue i { animation: cue 1.8s ease-in-out infinite; }
+@keyframes cue { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(6px); opacity: 1; } }
+@media (min-width: 900px) and (min-height: 700px) { .scroll-cue { display: flex; } }
+
+/* Barra de progreso de lectura */
+.scroll-progress {
+  position: absolute; left: 0; right: 0; top: 0; height: 2px; transform-origin: 0 50%;
+  transform: scaleX(var(--p, 0)); background: var(--spectrum); opacity: 0.9; pointer-events: none;
+}
+
+/* Líneas de luz que se dibujan al entrar cada sección */
+.section::before {
+  content: ""; position: absolute; top: 0; left: 50%; width: min(var(--wrap), 100% - 2 * var(--gutter)); height: 1px;
+  translate: -50% 0; background: linear-gradient(90deg, transparent, rgba(94, 179, 230, 0.55), rgba(159, 232, 217, 0.4), transparent);
+  transform: scaleX(0); transition: transform 1.4s var(--ease);
+}
+.no-js .section::before, .section.is-lit::before { transform: scaleX(1); }
+
+/* Aparición con desenfoque (sustituye al simple fundido) */
+.js [data-reveal] { opacity: 0; transform: translateY(16px); filter: blur(6px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), filter 0.9s var(--ease); }
+.js [data-reveal].is-in { opacity: 1; transform: none; filter: none; }
+.js .w { display: inline-block; opacity: 0; transform: translateY(0.35em); filter: blur(6px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease), filter 0.8s var(--ease); transition-delay: calc(var(--wi) * 55ms); }
+.js .is-words .w { opacity: 1; transform: none; filter: none; }
+
+/* Tarjetas que responden al cursor */
+@media (hover: hover) {
+  .package, .step, .t-card__btn, .guarantee, .ghk-band, .benefits__card { transition: transform 0.45s var(--ease), border-color 0.3s, box-shadow 0.45s; }
+  .package:hover, .step:hover, .ghk-band:hover { transform: translateY(-4px); border-color: rgba(159, 232, 217, 0.45); box-shadow: 0 24px 60px -30px rgba(94, 179, 230, 0.55); }
+  .t-card__btn:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -28px rgba(94, 179, 230, 0.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal], .js .w { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .section::before { transform: scaleX(1); }
+  .orb { animation: none !important; }
+}
+.btn--primary.btn--pending { background: transparent; box-shadow: none; }

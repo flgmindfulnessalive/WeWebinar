@@ -90,6 +90,11 @@
     "detail": ""
   },
   {
+    "name": "Títulos palabra a palabra se revelan al hacer scroll",
+    "pass": true,
+    "detail": "opacidad 0.999945"
+  },
+  {
     "name": "390px sin scroll horizontal",
     "pass": true,
     "detail": "exceso 0px"
