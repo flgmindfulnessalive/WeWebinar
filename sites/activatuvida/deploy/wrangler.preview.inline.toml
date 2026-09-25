@@ -1,0 +1,9 @@
+# Vista previa con los archivos incrustados en el script (ver
+# scripts/inline-assets.mjs). Mismo Worker que wrangler.preview.toml.
+# Uso: npm run build && npm run deploy:preview
+name = "activatuvida-x39-preview"
+main = "worker-inline.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+rules = [{ type = "Data", globs = ["**/*.webp", "**/*.woff2", "**/*.jpg"], fallthrough = false }]

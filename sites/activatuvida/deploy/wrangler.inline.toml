@@ -1,0 +1,18 @@
+# Producción con los archivos incrustados en el script (ver
+# scripts/inline-assets.mjs). Mismo Worker y dominios que wrangler.toml;
+# se usa desde el entorno de Claude Code, donde falla la subida de
+# Workers Static Assets. Uso: npm run build:production && npm run deploy:production
+name = "activatuvida-x39"
+main = "worker-inline.js"
+compatibility_date = "2026-09-01"
+workers_dev = false
+
+routes = [
+  { pattern = "activatuvida.life", custom_domain = true },
+  { pattern = "www.activatuvida.life", custom_domain = true },
+]
+
+rules = [{ type = "Data", globs = ["**/*.webp", "**/*.woff2", "**/*.jpg"], fallthrough = false }]
+
+[vars]
+CANVA_ORIGIN = ""

@@ -11,16 +11,21 @@ El propietario acepta que la web de Canva deje de verse. Todo `activatuvida.life
 - `/X39` → esta página; `/x39`, `/X39/`, etc. → **301** a `/X39`.
 - Otras rutas → 404.
 
-Avance (25-sep-2026): ✅ zona creada en Cloudflare (registros de Canva borrados; se conservan `_domainconnect` y `_dmarc`) · ✅ nameservers cambiados en GoDaddy a `demi.ns.cloudflare.com` / `newt.ns.cloudflare.com` (el DNS público ya los devuelve; `activatuvida.life` no tiene registro A, así que ahora mismo no muestra ninguna web) · ✅ `build:production`, `check:production` y `test:worker` superados · ❌ **token bloqueado** · ⏳ despliegue.
+Avance (25-sep-2026): ✅ zona creada en Cloudflare (registros de Canva borrados; se conservan `_domainconnect` y `_dmarc`) · ✅ nameservers cambiados en GoDaddy a `demi.ns.cloudflare.com` / `newt.ns.cloudflare.com` · ✅ **zona activa** en Cloudflare · ✅ token corregido (`/user/tokens/verify` → *active*) · ✅ `build`, `check`, `build:production`, `check:production` y `test:worker` superados · ✅ **vista previa publicada**: <https://activatuvida-x39-preview.activatuvida-x39.workers.dev/X39> · ⏳ **producción** (`activatuvida.life`): pendiente de la confirmación del propietario en el chat de la sesión (el control de permisos de Claude Code bloqueó el despliegue a producción porque la autorización llegó en una notificación automática).
 
-> **Bloqueo del token (25-sep-2026).** Cloudflare responde `6111 Invalid format for Authorization header` a cualquier llamada, también a `/user/tokens/verify`: rechaza la cabecera que pone el proxy antes de comprobar el token. Suele deberse a que el valor guardado no es solo el token: lleva `Bearer ` delante, comillas, espacios o un salto de línea, o se guardó el nombre en lugar del valor. Solución: en la configuración del entorno → *Credenciales de API* → `CLOUDFLARE_API_TOKEN`, pegar **solo** el token (unos 40 caracteres, sin `Bearer`) con tipo Bearer y host `api.cloudflare.com`, y añadir `CLOUDFLARE_ACCOUNT_ID` en las variables de entorno. Los cambios se aplican en una **sesión nueva**.
+> **Archivos incrustados en el Worker (25-sep-2026).** Con `wrangler.toml` / `wrangler.preview.toml`, la subida de Workers Static Assets falla con `401` en `/workers/assets/upload`: ese endpoint exige un JWT temporal propio y el proxy de Claude Code sustituye la cabecera `Authorization` por el token de API. Por eso, desde este entorno se despliega con `deploy/worker-inline.js`, que incluye todo `dist/` dentro del script (2,4 MB; 2,3 MB gzip, bajo el límite de 3 MB del plan Free) y reproduce el binding `ASSETS`: tipos MIME, reglas de `_headers`, ETag/304 y 404 para lo demás. Mismo Worker y mismos dominios:
+>
+> - Vista previa: `npm run build && npm run deploy:preview` (`deploy/wrangler.preview.inline.toml`).
+> - Producción: `npm run build:production && npm run check:production && npm run test:worker && npm run deploy:production` (`deploy/wrangler.inline.toml`).
+>
+> Desde un ordenador propio (sin ese proxy) siguen valiendo `wrangler.toml` y `wrangler.preview.toml` con Static Assets.
 
 Pasos:
 
 1. 🔐 **Cloudflare:** crear cuenta gratuita → *Add a domain* → `activatuvida.life` → plan Free. Revisar los registros importados: **borrar** el registro A de `@` (`103.169.142.0`, Canva) y cualquier `www`. **Conservar** MX/TXT si hay correo en el dominio.
 2. 🔐 **GoDaddy:** *Mi dominio → DNS → Servidores de nombres → Cambiar → Usar mis propios servidores* → pegar los 2 que indica Cloudflare. La propagación tarda de minutos a 24 h.
 3. 🔐 **Token:** Cloudflare → *My Profile → API Tokens → Create Token → plantilla «Edit Cloudflare Workers»* (cuenta y zona `activatuvida.life`). Guardarlo como variable de entorno `CLOUDFLARE_API_TOKEN` en la configuración del entorno (nunca en el chat ni en el repositorio). Añadir también `CLOUDFLARE_ACCOUNT_ID`.
-4. **Despliegue** (lo ejecuta Claude con autorización): `npm run build:production && npm run check:production && npm run test:worker`, después `npx wrangler deploy -c deploy/wrangler.preview.toml` (vista previa) y `npx wrangler deploy -c deploy/wrangler.toml`. Los dominios personalizados de `wrangler.toml` crean los registros DNS y el certificado.
+4. **Despliegue** (lo ejecuta Claude con autorización): ✅ vista previa con `npm run build && npm run deploy:preview`; ⏳ producción con `npm run build:production && npm run check:production && npm run test:worker && npm run deploy:production` (ver el aviso sobre archivos incrustados). Los dominios personalizados de `wrangler.toml` crean los registros DNS y el certificado.
 5. **Comprobación:** `/X39` 200, `/x39` 301, `/` 302, `www` 301, videos de Vimeo en el móvil.
 6. Canva: opcionalmente, quitar `activatuvida.life` del sitio de Canva para evitar avisos de dominio.
 
