@@ -240,7 +240,7 @@ export function company(ctx, c) {
     <div class="wrap award" ${reveal}>
       <div class="award__stage">
         <span class="award__halo" aria-hidden="true"></span>
-        ${trophy()}
+        ${trophy(ctx)}
         <span class="award__floor" aria-hidden="true"></span>
       </div>
       <div class="award__copy">
@@ -253,7 +253,7 @@ export function company(ctx, c) {
 }
 
 // Trofeo de cristal facetado (vectorial, con los colores del sitio)
-function trophy() {
+function trophy(ctx) {
   const O = [[146, 8], [244, 118], [266, 252], [232, 384], [66, 384], [34, 262], [66, 112]];
   const I = [[147, 44], [220, 128], [238, 250], [212, 360], [86, 360], [60, 262], [86, 124]];
   const pts = (a) => a.map((p) => p.join(",")).join(" ");
@@ -263,12 +263,6 @@ function trophy() {
     const j = (i + 1) % O.length;
     facets += `<polygon points="${pts([O[i], O[j], I[j], I[i]])}" fill="#dff1ff" fill-opacity="${shades[i]}" stroke="#ffffff" stroke-opacity=".35" stroke-width=".8"/>`;
   }
-  const hex = (cx, cy, r) => pts([0, 1, 2, 3, 4, 5].map((k) => {
-    const a = (Math.PI / 3) * k + Math.PI / 6;
-    return [(cx + r * Math.cos(a)).toFixed(1), (cy + r * Math.sin(a)).toFixed(1)];
-  }));
-  const ring = [["#b36bc4", -36, -18], ["#6d8cff", 0, -38], ["#5eb3e6", 36, -18], ["#9fe8d9", 36, 20], ["#6d8cff", 0, 40], ["#b36bc4", -36, 20]];
-  const hexes = ring.map(([c, dx, dy]) => `<polygon points="${hex(150 + dx, 206 + dy, 26)}" fill="${c}" fill-opacity=".38"/>`).join("");
   return raw(`<svg class="trophy" viewBox="0 0 300 410" role="img" aria-label="Trofeo de cristal BioTech Breakthrough Award 2025 de LifeWave, Stem Cell Innovation of the Year">
   <defs>
     <linearGradient id="tr-face" x1="0" y1="0" x2="1" y2="1">
@@ -290,12 +284,7 @@ function trophy() {
   <polygon points="${pts(O)}" fill="#0b1830" fill-opacity=".35"/>
   <polygon points="${pts(I)}" fill="url(#tr-face)"/>
   ${facets}
-  <g style="mix-blend-mode:screen">${hexes}
-    <polygon points="${hex(150, 206, 30)}" fill="#ffffff" fill-opacity=".92"/>
-  </g>
-  <text x="150" y="200" text-anchor="middle" class="tr-t1">BIOTECH</text>
-  <text x="150" y="212" text-anchor="middle" class="tr-t2">BREAKTHROUGH</text>
-  <text x="150" y="224" text-anchor="middle" class="tr-t3">2025</text>
+  <image href="${ctx.assets}/img/premio-biotech.webp" x="72" y="130" width="156" height="147" preserveAspectRatio="xMidYMid meet" opacity=".96"/>
   <text x="150" y="298" text-anchor="middle" class="tr-t4">LifeWave</text>
   <text x="150" y="318" text-anchor="middle" class="tr-t5">Stem Cell</text>
   <text x="150" y="332" text-anchor="middle" class="tr-t5">Innovation of the Year</text>
