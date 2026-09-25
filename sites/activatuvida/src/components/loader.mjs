@@ -1,17 +1,10 @@
 // Pantalla de carga «Activación»: el parche del Hero con dos anillos de luz
-// que giran en sentidos opuestos, destellos en órbita y destellos que el
-// parche absorbe. Solo CSS + SVG, sin imágenes ni librerías.
+// que giran en sentidos opuestos y destellos que el parche absorbe.
+// Solo CSS + SVG, sin imágenes ni librerías.
 // Estados: .ld (visible) · .ld.is-done (destello de salida y fundido).
 import { raw } from "../lib/html.mjs";
 import { patchVisual } from "./ui.mjs";
 
-// Órbitas de los destellos: [radio %, duración s, retraso s, tamaño px, sentido]
-const ORBITS = [
-  [44, 7, 0, 11, 1], [48, 9, -2.1, 6, -1], [51, 11, -5.3, 8, 1], [40, 8, -3.7, 5, -1],
-  [54, 13, -8.2, 10, 1], [46, 10, -6.4, 6, -1], [50, 12, -1.3, 5, 1], [42, 7.5, -4.9, 8, -1],
-  [56, 15, -9.6, 7, -1], [38, 6.5, -2.8, 5, 1], [52, 14, -11.1, 9, -1], [45, 9.5, -7.2, 6, 1],
-];
-const TINTS = ["#ffffff", "#a9d4ff", "#74e4ff", "#d7b4ff", "#9fe8d9"];
 // Destellos absorbidos: [ángulo °, retraso s]
 const FALLS = [[20, 0], [140, -0.55], [255, -1.1], [320, -0.3]];
 
@@ -21,7 +14,7 @@ export const loaderCss = `
   transition: opacity .45s cubic-bezier(.2,.7,.1,1), visibility .45s; }
 .ld.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .ld__stage { position: relative; width: min(64vw, 280px); aspect-ratio: 1; }
-.ld__stage > *, .ld__ring, .ld__spark { position: absolute; display: block; }
+.ld__stage > *, .ld__ring { position: absolute; display: block; }
 .ld__halo { inset: 8%; border-radius: 50%; background: radial-gradient(closest-side, rgba(150,210,255,.38), rgba(109,140,255,.14) 55%, transparent 72%);
   filter: blur(6px); animation: ld-breathe 1.6s ease-in-out infinite; }
 .ld__patch { inset: 24%; animation: ld-absorb 1.6s ease-in-out infinite; filter: drop-shadow(0 0 18px rgba(150,210,255,.45)); }
@@ -38,12 +31,6 @@ export const loaderCss = `
 .ld__ring--b { inset: 1%; --c1: #b36bc4; --c2: rgba(109,140,255,.5); transform: rotateX(68deg); }
 .ld__tilt { inset: 0; perspective: 700px; }
 .ld__tilt .ld__ring--b { animation: ld-spin-tilt 3.6s linear infinite reverse; }
-.ld__orbit { inset: 0; animation: ld-spin var(--d) linear infinite; animation-delay: var(--dl); }
-.ld__orbit[data-rev] { animation-direction: reverse; }
-.ld__spark { left: 50%; top: calc(50% - var(--r)); width: var(--s); height: var(--s); margin: calc(var(--s) / -2);
-  background: radial-gradient(circle, #fff 0 22%, var(--t) 60%);
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-  filter: drop-shadow(0 0 6px var(--t)) drop-shadow(0 0 2px #fff); animation: ld-twinkle 1.8s ease-in-out infinite; animation-delay: var(--dl); }
 .ld__fall { inset: 0; transform: rotate(var(--a)); }
 .ld__fall b { position: absolute; left: 50%; top: 0; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #fff;
   box-shadow: 0 0 8px 2px #74e4ff; animation: ld-fall 1.6s cubic-bezier(.55,0,.8,.4) infinite; animation-delay: var(--dl); }
@@ -55,13 +42,12 @@ export const loaderCss = `
 .ld__msg small { display: block; font-size: .72rem; color: #9aa7bc; margin-top: 4px; }
 .ld.is-done .ld__wave { animation: ld-wave .7s cubic-bezier(.2,.7,.1,1) forwards; }
 .ld.is-done .ld__patch { animation: ld-flash .7s cubic-bezier(.2,.7,.1,1) forwards; }
-.ld.is-done .ld__ring, .ld.is-done .ld__orbit, .ld.is-done .ld__fall, .ld.is-done .ld__text { transition: opacity .35s; opacity: 0; }
+.ld.is-done .ld__ring, .ld.is-done .ld__fall, .ld.is-done .ld__text { transition: opacity .35s; opacity: 0; }
 @keyframes ld-spin { to { transform: rotate(360deg); } }
 @keyframes ld-spin-tilt { from { transform: rotateX(68deg) rotate(0); } to { transform: rotateX(68deg) rotate(360deg); } }
 @keyframes ld-breathe { 0%,100% { opacity: .65; transform: scale(.94); } 85% { opacity: 1; transform: scale(1.06); } }
 @keyframes ld-absorb { 0%,70%,100% { transform: scale(1); filter: drop-shadow(0 0 16px rgba(150,210,255,.4)) brightness(1); }
   86% { transform: scale(1.045); filter: drop-shadow(0 0 34px rgba(170,225,255,.85)) brightness(1.12); } }
-@keyframes ld-twinkle { 0%,100% { opacity: .25; transform: scale(.55) rotate(0); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
 @keyframes ld-fall { 0% { transform: translateY(0) scale(.4); opacity: 0; } 25% { opacity: 1; transform: translateY(8%) scale(1); }
   100% { transform: translateY(calc(var(--stage) * .38)) scale(.2); opacity: 0; } }
 @keyframes ld-wave { from { opacity: .95; transform: scale(1); } to { opacity: 0; transform: scale(3.2); } }
@@ -69,20 +55,18 @@ export const loaderCss = `
 @keyframes ld-shimmer { 0%,100% { opacity: .7; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .ld *, .ld *::before, .ld *::after { animation: none !important; }
-  .ld__fall, .ld__orbit:nth-child(n+4) { display: none; }
+  .ld__fall { display: none; }
 }
 `;
 
 export function loaderHtml({ message = "", note = "" } = {}) {
-  const orbits = ORBITS.map(([r, d, dl, s, dir], i) =>
-    `<span class="ld__orbit" style="--d:${d}s;--dl:${dl}s"${dir < 0 ? " data-rev" : ""}><span class="ld__spark" style="--r:${r}%;--s:${s * 2.4}px;--dl:${dl / 3}s;--t:${TINTS[i % TINTS.length]}"></span></span>`).join("");
   const falls = FALLS.map(([a, dl]) => `<span class="ld__fall" style="--a:${a}deg"><b style="--dl:${dl}s"></b></span>`).join("");
   return raw(`<div class="ld" role="status" aria-live="polite" aria-label="${message || "Cargando"}">
   <div class="ld__stage" aria-hidden="true" style="--stage:min(64vw,280px)">
     <span class="ld__halo"></span>
     <span class="ld__tilt"><span class="ld__ring ld__ring--b"><i></i></span></span>
     <span class="ld__ring ld__ring--a"><i></i></span>
-    ${orbits}${falls}
+    ${falls}
     <span class="ld__wave"></span>
     <span class="ld__patch">${patchVisual({ label: "" })}</span>
   </div>
