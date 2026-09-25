@@ -11,14 +11,16 @@ El propietario acepta que la web de Canva deje de verse. Todo `activatuvida.life
 - `/X39` → esta página; `/x39`, `/X39/`, etc. → **301** a `/X39`.
 - Otras rutas → 404.
 
-Avance (25-sep-2026): ✅ zona creada en Cloudflare (registros de Canva borrados; se conservan `_domainconnect` y `_dmarc`) · ✅ nameservers cambiados en GoDaddy a `demi.ns.cloudflare.com` / `newt.ns.cloudflare.com` (propagando) · ⏳ token · ⏳ despliegue.
+Avance (25-sep-2026): ✅ zona creada en Cloudflare (registros de Canva borrados; se conservan `_domainconnect` y `_dmarc`) · ✅ nameservers cambiados en GoDaddy a `demi.ns.cloudflare.com` / `newt.ns.cloudflare.com` (el DNS público ya los devuelve; `activatuvida.life` no tiene registro A, así que ahora mismo no muestra ninguna web) · ✅ `build:production`, `check:production` y `test:worker` superados · ❌ **token bloqueado** · ⏳ despliegue.
+
+> **Bloqueo del token (25-sep-2026).** Cloudflare responde `6111 Invalid format for Authorization header` a cualquier llamada, también a `/user/tokens/verify`: rechaza la cabecera que pone el proxy antes de comprobar el token. Suele deberse a que el valor guardado no es solo el token: lleva `Bearer ` delante, comillas, espacios o un salto de línea, o se guardó el nombre en lugar del valor. Solución: en la configuración del entorno → *Credenciales de API* → `CLOUDFLARE_API_TOKEN`, pegar **solo** el token (unos 40 caracteres, sin `Bearer`) con tipo Bearer y host `api.cloudflare.com`, y añadir `CLOUDFLARE_ACCOUNT_ID` en las variables de entorno. Los cambios se aplican en una **sesión nueva**.
 
 Pasos:
 
 1. 🔐 **Cloudflare:** crear cuenta gratuita → *Add a domain* → `activatuvida.life` → plan Free. Revisar los registros importados: **borrar** el registro A de `@` (`103.169.142.0`, Canva) y cualquier `www`. **Conservar** MX/TXT si hay correo en el dominio.
 2. 🔐 **GoDaddy:** *Mi dominio → DNS → Servidores de nombres → Cambiar → Usar mis propios servidores* → pegar los 2 que indica Cloudflare. La propagación tarda de minutos a 24 h.
 3. 🔐 **Token:** Cloudflare → *My Profile → API Tokens → Create Token → plantilla «Edit Cloudflare Workers»* (cuenta y zona `activatuvida.life`). Guardarlo como variable de entorno `CLOUDFLARE_API_TOKEN` en la configuración del entorno (nunca en el chat ni en el repositorio). Añadir también `CLOUDFLARE_ACCOUNT_ID`.
-4. **Despliegue** (lo ejecuta Claude con autorización): `npm run build:production && cd deploy && npx wrangler deploy`. Los dominios personalizados de `wrangler.toml` crean los registros DNS y el certificado.
+4. **Despliegue** (lo ejecuta Claude con autorización): `npm run build:production && npm run check:production && npm run test:worker`, después `npx wrangler deploy -c deploy/wrangler.preview.toml` (vista previa) y `npx wrangler deploy -c deploy/wrangler.toml`. Los dominios personalizados de `wrangler.toml` crean los registros DNS y el certificado.
 5. **Comprobación:** `/X39` 200, `/x39` 301, `/` 302, `www` 301, videos de Vimeo en el móvil.
 6. Canva: opcionalmente, quitar `activatuvida.life` del sitio de Canva para evitar avisos de dominio.
 
@@ -52,7 +54,7 @@ cd sites/activatuvida
 # 1) Completa site.config.mjs: revisa commerce.purchaseUrl, commerce.joinUrl, contact.whatsappUrl y distributor.*
 # 2) Build de producción y validación:
 npm run build:production
-npm run check                 # validación estática
+npm run check:production      # validación estática (modo production)
 npm run test:worker           # enrutado del Worker
 CHECK_LINKS=1 npm run check   # (opcional) enlaces externos
 npm run preview               # http://localhost:4173/X39
@@ -93,7 +95,7 @@ Comprueba en tu móvil que los videos de Vimeo se reproducen desde ese dominio (
 
    ```bash
    cd sites/activatuvida
-   npm run build:production && npm run check
+   npm run build:production && npm run check:production
    cd deploy && npx wrangler deploy
    ```
 

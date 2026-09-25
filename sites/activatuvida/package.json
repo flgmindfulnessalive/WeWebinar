@@ -12,6 +12,7 @@
     "build:production": "SITE_MODE=production node scripts/build.mjs",
     "preview": "node scripts/serve.mjs",
     "check": "node scripts/check.mjs",
+    "check:production": "SITE_MODE=production node scripts/check.mjs",
     "og": "node scripts/og.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "test:worker": "node scripts/test-worker.mjs",

@@ -29,6 +29,17 @@ Comandos: `npm run validate` (build + validación estática + Worker + navegador
 | | Google Patents (2) y GlobeNewswire | ⚠ 503 a peticiones automatizadas (anti-bot). Verificados a mano en este entorno: Google Patents devolvió 200 con el título correcto en otra petición, y el comunicado se leyó en su copia de Yahoo Finance |
 | Aislamiento | La app WeWebinars (Next.js) no cambia: `sites/**` queda excluido de ESLint y `dist/` de git | ✅ |
 
+## Antes del despliegue (25-sep-2026)
+
+| Paso | Resultado |
+|---|---|
+| `npm run build:production` | ✅ `X39.html` de 81,4 KB, modo production |
+| `npm run check:production` | ✅ 56 ids, 43 recursos locales. `npm run check` sin `SITE_MODE` valida en modo preview y falla sobre un build de producción («La vista previa debe llevar noindex»); por eso se añade `check:production` |
+| `npm run test:worker` | ✅ incluidos `/` → 302 `/X39`, `www` → 301 y `/x39` → 301 |
+| DNS público | ✅ NS de `activatuvida.life` = `demi`/`newt.ns.cloudflare.com`; sin registro A (la web de Canva ya no se sirve) |
+| Token de Cloudflare | ❌ error `6111 Invalid format for Authorization header` (ver DESPLIEGUE.md → Plan vigente) |
+| Vista previa `workers.dev` y dominio | ⏳ sin desplegar hasta corregir el token |
+
 ## Capturas
 
 En `capturas/`:
@@ -44,7 +55,8 @@ Las capturas son de la vista previa: incluyen el aviso «Vista previa · 3 desti
 
 1. **Reproducción de Vimeo desde `activatuvida.life`.** Los 13 videos existen (el oEmbed público responde con título y duración). El navegador automatizado recibe un desafío de Cloudflare de Vimeo desde este centro de datos, así que no se pudo reproducir ninguno. Si algún video tiene restringida la inserción a whythelight.com, el reproductor mostrará el aviso de Vimeo. Debajo de cada video queda el enlace «Ábrelo en Vimeo». Pruébalo en la vista previa de `workers.dev` (DESPLIEGUE.md, paso 1).
 2. **Botones de compra, WhatsApp y correo:** pendientes de configurar (`site.config.mjs`).
-3. **Proxy del sitio de Canva** a través del Worker (DESPLIEGUE.md, paso 2).
+3. ~~Proxy del sitio de Canva~~: ya no aplica. El propietario decidió el 25-sep-2026 que todo el dominio pase a esta página (`CANVA_ORIGIN` vacío).
+4. **Comprobación en producción:** `/X39` 200, `/x39` 301, `/` 302 y `www` 301 en `activatuvida.life`, cuando se despliegue.
 
 ## Cobertura frente al inventario
 
