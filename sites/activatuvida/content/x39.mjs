@@ -164,6 +164,11 @@ export const company = {
     "David es titular de más de 250 patentes en todo el mundo, más de setenta de ellas en ciencia y tecnología regenerativas. LifeWave recibió el premio BioTech Breakthrough 2025 a la «Innovación del año en células madre».",
   ],
   studiesCta: "Patentes y estudios",
+  award: {
+    kicker: "BioTech Breakthrough Awards · 2025",
+    title: "Innovación del año en células madre",
+    sub: "LifeWave · Stem Cell Innovation of the Year",
+  },
 };
 
 // 8b · Opciones

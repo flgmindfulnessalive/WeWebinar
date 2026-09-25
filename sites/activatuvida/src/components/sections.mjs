@@ -237,7 +237,74 @@ export function company(ctx, c) {
         </div>
       </div>
     </div>
+    <div class="wrap award" ${reveal}>
+      <div class="award__stage">
+        <span class="award__halo" aria-hidden="true"></span>
+        ${trophy()}
+        <span class="award__floor" aria-hidden="true"></span>
+      </div>
+      <div class="award__copy">
+        ${kicker(c.award.kicker)}
+        <h3 class="award__title">${c.award.title}</h3>
+        <p class="award__sub">${c.award.sub}</p>
+      </div>
+    </div>
   </section>`;
+}
+
+// Trofeo de cristal facetado (vectorial, con los colores del sitio)
+function trophy() {
+  const O = [[146, 8], [244, 118], [266, 252], [232, 384], [66, 384], [34, 262], [66, 112]];
+  const I = [[147, 44], [220, 128], [238, 250], [212, 360], [86, 360], [60, 262], [86, 124]];
+  const pts = (a) => a.map((p) => p.join(",")).join(" ");
+  const shades = [0.2, 0.08, 0.14, 0.04, 0.1, 0.18, 0.26];
+  let facets = "";
+  for (let i = 0; i < O.length; i++) {
+    const j = (i + 1) % O.length;
+    facets += `<polygon points="${pts([O[i], O[j], I[j], I[i]])}" fill="#dff1ff" fill-opacity="${shades[i]}" stroke="#ffffff" stroke-opacity=".35" stroke-width=".8"/>`;
+  }
+  const hex = (cx, cy, r) => pts([0, 1, 2, 3, 4, 5].map((k) => {
+    const a = (Math.PI / 3) * k + Math.PI / 6;
+    return [(cx + r * Math.cos(a)).toFixed(1), (cy + r * Math.sin(a)).toFixed(1)];
+  }));
+  const ring = [["#b36bc4", -36, -18], ["#6d8cff", 0, -38], ["#5eb3e6", 36, -18], ["#9fe8d9", 36, 20], ["#6d8cff", 0, 40], ["#b36bc4", -36, 20]];
+  const hexes = ring.map(([c, dx, dy]) => `<polygon points="${hex(150 + dx, 206 + dy, 26)}" fill="${c}" fill-opacity=".38"/>`).join("");
+  return raw(`<svg class="trophy" viewBox="0 0 300 410" role="img" aria-label="Trofeo de cristal BioTech Breakthrough Award 2025 de LifeWave, Stem Cell Innovation of the Year">
+  <defs>
+    <linearGradient id="tr-face" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8f5ff" stop-opacity=".22"/>
+      <stop offset=".5" stop-color="#9fd0f5" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#9fe8d9" stop-opacity=".16"/>
+    </linearGradient>
+    <linearGradient id="tr-shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="tr-base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dff1ff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#5eb3e6" stop-opacity=".12"/>
+    </linearGradient>
+    <clipPath id="tr-clip"><polygon points="${pts(O)}"/></clipPath>
+  </defs>
+  <polygon points="${pts(O)}" fill="#0b1830" fill-opacity=".35"/>
+  <polygon points="${pts(I)}" fill="url(#tr-face)"/>
+  ${facets}
+  <g style="mix-blend-mode:screen">${hexes}
+    <polygon points="${hex(150, 206, 30)}" fill="#ffffff" fill-opacity=".92"/>
+  </g>
+  <text x="150" y="200" text-anchor="middle" class="tr-t1">BIOTECH</text>
+  <text x="150" y="212" text-anchor="middle" class="tr-t2">BREAKTHROUGH</text>
+  <text x="150" y="224" text-anchor="middle" class="tr-t3">2025</text>
+  <text x="150" y="298" text-anchor="middle" class="tr-t4">LifeWave</text>
+  <text x="150" y="318" text-anchor="middle" class="tr-t5">Stem Cell</text>
+  <text x="150" y="332" text-anchor="middle" class="tr-t5">Innovation of the Year</text>
+  <g clip-path="url(#tr-clip)"><rect class="tr-shine" x="-120" y="-20" width="90" height="460" fill="url(#tr-shine)" transform="skewX(-18)"/></g>
+  <polyline points="${pts([O[6], O[0], O[1]])}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.4" stroke-linejoin="round"/>
+  <polygon points="${pts(O)}" fill="none" stroke="#cfe9ff" stroke-opacity=".55" stroke-width="1"/>
+  <rect x="58" y="386" width="182" height="16" rx="3" fill="url(#tr-base)" stroke="#fff" stroke-opacity=".3"/>
+  <g class="tr-sparks" fill="#fff"><circle cx="146" cy="10" r="2.2"/><circle cx="244" cy="118" r="1.6"/><circle cx="66" cy="112" r="1.4"/></g>
+</svg>`);
 }
 
 // --- 8b · Opciones -------------------------------------------------------------------------

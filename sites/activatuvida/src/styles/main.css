@@ -935,3 +935,34 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 .pl-tips li { display: flex; gap: 10px; align-items: flex-start; color: var(--text-2); font-size: 0.95rem; }
 .pl-tips .icon { width: 17px; height: 17px; color: var(--mint); flex: none; margin-top: 3px; }
 @media (prefers-reduced-motion: reduce) { .pl-pulse { animation: none !important; } }
+
+/* Premio: trofeo de cristal */
+.award { display: grid; gap: 28px; justify-items: center; text-align: center; margin-top: clamp(4rem, 9vw, 6.5rem); }
+.award__stage { position: relative; width: min(72vw, 320px); }
+.award__halo {
+  position: absolute; inset: -18% -30%; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(94, 179, 230, 0.35), rgba(138, 58, 158, 0.14) 55%, transparent 75%);
+  filter: blur(24px);
+}
+.award__floor {
+  position: absolute; left: 6%; right: 6%; bottom: -4%; height: 12%; border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(159, 232, 217, 0.4), transparent 70%); filter: blur(12px);
+}
+.trophy { width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 30px 50px rgba(20, 70, 160, 0.45)); }
+.js .trophy { animation: trophy-float 8s ease-in-out infinite; }
+@keyframes trophy-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.tr-shine { animation: tr-shine 6s ease-in-out infinite; }
+@keyframes tr-shine { 0%, 55% { transform: skewX(-18deg) translateX(0); } 85%, 100% { transform: skewX(-18deg) translateX(560px); } }
+.tr-sparks circle { animation: tr-spark 3s ease-in-out infinite; }
+.tr-sparks circle:nth-child(2) { animation-delay: -1s; }
+.tr-sparks circle:nth-child(3) { animation-delay: -2s; }
+@keyframes tr-spark { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.tr-t1 { font: 700 10px var(--font-display); letter-spacing: 0.08em; fill: #1f3f8f; }
+.tr-t2 { font: 600 5.6px var(--font-display); letter-spacing: 0.08em; fill: #1f3f8f; }
+.tr-t3 { font: 700 8px var(--font-mono); letter-spacing: 0.1em; fill: #1f3f8f; }
+.tr-t4 { font: 600 19px var(--font-display); fill: #eef6ff; letter-spacing: -0.01em; }
+.tr-t5 { font: 500 11px var(--font-display); fill: #cfe6ff; }
+.award .kicker { justify-content: center; }
+.award__title { font-size: clamp(1.5rem, 3.4vw, 2.2rem); letter-spacing: -0.03em; line-height: 1.12; background: var(--spectrum); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.award__sub { color: var(--text-2); margin: 0.5rem 0 0; }
+@media (prefers-reduced-motion: reduce) { .trophy, .tr-shine, .tr-sparks circle { animation: none !important; } }
