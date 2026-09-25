@@ -63,6 +63,8 @@ const externals = [
   config.commerce.officialProductUrl,
   config.commerce.officialCpsUrl,
   config.commerce.purchaseUrl,
+  config.commerce.joinUrl,
+  config.contact.whatsappUrl,
 ].filter(Boolean);
 if (process.env.CHECK_LINKS === "1") {
   const ua = { "User-Agent": "Mozilla/5.0 (link-check activatuvida.life/X39)" };

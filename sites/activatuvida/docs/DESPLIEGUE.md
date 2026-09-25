@@ -27,7 +27,7 @@ Coste: plan gratuito de Cloudflare (Workers Free incluye 100 000 peticiones/día
 
 ```bash
 cd sites/activatuvida
-# 1) Completa site.config.mjs: commerce.purchaseUrl, contact.whatsapp, contact.email, distributor.*
+# 1) Completa site.config.mjs: revisa commerce.purchaseUrl, commerce.joinUrl, contact.whatsappUrl y distributor.*
 # 2) Build de producción y validación:
 npm run build:production
 npm run check                 # validación estática

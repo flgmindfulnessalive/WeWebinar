@@ -754,7 +754,6 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 .h-display--closing { font-size: clamp(2.5rem, 10vw, 7rem); margin-bottom: 1.4rem; }
 .h-display--closing span:last-child { background: linear-gradient(100deg, #fff, var(--ice) 50%, var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .closing .lead { margin-inline: auto; }
-.closing__who { margin-top: 1.6rem; color: var(--text-2); }
 
 /* --- Footer ---------------------------------------------------------- */
 .site-footer { border-top: 1px solid var(--line); padding: 56px 0 calc(40px + env(safe-area-inset-bottom)); background: #030407; }

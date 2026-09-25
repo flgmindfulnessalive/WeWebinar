@@ -34,9 +34,10 @@ export default {
 
   // --- Destinos comerciales (PENDIENTES: no inventar) ---
   commerce: {
-    // Tu enlace personal de LifeWave (sitio replicado / afiliado).
-    // Formato habitual: https://www.lifewave.com/<tu-usuario>
-    purchaseUrl: null,
+    // Tu tienda personal de LifeWave (ficha del X39).
+    purchaseUrl: "https://www.lifewave.com/flulli/store/product/39000.022.009",
+    // Inscripción como Brand Partner (socio).
+    joinUrl: "https://www.lifewave.com/flulli/enrollment/packs",
     // Ficha oficial del producto en LifeWave (informativa, no comercial
     // del sitio de referencia). Se usa para el diagrama de ubicaciones.
     officialProductUrl: "https://www.lifewave.com/lifewaveinc/store/product/39000.022.009",
@@ -53,10 +54,13 @@ export default {
   },
 
   contact: {
-    // Número internacional sin +, espacios ni guiones. p. ej. "5215512345678"
+    // Enlace directo de WhatsApp (wa.me/message/…). Tiene prioridad sobre
+    // `whatsapp`; ese formato no admite mensaje prellenado.
+    whatsappUrl: "https://wa.me/message/5LB4Y2S5YNAOG1",
+    // Alternativa: número internacional sin +, espacios ni guiones.
     whatsapp: null,
     whatsappMessage: "Hola, vi la página de LifeWave X39 en ACTIVA TU VIDA y quiero más información.",
-    email: null,
+    email: null, // opcional: si se completa, aparece en el pie
   },
 
   // --- Videos (Vimeo). Se cargan solo cuando el visitante pulsa play. ---

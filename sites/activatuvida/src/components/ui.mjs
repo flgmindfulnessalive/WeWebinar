@@ -15,6 +15,7 @@ const ICONS = {
   prev: '<path d="M15 5l-7 7 7 7"/>',
   next: '<path d="M9 5l7 7-7 7"/>',
   bag: '<path d="M6 8h12l-1 12H7zM9 8V6a3 3 0 016 0v2"/>',
+  spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8"/>',
   mail: '<path d="M4 6h16v12H4zM4 7l8 6 8-6"/>',
   chat: '<path d="M5 19l1.4-3.6A7.5 7.5 0 1119.5 12 7.5 7.5 0 018.7 18.3z"/>',
   shield: '<path d="M12 3l7 3v5c0 5-3.2 8.3-7 10-3.8-1.7-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
@@ -137,7 +138,9 @@ export function videoPlayer(ctx, { videoKey, videoId, title, duration, poster, p
 export function resolveAction(ctx, kind) {
   const { commerce, contact } = ctx.config;
   if (kind === "buy") return commerce.purchaseUrl || null;
+  if (kind === "join") return commerce.joinUrl || null;
   if (kind === "whatsapp") {
+    if (contact.whatsappUrl) return contact.whatsappUrl;
     if (!contact.whatsapp) return null;
     const num = String(contact.whatsapp).replace(/\D/g, "");
     return `https://wa.me/${num}?text=${encodeURIComponent(contact.whatsappMessage || "")}`;
@@ -151,7 +154,8 @@ export function resolveAction(ctx, kind) {
 
 const ACTION_META = {
   buy: { icon: "bag", setting: "commerce.purchaseUrl", external: true },
-  whatsapp: { icon: "chat", setting: "contact.whatsapp", external: true },
+  join: { icon: "spark", setting: "commerce.joinUrl", external: true },
+  whatsapp: { icon: "chat", setting: "contact.whatsappUrl", external: true },
   email: { icon: "mail", setting: "contact.email", external: false },
 };
 

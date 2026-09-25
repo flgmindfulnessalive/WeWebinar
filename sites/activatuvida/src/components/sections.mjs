@@ -323,6 +323,7 @@ export function offer(ctx, c) {
         <p class="fineprint">${c.pricesNote}</p>
         <div class="btn-row">
           ${actionButton(ctx, "buy", { label: "Ir a la tienda" })}
+          ${actionButton(ctx, "join", { label: "Únete como Socio", variant: "ghost" })}
           ${actionButton(ctx, "whatsapp", { label: "Consultar por WhatsApp", variant: "ghost" })}
         </div>
       </div>
@@ -339,8 +340,6 @@ function pricesBlock(ctx) {
 
 // --- 8c · Cierre ---------------------------------------------------------------------------
 export function closing(ctx, c) {
-  const d = ctx.config.distributor;
-  const who = [d.name, d.location].filter(Boolean).join(" · ");
   return html`<section class="section closing" id="${c.id}" aria-labelledby="closing-title">
     <div class="closing__bg" aria-hidden="true">${picture(ctx, { ...c.image, alt: "", sizes: "100vw", cls: "bg-img" })}</div>
     <div class="wrap closing__inner">
@@ -349,10 +348,9 @@ export function closing(ctx, c) {
       <p class="lead">${c.lead}</p>
       <div class="btn-row btn-row--center">
         ${actionButton(ctx, "buy", { label: "Comprar X39" })}
+        ${actionButton(ctx, "join", { label: "Únete como Socio", variant: "ghost" })}
         ${actionButton(ctx, "whatsapp", { label: "WhatsApp", variant: "ghost" })}
-        ${actionButton(ctx, "email", { label: "Correo", variant: "ghost" })}
       </div>
-      ${who ? html`<p class="closing__who">Te atiende: <strong>${who}</strong>${d.lifewaveId ? ` · ID# ${d.lifewaveId}` : ""}</p>` : ""}
     </div>
   </section>`;
 }
@@ -370,7 +368,7 @@ export function siteFooter(ctx, c) {
         <p class="site-footer__identity">${[d.name, d.lifewaveId && `ID# ${d.lifewaveId}`].filter(Boolean).map((t) => `${t} · `).join("")}${c.identity}</p>
       </div>
       <nav class="site-footer__links" aria-label="Enlaces">
-        <a href="${ctx.config.commerce.officialProductUrl}" target="_blank" rel="noopener">LifeWave X39</a>
+        <a href="${ctx.config.commerce.purchaseUrl || ctx.config.commerce.officialProductUrl}" target="_blank" rel="noopener">LifeWave X39</a>
         <a href="#uso">Cómo usarlo</a>
         ${email ? html`<a href="${`mailto:${email}`}">${email}</a>` : ""}
       </nav>
@@ -426,7 +424,7 @@ export function videoDialog() {
 }
 
 export function previewNotice(ctx) {
-  if (ctx.mode !== "preview") return "";
+  if (ctx.mode !== "preview" || !ctx.pending.size) return "";
   return html`<aside class="preview-pill" data-preview-pill>
     <span><strong>Vista previa</strong> · ${ctx.pending.size} destinos pendientes<span class="preview-pill__detail">: ${[...ctx.pending].join(", ")}</span></span>
     <button type="button" class="icon-btn icon-btn--sm" data-preview-dismiss aria-label="Ocultar aviso de vista previa">${icon("close")}</button>

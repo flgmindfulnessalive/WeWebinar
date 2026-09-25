@@ -39,9 +39,7 @@ npm run build:production
 
 En `site.config.mjs`:
 
-- `commerce.purchaseUrl`: tu enlace personal de LifeWave.
-- `contact.whatsapp`: número internacional, solo dígitos.
-- `contact.email`
+- `contact.email` (opcional; aparece en el pie si se completa).
 - `distributor.location` (opcional).
 - En `deploy/wrangler.toml`: `CANVA_ORIGIN` (dominio gratuito de tu web de Canva).
 
