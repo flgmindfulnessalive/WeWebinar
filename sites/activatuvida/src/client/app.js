@@ -67,13 +67,13 @@
   }
 
   // --- Videos (Vimeo) a demanda -----------------------------------------
-  function vimeoSrc(id) {
-    const p = new URLSearchParams({ autoplay: "1", dnt: "1", title: "0", byline: "0", portrait: "0", playsinline: "1" });
+  function vimeoSrc(id, extra) {
+    const p = new URLSearchParams({ autoplay: "1", dnt: "1", title: "0", byline: "0", portrait: "0", playsinline: "1", ...extra });
     return `https://player.vimeo.com/video/${encodeURIComponent(id)}?${p}`;
   }
-  function makeIframe(id, title) {
+  function makeIframe(id, title, extra) {
     const f = document.createElement("iframe");
-    f.src = vimeoSrc(id);
+    f.src = vimeoSrc(id, extra);
     f.title = title;
     f.allow = "autoplay; fullscreen; picture-in-picture";
     f.referrerPolicy = "strict-origin-when-cross-origin";
@@ -89,6 +89,30 @@
       track("video_play");
     });
   });
+
+  // Clips marcados con data-autoplay-inview: al entrar en pantalla se
+  // reproducen silenciados y en bucle (los navegadores solo permiten el
+  // autoplay sin sonido); se pausan al salir. Con «reducir movimiento» o
+  // ahorro de datos se quedan con el botón de play.
+  const saveData = navigator.connection && navigator.connection.saveData;
+  if ("IntersectionObserver" in window && !reducedMotion.matches && !saveData) {
+    const vimeoCmd = (iframe, method) => {
+      if (iframe.contentWindow) iframe.contentWindow.postMessage(JSON.stringify({ method }), "https://player.vimeo.com");
+    };
+    const auto = new IntersectionObserver((entries) => {
+      for (const { target: player, isIntersecting } of entries) {
+        const iframe = $("iframe", player);
+        if (isIntersecting) {
+          if (!iframe) {
+            player.insertBefore(makeIframe(player.dataset.vimeo, player.dataset.title, { muted: "1", loop: "1" }), $(".player__poster", player));
+            player.classList.add("is-playing");
+            track("video_autoplay");
+          } else vimeoCmd(iframe, "play");
+        } else if (iframe) vimeoCmd(iframe, "pause");
+      }
+    }, { threshold: 0.6 });
+    $$("[data-player][data-autoplay-inview]").forEach((p) => auto.observe(p));
+  }
 
   // --- Diálogos -----------------------------------------------------------
   const supportsDialog = typeof HTMLDialogElement === "function";

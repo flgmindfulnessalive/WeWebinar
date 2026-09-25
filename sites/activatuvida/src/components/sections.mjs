@@ -118,7 +118,7 @@ export function technology(ctx, c) {
         ${c.paragraphs.map((p) => html`<p class="body-lg" ${reveal}>${p}</p>`)}
       </div>
       <div class="tech__clip" ${reveal}>
-        ${videoPlayer(ctx, { videoKey: c.clip.video, ratio: "16/9", posterHtml: raw(`<span class="player__art">${patchVisual({ cls: "patch--poster", label: "" })}</span>`) })}
+        ${videoPlayer(ctx, { videoKey: c.clip.video, ratio: "16/9", autoplayInView: true, posterHtml: raw(`<span class="player__art">${patchVisual({ cls: "patch--poster", label: "" })}</span>`) })}
       </div>
     </div>
     <div class="wrap">

@@ -119,11 +119,11 @@ export function patchVisual({ cls = "", label = "Representación del parche Life
 }
 
 // --- Reproductor de video a demanda ------------------------------------
-export function videoPlayer(ctx, { videoKey, videoId, title, duration, poster, posterHtml, ratio = "16/9", cls = "", sizes = "(min-width: 1100px) 1000px, 100vw" }) {
+export function videoPlayer(ctx, { videoKey, videoId, title, duration, poster, posterHtml, ratio = "16/9", cls = "", sizes = "(min-width: 1100px) 1000px, 100vw", autoplayInView = false }) {
   const v = videoKey ? ctx.config.videos[videoKey] : { id: videoId, title, duration };
   const t = title || v.title;
   const d = duration || v.duration;
-  return html`<figure class="player ${cls}" data-player data-vimeo="${v.id}" data-title="${t}" style="--ratio:${ratio}">
+  return html`<figure class="player ${cls}" data-player data-vimeo="${v.id}" data-title="${t}"${raw(autoplayInView ? " data-autoplay-inview" : "")} style="--ratio:${ratio}">
     <button class="player__poster" type="button" aria-label="${`Reproducir video: ${t} (${d})`}">
       ${poster ? picture(ctx, { src: poster, alt: "", sizes, cls: "player__img" }) : ""}
       ${posterHtml || ""}

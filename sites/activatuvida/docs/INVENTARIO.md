@@ -45,11 +45,11 @@ Leyenda de estado:
 
 ## 2. Videos y embeds
 
-Todos se comprobaron mediante el oEmbed público de Vimeo: existen y devuelven metadatos. La reproducción desde `activatuvida.life` no se pudo verificar en este entorno, porque el navegador automatizado recibe un desafío de Cloudflare. Queda pendiente de prueba manual (ver [VALIDACION.md](./VALIDACION.md)). Ningún video se reproduce solo: la referencia usaba `autoplay=1&loop=1&muted=0` y aquí no se copia.
+Todos se comprobaron mediante el oEmbed público de Vimeo: existen y devuelven metadatos. La reproducción desde `activatuvida.life` no se pudo verificar en este entorno, porque el navegador automatizado recibe un desafío de Cloudflare. Queda pendiente de prueba manual (ver [VALIDACION.md](./VALIDACION.md)). Solo el clip del parche (1133694650) se reproduce solo, silenciado y al llegar a su sección. La referencia usaba `autoplay=1&loop=1&muted=0`, con sonido, y eso no se copia.
 
 | ID Vimeo | Título (oEmbed) | Duración | Referencia | Destino |
 |---|---|---|---|---|
-| 1133694650 | What's In the Patch – Spanish | 0:17 | iframe con reproducción automática y en bucle | `#categoria`, bajo demanda |
+| 1133694650 | What's In the Patch – Spanish | 0:17 | iframe con reproducción automática y en bucle | `#como-funciona`: desde el 25-sep-2026, a petición del propietario, se reproduce **silenciado y en bucle al entrar en pantalla** (60 % visible) y se pausa al salir (`data-autoplay-inview`). Con «reducir movimiento» o ahorro de datos, solo con clic |
 | 1133177065 | The Light: 3-Minute Introduction Video – Spanish | 2:56 | miniatura propia + ventana emergente | `#video` (reproductor principal) |
 | 1222389389 | the_david_schmidt_story | 2:12 | elegido por el propietario (25-sep-2026) | `#empresa` · portada `v-fundador-historia`: fotograma elegido por el propietario en Vimeo (David de frente ante la pared de patentes) |
 | 1131910398 | David Schmidt – Be The Light – Spanish | 1:51 | iframe con portada | Sustituido el 25-sep-2026 por 1222389389 |
