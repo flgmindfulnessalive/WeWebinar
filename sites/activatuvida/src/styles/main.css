@@ -915,3 +915,23 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
   fill: #fff; opacity: 0.4; border-top-right-radius: var(--radius);
   filter: drop-shadow(0 0 1.5px rgba(10, 30, 60, 0.35));
 }
+
+/* Guía de ubicaciones */
+.pl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1.2rem; }
+.pl-col { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px 10px 14px;
+  background: radial-gradient(80% 60% at 50% 30%, rgba(94, 179, 230, 0.12), transparent 70%), var(--bg-2); }
+.pl-fig { margin: 0; }
+.pl-fig svg { width: 100%; max-height: 46vh; height: auto; display: block; margin-inline: auto; }
+.pl-body { fill: #0f1d35; stroke: #a9d4ff; stroke-width: 1.4; stroke-linejoin: round; }
+.pl-lines { fill: none; stroke: rgba(169, 212, 255, 0.55); stroke-width: 1.1; stroke-linecap: round; }
+.pl-ring { fill: rgba(207, 230, 255, 0.18); stroke: #ffffff; stroke-opacity: 0.85; stroke-width: 1.2; }
+.pl-pulse { fill: none; stroke: var(--mint); stroke-width: 1.2; opacity: 0; transform-origin: 0 0; }
+.js .pl-pulse { animation: pl-pulse 2.4s ease-out infinite; }
+@keyframes pl-pulse { 0% { opacity: 0.8; transform: scale(0.9); } 100% { opacity: 0; transform: scale(2.2); } }
+.pl-cap { display: grid; gap: 2px; text-align: center; margin: 12px 0 0; }
+.pl-cap span { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ice-2); }
+.pl-cap strong { font-family: var(--font-display); font-weight: 500; font-size: 1rem; }
+.pl-tips { list-style: none; display: grid; gap: 8px; margin-top: 1.2rem; }
+.pl-tips li { display: flex; gap: 10px; align-items: flex-start; color: var(--text-2); font-size: 0.95rem; }
+.pl-tips .icon { width: 17px; height: 17px; color: var(--mint); flex: none; margin-top: 3px; }
+@media (prefers-reduced-motion: reduce) { .pl-pulse { animation: none !important; } }

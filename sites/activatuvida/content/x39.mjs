@@ -136,7 +136,14 @@ export const usage = {
     { n: "4", title: "Repite", text: "Ponte un parche nuevo cada día." },
   ],
   hydration: "Para obtener los mejores resultados, bebe mucha agua.",
-  placement: { label: "Ver ubicaciones recomendadas", url: "officialProductUrl" },
+  placement: {
+    label: "Ver ubicaciones recomendadas",
+    kicker: "Ubicaciones recomendadas",
+    title: "Dónde colocar el parche",
+    front: { view: "Delante", spot: "Debajo del ombligo" },
+    back: { view: "Detrás", spot: "En la nuca" },
+    tips: ["Elige una de las dos zonas.", "Sobre la piel limpia y seca, por la mañana.", "Hasta 12 horas; al día siguiente, uno nuevo."],
+  },
   guarantee: {
     badge: "90 días",
     title: "Disfruta de los beneficios con confianza.",

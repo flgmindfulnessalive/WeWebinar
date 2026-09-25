@@ -130,6 +130,13 @@ try {
     const iframesBefore = await page.$$eval("iframe", (f) => f.length);
     await page.click("#video .player__poster");
     const src = await page.$eval("#video iframe", (f) => f.src).catch(() => "");
+    // Guía de ubicaciones
+    await page.click('[data-dialog-open="dlg-placement"]');
+    const plOpen = await page.$eval("#dlg-placement", (d) => d.open);
+    if (width === 390 || width === 1440) await page.screenshot({ path: path.join(outDir, `x39-${width}-ubicaciones.jpg`), type: "jpeg", quality: 82 });
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+    ok(`${width}px guía de ubicaciones`, plOpen);
     // Ventana de estudios
     await page.click('#ghk-cu [data-dialog-open="dlg-studies"]');
     const stOpen = await page.$eval("#dlg-studies", (d) => d.open);

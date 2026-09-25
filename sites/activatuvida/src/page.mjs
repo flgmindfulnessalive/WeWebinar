@@ -58,6 +58,7 @@ export function renderPage(ctx) {
     </main>
     ${S.siteFooter(ctx, content.footer)}
     ${S.studiesDialog(ctx, content.studies)}
+    ${S.placementDialog(ctx, content.usage.placement)}
     ${S.videoDialog()}`;
   const notice = S.previewNotice(ctx);
 

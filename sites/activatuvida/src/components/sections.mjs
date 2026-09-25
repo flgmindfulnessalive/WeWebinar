@@ -185,7 +185,6 @@ export function testimonials(ctx, c) {
 
 // --- 7 · Uso + garantía -------------------------------------------------------------------
 export function usage(ctx, c) {
-  const placementUrl = ctx.config.commerce[c.placement.url];
   const g = c.guarantee;
   return html`<section class="section usage" id="${c.id}" aria-labelledby="usage-title">
     <div class="wrap usage__grid">
@@ -197,7 +196,7 @@ export function usage(ctx, c) {
         </ol>
         <p class="note-line">${icon("info", "icon icon--sm")}${c.hydration}</p>
         <div class="btn-row">
-          ${linkButton({ href: placementUrl, label: c.placement.label, variant: "ghost", iconName: "external", external: true, track: "placement_official" })}
+          <button class="btn btn--ghost" type="button" data-dialog-open="dlg-placement" data-track="placement_dialog"><span>${c.placement.label}</span>${icon("arrow")}</button>
         </div>
       </div>
       <div class="usage__media has-halftone" ${reveal}>
@@ -376,4 +375,49 @@ export function previewNotice(ctx) {
     <span><strong>Vista previa</strong> · ${ctx.pending.size} destinos pendientes<span class="preview-pill__detail">: ${[...ctx.pending].join(", ")}</span></span>
     <button type="button" class="icon-btn icon-btn--sm" data-preview-dismiss aria-label="Ocultar aviso de vista previa">${icon("close")}</button>
   </aside>`;
+}
+
+// --- Guía de ubicaciones (ventana) ------------------------------------------------------------
+const BODY = "M88,64 L88,80 C72,84 63,89 61,101 C60,130 65,160 67,190 C64,206 62,222 64,238 L71,330 L73,408 C66,414 70,424 84,424 L92,424 L95,330 L100,248 L105,330 L108,424 L116,424 C130,424 134,414 127,408 L129,330 L136,238 C138,222 136,206 133,190 C135,160 140,130 139,101 C137,89 128,84 112,80 L112,64 Z";
+const ARMS = "M62,96 C52,100 48,110 47,124 L42,196 C41,210 40,222 42,232 C43,240 52,240 53,232 L56,200 L63,140 L66,118 Z M138,96 C148,100 152,110 153,124 L158,196 C159,210 160,222 158,232 C157,240 148,240 147,232 L144,200 L137,140 L134,118 Z";
+
+function figure(side, spot, label) {
+  const details = side === "front"
+    ? '<path d="M84,90 Q92,95 98,92 M116,90 Q108,95 102,92" /><path d="M93,36 q3,2 6,0 M101,36 q3,2 6,0 M95,50 q5,3 10,0" />'
+    : '<path d="M100,98 L100,200" /><path d="M78,112 C80,124 84,132 88,138 M122,112 C120,124 116,132 112,138" /><path d="M76,236 Q88,244 100,238 Q112,244 124,236" />';
+  const [x, y] = spot;
+  return `<figure class="pl-fig">
+    <svg viewBox="0 0 200 440" role="img" aria-label="${label}">
+      <defs><radialGradient id="pl-g-${side}"><stop offset="0" stop-color="#bfe6ff" stop-opacity=".75"/><stop offset=".45" stop-color="#5eb3e6" stop-opacity=".22"/><stop offset="1" stop-color="#5eb3e6" stop-opacity="0"/></radialGradient></defs>
+      <g class="pl-body"><path d="${ARMS}"/><path d="${BODY}"/><ellipse cx="100" cy="40" rx="21" ry="26"/></g>
+      <g class="pl-lines">${details}</g>
+      <g class="pl-spot" transform="translate(${x} ${y})">
+        <circle r="30" fill="url(#pl-g-${side})"/>
+        <circle class="pl-pulse" r="13"/>
+        <circle r="11" class="pl-ring"/>
+        <circle r="5.5" fill="#ffffff"/>
+      </g>
+    </svg>
+  </figure>`;
+}
+
+export function placementDialog(ctx, p) {
+  return html`<dialog class="dialog dialog--wide" id="dlg-placement" aria-labelledby="dlg-placement-title">
+    <div class="dialog__panel">
+      <button class="icon-btn dialog__close" type="button" data-dialog-close aria-label="Cerrar">${icon("close")}</button>
+      ${kicker(p.kicker)}
+      <h2 class="h-sub" id="dlg-placement-title">${p.title}</h2>
+      <div class="pl-grid">
+        <div class="pl-col">
+          ${raw(figure("front", [100, 212], `${p.front.view}: ${p.front.spot}`))}
+          <p class="pl-cap"><span>${p.front.view}</span><strong>${p.front.spot}</strong></p>
+        </div>
+        <div class="pl-col">
+          ${raw(figure("back", [100, 72], `${p.back.view}: ${p.back.spot}`))}
+          <p class="pl-cap"><span>${p.back.view}</span><strong>${p.back.spot}</strong></p>
+        </div>
+      </div>
+      <ul class="pl-tips" role="list">${p.tips.map((t) => html`<li>${icon("check")}${t}</li>`)}</ul>
+    </div>
+  </dialog>`;
 }
