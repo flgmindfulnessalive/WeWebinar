@@ -19,6 +19,7 @@
     "validate": "npm run build && npm run check && npm run test:worker && npm run screenshots",
     "inline": "node scripts/inline-assets.mjs",
     "deploy:preview": "node scripts/inline-assets.mjs && npx wrangler deploy -c deploy/wrangler.preview.inline.toml",
-    "deploy:production": "node scripts/inline-assets.mjs && npx wrangler deploy -c deploy/wrangler.inline.toml"
+    "deploy:production": "node scripts/inline-assets.mjs && npx wrangler deploy -c deploy/wrangler.inline.toml",
+    "demo:loader": "node scripts/demo-loader.mjs"
   }
 }
