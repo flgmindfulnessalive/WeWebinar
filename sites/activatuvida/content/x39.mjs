@@ -185,7 +185,7 @@ export const offer = {
   modes: [
     { name: "Cliente minorista", text: "Compra única." },
     { name: "Cliente preferente", text: "Suscripción mensual con precio preferente." },
-    { name: "Brand Partner", text: "Paquetes mayoristas con el mejor precio." },
+    { name: "Brand Partner", text: "Paquetes con el mejor precio y acceso a la oportunidad de negocio." },
   ],
   pricesNote: "Escríbenos y te indicamos los precios vigentes en tu país.",
   dialogCta: "Información sobre paquetes y precios",
