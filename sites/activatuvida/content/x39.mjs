@@ -197,7 +197,7 @@ export const closing = {
   kicker: "¿Cómo encaja esto en tu camino hacia la salud?",
   title: "ACTIVA TU VIDA HOY",
   lead: "No estás solo. Escríbenos y te acompañamos a empezar.",
-  image: { src: "ola-epica", alt: "Una gran ola azul formando un tubo en Teahupoo, Tahití" },
+  image: { src: "ola-propia", alt: "Una gran ola azul formando un tubo junto a una costa de palmeras" },
 };
 
 // Ventana de estudios y patentes (contenido de /es/estudios/)
@@ -246,6 +246,6 @@ export const footer = {
   identity: "Brand Partner independiente de LifeWave.",
   legal: [
     "Nuestros productos no están destinados a diagnosticar, tratar, curar ni prevenir ninguna enfermedad o afección médica. El contenido se presenta de forma resumida, es de carácter general y se proporciona únicamente con fines informativos.",
-    "LifeWave, X39, Cellergize y X2O son marcas de LifeWave, Inc. Fotografía: Unsplash. Ola: «Teahupoo1», de The Last Minute, CC BY 2.0, vía Wikimedia Commons.",
+    "LifeWave, X39, Cellergize y X2O son marcas de LifeWave, Inc.",
   ],
 };
