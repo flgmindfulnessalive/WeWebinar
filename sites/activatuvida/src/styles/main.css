@@ -740,10 +740,14 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 /* --- Cierre ---------------------------------------------------------- */
 .closing { text-align: center; overflow: hidden; isolation: isolate; min-height: 80vh; display: grid; place-items: center; }
 .closing__bg { position: absolute; inset: 0; z-index: -1; }
-.closing__bg .bg-img { filter: saturate(0.55) brightness(0.55) hue-rotate(-20deg); }
+.closing__bg .bg-img { filter: saturate(1.1) brightness(0.85) contrast(1.05); object-position: 78% 50%; transform: scale(1.12); transform-origin: 80% 50%; }
+@media (min-width: 900px) { .closing__bg .bg-img { object-position: 50% 12%; transform: scale(1.05); transform-origin: 50% 0; } }
+.closing .h-display--closing { filter: drop-shadow(0 2px 22px rgba(3, 10, 25, 0.75)); }
+.closing .lead { text-shadow: 0 1px 14px rgba(3, 10, 25, 0.8); }
+.closing__bg { overflow: hidden; }
 .closing__bg::after {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(60% 60% at 50% 55%, rgba(5, 7, 11, 0.35), rgba(5, 7, 11, 0.9)), linear-gradient(180deg, var(--bg), transparent 30%, transparent 70%, var(--bg));
+  background: radial-gradient(55% 45% at 50% 52%, rgba(4, 12, 28, 0.62), rgba(4, 12, 28, 0.25) 70%, rgba(4, 12, 28, 0.15)), linear-gradient(180deg, var(--bg), transparent 22%, transparent 78%, var(--bg));
 }
 .closing__inner { display: grid; justify-items: center; }
 .closing .kicker { justify-content: center; }

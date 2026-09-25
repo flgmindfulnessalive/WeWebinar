@@ -197,7 +197,7 @@ export const closing = {
   kicker: "¿Cómo encaja esto en tu camino hacia la salud?",
   title: "ACTIVA TU VIDA HOY",
   lead: "No estás solo. Escríbenos y te acompañamos a empezar.",
-  image: { src: "pradera-amanecer", alt: "Amanecer sobre una pradera con niebla y árboles" },
+  image: { src: "ola-epica", alt: "Una gran ola azul formando un tubo en Teahupoo, Tahití" },
 };
 
 // Ventana de estudios y patentes (contenido de /es/estudios/)
@@ -247,6 +247,6 @@ export const footer = {
   legal: [
     "Descargo de responsabilidad: nuestros parches se basan en la teoría de la fototerapia. No están probados según los estándares de la medicina convencional y no deben utilizarse en lugar de la atención médica.",
     "Nuestros productos no están destinados a diagnosticar, tratar, curar ni prevenir ninguna enfermedad o afección médica. El contenido se presenta de forma resumida, es de carácter general y se proporciona únicamente con fines informativos.",
-    "LifeWave, X39, Cellergize y X2O son marcas de LifeWave, Inc. Fotografía: Unsplash.",
+    "LifeWave, X39, Cellergize y X2O son marcas de LifeWave, Inc. Fotografía: Unsplash. Ola: «Teahupoo1», de The Last Minute, CC BY 2.0, vía Wikimedia Commons.",
   ],
 };

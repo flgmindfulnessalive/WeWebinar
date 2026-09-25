@@ -48,7 +48,7 @@ En `site.config.mjs`:
 ## Créditos y licencias
 
 - **Tipografías:** Inter y Sora (SIL Open Font License), autoalojadas.
-- **Fotografía ambiental:** Unsplash (Licencia Unsplash).
+- **Fotografía ambiental:** Unsplash (Licencia Unsplash). Ola del cierre: «Teahupoo1», de The Last Minute (CC BY 2.0), vía Wikimedia Commons: https://commons.wikimedia.org/wiki/File:Teahupoo1.jpg
 - **El parche:** representación vectorial propia.
 - **Videos:** alojados en Vimeo por sus autores y cargados solo a demanda.
 - LifeWave, X39, Cellergize y X2O son marcas de LifeWave, Inc.
