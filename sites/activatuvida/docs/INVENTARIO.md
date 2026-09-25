@@ -51,7 +51,8 @@ Todos se comprobaron mediante el oEmbed público de Vimeo: existen y devuelven m
 |---|---|---|---|---|
 | 1133694650 | What's In the Patch – Spanish | 0:17 | iframe con reproducción automática y en bucle | `#categoria`, bajo demanda |
 | 1133177065 | The Light: 3-Minute Introduction Video – Spanish | 2:56 | miniatura propia + ventana emergente | `#video` (reproductor principal) |
-| 1131910398 | David Schmidt – Be The Light – Spanish | 1:51 | iframe con portada | `#empresa` |
+| 1222389389 | the_david_schmidt_story | 2:12 | elegido por el propietario (25-sep-2026) | `#empresa` · portada: la de 1131910398, porque la miniatura de Vimeo de este video es un fotograma negro |
+| 1131910398 | David Schmidt – Be The Light – Spanish | 1:51 | iframe con portada | Sustituido el 25-sep-2026 por 1222389389 |
 | HurU4IePl5Q (YouTube) | — | — | variante oculta del widget del fundador | No se usa; queda el de Vimeo |
 | 1118429044 | More Energy, Better Sleep, Line & Wrinkles Plus New Hair Growth! | 0:27 | galería | ✅ activo |
 | 1118418371 | Eyesight, Digestion, Sleep, Skin & Pain… all improved! | 0:15 | galería | ✅ activo |

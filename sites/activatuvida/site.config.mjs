@@ -67,7 +67,7 @@ export default {
   videos: {
     intro: { id: "1133177065", title: "La luz: introducción en 3 minutos", duration: "2:56" },
     patch: { id: "1133694650", title: "¿Qué hay dentro del parche?", duration: "0:17" },
-    founder: { id: "1131910398", title: "David Schmidt · Be The Light", duration: "1:51" },
+    founder: { id: "1222389389", title: "La historia de David Schmidt", duration: "2:12" },
   },
 
   // --- Documentos y fuentes ---
