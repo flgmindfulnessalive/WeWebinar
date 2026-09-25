@@ -11,6 +11,8 @@ El propietario acepta que la web de Canva deje de verse. Todo `activatuvida.life
 - `/X39` → esta página; `/x39`, `/X39/`, etc. → **301** a `/X39`.
 - Otras rutas → 404.
 
+Avance (25-sep-2026): ✅ zona creada en Cloudflare (registros de Canva borrados; se conservan `_domainconnect` y `_dmarc`) · ✅ nameservers cambiados en GoDaddy a `demi.ns.cloudflare.com` / `newt.ns.cloudflare.com` (propagando) · ⏳ token · ⏳ despliegue.
+
 Pasos:
 
 1. 🔐 **Cloudflare:** crear cuenta gratuita → *Add a domain* → `activatuvida.life` → plan Free. Revisar los registros importados: **borrar** el registro A de `@` (`103.169.142.0`, Canva) y cualquier `www`. **Conservar** MX/TXT si hay correo en el dominio.
