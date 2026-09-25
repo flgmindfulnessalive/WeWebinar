@@ -51,12 +51,12 @@ En `capturas/`:
 - `x39-{360,390,768}-menu.jpg`: menú móvil abierto.
 - `x39-390-dialogo.jpg`: diálogo de paquetes.
 
-Las capturas son de la vista previa: incluyen el aviso «Vista previa · 3 destinos pendientes» y los botones marcados como «Pendiente».
+Las capturas son de una vista previa anterior a configurar los enlaces: incluyen el aviso «Vista previa · 3 destinos pendientes» y los botones marcados como «Pendiente».
 
 ## Pendiente de verificar fuera de este entorno
 
 1. ✅ **Reproducción de Vimeo desde `activatuvida.life`:** confirmada por el propietario en el móvil (25-sep-2026). El mismo día se cambió el video de «Acerca de LifeWave» a 1222389389 (queda por confirmar que ese se reproduce). Nota original: Los 13 videos existen (el oEmbed público responde con título y duración). El navegador automatizado recibe un desafío de Cloudflare de Vimeo desde este centro de datos, así que no se pudo reproducir ninguno. Si algún video tiene restringida la inserción a whythelight.com, el reproductor mostrará el aviso de Vimeo. Debajo de cada video queda el enlace «Ábrelo en Vimeo». Pruébalo en la vista previa: <https://activatuvida-x39-preview.activatuvida-x39.workers.dev/X39>.
-2. **Botones de compra, WhatsApp y correo:** pendientes de configurar (`site.config.mjs`).
+2. ✅ **Botones de compra, «Únete como Socio» y WhatsApp:** configurados en `site.config.mjs` (tienda y alta de LifeWave de `flulli`, enlace de WhatsApp) y activos en `activatuvida.life` (comprobado el 25-sep-2026: ningún botón «Pendiente»). El correo es opcional y sigue sin definir.
 3. ~~Proxy del sitio de Canva~~: ya no aplica. El propietario decidió el 25-sep-2026 que todo el dominio pase a esta página (`CANVA_ORIGIN` vacío).
 4. ~~Comprobación en producción~~: hecha el 25-sep-2026 (ver «Antes del despliegue»). Falta solo la reproducción de Vimeo en el móvil (punto 1).
 
