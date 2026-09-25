@@ -976,3 +976,9 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 @media (max-width: 899px) {
   .hero .kicker--stack { font-size: clamp(0.6rem, 2.95vw, 0.72rem); letter-spacing: 0.1em; }
 }
+
+/* Chips de la categoría: 2 por línea en móvil */
+@media (max-width: 899px) {
+  .video-section .chips { display: grid; grid-template-columns: repeat(2, max-content); gap: 10px; }
+  .video-section .chips li { font-size: clamp(0.78rem, 3.6vw, 0.9rem); padding: 8px 14px 8px 10px; }
+}
