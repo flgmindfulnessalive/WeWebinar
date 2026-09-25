@@ -368,7 +368,9 @@ export function siteFooter(ctx, c) {
         <p class="site-footer__identity">${[d.name, d.lifewaveId && `ID# ${d.lifewaveId}`].filter(Boolean).map((t) => `${t} · `).join("")}${c.identity}</p>
       </div>
       <nav class="site-footer__links" aria-label="Enlaces">
-        <a href="${ctx.config.commerce.purchaseUrl || ctx.config.commerce.officialProductUrl}" target="_blank" rel="noopener">LifeWave X39</a>
+        ${ctx.config.commerce.purchaseUrl
+          ? html`<a href="${ctx.config.commerce.purchaseUrl}" data-store-link>LifeWave X39</a>`
+          : html`<a href="${ctx.config.commerce.officialProductUrl}" target="_blank" rel="noopener">LifeWave X39</a>`}
         <a href="#uso">Cómo usarlo</a>
         ${email ? html`<a href="${`mailto:${email}`}">${email}</a>` : ""}
       </nav>

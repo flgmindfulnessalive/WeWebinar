@@ -17,6 +17,37 @@
     if (el) track(el.getAttribute("data-track"));
   });
 
+  // --- Pantallas de carga «Activación» ----------------------------------
+  // A: si la página tardó más de 0,3 s, el parche lanza su onda y se funde.
+  const boot = $("[data-loader-boot]");
+  if (boot) {
+    const hideBoot = () => {
+      if (!boot.isConnected) return;
+      if (performance.now() < 300) { boot.remove(); return; }
+      const ld = $(".ld", boot);
+      ld.classList.add("is-done");
+      setTimeout(() => ld.classList.add("is-hidden"), 450);
+      setTimeout(() => boot.remove(), 950);
+    };
+    if (document.readyState === "complete") hideBoot();
+    else { window.addEventListener("load", hideBoot, { once: true }); setTimeout(hideBoot, 6000); }
+  }
+  // B: al pulsar Comprar o Únete se muestra la transición mientras abre la tienda.
+  const go = $("[data-loader-go]");
+  if (go) {
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a[data-store-link]");
+      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      go.hidden = false;
+      const ld = $(".ld", go);
+      ld.classList.remove("is-done", "is-hidden");
+      setTimeout(() => { window.location.href = a.href; }, 60);
+    });
+    // Al volver con «atrás» (caché del navegador), se oculta.
+    window.addEventListener("pageshow", (e) => { if (e.persisted) go.hidden = true; });
+  }
+
   // --- Cabecera y menú móvil ------------------------------------------
   const header = $("[data-header]");
   const toggle = $("[data-menu-toggle]");

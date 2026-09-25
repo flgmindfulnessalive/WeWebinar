@@ -2,6 +2,7 @@
 import { html, raw } from "./lib/html.mjs";
 import * as content from "../content/x39.mjs";
 import * as S from "./components/sections.mjs";
+import { loaderCss, loaderPageCss, loaderHtml } from "./components/loader.mjs";
 
 function analytics(config) {
   const { plausibleDomain, ga4Id } = config.analytics;
@@ -88,6 +89,7 @@ ${ctx.mode === "preview" ? raw('<meta name="robots" content="noindex, nofollow">
 <link rel="preload" href="${`${ctx.assets}/fonts/sora-var.woff2`}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${`${ctx.assets}/fonts/inter-var.woff2`}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${`${ctx.assets}/fonts/mono-var.woff2`}" as="font" type="font/woff2" crossorigin>
+<style>${raw(loaderCss + loaderPageCss)}</style>
 <link rel="stylesheet" href="${ctx.cssHref}">
 <script>document.documentElement.classList.replace('no-js','js')</script>
 <script src="${ctx.jsHref}" defer></script>
@@ -95,8 +97,10 @@ ${structuredData(ctx, url)}
 ${analytics(config)}
 </head>
 <body>
+<div class="ld-boot" data-loader-boot>${loaderHtml()}</div>
 ${body}
 ${notice}
+<div class="ld-go" data-loader-go hidden>${loaderHtml({ message: "Te llevamos a la tienda oficial de LifeWave…", note: "Conexión segura · lifewave.com" })}</div>
 </body>
 </html>`}
 `;

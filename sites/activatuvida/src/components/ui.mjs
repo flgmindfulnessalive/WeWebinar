@@ -153,8 +153,8 @@ export function resolveAction(ctx, kind) {
 }
 
 const ACTION_META = {
-  buy: { icon: "bag", setting: "commerce.purchaseUrl", external: true },
-  join: { icon: "spark", setting: "commerce.joinUrl", external: true },
+  buy: { icon: "bag", setting: "commerce.purchaseUrl", external: false, store: true },
+  join: { icon: "spark", setting: "commerce.joinUrl", external: false, store: true },
   whatsapp: { icon: "chat", setting: "contact.whatsappUrl", external: true },
   email: { icon: "mail", setting: "contact.email", external: false },
 };
@@ -174,6 +174,8 @@ export function actionButton(ctx, kind, { label, variant = "primary", cls = "" }
     target: meta.external ? "_blank" : null,
     rel: meta.external ? "noopener" : null,
     "data-track": `cta_${kind}`,
+    // La tienda se abre en la misma pestaña, con la transición «Activación».
+    "data-store-link": meta.store ? "" : null,
   })}>${icon(meta.icon)}<span>${label}</span></a>`;
 }
 

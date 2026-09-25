@@ -59,6 +59,17 @@ export const loaderCss = `
 }
 `;
 
+// Contenedores de la página: .ld-boot (A, al cargar /X39) aparece solo si la
+// carga tarda más de 0,3 s y se oculta sola a los 8 s si el JS no llega;
+// .ld-go (B, al ir a la tienda) se muestra desde app.js.
+export const loaderPageCss = `
+.ld-boot, .ld-go { position: fixed; inset: 0; z-index: 1000; }
+.ld-boot { animation: ld-in .35s .3s both, ld-safety 0s 8s forwards; }
+.no-js .ld-boot, .ld-go[hidden] { display: none; }
+@keyframes ld-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ld-safety { to { visibility: hidden; } }
+`;
+
 export function loaderHtml({ message = "", note = "" } = {}) {
   const falls = FALLS.map(([a, dl]) => `<span class="ld__fall" style="--a:${a}deg"><b style="--dl:${dl}s"></b></span>`).join("");
   return raw(`<div class="ld" role="status" aria-live="polite" aria-label="${message || "Cargando"}">

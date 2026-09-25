@@ -42,6 +42,21 @@ Comandos: `npm run validate` (build + validación estática + Worker + navegador
 | Vista previa `workers.dev` | ✅ <https://activatuvida-x39-preview.activatuvida-x39.workers.dev/X39>: `/X39` 200 (HTML con `noindex`, cabeceras `Cache-Control`, `nosniff`, `Referrer-Policy`) · `/x39` 301 · `/x39/?utm_source=wa` 301 conservando la query · `/X39/` 301 · `/` 302 → `/X39` · `/otra` 404 · CSS, WebP y WOFF2 200 con su tipo MIME · `If-None-Match` → 304 · WebP idéntico byte a byte a `dist/` |
 | Dominio `activatuvida.life` | ✅ publicado el 25-sep-2026: `/X39` 200 (sin `noindex`, canonical `https://activatuvida.life/X39`) · `/x39` 301 · `/x39/?utm_source=wa` 301 conservando la query · `/X39/` 301 · `/` 302 → `/X39` · `/otra` 404 · `www.activatuvida.life/` y `/X39` 301 al dominio sin www · imágenes 200. Los primeros ~80 s tras el despliegue devolvía 404 mientras se activaba el dominio personalizado. ⚠ `http://` responde 200 sin redirigir a https (activar *Always Use HTTPS*) |
 
+## Pantallas de carga «Activación» (25-sep-2026)
+
+| Caso | Resultado |
+|---|---|
+| A · carga rápida (< 0,3 s) | ✅ la pantalla no llega a mostrarse y se retira del DOM |
+| A · carga lenta (imágenes con 2,5 s de retraso) | ✅ visible durante la carga; al terminar, onda de salida y fundido |
+| A · sin JavaScript | ✅ `display: none` (clase `no-js`); además se oculta sola a los 8 s si el JS no llega |
+| B · clic en Comprar / Únete / «LifeWave X39» del pie (6 enlaces `data-store-link`) | ✅ misma pestaña; la transición queda visible hasta que responde la tienda (2 s en la prueba) |
+| B · volver con «atrás» | ✅ la transición se oculta (`pageshow` con caché) |
+| B · Ctrl/Cmd/clic central | ✅ comportamiento normal del navegador, sin transición |
+| WhatsApp | ✅ sigue en pestaña nueva |
+| Consola | ✅ sin errores |
+
+La pantalla de carga de la propia tienda de LifeWave puede aparecer después: es de LifeWave.
+
 ## Capturas
 
 En `capturas/`:
