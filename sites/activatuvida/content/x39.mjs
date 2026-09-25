@@ -75,8 +75,8 @@ export const technology = {
   ],
   steps: [
     { n: "01", title: "Tu cuerpo emite calor", text: "Incluida energía infrarroja." },
-    { n: "02", title: "El parche la capta", text: "Sus nanocristales patentados la recogen sobre la piel." },
-    { n: "03", title: "Y la refleja", text: "Devuelve luz visible e infrarroja que estimula la actividad celular." },
+    { n: "02", title: "El parche la capta", text: "Sus nanocristales patentados la recogen." },
+    { n: "03", title: "Y la refleja", text: "Devuelve una señal biofotónica que estimula la actividad celular." },
   ],
   clip: { video: "patch", caption: "Qué hay dentro del parche · 17 s" },
   ghk: {
