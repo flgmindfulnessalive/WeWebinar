@@ -41,7 +41,7 @@ En `site.config.mjs`:
 
 - `contact.email` (opcional; aparece en el pie si se completa).
 - `distributor.location` (opcional).
-- En `deploy/wrangler.toml`: `CANVA_ORIGIN` (dominio gratuito de tu web de Canva).
+- En `deploy/wrangler.toml`: `CANVA_ORIGIN`: URL exacta de la web de Canva en `activatuvida-x39.my.canva.site` (se completa el día del lanzamiento).
 
 ## Créditos y licencias
 

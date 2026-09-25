@@ -49,7 +49,7 @@ Comprueba en tu móvil que los videos de Vimeo se reproducen desde ese dominio (
 
 ### 2. Publicar el sitio de Canva en su dominio gratuito (🔐 Canva)
 
-1. En Canva, abre el diseño de la web → **Publicar sitio web** → elige **dominio gratuito** (`<nombre>.my.canva.site`). Si tu plan lo permite, mantén de momento también el dominio propio.
+1. Dominio gratuito ya reservado: **`activatuvida-x39.my.canva.site`** (25-sep-2026). El día del lanzamiento, en Canva, abre el diseño de la web → **Publicar sitio web** → elige ese dominio y pulsa **Publish changes**. Hasta entonces no se publica ahí para no dejar sin web a `activatuvida.life`.
 2. Anota la URL exacta (por ejemplo `https://activatuvida.my.canva.site` o `https://<usuario>.my.canva.site/<sitio>`).
 3. Escríbela en `deploy/wrangler.toml` → `[vars] CANVA_ORIGIN = "…"`.
 4. Pruébala en la vista previa: añade la misma variable a `wrangler.preview.toml`, vuelve a desplegar y abre `https://…workers.dev/`. Debe verse tu web de Canva, y `/X39` la página nueva.

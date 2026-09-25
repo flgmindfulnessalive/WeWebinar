@@ -12,8 +12,10 @@ routes = [
 ]
 
 [vars]
-# PENDIENTE: URL del sitio de Canva en su dominio gratuito, p. ej.
-# "https://activatuvida.my.canva.site" (Canva → Publicar → Dominio gratuito).
+# Dominio gratuito de Canva reservado: activatuvida-x39.my.canva.site
+# Se completa el día del lanzamiento con la URL exacta que muestre Canva al
+# publicar ahí (puede incluir una subruta, p. ej. …my.canva.site/<sitio>).
+# Mientras esté vacío, el resto del dominio sigue yendo a su origen normal.
 CANVA_ORIGIN = ""
 
 [assets]
