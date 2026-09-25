@@ -1,6 +1,7 @@
 // Secciones de la página /X39 (versión simplificada: 8 bloques).
 // Solo presentación: textos en content/x39.mjs, destinos en site.config.mjs.
 import { html, raw } from "../lib/html.mjs";
+import { auraHtml } from "./loader.mjs";
 import {
   icon, kicker, heading, sectionHead, picture, patchVisual,
   videoPlayer, actionButton, linkButton, docLink, halftone,
@@ -206,7 +207,8 @@ export function usage(ctx, c) {
     </div>
     <div class="wrap">
       <div class="guarantee" ${reveal}>
-        <div class="guarantee__visual" aria-hidden="true">
+        <div class="guarantee__visual" aria-hidden="true" data-aura>
+          ${auraHtml()}
           ${patchVisual({ cls: "patch--guarantee", label: "" })}
           <p class="guarantee__badge"><strong>${g.badge}</strong><span>garantía</span></p>
         </div>

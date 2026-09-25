@@ -50,6 +50,12 @@
     window.addEventListener("pageshow", (e) => { if (e.persisted) go.hidden = true; });
   }
 
+  // Aura de la Garantía: solo se anima mientras está en pantalla.
+  const aura = $("[data-aura]");
+  if (aura && "IntersectionObserver" in window && !reducedMotion.matches) {
+    new IntersectionObserver(([e]) => aura.classList.toggle("is-live", e.isIntersecting)).observe(aura);
+  }
+
   // --- Cabecera y menú móvil ------------------------------------------
   const header = $("[data-header]");
   const toggle = $("[data-menu-toggle]");

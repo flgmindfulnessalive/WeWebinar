@@ -84,3 +84,15 @@ export function loaderHtml({ message = "", note = "" } = {}) {
   <p class="ld__text"><span class="ld__brand">Activa tu vida · X39</span>${message ? `<span class="ld__msg">${message}${note ? `<small>${note}</small>` : ""}</span>` : ""}</p>
 </div>`);
 }
+
+// Versión sutil para el parche de la Garantía: mismos anillos, más finos,
+// tenues y lentos; halo que respira y un destello cada ~4,5 s. El parche y el
+// texto no se mueven. app.js añade .is-live solo mientras está en pantalla.
+export function auraHtml() {
+  return raw(`<span class="g-aura" aria-hidden="true">
+    <span class="ld__halo"></span>
+    <span class="ld__tilt"><span class="ld__ring ld__ring--b"><i></i></span></span>
+    <span class="ld__ring ld__ring--a"><i></i></span>
+    <span class="ld__fall" style="--a:35deg"><b></b></span>
+  </span>`);
+}
