@@ -11,10 +11,11 @@
 //   2. sirve /X39 y /X39/assets/* desde dist/ (Workers Static Assets);
 //   3. reenvía cualquier otra ruta al sitio de Canva publicado en su
 //      dominio gratuito (variable CANVA_ORIGIN, p. ej.
-//      https://activatuvida.my.canva.site). Sin CANVA_ORIGIN, deja pasar
-//      la petición a su origen normal.
-// En *.workers.dev (vista previa), «/» lleva a /X39 salvo que haya
-// CANVA_ORIGIN configurado, en cuyo caso se previsualiza el sitio entero.
+//      https://activatuvida.my.canva.site).
+// Sin CANVA_ORIGIN (modo actual: el dominio es solo de esta página),
+// «/» lleva a /X39 (302, para poder usar la raíz más adelante),
+// www.activatuvida.life redirige al dominio sin www y cualquier otra
+// ruta devuelve 404. Lo mismo en *.workers.dev (vista previa).
 
 const CANONICAL = "/X39";
 
@@ -55,6 +56,11 @@ export default {
     const url = new URL(request.url);
     const canva = env.CANVA_ORIGIN || null;
 
+    if (url.hostname.startsWith("www.")) {
+      url.hostname = url.hostname.slice(4);
+      return Response.redirect(url.toString(), 301);
+    }
+
     const target = canonicalRedirect(url.pathname);
     if (target) {
       url.pathname = target;
@@ -75,15 +81,10 @@ export default {
 
     if (canva) return proxyToCanva(request, canva);
 
-    if (url.hostname.endsWith(".workers.dev")) {
-      if (url.pathname === "/") {
-        url.pathname = CANONICAL;
-        return Response.redirect(url.toString(), 302);
-      }
-      return env.ASSETS.fetch(request);
+    if (url.pathname === "/") {
+      url.pathname = CANONICAL;
+      return Response.redirect(url.toString(), 302);
     }
-
-    // Sin CANVA_ORIGIN: la petición sigue a su origen normal.
-    return fetch(request);
+    return env.ASSETS.fetch(request);
   },
 };

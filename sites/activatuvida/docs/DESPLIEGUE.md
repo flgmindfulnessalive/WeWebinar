@@ -2,6 +2,26 @@
 
 > **Nada de esto se ha ejecutado.** No se ha publicado nada ni se ha tocado el DNS. Cada paso marcado con 🔐 requiere tu autorización y tus credenciales (GoDaddy, Canva, Cloudflare).
 
+## Plan vigente (decisión del propietario, 25-sep-2026)
+
+El propietario acepta que la web de Canva deje de verse. Todo `activatuvida.life` pasa a esta página:
+
+- `activatuvida.life/` → **302** a `/X39` (302 para poder usar la raíz más adelante).
+- `www.activatuvida.life/*` → **301** a `activatuvida.life`.
+- `/X39` → esta página; `/x39`, `/X39/`, etc. → **301** a `/X39`.
+- Otras rutas → 404.
+
+Pasos:
+
+1. 🔐 **Cloudflare:** crear cuenta gratuita → *Add a domain* → `activatuvida.life` → plan Free. Revisar los registros importados: **borrar** el registro A de `@` (`103.169.142.0`, Canva) y cualquier `www`. **Conservar** MX/TXT si hay correo en el dominio.
+2. 🔐 **GoDaddy:** *Mi dominio → DNS → Servidores de nombres → Cambiar → Usar mis propios servidores* → pegar los 2 que indica Cloudflare. La propagación tarda de minutos a 24 h.
+3. 🔐 **Token:** Cloudflare → *My Profile → API Tokens → Create Token → plantilla «Edit Cloudflare Workers»* (cuenta y zona `activatuvida.life`). Guardarlo como variable de entorno `CLOUDFLARE_API_TOKEN` en la configuración del entorno (nunca en el chat ni en el repositorio). Añadir también `CLOUDFLARE_ACCOUNT_ID`.
+4. **Despliegue** (lo ejecuta Claude con autorización): `npm run build:production && cd deploy && npx wrangler deploy`. Los dominios personalizados de `wrangler.toml` crean los registros DNS y el certificado.
+5. **Comprobación:** `/X39` 200, `/x39` 301, `/` 302, `www` 301, videos de Vimeo en el móvil.
+6. Canva: opcionalmente, quitar `activatuvida.life` del sitio de Canva para evitar avisos de dominio.
+
+> La sección siguiente describe la opción anterior (mantener Canva en la raíz). Se conserva por si se quiere volver a ella: basta con completar `CANVA_ORIGIN`.
+
 ## Situación actual (comprobada el 24-sep-2026)
 
 | Elemento | Estado |

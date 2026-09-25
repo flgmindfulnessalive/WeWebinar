@@ -17,8 +17,10 @@ const cases = [
   ["https://activatuvida.life/x39/?utm_source=wa", { status: 301, location: "https://activatuvida.life/X39?utm_source=wa" }],
   ["https://activatuvida.life/X39/", { status: 301, location: "https://activatuvida.life/X39" }],
   ["https://activatuvida.life/X39/index.html", { status: 301, location: "https://activatuvida.life/X39" }],
-  ["https://activatuvida.life/X39otra", { status: 200, body: "ORIGEN /X39otra" }],
-  ["https://activatuvida.life/", { status: 200, body: "ORIGEN /" }],
+  ["https://activatuvida.life/X39otra", { status: 200, body: "ASSET /X39otra" }],
+  ["https://activatuvida.life/", { status: 302, location: "https://activatuvida.life/X39" }],
+  ["https://activatuvida.life/?utm=1", { status: 302, location: "https://activatuvida.life/X39?utm=1" }],
+  ["https://www.activatuvida.life/X39", { status: 301, location: "https://activatuvida.life/X39" }],
   ["https://preview.workers.dev/", { status: 302, location: "https://preview.workers.dev/X39" }],
 ];
 for (const [url, expected] of cases) {
