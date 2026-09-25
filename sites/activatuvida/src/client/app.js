@@ -39,6 +39,8 @@
       const a = e.target.closest("a[data-store-link]");
       if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
+      // Una ventana modal abierta queda por encima de todo: se cierra antes.
+      $$("dialog[open]").forEach(closeDialog);
       go.hidden = false;
       const ld = $(".ld", go);
       ld.classList.remove("is-done", "is-hidden");

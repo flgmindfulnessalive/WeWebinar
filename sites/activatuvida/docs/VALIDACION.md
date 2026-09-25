@@ -49,7 +49,7 @@ Comandos: `npm run validate` (build + validación estática + Worker + navegador
 | A · carga rápida (< 0,3 s) | ✅ la pantalla no llega a mostrarse y se retira del DOM |
 | A · carga lenta (imágenes con 2,5 s de retraso) | ✅ visible durante la carga; al terminar, onda de salida y fundido |
 | A · sin JavaScript | ✅ `display: none` (clase `no-js`); además se oculta sola a los 8 s si el JS no llega |
-| B · clic en Comprar / Únete / «LifeWave X39» del pie (6 enlaces `data-store-link`) | ✅ misma pestaña; la transición queda visible hasta que responde la tienda (2 s en la prueba) |
+| B · clic en Comprar / Únete / «LifeWave X39» del pie (6 enlaces `data-store-link`, incluidos «Ir a la tienda» y «Únete» de la ventana de paquetes, que se cierra antes para no tapar la transición) | ✅ misma pestaña; la transición queda visible hasta que responde la tienda (2 s en la prueba) |
 | B · volver con «atrás» | ✅ la transición se oculta (`pageshow` con caché) |
 | B · Ctrl/Cmd/clic central | ✅ comportamiento normal del navegador, sin transición |
 | WhatsApp | ✅ sigue en pestaña nueva |
