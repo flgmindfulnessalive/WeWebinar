@@ -158,7 +158,7 @@ export const company = {
   id: "empresa",
   kicker: "Acerca de LifeWave",
   title: "Más de dos décadas activando el potencial del cuerpo.",
-  founder: { name: "David Schmidt", role: "Fundador, inventor y CEO", video: "founder", poster: "v-fundador" },
+  founder: { name: "David Schmidt", role: "Fundador, inventor y CEO", video: "founder", poster: "v-fundador-historia" },
   paragraphs: [
     "Lo que comenzó en 2002 como una iniciativa con los Navy SEAL de EE. UU. para mejorar el rendimiento sin estimulantes dio origen a la tecnología de parches activados por luz de LifeWave.",
     "David es titular de más de 250 patentes en todo el mundo, más de setenta de ellas en ciencia y tecnología regenerativas. LifeWave recibió el premio BioTech Breakthrough 2025 a la «Innovación del año en células madre».",
