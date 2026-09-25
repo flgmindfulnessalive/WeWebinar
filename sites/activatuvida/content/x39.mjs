@@ -56,7 +56,7 @@ export const category = {
   kicker: "Una categoría completamente nueva",
   title: ["No es una pastilla,", "ni una crema, ni una inyección."],
   lead: "Es un parche no transdérmico que se lleva puesto, con resultados respaldados por la ciencia, estudios clínicos y patentes mundiales.",
-  points: ["Sin medicamentos", "Sin inyecciones", "Sin conjeturas"],
+  points: ["Sin medicamentos", "Sin inyecciones", "Sin riesgos", "Patentado"],
   tagline: "Solo luz.",
   taglineSub: "Una señal que tu cuerpo había olvidado… hasta ahora.",
   motto: ["Eleva", "Activa", "Regenera"],

@@ -14,7 +14,7 @@ Por decisión del propietario del sitio, la página reproduce la **redacción or
 | Original | Publicado | Motivo |
 |---|---|---|
 | «Tire el parche o póngaselo a su mascota» | «Quítalo y deséchalo» | La ficha oficial de LifeWave indica no reutilizar el parche |
-| «Sin efectos secundarios» | Se omite (quedan «Sin medicamentos · Sin inyecciones · Sin conjeturas») | La ficha oficial contempla retirar el parche si hay irritación |
+| «Sin efectos secundarios» | Se omite (quedan «Sin medicamentos · Sin inyecciones · Sin riesgos · Patentado»; «Sin riesgos» remite a la garantía de 90 días) | La ficha oficial contempla retirar el parche si hay irritación |
 | 4 testimonios: diagnóstico en estadio 4, bulto mamario, abandono de tratamientos, trastorno sanguíneo | No publicados | Afirmaciones sobre enfermedades graves o sobre dejar tratamientos médicos. Para añadirlos basta una línea en `content/x39.mjs → testimonials.items` |
 | Ventana con formulario de pedido que pide datos de tarjeta | Ventana con las formas de compra y los botones configurables | El sitio no recoge datos de pago |
 
