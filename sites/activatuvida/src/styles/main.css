@@ -967,3 +967,12 @@ details[open] > summary .acc__icon::after { transform: rotate(0); }
 .award__title { font-size: clamp(1.5rem, 3.4vw, 2.2rem); letter-spacing: -0.03em; line-height: 1.12; background: var(--spectrum); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .award__sub { color: var(--text-2); margin: 0.5rem 0 0; }
 @media (prefers-reduced-motion: reduce) { .trophy, .tr-shine, .tr-sparks circle { animation: none !important; } }
+
+/* Eyebrow del hero en dos líneas exactas */
+.kicker--stack { align-items: flex-start; }
+.kicker--stack::before { margin-top: 0.55em; }
+.kicker__lines { display: grid; gap: 0.35em; }
+.kicker__lines span { white-space: nowrap; }
+@media (max-width: 899px) {
+  .hero .kicker--stack { font-size: clamp(0.6rem, 2.95vw, 0.72rem); letter-spacing: 0.1em; }
+}

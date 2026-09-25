@@ -25,7 +25,7 @@ export const nav = [
 
 // 1 · Hero
 export const hero = {
-  eyebrow: "LifeWave X39 · 10 años de investigación · +250 patentes",
+  eyebrow: ["LifeWave X39 · 10 años de investigación", "+250 patentes · +80 estudios clínicos"],
   title: ["La luz también", "es información."],
   lead: "Descubrimos una manera de estimular la producción de células madre de tu propio cuerpo utilizando luz, no productos químicos.",
   primary: { label: "Ver cómo funciona", href: "#video" },

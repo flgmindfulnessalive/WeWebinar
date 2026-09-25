@@ -49,7 +49,7 @@ export function hero(ctx, c) {
     </div>
     <div class="hero__inner wrap">
       <div class="hero__copy">
-        ${kicker(c.eyebrow)}
+        <p class="kicker kicker--stack"><span class="kicker__lines">${c.eyebrow.map((l) => html`<span>${l}</span>`)}</span></p>
         ${heading(c.title, { level: 1, cls: "h-display", id: "hero-title" })}
         <p class="hero__lead">${c.lead}</p>
         <div class="btn-row">
