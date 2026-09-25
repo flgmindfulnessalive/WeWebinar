@@ -187,3 +187,27 @@ export function docLink(ctx, { key, group = "documents", label, cls = "doc-link"
   if (!href) throw new Error(`Enlace no configurado: ${group}.${key}`);
   return html`<a class="${cls}" href="${href}" target="_blank" rel="noopener">${icon("doc")}<span>${label}</span>${icon("external", "icon icon--sm")}</a>`;
 }
+
+// --- Trama de puntos (sello de marca) ---------------------------------
+// Media luna de puntos que nace en la esquina superior derecha, inspirada
+// en la identidad gráfica de LifeWave pero generada aquí (no es su gráfico).
+export function halftone({ w = 300, h = 234, max = 6.5 } = {}) {
+  const cx = w * 1.02;
+  const cy = -h * 0.18;
+  const R0 = w * 0.66;
+  const band = w * 0.26;
+  const step = max * 2.35;
+  let dots = "";
+  for (let y = step / 2, r = 0; y < h; y += step * 0.866, r++) {
+    for (let x = (r % 2 ? step / 2 : 0) + step / 2; x < w; x += step) {
+      const d = Math.hypot(x - cx, y - cy);
+      let f = Math.exp(-(((d - R0) / band) ** 2));
+      f *= Math.min(1, x / (w * 0.85)) ** 1.3;
+      f *= Math.max(0, 1 - (y / h) ** 1.6);
+      const rad = max * f;
+      if (rad < 0.45) continue;
+      dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad.toFixed(2)}"/>`;
+    }
+  }
+  return raw(`<svg class="halftone" viewBox="0 0 ${w} ${h}" aria-hidden="true" focusable="false">${dots}</svg>`);
+}

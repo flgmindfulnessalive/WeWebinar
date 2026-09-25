@@ -3,7 +3,7 @@
 import { html, raw } from "../lib/html.mjs";
 import {
   icon, kicker, heading, sectionHead, picture, patchVisual,
-  videoPlayer, actionButton, linkButton, docLink,
+  videoPlayer, actionButton, linkButton, docLink, halftone,
 } from "./ui.mjs";
 
 const reveal = "data-reveal";
@@ -73,8 +73,9 @@ export function hero(ctx, c) {
 export function intro(ctx, c) {
   return html`<section class="section intro" id="${c.id}" aria-labelledby="intro-title">
     <div class="wrap intro__grid">
-      <div class="intro__media" ${reveal}>
+      <div class="intro__media has-halftone" ${reveal}>
         ${picture(ctx, { ...c.image, sizes: "(min-width: 900px) 42vw, 100vw", cls: "media-img" })}
+        ${halftone()}
       </div>
       <div class="intro__copy">
         ${kicker(c.kicker)}
@@ -199,8 +200,9 @@ export function usage(ctx, c) {
           ${linkButton({ href: placementUrl, label: c.placement.label, variant: "ghost", iconName: "external", external: true, track: "placement_official" })}
         </div>
       </div>
-      <div class="usage__media" ${reveal}>
+      <div class="usage__media has-halftone" ${reveal}>
         ${picture(ctx, { ...c.image, sizes: "(min-width: 900px) 40vw, 100vw", cls: "media-img" })}
+        ${halftone()}
       </div>
     </div>
     <div class="wrap">
