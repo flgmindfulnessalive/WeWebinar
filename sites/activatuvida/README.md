@@ -42,7 +42,7 @@ En `site.config.mjs`:
 - `commerce.purchaseUrl`: tu enlace personal de LifeWave.
 - `contact.whatsapp`: número internacional, solo dígitos.
 - `contact.email`
-- `distributor.name` / `distributor.location` (opcional).
+- `distributor.location` (opcional).
 - En `deploy/wrangler.toml`: `CANVA_ORIGIN` (dominio gratuito de tu web de Canva).
 
 ## Créditos y licencias

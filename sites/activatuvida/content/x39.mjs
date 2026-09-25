@@ -243,7 +243,7 @@ export const studies = {
 };
 
 export const footer = {
-  identity: "ACTIVA TU VIDA · Brand Partner independiente de LifeWave.",
+  identity: "Brand Partner independiente de LifeWave.",
   legal: [
     "Descargo de responsabilidad: nuestros parches se basan en la teoría de la fototerapia. No están probados según los estándares de la medicina convencional y no deben utilizarse en lugar de la atención médica.",
     "Nuestros productos no están destinados a diagnosticar, tratar, curar ni prevenir ninguna enfermedad o afección médica. El contenido se presenta de forma resumida, es de carácter general y se proporciona únicamente con fines informativos.",

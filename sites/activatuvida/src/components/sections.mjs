@@ -352,7 +352,7 @@ export function closing(ctx, c) {
         ${actionButton(ctx, "whatsapp", { label: "WhatsApp", variant: "ghost" })}
         ${actionButton(ctx, "email", { label: "Correo", variant: "ghost" })}
       </div>
-      ${who ? html`<p class="closing__who">Te atiende: <strong>${who}</strong>${d.lifewaveId ? ` · Brand Partner ${d.lifewaveId}` : ""}</p>` : ""}
+      ${who ? html`<p class="closing__who">Te atiende: <strong>${who}</strong>${d.lifewaveId ? ` · ID# ${d.lifewaveId}` : ""}</p>` : ""}
     </div>
   </section>`;
 }
@@ -367,7 +367,7 @@ export function siteFooter(ctx, c) {
     <div class="wrap">
       <div class="site-footer__top">
         <a class="wordmark wordmark--lg" href="#inicio"><span class="wordmark__main">${brand}</span></a>
-        <p class="site-footer__identity">${c.identity}</p>
+        <p class="site-footer__identity">${[d.name, d.lifewaveId && `ID# ${d.lifewaveId}`].filter(Boolean).map((t) => `${t} · `).join("")}${c.identity}</p>
       </div>
       <nav class="site-footer__links" aria-label="Enlaces">
         <a href="${ctx.config.commerce.officialProductUrl}" target="_blank" rel="noopener">LifeWave X39</a>

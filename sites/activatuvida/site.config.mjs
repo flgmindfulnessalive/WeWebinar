@@ -27,9 +27,9 @@ export default {
   // --- Datos públicos del distribuidor (Brand Partner independiente) ---
   // Se muestran en el footer y en el bloque de contacto si se completan.
   distributor: {
-    name: null, // p. ej. "Nombre Apellido"
+    name: "Francesco Lulli",
     location: null, // p. ej. "Ciudad, País"
-    lifewaveId: null, // ID público de Brand Partner, si quieres mostrarlo
+    lifewaveId: "1988848", // ID público de Brand Partner
   },
 
   // --- Destinos comerciales (PENDIENTES: no inventar) ---
