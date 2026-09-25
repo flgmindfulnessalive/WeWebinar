@@ -31,7 +31,7 @@ Leyenda de estado:
 | 12 | Imagen de la garantía de 90 días, «¡Disfrute de los beneficios con confianza! Prueba nuestro parche sin riesgos durante 30/90 días*» | ✅ verificado | `#opciones` → bloque «Pruébalo con confianza» y detalle de condiciones |
 | 13 | «¿Siente curiosidad…?», «No estás solo. Ponte en contacto con la persona que compartió este sitio web contigo», botón «Información sobre paquetes y precios» (abre una ventana emergente) | ✏️ | `#contacto` (cierre «ACTIVA TU VIDA HOY») y el botón con su diálogo en `#opciones` |
 | 14 | «Sistema de Rendimiento Celular»: Esencial (X39, Renovar), Mejorado (X39 + Cellergize, Renovar + Cargar), Amplificado (X39 + Cellergize + X20, Renueva + Combustible + Hidrata) | ✏️ | `#opciones`: 3 paquetes (el nombre «X20» se corrige a X2O™) |
-| 15 | Descargo de fototerapia, nota de garantía 90/30 días, aviso «no destinados a diagnosticar…», ©2026 WhyTheLight.com | ✅ adaptado | Footer (identidad independiente, avisos y marcas) |
+| 15 | Nota de garantía 90/30 días, aviso «no destinados a diagnosticar…», ©2026 WhyTheLight.com | ✅ adaptado | Footer (identidad independiente, aviso «no destinados a diagnosticar…» y marcas). Descargo de fototerapia retirado por decisión del propietario |
 | 16 | Ventana emergente (Elementor popup 7976): imagen «ORDER FORM» con precios en USD y un formulario impreso que pide datos personales y de tarjeta | ⛔ | Sustituida por el diálogo «Paquetes y precios» (formas de compra, sin cifras y sin recoger datos) |
 | 17 | Selector de idioma (EN, VI, ET, DE, SV) | ⛔ | El sitio destino es solo en español |
 
