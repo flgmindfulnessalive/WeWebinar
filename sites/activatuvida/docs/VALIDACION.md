@@ -55,7 +55,7 @@ Comandos: `npm run validate` (build + validación estática + Worker + navegador
 | WhatsApp | ✅ sigue en pestaña nueva |
 | Consola | ✅ sin errores |
 
-La pantalla de carga de la propia tienda de LifeWave puede aparecer después: es de LifeWave.
+✅ Confirmado por el propietario en el móvil (25-sep-2026). La pantalla de carga de la propia tienda de LifeWave puede aparecer después: es de LifeWave.
 
 ## Capturas
 
