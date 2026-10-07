@@ -1864,7 +1864,6 @@ export interface Database {
           whop_membership_id: string | null;
           activated_at: string;
           starter_until: string | null;
-          course_webinar_id: string | null;
           created_at: string;
         };
         Insert: Partial<
@@ -2155,14 +2154,6 @@ export interface Database {
           plan_limit: number;
           admissions: number;
         }[];
-      };
-      wefunnel_clone_course_webinar: {
-        Args: { p_account_id: string; p_source_webinar_id: string };
-        Returns: string | null;
-      };
-      wefunnel_mount_missing_course_rooms: {
-        Args: { p_source_webinar_id: string };
-        Returns: number;
       };
       record_growth_event: {
         Args: {

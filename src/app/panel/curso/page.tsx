@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getPanelViewer } from "@/lib/wefunnels/site";
-import { courseTemplateRoomUrl } from "@/lib/wefunnels/course-room";
+import { courseRoomUrl } from "@/lib/wefunnels/course-room";
 
 // Where re-watching lives. It points at the canonical course, not at a
 // distributor's own copy: that copy exists to be given away, and sending
@@ -15,7 +15,7 @@ export default async function PanelCoursePage() {
   if (!viewer) redirect("/login?next=/panel/curso");
   if (!viewer.site) redirect("/panel");
 
-  const roomUrl = await courseTemplateRoomUrl();
+  const roomUrl = await courseRoomUrl();
 
   return (
     <div className="flex max-w-[620px] flex-col gap-5">

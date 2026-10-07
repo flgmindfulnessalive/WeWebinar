@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 
 type RouteParams = { slug: string };
 
@@ -65,39 +66,24 @@ export default async function WeFunnelCourseRoomPage({
 
   if (!site) notFound();
 
-  // The entitlement and the room behind it. Both need the service role:
-  // wefunnel_distributors is readable only by its own account, and a
-  // visitor is nobody here.
+  // The entitlement. Service role: wefunnel_distributors is readable only
+  // by its own account, and a visitor is nobody here.
   const admin = createAdminClient();
   const { data: distributor } = await admin
     .from("wefunnel_distributors")
-    .select("account_id, course_webinar_id")
+    .select("account_id")
     .eq("account_id", site.account_id)
     .maybeSingle();
 
   if (!distributor) notFound();
 
-  // Null until the course webinar is duplicated into their account, which
-  // is the normal state for a brand-new distributor. The room still works:
-  // the claim is the conversion, and the video is what they come back for.
-  let roomUrl: string | null = null;
-  if (distributor.course_webinar_id) {
-    const { data: webinar } = await admin
-      .from("webinars")
-      .select("slug, account_id")
-      .eq("id", distributor.course_webinar_id)
-      .maybeSingle();
-    if (webinar?.slug) {
-      const { data: account } = await admin
-        .from("accounts")
-        .select("slug")
-        .eq("id", webinar.account_id)
-        .maybeSingle();
-      if (account?.slug) {
-        roomUrl = wefunnelAppUrl(`/w/${account.slug}/${webinar.slug}`);
-      }
-    }
-  }
+  // There is one course room, shared, and the link into it goes through
+  // ./ver so the referral is stamped before the visitor leaves this host
+  // (see 20261007000009). Null only while the course has not been
+  // recorded, which the copy below reads as "coming" rather than as a
+  // failure -- the claim is the conversion either way.
+  const hasCourse = Boolean(courseTemplateWebinarId());
+  const courseUrl = `/${site.slug}/curso/ver`;
 
   // Through /r/<slug> rather than straight to the offer, exactly like the
   // badge: that route stamps the touch before redirecting, so whoever
@@ -163,13 +149,23 @@ export default async function WeFunnelCourseRoomPage({
           >
             Quiero mi funnel gratis
           </a>
-          {roomUrl ? (
-            <a
-              href={roomUrl}
-              className="rounded-xl border border-[#23233A] px-7 py-4 text-center text-[16px] font-semibold text-[#D7DCEC] no-underline"
-            >
-              Ver el curso
-            </a>
+          {hasCourse ? (
+            <>
+              <a
+                href={courseUrl}
+                className="rounded-xl border border-[#23233A] px-7 py-4 text-center text-[16px] font-semibold text-[#D7DCEC] no-underline"
+              >
+                Ver el curso
+              </a>
+              {/* Said before they go, not after: the course registration
+                  form lives on the WeWebinars side and will not mention
+                  who invited them, so this page is the only place where
+                  the handoff can be stated honestly. */}
+              <p className="m-0 text-center text-xs leading-relaxed text-[#4A5173]">
+                Al entrar al curso, {site.display_name} recibe tu nombre y tu correo para
+                poder acompañarte.
+              </p>
+            </>
           ) : (
             <p className="m-0 text-center text-sm leading-relaxed text-[#6E7694]">
               El curso abre en unos días y te avisamos por correo. Reclama tu funnel

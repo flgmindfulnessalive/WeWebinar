@@ -17,6 +17,7 @@ import { sendEmail } from "@/lib/resend";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
 import { syncBrevoContact } from "@/lib/brevo";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
+import { courseTemplateWebinarId, recordCourseLeadForReferrer } from "@/lib/wefunnels/course-room";
 import type { AccountLocale } from "@/lib/supabase/database.types";
 
 export type RegisterActionState = { error: string } | null;
@@ -238,6 +239,21 @@ export async function registerForWebinar(
       });
     } catch (err) {
       console.error("[register] first_attendee tracking failed:", err);
+    }
+
+    // The one webinar in the product that belongs to somebody else's
+    // funnel: the shared WeFunnels course. When the visitor arrived
+    // through a distributor's room, the distributor keeps the contact
+    // (see 20261007000009). Gated on the id so no other account's
+    // registration ever touches WeFunnels, and best-effort like
+    // everything else down here -- a registration that already succeeded
+    // is not undone by a bookkeeping miss.
+    if (webinarId === courseTemplateWebinarId()) {
+      try {
+        await recordCourseLeadForReferrer({ name, email });
+      } catch (err) {
+        console.error("[register] failed to record WeFunnels course lead:", err);
+      }
     }
 
     if (webinar.brevo_list_id) {

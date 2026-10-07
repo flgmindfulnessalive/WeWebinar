@@ -1,65 +1,36 @@
 import "server-only";
 
+import { cookies } from "next/headers";
+
 import { createAdminClient } from "@/lib/supabase/admin";
 import { wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
 
-// The webinar every distributor's course room is copied from: the recorded
-// course, living in our own account. It sits in the environment rather than
-// in code for the same reason WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID does --
-// unlike the plan ids committed in lib/whop.ts, this id does not exist yet
-// and will differ between preview and production.
+// The recorded WeFunnels course: one webinar, in our own account, that
+// every distributor's room points at. It sits in the environment rather
+// than in code for the same reason WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID
+// does -- unlike the plan ids committed in lib/whop.ts, this id does not
+// exist yet and will differ between preview and production.
 //
-// Unset is a supported state, not a misconfiguration: course_webinar_id
-// stays null, /f/<slug>/curso says the course is coming, and the lifetime
-// rights the distributor bought are unaffected.
+// Unset is a supported state, not a misconfiguration: the room says the
+// course is coming, and the lifetime rights a distributor bought are
+// unaffected.
 export function courseTemplateWebinarId(): string | null {
   const id = process.env.WEFUNNELS_COURSE_WEBINAR_ID?.trim();
   return id ? id : null;
 }
 
-export type MountResult = { webinarId: string } | { skipped: string };
-
-// Mounts the course in a distributor's own account: their own webinar, at
-// their own address, with the claim CTA pointing at their referral link.
+// Where that webinar lives publicly. Everybody lands here: the panel's
+// re-watch section, and every distributor's room after the referral has
+// been stamped.
 //
-// Everything that matters happens inside wefunnel_clone_course_webinar --
-// one transaction, idempotent, service role only. This is the thin shell
-// that supplies the template id and keeps a failure from taking down the
-// caller: a distributor whose room did not mount still owns everything
-// else the $100 bought, and the admin backfill can mount it later.
-export async function mountDistributorCourseRoom(
-  accountId: string
-): Promise<MountResult> {
-  const sourceId = courseTemplateWebinarId();
-  if (!sourceId) return { skipped: "no template configured" };
-
-  const supabase = createAdminClient();
-  const { data, error } = await supabase.rpc("wefunnel_clone_course_webinar", {
-    p_account_id: accountId,
-    p_source_webinar_id: sourceId,
-  });
-
-  if (error) {
-    console.error("[wefunnel] course room mount failed:", error.message);
-    return { skipped: error.message };
-  }
-
-  if (!data) {
-    // The function's own "nothing to do": not a distributor, no claimed
-    // page to credit the gifted funnels to, or a template id that no
-    // longer resolves. All three are states, not crashes.
-    return { skipped: "nothing to mount" };
-  }
-
-  return { webinarId: data };
-}
-
-// The canonical course, as a public address. Used by the panel's re-watch
-// section, which every WeFunnels user reaches -- distributors included,
-// since their own room exists to be given away, not to be re-watched by
-// them. Null while the template id is unset, which is what keeps that
-// section's "lo estamos grabando" placeholder honest.
-export async function courseTemplateRoomUrl(): Promise<string | null> {
+// One room rather than a copy per distributor (see
+// 20261007000009). "Tu sala con el curso, a tu nombre" is about the
+// address and the name, and wefunnels.wewebinars.com/<nombre>/curso still
+// carries both -- while the thing that actually costs money, an attendee
+// watching 25 minutes and being emailed about it, stops being multiplied
+// by one permanent room per buyer.
+export async function courseRoomUrl(): Promise<string | null> {
   const sourceId = courseTemplateWebinarId();
   if (!sourceId) return null;
 
@@ -83,4 +54,59 @@ export async function courseTemplateRoomUrl(): Promise<string | null> {
   if (!account?.slug) return null;
 
   return wefunnelAppUrl(`/w/${account.slug}/${webinar.slug}`);
+}
+
+// The contact a distributor earns when somebody takes their gift.
+//
+// With one shared room the course registrant is a row in OUR account, so
+// without this the person who did the inviting would end up with nothing
+// but a number. A wefunnel_leads row on their own site is better than
+// what a copied room gave them: their WeFunnels panel lists it with no
+// plan at all, whereas a webinar's registrants live in a dashboard that
+// closes the day their Starter lapses.
+//
+// The invite page says this is going to happen before the visitor leaves
+// it -- the WeWebinars registration form has no idea who invited them and
+// cannot say so itself.
+export async function recordCourseLeadForReferrer({
+  name,
+  email,
+}: {
+  name: string;
+  email: string;
+}): Promise<void> {
+  const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+  if (!touch) return;
+
+  // Service role on purpose, even though wefunnel_leads_insert_public
+  // would admit this write: the dedupe below has to read rows on somebody
+  // else's site, which no visitor may do.
+  const admin = createAdminClient();
+  const { data: site } = await admin
+    .from("wefunnel_sites")
+    .select("id")
+    .eq("slug", touch.slug)
+    .eq("status", "published")
+    .is("suspended_at", null)
+    .maybeSingle();
+
+  if (!site) return;
+
+  // Registering twice is ordinary -- a different session time, a second
+  // device -- and should not deal the same person into the list twice.
+  const { data: existing } = await admin
+    .from("wefunnel_leads")
+    .select("id")
+    .eq("site_id", site.id)
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existing) return;
+
+  await admin.from("wefunnel_leads").insert({
+    site_id: site.id,
+    name,
+    email,
+    answer: "Se registró al curso desde tu sala.",
+  });
 }
