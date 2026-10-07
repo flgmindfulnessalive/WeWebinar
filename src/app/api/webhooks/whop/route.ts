@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { unwrapWebhook, WebhookVerificationError } from "@whop/sdk/helpers";
 
 import {
+  billingPeriodForWhopPlanId,
   planKeyForWhopPlanId,
   STARTER_KIT_PRODUCT_ID,
   WEFUNNELS_DISTRIBUTOR_METADATA,
@@ -191,6 +192,9 @@ async function syncMembership(payload: WhopWebhookPayload) {
   const newStatus = mapWhopStatus(payload.data.status);
   if (newStatus === null) return; // "drafted" -- nothing to sync yet
   const planKey = payload.data.plan ? planKeyForWhopPlanId(payload.data.plan.id) : undefined;
+  const billingPeriod = payload.data.plan
+    ? billingPeriodForWhopPlanId(payload.data.plan.id)
+    : undefined;
 
   const { data: before } = await admin
     .from("accounts")
@@ -223,6 +227,15 @@ async function syncMembership(payload: WhopWebhookPayload) {
   if (planKey) {
     const { data: plan } = await admin.from("plans").select("id").eq("key", planKey).single();
     if (plan) update.plan_id = plan.id;
+  }
+
+  // Stored alongside the plan, never on its own: the referral commission is
+  // 20% of what this account actually pays, and the monthly and annual
+  // prices are different bases. Undefined only for a membership whose plan
+  // id is not one of ours, where overwriting a known period with a guess
+  // would be worse than leaving it.
+  if (billingPeriod) {
+    update.billing_period = billingPeriod;
   }
 
   const { error } = await admin.from("accounts").update(update).eq("id", accountId);

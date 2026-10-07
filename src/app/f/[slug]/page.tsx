@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { LeadForm } from "./lead-form";
 
 type RouteParams = { slug: string };
@@ -60,13 +60,16 @@ function embedUrl(raw: string | null): string | null {
 
 function Badge({ slug }: { slug?: string }) {
   return (
-    <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#1A1A2A] px-6 pt-4 pb-8 text-[13px] text-[#6E7694]">
-      {/* Through /r/<slug> rather than straight to the offer: that route
-          records the touch and redirects, so the badge stays a plain link
-          and the owner gets credited for whoever it brought. */}
-      <a href={slug ? `/r/${slug}` : `https://${WEFUNNELS_HOST}`} className="no-underline">
-        Creado con <span className="text-[#A9B0C9]">WeFunnels</span> — consigue el tuyo gratis
-      </a>
+    <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-[#1A1A2A] px-6 pt-4 pb-8 text-[13px] text-[#6E7694]">
+      {/* No "get your own" link any more. A funnel exists because somebody
+          gave it, and a page that hands one out to whoever scrolls to the
+          bottom makes the person who gave it skippable -- which is the one
+          thing the distributor tier sells. The page now carries no mark of
+          the platform at all, which also reads better as its owner's.
+
+          The report link stays. It is the only way a visitor can flag an
+          abusive page, and the whole shared-domain reputation posture
+          (20261007000001) depends on it existing on every page. */}
       {/* Stays on this host: the visitor reporting a page should not be
           bounced to another domain mid-decision, and /reportar resolves
           here because a static segment beats [slug] and the name is in the

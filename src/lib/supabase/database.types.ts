@@ -187,6 +187,7 @@ export interface Database {
           branding: Json;
           billing_customer_id: string | null;
           billing_subscription_id: string | null;
+          billing_period: "monthly" | "annual" | null;
           subscription_status: SubscriptionStatus;
           plan_id: string | null;
           timezone_default: string;
@@ -2112,9 +2113,23 @@ export interface Database {
           referred_at: string;
           is_paying: boolean;
           plan_name: string | null;
-          monthly_usd: number;
+          billing_period: "monthly" | "annual" | null;
+          plan_price_usd: number;
           commission_usd: number;
+          payable: boolean;
         }[];
+      };
+      wefunnel_invitations: {
+        Args: Record<string, never>;
+        Returns: { used: number; remaining: number | null; unlimited: boolean }[];
+      };
+      wefunnel_invitation_open: {
+        Args: { p_slug: string };
+        Returns: boolean;
+      };
+      wefunnel_grant_distributor: {
+        Args: { p_account_id: string; p_included_months?: number };
+        Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
       };
       wefunnel_slug_available: {
         Args: { p_slug: string };

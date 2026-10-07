@@ -45,10 +45,11 @@ export async function claimWeFunnelSite(
     return { error: "Esa dirección ya está tomada. Prueba con otra." };
   }
 
-  // The badge cookie's one and only job ends here: from this call on, the
-  // origin is a row on the account. A touch that is missing, stale or
-  // pointing at this same page is simply no touch -- the RPC checks all
-  // three again, since the value came from the client.
+  // The invitation cookie's one and only job ends here: from this call on,
+  // the origin is a row on the account. A touch that is missing, stale or
+  // pointing at this same page is simply no touch -- and since WeFunnels
+  // is invitation-only, no touch means no page. The RPC checks all three
+  // again, since the value came from the client.
   const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
 
   const { error } = await supabase.rpc("claim_wefunnel_site", {
@@ -64,6 +65,18 @@ export async function claimWeFunnelSite(
     }
     if (error.message.includes("reserved")) {
       return { error: "Esa dirección está reservada. Prueba con otra." };
+    }
+    if (error.message.includes("invitation quota exhausted")) {
+      return {
+        error:
+          "Quien te invitó ya repartió sus tres invitaciones. Pídele que active su nivel distribuidor, o consigue el enlace de otra persona.",
+      };
+    }
+    if (error.message.includes("invitation required")) {
+      return {
+        error:
+          "WeFunnels es por invitación: necesitas el enlace de alguien que ya tenga su página.",
+      };
     }
     console.error("[wefunnel] claim failed:", error.message);
     return { error: "No pudimos crear tu página. Intenta de nuevo." };

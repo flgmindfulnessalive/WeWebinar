@@ -80,6 +80,22 @@ export function planKeyForWhopPlanId(planId: string): SelfServePlanKey | undefin
   return inMap(PRICING_PLANS) ?? inMap(CONVERT_PLANS);
 }
 
+// Which period a Whop plan id is for. The webhook stores this on the
+// account because the referral commission is 20% of what the referred
+// account actually pays, and $15 a month and $145 a year are not the same
+// basis -- plan_key alone loses the distinction.
+export function billingPeriodForWhopPlanId(planId: string): BillingPeriod | undefined {
+  const inMap = (map: PlanIdMap) => {
+    for (const byPeriod of Object.values(map)) {
+      if (byPeriod.monthly === planId) return "monthly" as const;
+      if (byPeriod.annual === planId) return "annual" as const;
+    }
+    return undefined;
+  };
+
+  return inMap(PRICING_PLANS) ?? inMap(CONVERT_PLANS);
+}
+
 export function isSelfServePlanKey(value: string): value is SelfServePlanKey {
   return value in PRICING_PLANS;
 }

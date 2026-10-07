@@ -1,16 +1,27 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
+import { createClient } from "@/lib/supabase/server";
 import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
 
 export const metadata: Metadata = {
   title: "WeFunnels — tu funnel personal gratis",
   robots: { index: false, follow: false },
 };
 
-// Where every badge lands, after /r/<slug> has recorded the touch. It is
-// the one page on this host that is not somebody's personal funnel, and the
-// only CTA is the claim: no price anywhere, because the $100 distributor
-// tier lives inside the course and the panel, never on the public face.
+// Where /r/<slug> lands, after it has recorded the touch. It is the one
+// page on this host that is not somebody's personal funnel, and it has two
+// faces.
+//
+// With a live invitation it is the claim, and nothing else -- no price
+// anywhere, because the distributor tier lives inside the course and the
+// panel, never on the public face.
+//
+// Without one it says so and stops. WeFunnels is not something you find;
+// it is something you are given. A page that handed a funnel to whoever
+// arrived made the person who gave it skippable, and being the door is
+// exactly what the tier sells.
 const STEPS = [
   {
     n: "01",
@@ -80,8 +91,31 @@ const QUESTIONS = [
   ],
 ];
 
-export default function WeFunnelsLandingPage() {
+export default async function WeFunnelsLandingPage() {
   const claimUrl = wefunnelAppUrl("/signup?next=/panel");
+
+  // The invitation is the cookie /r/<slug> just wrote, confirmed against
+  // the database: a slug that no longer resolves, a page that was
+  // suspended, or a free inviter who has spent their three is not an open
+  // invitation, and the page should not promise a funnel it will refuse to
+  // create.
+  const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+  let invitedBy: string | null = null;
+
+  if (touch) {
+    const supabase = await createClient();
+    const [{ data: open }, { data: site }] = await Promise.all([
+      supabase.rpc("wefunnel_invitation_open", { p_slug: touch.slug }),
+      supabase
+        .from("wefunnel_sites")
+        .select("display_name")
+        .eq("slug", touch.slug)
+        .maybeSingle(),
+    ]);
+    if (open) invitedBy = site?.display_name ?? null;
+  }
+
+  const invited = invitedBy !== null;
 
   return (
     <main className="mx-auto max-w-[1040px] px-[clamp(18px,4vw,28px)]">
@@ -93,6 +127,11 @@ export default function WeFunnelsLandingPage() {
               "radial-gradient(60% 55% at 50% 38%, rgba(46,99,255,0.22) 0%, rgba(168,85,247,0.12) 45%, rgba(0,0,0,0) 72%)",
           }}
         />
+        {invited && (
+          <p className="relative m-0 text-xs font-semibold tracking-[0.1em] text-[#2BD7F5] uppercase">
+            Te invita {invitedBy}
+          </p>
+        )}
         <h1 className="relative m-0 max-w-[14em] text-[clamp(34px,6vw,62px)] leading-[1.04] font-extrabold tracking-tight text-balance">
           Tu funnel personal, gratis de por vida.
         </h1>
@@ -108,16 +147,28 @@ export default function WeFunnelsLandingPage() {
           <span className="font-medium text-[#2BD7F5]">tunombre</span>
         </div>
         <div className="relative flex w-full flex-col items-center gap-3.5">
-          <a
-            href={claimUrl}
-            className="block w-full max-w-[340px] rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-8 py-[18px] text-center text-[17px] font-semibold text-white no-underline"
-            style={{ boxShadow: "0 0 32px rgba(147,51,234,0.38)" }}
-          >
-            Reclamar mi funnel
-          </a>
-          <span className="text-[15px] text-[#6E7694]">
-            Gratis de por vida · Sin tarjeta · Sin mensualidad
-          </span>
+          {invited ? (
+            <>
+              <a
+                href={claimUrl}
+                className="block w-full max-w-[340px] rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-8 py-[18px] text-center text-[17px] font-semibold text-white no-underline"
+                style={{ boxShadow: "0 0 32px rgba(147,51,234,0.38)" }}
+              >
+                Reclamar mi funnel
+              </a>
+              <span className="text-[15px] text-[#6E7694]">
+                Gratis de por vida · Sin tarjeta · Sin mensualidad
+              </span>
+            </>
+          ) : (
+            <div className="w-full max-w-[460px] rounded-2xl border border-[#23233A] bg-[#0D0D15] px-7 py-6 text-center">
+              <p className="m-0 text-[17px] font-semibold">WeFunnels es por invitación.</p>
+              <p className="mt-2.5 mb-0 text-[16px] leading-relaxed text-[#A9B0C9]">
+                Las páginas no se piden: te las regala alguien. Si conoces a quien te
+                habló de esto, pídele su enlace — con él tu funnel es gratis de por vida.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

@@ -4,10 +4,10 @@ import { getPanelViewer } from "@/lib/wefunnels/site";
 import { DistributorCheckoutButton } from "./checkout-button";
 
 const CHANGES = [
-  "Regalas funnels sin límite, para siempre",
-  "El curso montado como webinario tuyo, con tus registrados",
-  "3 meses de WeWebinars Starter incluidos",
-  "10% todos los meses de cada usuario que llegue por ti",
+  "Repartes funnels sin límite — hoy tienes tres invitaciones",
+  "Tu sala del curso, en tu dirección y con tu nombre",
+  "1 mes de WeWebinars Starter incluido",
+  "20% del plan de cada cuenta que llegue por ti, mientras lo tenga",
 ];
 
 const DOTS = ["#2BD7F5", "#4F8BFF", "#8B5CF6", "#A855F7"];
@@ -49,19 +49,25 @@ export default async function PanelDistributorPage() {
           Qué no cambia
         </span>
         <span className="text-[16px] leading-snug text-[#D7DCEC]">
-          Tu funnel sigue gratis, el curso sigue siendo tuyo, y tu sala del curso no se
-          apaga nunca — pagues o no pagues una mensualidad después.
+          Tu funnel sigue gratis, el curso sigue siendo tuyo, y tu sala no se apaga nunca
+          — pagues o no pagues una mensualidad después. Lo único que necesita plan activo
+          es cobrar el 20%.
         </span>
       </div>
 
       <div className="flex flex-wrap items-baseline gap-2.5">
-        <span className="text-[48px] leading-none font-extrabold tracking-tighter">$100</span>
+        <span className="text-[26px] font-semibold text-[#6E7694] line-through">$199</span>
+        <span className="text-[48px] leading-none font-extrabold tracking-tighter">$99</span>
         <span className="text-[17px] text-[#A9B0C9]">una sola vez, de por vida</span>
       </div>
 
+      {/* Said plainly and up front, like the price. The one condition in the
+          whole offer is this one, and burying it would turn month two into
+          a surprise and a refund request. */}
       <p className="m-0 text-[15px] leading-relaxed text-[#A9B0C9]">
-        Desde el cuarto mes, $15 al mes solo si quieres seguir con webinario propio y
-        envío de emails. Repartir funnels no depende de eso.
+        Desde el segundo mes, $15 al mes. Repartir funnels y tu sala del curso no dependen
+        de eso y no se apagan nunca; el plan activo es lo que mantiene tu 20% corriendo —
+        y para entonces ya sabrás si te está entrando.
       </p>
 
       <DistributorCheckoutButton />

@@ -2,7 +2,11 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const INCLUDED_MONTHS = 3;
+// One month, not three. The commission is what needs an active plan, and
+// nobody is earning commission in month one -- so the first charge lands
+// when there is finally something to protect, instead of three months
+// before the strategy has produced anything.
+const INCLUDED_MONTHS = 1;
 
 // Called from the Whop webhook when a $100 lifetime membership goes live.
 //

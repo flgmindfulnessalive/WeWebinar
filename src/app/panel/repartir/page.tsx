@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
-import { CopyLink } from "./copy-link";
+import { CopyLink } from "@/components/wefunnels/copy-link";
 
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric" });
 
@@ -73,9 +73,9 @@ export default async function PanelSharePage() {
 
       {starterUntil && (
         <p className="m-0 text-sm leading-relaxed text-[#6E7694]">
-          Tus 3 meses de WeWebinars Starter van hasta el {DATE.format(starterUntil)}.
-          Después son $15 al mes solo si quieres seguir con webinario propio y envío de
-          emails: repartir funnels no depende de eso, y tu sala del curso no se apaga.
+          Tu mes de WeWebinars Starter va hasta el {DATE.format(starterUntil)}. Después
+          son $15 al mes: repartir funnels y tu sala del curso no dependen de eso y no se
+          apagan: lo que necesita plan activo es cobrar tu 20%.
         </p>
       )}
     </div>

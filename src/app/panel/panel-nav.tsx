@@ -9,12 +9,12 @@ const ITEMS: NavItem[] = [
   { href: "/panel", label: "Mi página" },
   { href: "/panel/registrados", label: "Mis registrados", countKey: "leads" },
   { href: "/panel/curso", label: "El curso" },
-  { href: "/panel/badge", label: "Mi badge" },
+  { href: "/panel/invitaciones", label: "Mis invitaciones" },
 ];
 
 // The two a distributor gets on top. Not shown to anyone else -- a free
 // user seeing a "Mis comisiones" they cannot earn is a worse pitch than
-// the badge counter, which at least shows them something real.
+// the invitation counter, which at least shows them something real.
 const DISTRIBUTOR_ITEMS: NavItem[] = [
   { href: "/panel/repartir", label: "Funnels repartidos" },
   { href: "/panel/comisiones", label: "Mis comisiones" },
@@ -31,9 +31,9 @@ export function PanelNav({
 }) {
   const pathname = usePathname();
 
-  // Before a page exists there is nothing to list, count or badge, so the
-  // nav collapses to the one screen that does something. It comes back
-  // whole the moment the page is claimed.
+  // Before a page exists there is nothing to list, count or invite with,
+  // so the nav collapses to the one screen that does something. It comes
+  // back whole the moment the page is claimed.
   const items = hasSite
     ? isDistributor
       ? [...ITEMS, ...DISTRIBUTOR_ITEMS]
