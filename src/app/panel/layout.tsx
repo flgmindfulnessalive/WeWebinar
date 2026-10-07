@@ -55,7 +55,11 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       </header>
 
       <div className="flex flex-wrap items-start gap-5 px-5 py-6 sm:gap-7 sm:px-7">
-        <PanelNav hasSite={Boolean(viewer.site)} leadCount={leadCount} />
+        <PanelNav
+          hasSite={Boolean(viewer.site)}
+          leadCount={leadCount}
+          isDistributor={Boolean(viewer.distributor)}
+        />
         <div className="min-w-0 flex-[999_1_620px]">{children}</div>
       </div>
     </div>

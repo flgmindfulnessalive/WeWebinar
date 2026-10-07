@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { unwrapWebhook, WebhookVerificationError } from "@whop/sdk/helpers";
 
-import { planKeyForWhopPlanId, STARTER_KIT_PRODUCT_ID } from "@/lib/whop";
+import {
+  planKeyForWhopPlanId,
+  STARTER_KIT_PRODUCT_ID,
+  WEFUNNELS_DISTRIBUTOR_METADATA,
+} from "@/lib/whop";
+import { activateWeFunnelsDistributor } from "@/lib/wefunnels/activate-distributor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   accountActivatedEmail,
@@ -325,6 +330,23 @@ export async function POST(request: Request): Promise<Response> {
           whopUserId: event.data.user?.id ?? null,
           email: event.data.user?.email ?? null,
           name: event.data.user?.name ?? null,
+        });
+      }
+    } else if (event.data.metadata?.product === WEFUNNELS_DISTRIBUTOR_METADATA) {
+      // The $100 lifetime tier. Identified by our own metadata rather than
+      // by plan id, because the plan id lives in an env var that is not set
+      // in every environment -- and because a one-time purchase has no
+      // plan_key for syncMembership to resolve, so routing it there would
+      // write a nonsense subscription_status.
+      //
+      // Only "activated" does anything: the rights are lifetime, so a
+      // deactivation (a membership record closing after a one-time sale)
+      // has nothing to unwind. A refund is a different event entirely and
+      // is already handled by DISPUTE_EVENTS above.
+      if (event.type === "membership.activated") {
+        await activateWeFunnelsDistributor({
+          membershipId: event.data.id,
+          accountId: resolveAccountId(event),
         });
       }
     } else {

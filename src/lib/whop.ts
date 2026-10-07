@@ -165,6 +165,44 @@ export async function createUpgradeCheckoutUrl({
   return config?.purchaseUrl ?? null;
 }
 
+// WeFunnels' $100 lifetime distributor tier. Unlike every plan id above
+// this one is read from the environment rather than committed: those were
+// created in the Whop dashboard and are stable, while this product does not
+// exist there yet. Leaving it as an env var means the checkout route can
+// ship, fail honestly while it is unset, and start working the day the
+// listing is created -- with no code change and no placeholder id that
+// would silently resolve to the wrong product if someone ever reused it.
+export function wefunnelsDistributorPlanId(): string | undefined {
+  return process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID || undefined;
+}
+
+// A one-time purchase, not a subscription, so it carries its own metadata
+// marker: the webhook has no plan_key to look up and needs to tell this
+// membership apart from a Starter/Pro/Business one.
+export const WEFUNNELS_DISTRIBUTOR_METADATA = "wefunnels_distributor";
+
+export async function createDistributorCheckoutUrl(
+  accountId: string
+): Promise<string | null> {
+  const planId = wefunnelsDistributorPlanId();
+  if (!whopConfigured() || !planId) {
+    console.error("[whop] WeFunnels distributor plan id or API key not configured");
+    return null;
+  }
+
+  try {
+    const config = await whopClient().checkoutConfigurations.create({
+      plan_id: planId,
+      metadata: { account_id: accountId, product: WEFUNNELS_DISTRIBUTOR_METADATA },
+      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/repartir`,
+    });
+    return config.purchase_url ?? null;
+  } catch (err) {
+    console.error("[whop] createDistributorCheckoutUrl failed:", err);
+    return null;
+  }
+}
+
 // Replaces billing.ts's getBillingPortalUrl: Whop has no hosted "manage
 // subscription" portal to redirect to (no portal URL field anywhere in
 // @whop/sdk's Membership/CheckoutConfiguration types) -- cancellation is

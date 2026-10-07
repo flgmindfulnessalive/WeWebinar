@@ -1857,6 +1857,48 @@ export interface Database {
           },
         ];
       };
+      wefunnel_distributors: {
+        Row: {
+          account_id: string;
+          whop_membership_id: string | null;
+          activated_at: string;
+          starter_until: string | null;
+          course_webinar_id: string | null;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_distributors"]["Row"]
+        > & {
+          account_id: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_distributors"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_distributors_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_distributor_claims: {
+        Row: {
+          membership_id: string;
+          claimed_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_distributor_claims"]["Row"]
+        > & {
+          membership_id: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_distributor_claims"]["Row"]
+        >;
+        Relationships: [];
+      };
       wefunnel_leads: {
         Row: {
           id: string;
@@ -2015,6 +2057,24 @@ export interface Database {
           arrivals: number;
           paying: number;
           monthly_usd: number;
+        }[];
+      };
+      wefunnel_activate_distributor: {
+        Args: {
+          p_account_id: string;
+          p_membership_id: string;
+          p_included_months?: number;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
+      };
+      wefunnel_commissions: {
+        Args: Record<string, never>;
+        Returns: {
+          referred_at: string;
+          is_paying: boolean;
+          plan_name: string | null;
+          monthly_usd: number;
+          commission_usd: number;
         }[];
       };
       wefunnel_slug_available: {

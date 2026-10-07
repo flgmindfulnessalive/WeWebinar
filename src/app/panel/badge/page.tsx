@@ -78,9 +78,12 @@ export default async function PanelBadgePage() {
             )}
           </p>
         </div>
-        <span className="flex-none rounded-xl border border-[#23233A] bg-[#0D0D15] px-7 py-4 text-[16px] font-semibold text-[#6E7694]">
-          Pronto
-        </span>
+        <a
+          href={viewer.distributor ? "/panel/repartir" : "/panel/distribuidor"}
+          className="flex-none rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-7 py-4 text-[16px] font-semibold text-white no-underline"
+        >
+          {viewer.distributor ? "Ver mis comisiones" : "Ver cómo"}
+        </a>
       </div>
 
       <p className="m-0 text-sm leading-relaxed text-[#6E7694]">

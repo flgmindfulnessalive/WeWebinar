@@ -5,11 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
 export type WeFunnelSite = Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+export type WeFunnelDistributor =
+  Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
 
 export type PanelViewer = {
   userId: string;
   email: string;
   site: WeFunnelSite | null;
+  distributor: WeFunnelDistributor | null;
 };
 
 // The panel's own session read. Deliberately not getCurrentAccount(): that
@@ -29,16 +32,16 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
 
   // RLS lets a member read their own site in any state, so one query covers
   // draft, published and suspended alike.
-  const { data: site } = await supabase
-    .from("wefunnel_sites")
-    .select("*")
-    .limit(1)
-    .maybeSingle();
+  const [{ data: site }, { data: distributor }] = await Promise.all([
+    supabase.from("wefunnel_sites").select("*").limit(1).maybeSingle(),
+    supabase.from("wefunnel_distributors").select("*").limit(1).maybeSingle(),
+  ]);
 
   return {
     userId: user.id,
     email: user.email ?? "",
     site: site ?? null,
+    distributor: distributor ?? null,
   };
 });
 
