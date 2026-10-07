@@ -388,6 +388,46 @@ export function attendeeLimitUpgradeEmail(
   };
 }
 
+// The counterpart to accountDeletionWarningEmail, for an account that has
+// a WeFunnels page or the distributor tier. Nothing is going to be
+// deleted, so telling them it will would be a lie they can check -- what
+// actually happens is that their own webinars get archived and the free
+// side keeps running, which is what they were promised.
+export function wefunnelRetentionNoticeEmail(
+  accountName: string,
+  daysLeft: number,
+  locale: AccountLocale
+): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const billingLink = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`;
+
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">About your canceled subscription</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your WeFunnels page is staying. Your own webinars will be archived in ${daysLeft} days.</h1>
+<p style="margin:0 0 20px;">In ${daysLeft} days we will archive the webinars <strong style="color:#18181b;">${safeName}</strong> published, because those are part of the subscription you canceled. Nothing is deleted -- reactivate any time and they are exactly where you left them.</p>
+<p style="margin:0 0 20px;">What does not change: your WeFunnels page, the contacts you collected there and, if you bought it, the distributor tier. Those were free for life, and cancelling a subscription does not touch them.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${billingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Reactivate my plan</a>
+</td></tr></table>`;
+    return {
+      subject: `${accountName}: your page stays, your webinars get archived in ${daysLeft} days`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
+
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Sobre tu suscripción cancelada</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tu página de WeFunnels se queda. Tus webinarios propios se archivan en ${daysLeft} días.</h1>
+<p style="margin:0 0 20px;">En ${daysLeft} días vamos a archivar los webinarios que publicó <strong style="color:#18181b;">${safeName}</strong>, porque son parte de la suscripción que cancelaste. No se borra nada: reactivas cuando quieras y están tal como los dejaste.</p>
+<p style="margin:0 0 20px;">Lo que no cambia: tu página de WeFunnels, los contactos que juntaste ahí y, si lo compraste, tu nivel distribuidor. Eso es gratis de por vida, y cancelar una suscripción no lo toca.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${billingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Reactivar mi plan</a>
+</td></tr></table>`;
+  return {
+    subject: `${accountName}: tu página se queda, tus webinarios se archivan en ${daysLeft} días`,
+    html: wrapPlatformEmailShell(inner, locale),
+  };
+}
+
 export function activationNudgeEmail(
   accountName: string,
   locale: AccountLocale

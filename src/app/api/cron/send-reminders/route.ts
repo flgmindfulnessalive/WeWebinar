@@ -20,6 +20,7 @@ import {
   monthlyDigestEmail,
   trialEndedEmail,
   trialExpiringEmail,
+  wefunnelRetentionNoticeEmail,
 } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
@@ -64,6 +65,27 @@ const LAUNCHPAD_STEP_LABELS_EN: Record<string, string> = {
 };
 function launchpadStepLabel(stepKey: string, locale: AccountLocale): string {
   return (locale === "en" ? LAUNCHPAD_STEP_LABELS_EN : LAUNCHPAD_STEP_LABELS_ES)[stepKey];
+}
+
+// The accounts in this list that will never be purged, because they hold
+// something sold outright: a WeFunnels page, or the distributor tier.
+// One round trip for the whole list rather than a query per account --
+// these lists are small, but the purge loop walks them twice.
+async function accountsKeepingWeFunnels(
+  admin: SupabaseClient<Database>,
+  accountIds: string[]
+): Promise<Set<string>> {
+  if (accountIds.length === 0) return new Set();
+
+  const [{ data: sites }, { data: distributors }] = await Promise.all([
+    admin.from("wefunnel_sites").select("account_id").in("account_id", accountIds),
+    admin.from("wefunnel_distributors").select("account_id").in("account_id", accountIds),
+  ]);
+
+  return new Set([
+    ...(sites ?? []).map((row) => row.account_id),
+    ...(distributors ?? []).map((row) => row.account_id),
+  ]);
 }
 
 function isAuthorized(request: Request): boolean {
@@ -580,6 +602,17 @@ export async function GET(request: Request) {
     .not("canceled_at", "is", null)
     .lte("canceled_at", warningCutoff);
 
+  // Which of these are never going to be deleted: an account with a
+  // WeFunnels page or the distributor tier reverts to the free tier
+  // instead (20261007000008). They get a different email, because telling
+  // somebody their account is about to be deleted when it is not is a lie
+  // they can check -- and the one thing they would do about it, reactivate
+  // in a panic, is exactly what we should not be selling them.
+  const keepsWeFunnels = await accountsKeepingWeFunnels(
+    admin,
+    (dueForWarning ?? []).map((a) => a.id)
+  );
+
   for (const account of dueForWarning ?? []) {
     const { data: claimed, error: claimError } = await admin
       .from("accounts")
@@ -609,7 +642,9 @@ export async function GET(request: Request) {
               DAY_MS
           )
         );
-        const { subject, html } = accountDeletionWarningEmail(account.name, daysLeft, account.locale);
+        const { subject, html } = keepsWeFunnels.has(account.id)
+          ? wefunnelRetentionNoticeEmail(account.name, daysLeft, account.locale)
+          : accountDeletionWarningEmail(account.name, daysLeft, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
       deletionWarningsSent++;
@@ -628,8 +663,28 @@ export async function GET(request: Request) {
     .not("canceled_at", "is", null)
     .lte("canceled_at", purgeCutoff);
 
+  let accountsRevertedToWeFunnels = 0;
+
   for (const account of dueForPurge ?? []) {
     try {
+      // An account with a WeFunnels page or the distributor tier is not
+      // purged at all: it goes back to the free tier with its page, its
+      // leads and its entitlement intact, and only its own webinars are
+      // archived. Those were sold outright, and a canceled subscription
+      // is not a reason to take them back.
+      const { data: reverted, error: revertError } = await admin.rpc(
+        "revert_canceled_account_to_wefunnels",
+        { p_account_id: account.id }
+      );
+      if (revertError) {
+        errors.push(`purge ${account.id}: ${revertError.message}`);
+        continue;
+      }
+      if (reverted) {
+        accountsRevertedToWeFunnels++;
+        continue;
+      }
+
       // Re-check status + age in the delete's own filter, not just the
       // select above -- a webhook could have reactivated this account in
       // the moments between building this list and reaching it here, and
@@ -791,6 +846,7 @@ export async function GET(request: Request) {
     attendeeLimitNudgesSent,
     deletionWarningsSent,
     accountsPurged,
+    accountsRevertedToWeFunnels,
     domainAlertsSent,
     launchpadRemindersSent,
     errors,

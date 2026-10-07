@@ -2142,6 +2142,10 @@ export interface Database {
         Args: { p_review_id: string };
         Returns: undefined;
       };
+      revert_canceled_account_to_wefunnels: {
+        Args: { p_account_id: string };
+        Returns: boolean;
+      };
       accounts_over_attendee_limit: {
         Args: { p_days?: number; p_min_days?: number };
         Returns: {
