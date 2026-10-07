@@ -61,7 +61,10 @@ function embedUrl(raw: string | null): string | null {
 function Badge({ slug }: { slug?: string }) {
   return (
     <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#1A1A2A] px-6 pt-4 pb-8 text-[13px] text-[#6E7694]">
-      <a href={`https://${WEFUNNELS_HOST}`} className="no-underline">
+      {/* Through /r/<slug> rather than straight to the offer: that route
+          records the touch and redirects, so the badge stays a plain link
+          and the owner gets credited for whoever it brought. */}
+      <a href={slug ? `/r/${slug}` : `https://${WEFUNNELS_HOST}`} className="no-underline">
         Creado con <span className="text-[#A9B0C9]">WeFunnels</span> — consigue el tuyo gratis
       </a>
       {/* Stays on this host: the visitor reporting a page should not be

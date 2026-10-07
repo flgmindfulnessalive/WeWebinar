@@ -2,16 +2,28 @@ import { redirect } from "next/navigation";
 
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { createClient } from "@/lib/supabase/server";
+
+const MONEY = new Intl.NumberFormat("es", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 export default async function PanelBadgePage() {
   const viewer = await getPanelViewer();
   if (!viewer) redirect("/login?next=/panel/badge");
   if (!viewer.site) redirect("/panel");
 
-  // The counter lands with attribution in a later slice. Until the first
-  // click is recorded this reads zero, which is the truth -- not a figure
-  // invented to make the screen look alive.
-  const arrivals = 0;
+  // Claims, not clicks: the sentence beside this number says "people who
+  // clicked your badge and claimed their own funnel", and counting clicks
+  // that went nowhere would inflate the one figure this screen uses to
+  // argue someone should become a distributor.
+  const supabase = await createClient();
+  const { data: stats } = await supabase.rpc("wefunnel_referral_stats");
+  const arrivals = stats?.[0]?.arrivals ?? 0;
+  const paying = stats?.[0]?.paying ?? 0;
+  const monthly = Number(stats?.[0]?.monthly_usd ?? 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,11 +64,18 @@ export default async function PanelBadgePage() {
           <strong className="text-[25px] leading-snug font-extrabold tracking-tight text-balance">
             {arrivals === 0
               ? "Cuando alguien llegue por tu página, aparecerá aquí"
-              : `Esas ${arrivals} personas no son tuyas todavía`}
+              : `${arrivals === 1 ? "Esa persona no es tuya" : `Esas ${arrivals} personas no son tuyas`} todavía`}
           </strong>
           <p className="mt-2.5 mb-0 text-[16px] leading-relaxed text-[#A9B0C9]">
             Como distribuidor repartes funnels con tu nombre, y cada persona que llegue
             por ti y contrate un plan te deja 10% todos los meses.
+            {paying > 0 && (
+              <>
+                {" "}
+                De las que ya llegaron, {paying} {paying === 1 ? "paga" : "pagan"} un plan
+                — serían {MONEY.format(monthly * 0.1)} al mes.
+              </>
+            )}
           </p>
         </div>
         <span className="flex-none rounded-xl border border-[#23233A] bg-[#0D0D15] px-7 py-4 text-[16px] font-semibold text-[#6E7694]">

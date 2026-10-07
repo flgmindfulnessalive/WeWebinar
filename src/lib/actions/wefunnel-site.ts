@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 import { createClient } from "@/lib/supabase/server";
 import { isWellFormedSlug, normalizeSlug, slugLengthHint } from "@/lib/wefunnels/slug";
+import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
 
 export type ClaimState = { error: string } | { success: true; slug: string } | null;
 export type SaveState = { error: string } | { success: true } | null;
@@ -43,9 +45,17 @@ export async function claimWeFunnelSite(
     return { error: "Esa dirección ya está tomada. Prueba con otra." };
   }
 
+  // The badge cookie's one and only job ends here: from this call on, the
+  // origin is a row on the account. A touch that is missing, stale or
+  // pointing at this same page is simply no touch -- the RPC checks all
+  // three again, since the value came from the client.
+  const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+
   const { error } = await supabase.rpc("claim_wefunnel_site", {
     p_display_name: displayName,
     p_slug: slug,
+    p_ref_slug: touch && touch.slug !== slug ? touch.slug : undefined,
+    p_touched_at: touch && touch.slug !== slug ? touch.touchedAt.toISOString() : undefined,
   });
 
   if (error) {

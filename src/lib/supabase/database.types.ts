@@ -1822,6 +1822,41 @@ export interface Database {
           },
         ];
       };
+      wefunnel_referrals: {
+        Row: {
+          id: string;
+          referrer_site_id: string;
+          referred_account_id: string;
+          touched_at: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_referrals"]["Row"]
+        > & {
+          referrer_site_id: string;
+          referred_account_id: string;
+          touched_at: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_referrals"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_referrals_referrer_site_id_fkey";
+            columns: ["referrer_site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "wefunnel_referrals_referred_account_id_fkey";
+            columns: ["referred_account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wefunnel_leads: {
         Row: {
           id: string;
@@ -1969,8 +2004,18 @@ export interface Database {
         Args: {
           p_display_name: string;
           p_slug: string;
+          p_ref_slug?: string;
+          p_touched_at?: string;
         };
         Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_referral_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          arrivals: number;
+          paying: number;
+          monthly_usd: number;
+        }[];
       };
       wefunnel_slug_available: {
         Args: { p_slug: string };
