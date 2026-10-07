@@ -58,13 +58,20 @@ function embedUrl(raw: string | null): string | null {
   return null;
 }
 
-function Badge() {
+function Badge({ slug }: { slug?: string }) {
   return (
     <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#1A1A2A] px-6 pt-4 pb-8 text-[13px] text-[#6E7694]">
       <a href={`https://${WEFUNNELS_HOST}`} className="no-underline">
         Creado con <span className="text-[#A9B0C9]">WeFunnels</span> — consigue el tuyo gratis
       </a>
-      <a href={wefunnelAppUrl("/reportar")} className="text-xs text-[#4A5173] no-underline">
+      {/* Stays on this host: the visitor reporting a page should not be
+          bounced to another domain mid-decision, and /reportar resolves
+          here because a static segment beats [slug] and the name is in the
+          reserved list. */}
+      <a
+        href={slug ? `/reportar?p=${encodeURIComponent(slug)}` : "/reportar"}
+        className="text-xs text-[#4A5173] no-underline"
+      >
         Reportar
       </a>
     </div>
@@ -209,7 +216,7 @@ export default async function WeFunnelSitePage({
         />
       </div>
 
-      <Badge />
+      <Badge slug={site.slug} />
     </main>
   );
 }

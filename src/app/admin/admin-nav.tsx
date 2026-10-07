@@ -2,20 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, Mail, Layers } from "lucide-react";
+import { LayoutDashboard, Building2, Mail, Layers, ShieldAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS: {
   href: string;
-  labelKey: "summary" | "accounts" | "leads" | "plans";
+  labelKey: "summary" | "accounts" | "leads" | "plans" | "wefunnels";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/admin", labelKey: "summary", icon: LayoutDashboard },
   { href: "/admin/accounts", labelKey: "accounts", icon: Building2 },
   { href: "/admin/leads", labelKey: "leads", icon: Mail },
   { href: "/admin/plans", labelKey: "plans", icon: Layers },
+  { href: "/admin/wefunnels", labelKey: "wefunnels", icon: ShieldAlert },
 ];
 
 export function AdminNav() {

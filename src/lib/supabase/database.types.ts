@@ -1775,6 +1775,53 @@ export interface Database {
           },
         ];
       };
+      wefunnel_blocked_terms: {
+        Row: {
+          term: string;
+          severity: "review" | "block";
+          rule: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_blocked_terms"]["Row"]
+        > & {
+          term: string;
+          severity: "review" | "block";
+          rule: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_blocked_terms"]["Row"]
+        >;
+        Relationships: [];
+      };
+      wefunnel_reviews: {
+        Row: {
+          id: string;
+          site_id: string;
+          source: "filter" | "report";
+          rule: string;
+          detail: string | null;
+          status: "open" | "cleared" | "actioned";
+          resolved_by: string | null;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_reviews"]["Row"]> & {
+          site_id: string;
+          source: "filter" | "report";
+          rule: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_reviews"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_reviews_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wefunnel_leads: {
         Row: {
           id: string;
@@ -1932,6 +1979,23 @@ export interface Database {
       wefunnel_publish_site: {
         Args: { p_published: boolean };
         Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_report_site: {
+        Args: { p_slug: string; p_note: string };
+        Returns: undefined;
+      };
+      wefunnel_set_suspended: {
+        Args: {
+          p_site_id: string;
+          p_suspended: boolean;
+          p_rule?: string;
+          p_note?: string;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_clear_review: {
+        Args: { p_review_id: string };
+        Returns: undefined;
       };
       record_growth_event: {
         Args: {
