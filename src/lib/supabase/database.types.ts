@@ -1918,6 +1918,21 @@ export interface Database {
         };
         Returns: Database["public"]["Tables"]["accounts"]["Row"];
       };
+      claim_wefunnel_site: {
+        Args: {
+          p_display_name: string;
+          p_slug: string;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_slug_available: {
+        Args: { p_slug: string };
+        Returns: boolean;
+      };
+      wefunnel_publish_site: {
+        Args: { p_published: boolean };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
       record_growth_event: {
         Args: {
           p_event_name: GrowthEventName;

@@ -143,7 +143,7 @@ export default async function WeFunnelSitePage({
           </div>
           {!site.suspended_at && (
             <a
-              href={wefunnelAppUrl("/dashboard/wefunnels")}
+              href={wefunnelAppUrl("/panel")}
               className="rounded-[10px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-5 py-3 text-[15px] font-semibold text-white no-underline"
             >
               Publicar
