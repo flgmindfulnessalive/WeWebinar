@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 
 export type ModerationState = { error: string } | { success: true } | null;
 
@@ -58,4 +59,36 @@ export async function clearReview(
 
   revalidatePath("/admin/wefunnels");
   return { success: true };
+}
+
+export type MountRoomsState = { error: string } | { mounted: number } | null;
+
+// Mounts the course room for every distributor who still has none.
+//
+// It exists because the tier shipped before the course was recorded: those
+// buyers' webhooks have already come and gone, and nothing else will ever
+// fire for them. Run it once after publishing the course, and again after
+// any stretch where the template id was unset. Safe to repeat -- the RPC
+// returns the existing room rather than making a second one, so the count
+// it reports is rooms actually created, not distributors looked at.
+export async function mountMissingCourseRooms(): Promise<MountRoomsState> {
+  const sourceId = courseTemplateWebinarId();
+  if (!sourceId) {
+    return { error: "Falta WEFUNNELS_COURSE_WEBINAR_ID: no hay curso que copiar." };
+  }
+
+  // The user's own client, not the service role: the RPC checks
+  // is_platform_admin() itself, the same way the moderation ones do.
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("wefunnel_mount_missing_course_rooms", {
+    p_source_webinar_id: sourceId,
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] course room backfill failed:", error.message);
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/wefunnels");
+  return { mounted: data ?? 0 };
 }

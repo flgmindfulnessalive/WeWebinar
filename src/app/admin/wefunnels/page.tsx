@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClearButton, SuspendButton } from "./moderation-actions";
+import { ClearButton, MountCourseRoomsButton, SuspendButton } from "./moderation-actions";
 
 // Spanish only, unlike the rest of the admin: WeFunnels ships in Spanish,
 // and a moderation screen quoting Spanish page copy next to English chrome
@@ -26,7 +26,7 @@ export default async function AdminWeFunnelsPage() {
   // hides from everyone but their owner.
   const supabase = createAdminClient();
 
-  const [{ data: reviews }, { data: sites }] = await Promise.all([
+  const [{ data: reviews }, { data: sites }, { count: distributorCount }, { count: pendingRoomCount }] = await Promise.all([
     supabase
       .from("wefunnel_reviews")
       .select("id, site_id, source, rule, detail, created_at")
@@ -38,8 +38,17 @@ export default async function AdminWeFunnelsPage() {
       .select("id, slug, display_name, status, suspended_at, published_at, created_at")
       .order("created_at", { ascending: false })
       .limit(100),
+    supabase
+      .from("wefunnel_distributors")
+      .select("account_id", { count: "exact", head: true }),
+    supabase
+      .from("wefunnel_distributors")
+      .select("account_id", { count: "exact", head: true })
+      .is("course_webinar_id", null),
   ]);
 
+  const distributors = distributorCount ?? 0;
+  const pendingRooms = pendingRoomCount ?? 0;
   const openReviews = reviews ?? [];
   const allSites = sites ?? [];
   const siteById = new Map(allSites.map((site) => [site.id, site]));
@@ -122,6 +131,24 @@ export default async function AdminWeFunnelsPage() {
             })}
           </div>
         )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">Distribuidores</h2>
+        <Card>
+          <CardContent className="flex flex-col gap-3 py-5">
+            <p className="text-sm text-muted-foreground">
+              {distributors === 0
+                ? "Todavía no hay distribuidores."
+                : `${distributors} distribuidor${distributors === 1 ? "" : "es"}, ${pendingRooms} sin sala del curso.`}
+              {" "}
+              La sala se monta sola al activar el nivel; esto es para los que
+              compraron antes de que el curso existiera, o mientras
+              WEFUNNELS_COURSE_WEBINAR_ID estuvo vacío. Repetirlo no duplica nada.
+            </p>
+            <MountCourseRoomsButton />
+          </CardContent>
+        </Card>
       </section>
 
       <section className="flex flex-col gap-3">

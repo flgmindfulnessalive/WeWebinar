@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { mountDistributorCourseRoom } from "@/lib/wefunnels/course-room";
 
 const INCLUDED_MONTHS = 3;
 
@@ -54,10 +55,19 @@ export async function activateWeFunnelsDistributor({
       .from("wefunnel_distributor_claims")
       .delete()
       .eq("membership_id", membershipId);
+    return;
   }
 
-  // Mounting their own copy of the course happens here, once that webinar
-  // exists to duplicate. Until then course_webinar_id stays null, which the
-  // panel reads as "coming" rather than as a failure -- the lifetime rights
-  // they just bought do not depend on it.
+  // Their own copy of the course, at their own address, with the claim CTA
+  // crediting them. Deliberately after the entitlement and never allowed to
+  // undo it: the room is recoverable (the activation is idempotent, and
+  // /admin/wefunnels can mount the missing ones in one pass), whereas
+  // rolling back the claim row over a failed copy would risk charging
+  // someone for a tier they do not have. While WEFUNNELS_COURSE_WEBINAR_ID
+  // is unset this is a no-op and course_webinar_id stays null, which the
+  // panel reads as "coming" rather than as a failure.
+  const mounted = await mountDistributorCourseRoom(accountId);
+  if ("skipped" in mounted) {
+    console.warn("[wefunnel] course room not mounted for", accountId, "-", mounted.skipped);
+  }
 }

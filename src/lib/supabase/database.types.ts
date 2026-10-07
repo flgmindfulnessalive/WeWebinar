@@ -2102,6 +2102,14 @@ export interface Database {
         Args: { p_review_id: string };
         Returns: undefined;
       };
+      wefunnel_clone_course_webinar: {
+        Args: { p_account_id: string; p_source_webinar_id: string };
+        Returns: string | null;
+      };
+      wefunnel_mount_missing_course_rooms: {
+        Args: { p_source_webinar_id: string };
+        Returns: number;
+      };
       record_growth_event: {
         Args: {
           p_event_name: GrowthEventName;
