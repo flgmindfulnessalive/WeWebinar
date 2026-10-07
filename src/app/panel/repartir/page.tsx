@@ -17,7 +17,8 @@ export default async function PanelSharePage() {
   const { data: stats } = await supabase.rpc("wefunnel_referral_stats");
   const claimed = stats?.[0]?.arrivals ?? 0;
 
-  const shareUrl = `https://${WEFUNNELS_HOST}/r/${viewer.site.slug}`;
+  const siteUrl = `https://${WEFUNNELS_HOST}/${viewer.site.slug}`;
+  const roomUrl = `${siteUrl}/curso`;
   const starterUntil = viewer.distributor.starter_until
     ? new Date(viewer.distributor.starter_until)
     : null;
@@ -26,15 +27,30 @@ export default async function PanelSharePage() {
     <div className="flex flex-col gap-6">
       <h1 className="m-0 text-[28px] font-bold tracking-tight">Funnels repartidos</h1>
 
+      {/* The two links the course tells them to keep straight, in the same
+          order it does: the room is what they share to give the product
+          away, the funnel is what presents them. Both credit them, because
+          the badge at the foot of the funnel points at the same /r/<slug>
+          the room's button does. */}
       <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
         <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-          Tu enlace para repartir
+          Tu sala del curso — el enlace que repartes
         </span>
-        <CopyLink url={shareUrl} />
+        <CopyLink url={roomUrl} />
         <span className="text-sm leading-relaxed text-[#6E7694]">
-          Quien entre por aquí recibe su propia página gratis y queda registrado como
-          tuyo. Es el mismo enlace del badge al pie de tu página, así que todo lo que
-          mandes ahí también cuenta.
+          Ofrece el curso y el funnel gratis. Quien entre por aquí recibe su propia
+          página y queda registrado como tuyo.
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
+        <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
+          Tu funnel personal
+        </span>
+        <CopyLink url={siteUrl} />
+        <span className="text-sm leading-relaxed text-[#6E7694]">
+          Presenta lo que haces y capta interesados en tu propuesta. El badge a su pie
+          lleva al mismo sitio, así que lo que mandes ahí también cuenta.
         </span>
       </div>
 
