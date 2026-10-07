@@ -4,6 +4,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { updateSession } from "@/lib/supabase/middleware";
 import { routing } from "@/i18n/routing";
 import { lookupAccountSlugByHostname, lookupPendingDomainStatus } from "@/lib/domains/lookup";
+import { WEFUNNELS_PATH_PREFIX, isWeFunnelsHostname } from "@/lib/wefunnels/host";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -73,6 +74,28 @@ export async function proxy(request: NextRequest) {
   // next-intl branch below entirely instead of feeding it a rewritten
   // request it wasn't built to see.
   const hostname = request.headers.get("host")?.split(":")[0] ?? "";
+
+  // WeFunnels (wefunnels.wewebinars.com): every path on this host is a
+  // personal funnel page, so the whole subdomain rewrites onto the /f
+  // namespace and nothing else on it resolves. That is deliberate twice
+  // over -- it keeps the slug namespace flat (one segment, one name), and
+  // it means the dashboard, admin and auth routes simply do not exist on
+  // the host that strangers' pages are published under.
+  //
+  // Checked before the custom-domain branch below so this never costs a
+  // database lookup, and left out of the next-intl branch entirely:
+  // WeFunnels launches in Spanish only, with no /en prefix.
+  if (isWeFunnelsHostname(hostname)) {
+    const url = request.nextUrl.clone();
+    const suffix = url.pathname === "/" ? "" : url.pathname;
+    url.pathname = `${WEFUNNELS_PATH_PREFIX}${suffix}`;
+    const rewriteResponse = NextResponse.rewrite(url);
+    for (const cookie of sessionResponse.cookies.getAll()) {
+      rewriteResponse.cookies.set(cookie);
+    }
+    return rewriteResponse;
+  }
+
   if (!isOwnHostname(hostname)) {
     const accountSlug = await lookupAccountSlugByHostname(hostname);
     if (accountSlug) {

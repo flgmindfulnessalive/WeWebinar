@@ -11,6 +11,7 @@ export type Json =
   | Json[];
 
 export type UserRole = "owner" | "editor" | "viewer";
+export type WeFunnelSiteStatus = "draft" | "published";
 export type AccountLocale = "es" | "en";
 export type SubscriptionStatus =
   | "trialing"
@@ -1687,6 +1688,114 @@ export interface Database {
             columns: ["prospect_id"];
             isOneToOne: false;
             referencedRelation: "partner_prospects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_reserved_slugs: {
+        Row: {
+          slug: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_reserved_slugs"]["Row"]
+        > & {
+          slug: string;
+          reason: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_reserved_slugs"]["Row"]
+        >;
+        Relationships: [];
+      };
+      wefunnel_sites: {
+        Row: {
+          id: string;
+          account_id: string;
+          slug: string;
+          status: WeFunnelSiteStatus;
+          display_name: string;
+          location: string | null;
+          headline: string | null;
+          bullets: string[];
+          video_url: string | null;
+          accent: string;
+          contact_whatsapp: string | null;
+          question_label: string | null;
+          pixel_provider: string | null;
+          pixel_id: string | null;
+          suspended_at: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_sites"]["Row"]> & {
+          account_id: string;
+          slug: string;
+          display_name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_sites"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_sites_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_suspensions: {
+        Row: {
+          id: string;
+          site_id: string;
+          rule: string;
+          note: string | null;
+          suspended_by: string | null;
+          lifted_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_suspensions"]["Row"]
+        > & {
+          site_id: string;
+          rule: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_suspensions"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_suspensions_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_leads: {
+        Row: {
+          id: string;
+          site_id: string;
+          name: string;
+          whatsapp: string | null;
+          email: string | null;
+          answer: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]> & {
+          site_id: string;
+          name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_leads_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
             referencedColumns: ["id"];
           },
         ];
