@@ -62,6 +62,28 @@ export default async function BillingPage() {
   // subscription to "switch away from" -- it needs to be paid for, not
   // changed. That's the one case where the current plan itself belongs in
   // this list: everyone else only sees the OTHER plans.
+  // The soft attendee cap (20261007000007) admits registrants above the
+  // plan's concurrent limit and records the day. Shown here rather than
+  // only emailed, because this is the screen where somebody does something
+  // about it -- and because a customer who finds out from our email that
+  // they have been over the line for a week is right to ask why the app
+  // never said so.
+  const { data: overageDays } = await supabase
+    .from("attendee_overage_days")
+    .select("day, peak_concurrent, plan_limit")
+    .eq("account_id", current.account.id)
+    .gte("day", monthStart.slice(0, 10))
+    .order("peak_concurrent", { ascending: false });
+
+  const overage =
+    overageDays && overageDays.length > 0
+      ? {
+          days: new Set(overageDays.map((row) => row.day)).size,
+          peak: overageDays[0].peak_concurrent,
+          limit: overageDays[0].plan_limit,
+        }
+      : null;
+
   const isTrialNotBilled = !current.account.billing_customer_id;
   const payablePlans = (selfServePlans ?? []).filter(
     (p) => p.key !== current.plan.key || isTrialNotBilled
@@ -91,6 +113,15 @@ export default async function BillingPage() {
               max: current.plan.max_registrants_per_month ?? "∞",
             })}
           </p>
+          {overage && (
+            <p className="text-foreground">
+              {t("attendeeOverageNotice", {
+                days: overage.days,
+                peak: overage.peak,
+                max: overage.limit,
+              })}
+            </p>
+          )}
           {current.account.billing_customer_id ? (
             <CancelSubscriptionButton />
           ) : (

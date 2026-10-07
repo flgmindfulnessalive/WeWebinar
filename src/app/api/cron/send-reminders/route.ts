@@ -14,6 +14,7 @@ import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
 import {
   accountDeletionWarningEmail,
   activationNudgeEmail,
+  attendeeLimitUpgradeEmail,
   domainVerificationFailedEmail,
   launchpadReminderEmail,
   monthlyDigestEmail,
@@ -465,6 +466,95 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Attendee-limit upgrade nudge: the commercial half of the soft cap
+  // in 20261007000007. The database admits registrants above the plan's
+  // concurrent limit and records the day it happened; this notices when
+  // that has become a habit rather than one good afternoon, and asks the
+  // owner to move up a plan.
+  //
+  // Re-sendable, unlike the activation nudge: being over the line for a
+  // week in March and again in September is two conversations. The claim
+  // column is the same claim-before-send pattern, just with a cooldown
+  // instead of a null check.
+  const OVERAGE_WINDOW_DAYS = 7;
+  const OVERAGE_MIN_DAYS = 3;
+  const OVERAGE_NUDGE_COOLDOWN_DAYS = 30;
+  let attendeeLimitNudgesSent = 0;
+
+  const { data: overAccounts, error: overError } = await admin.rpc(
+    "accounts_over_attendee_limit",
+    { p_days: OVERAGE_WINDOW_DAYS, p_min_days: OVERAGE_MIN_DAYS }
+  );
+  if (overError) {
+    errors.push(`attendee overage query: ${overError.message}`);
+  }
+
+  const overageCooldown = new Date(
+    now.getTime() - OVERAGE_NUDGE_COOLDOWN_DAYS * DAY_MS
+  ).toISOString();
+
+  for (const row of overAccounts ?? []) {
+    const { data: account } = await admin
+      .from("accounts")
+      .select("id, name, locale, subscription_status, attendee_overage_nudge_sent_at")
+      .eq("id", row.account_id)
+      .maybeSingle();
+
+    // A canceled or suspended account is not a plan conversation.
+    if (!account) continue;
+    if (!["trialing", "active"].includes(account.subscription_status)) continue;
+    if (
+      account.attendee_overage_nudge_sent_at &&
+      account.attendee_overage_nudge_sent_at > overageCooldown
+    ) {
+      continue;
+    }
+
+    // Claim on the timestamp being what we just read, so two overlapping
+    // ticks cannot both send.
+    const claim = admin
+      .from("accounts")
+      .update({ attendee_overage_nudge_sent_at: now.toISOString() })
+      .eq("id", account.id);
+    const { data: claimed, error: claimError } = await (account.attendee_overage_nudge_sent_at
+      ? claim.eq("attendee_overage_nudge_sent_at", account.attendee_overage_nudge_sent_at)
+      : claim.is("attendee_overage_nudge_sent_at", null)
+    )
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`attendee nudge ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const { subject, html } = attendeeLimitUpgradeEmail(
+          account.name,
+          {
+            daysOver: row.days_over,
+            peakConcurrent: row.peak_concurrent,
+            planLimit: row.plan_limit,
+          },
+          account.locale
+        );
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      attendeeLimitNudgesSent++;
+    } catch (err) {
+      errors.push(
+        `attendee nudge ${account.id}: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
   // --- Cancellation retention: a canceled Whop subscription (billing
   // lapse, self-serve) keeps its data for RETENTION_DAYS so a reactivation
   // restores everything exactly as it was, warns the owner
@@ -698,6 +788,7 @@ export async function GET(request: Request) {
     trialsCanceled,
     digestsSent,
     activationNudgesSent,
+    attendeeLimitNudgesSent,
     deletionWarningsSent,
     accountsPurged,
     domainAlertsSent,

@@ -1015,6 +1015,7 @@
     "planTitle": "{plan} plan",
     "activeWebinarsCount": "{count} / {max} active webinars.",
     "monthlyRegistrantsCount": "{count} / {max} registrants this month.",
+    "attendeeOverageNotice": "This month you went past your concurrent attendee limit on {days} day(s): you peaked at {peak} on a plan that includes {max}. Nobody was turned away, but it may be time to look at the plan.",
     "billingNotActivated": "You haven't activated billing for your subscription yet.",
     "changePlanTitle": "Change plan",
     "changeToPlan": "Switch to {plan}",

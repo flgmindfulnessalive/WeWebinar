@@ -349,6 +349,45 @@ export function teamInviteEmail(
   };
 }
 
+// Sent to an account that has been admitting registrants above its plan's
+// concurrent limit on several days running. Nobody was turned away -- the
+// cap is soft, and saying otherwise here would be a lie the customer can
+// check. The email's whole job is to say "this is working, and the plan you
+// are on is no longer the one that fits".
+export function attendeeLimitUpgradeEmail(
+  accountName: string,
+  stats: { daysOver: number; peakConcurrent: number; planLimit: number },
+  locale: AccountLocale
+): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const { daysOver, peakConcurrent, planLimit } = stats;
+  const billingLink = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`;
+
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Your webinars are filling up</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">You have gone past your plan's attendee limit on ${daysOver} of the last 7 days</h1>
+<p style="margin:0 0 20px;"><strong style="color:#18181b;">${safeName}</strong> peaked at <strong style="color:#18181b;">${peakConcurrent}</strong> attendees in the same window, on a plan that includes <strong style="color:#18181b;">${planLimit}</strong>. We let everyone in -- we are not going to turn away your registrants over a billing line -- but a bigger plan is cheaper than the leads you would lose if this keeps growing.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${billingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">See the plans</a>
+</td></tr></table>`;
+    return {
+      subject: `${accountName} is outgrowing its plan's attendee limit`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
+
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Tus webinarios se están llenando</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Pasaste el tope de asistentes de tu plan en ${daysOver} de los últimos 7 días</h1>
+<p style="margin:0 0 20px;"><strong style="color:#18181b;">${safeName}</strong> llegó a <strong style="color:#18181b;">${peakConcurrent}</strong> asistentes en la misma ventana, con un plan que incluye <strong style="color:#18181b;">${planLimit}</strong>. Los dejamos entrar a todos — no vamos a rechazar a tus registrados por una línea de facturación — pero un plan más grande sale más barato que los prospectos que perderías si esto sigue creciendo.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${billingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Ver los planes</a>
+</td></tr></table>`;
+  return {
+    subject: `${accountName} está pasando el tope de asistentes de su plan`,
+    html: wrapPlatformEmailShell(inner, locale),
+  };
+}
+
 export function activationNudgeEmail(
   accountName: string,
   locale: AccountLocale

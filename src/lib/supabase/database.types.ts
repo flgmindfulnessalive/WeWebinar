@@ -198,6 +198,7 @@ export interface Database {
           trial_warning_sent_at: string | null;
           last_digest_sent_at: string | null;
           activation_nudge_sent_at: string | null;
+          attendee_overage_nudge_sent_at: string | null;
           digest_unsubscribed_at: string | null;
           unsubscribe_token: string;
           brevo_api_key: string | null;
@@ -1899,6 +1900,45 @@ export interface Database {
         >;
         Relationships: [];
       };
+      attendee_overage_days: {
+        Row: {
+          webinar_id: string;
+          account_id: string;
+          day: string;
+          plan_limit: number;
+          peak_concurrent: number;
+          admissions: number;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["attendee_overage_days"]["Row"]
+        > & {
+          webinar_id: string;
+          account_id: string;
+          day: string;
+          plan_limit: number;
+          peak_concurrent: number;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["attendee_overage_days"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "attendee_overage_days_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendee_overage_days_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wefunnel_leads: {
         Row: {
           id: string;
@@ -2101,6 +2141,16 @@ export interface Database {
       wefunnel_clear_review: {
         Args: { p_review_id: string };
         Returns: undefined;
+      };
+      accounts_over_attendee_limit: {
+        Args: { p_days?: number; p_min_days?: number };
+        Returns: {
+          account_id: string;
+          days_over: number;
+          peak_concurrent: number;
+          plan_limit: number;
+          admissions: number;
+        }[];
       };
       wefunnel_clone_course_webinar: {
         Args: { p_account_id: string; p_source_webinar_id: string };
