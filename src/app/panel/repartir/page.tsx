@@ -11,7 +11,7 @@ const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year
 // numbers live in wefunnel_site_stats (20261007000010).
 const STEPS = [
   {
-    label: "Abrieron tu sala",
+    label: "Abrieron tu página de regalo",
     body: "Visitas al enlace que repartes.",
   },
   {
@@ -44,7 +44,7 @@ export default async function PanelSharePage() {
   );
   const claimed = Number(stats?.[0]?.claims ?? 0);
 
-  // The rate that tells them which half to work on: traffic, or the room.
+  // The rate that tells them which half to work on: traffic, or the page.
   // Shown only once there is traffic, because a percentage of nothing reads
   // as a judgement.
   const claimRate = visits > 0 ? Math.round((claimed / visits) * 100) : null;
@@ -60,10 +60,10 @@ export default async function PanelSharePage() {
       <h1 className="m-0 text-[28px] font-bold tracking-tight">Funnels repartidos</h1>
 
       {/* The two links the course tells them to keep straight, in the same
-          order it does: the room is what they share to give the product
-          away, the funnel is what presents them. Both credit them, because
-          the badge at the foot of the funnel points at the same /r/<slug>
-          the room's button does. */}
+          order it does: the gift page is what they share to give the
+          product away, the funnel is what presents them. Both credit them,
+          because the badge at the foot of the funnel points at the same
+          /r/<slug> the gift page's button does. */}
       <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
         <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
           Tu página de regalo — el enlace que repartes
@@ -90,11 +90,11 @@ export default async function PanelSharePage() {
         </span>
       </div>
 
-      {/* The three steps of the room, in the order they happen. Separated
-          because each one fails for a different reason: no visits is a
-          traffic problem, visits without registrations is the room, and
-          registrations without claims is the course. A single "reclamados"
-          number could not tell them which. */}
+      {/* The three steps of the gift page, in the order they happen.
+          Separated because each one fails for a different reason: no visits
+          is a traffic problem, visits without registrations is the gift
+          page, and registrations without claims is the course. A single
+          "reclamados" number could not tell them which. */}
       <div className="flex flex-col gap-5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
         <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
           Tu embudo
@@ -119,7 +119,7 @@ export default async function PanelSharePage() {
         </ol>
         {claimRate !== null && (
           <span className="text-sm leading-relaxed text-[#6E7694]">
-            De cada 100 personas que abren tu sala, {claimRate} se queda con su funnel.
+            De cada 100 personas que abren tu página de regalo, {claimRate} se queda con su funnel.
           </span>
         )}
         {/* The sentence that answers the question before it gets asked. The

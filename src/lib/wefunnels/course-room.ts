@@ -21,11 +21,11 @@ export function courseTemplateWebinarId(): string | null {
 }
 
 // Where that webinar lives publicly. Everybody lands here: the panel's
-// re-watch section, and every distributor's room after the referral has
-// been stamped.
+// re-watch section, and every distributor's gift page after the referral
+// has been stamped.
 //
 // One room rather than a copy per distributor (see
-// 20261007000009). "Tu sala con el curso, a tu nombre" is about the
+// 20261007000009). "Tu página de regalo, a tu nombre" is about the
 // address and the name, and wefunnels.wewebinars.com/<nombre>/regalo still
 // carries both -- while the thing that actually costs money, an attendee
 // watching 25 minutes and being emailed about it, stops being multiplied
@@ -103,7 +103,7 @@ export async function recordCourseLeadForReferrer({
 
   if (existing) return;
 
-  // source, not the sentence in answer: the room funnel counts this step
+  // source, not the sentence in answer: the gift funnel counts this step
   // and counting it by matching prose breaks the day somebody rewords it
   // (20261007000010). Only the service role may write 'course'.
   await admin.from("wefunnel_leads").insert({
@@ -111,6 +111,6 @@ export async function recordCourseLeadForReferrer({
     name,
     email,
     source: "course",
-    answer: "Se registró al curso desde tu sala.",
+    answer: "Se registró al curso desde tu página de regalo.",
   });
 }
