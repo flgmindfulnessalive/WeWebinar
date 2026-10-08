@@ -8,9 +8,14 @@ import {
   serializeTouch,
 } from "@/lib/wefunnels/referral";
 
-// Where every badge points. It records the touch and sends the visitor on to
-// the offer, so the link in the page footer stays a plain link and the whole
+// Where a shared referral link points. It records the touch and sends the
+// visitor on to the gift page, so the link stays a plain link and the whole
 // mechanism is one redirect the person never sees.
+//
+// To /<slug>/regalo and no longer to the host root: the root is now the
+// official web, which sells the licence at $199 and hands out nothing. A
+// visitor who followed somebody's gift link and landed on a sales page
+// would have been shown the opposite of what they were promised.
 //
 // The cookie is scoped to the parent domain, the same way the Supabase
 // session cookie already is: the badge sits on wefunnels.wewebinars.com but
@@ -25,7 +30,11 @@ export async function GET(
   const { slug: raw } = await params;
   const slug = normalizeSlug(raw);
 
-  const response = NextResponse.redirect(new URL("/", request.url));
+  // An unreadable slug has no gift page to send anyone to, so it falls back
+  // to the official web rather than to a 404.
+  const response = NextResponse.redirect(
+    new URL(slug ? `/${slug}/regalo` : "/", request.url)
+  );
 
   if (slug) {
     response.cookies.set(REFERRAL_COOKIE, serializeTouch(slug), {

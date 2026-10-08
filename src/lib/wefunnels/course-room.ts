@@ -26,7 +26,7 @@ export function courseTemplateWebinarId(): string | null {
 //
 // One room rather than a copy per distributor (see
 // 20261007000009). "Tu sala con el curso, a tu nombre" is about the
-// address and the name, and wefunnels.wewebinars.com/<nombre>/curso still
+// address and the name, and wefunnels.wewebinars.com/<nombre>/regalo still
 // carries both -- while the thing that actually costs money, an attendee
 // watching 25 minutes and being emailed about it, stops being multiplied
 // by one permanent room per buyer.

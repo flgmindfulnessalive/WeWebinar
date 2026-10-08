@@ -50,7 +50,7 @@ export default async function PanelSharePage() {
   const claimRate = visits > 0 ? Math.round((claimed / visits) * 100) : null;
 
   const siteUrl = `https://${WEFUNNELS_HOST}/${viewer.site.slug}`;
-  const roomUrl = `${siteUrl}/curso`;
+  const giftUrl = `${siteUrl}/regalo`;
   const starterUntil = viewer.distributor.starter_until
     ? new Date(viewer.distributor.starter_until)
     : null;
@@ -66,9 +66,9 @@ export default async function PanelSharePage() {
           the room's button does. */}
       <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
         <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-          Tu sala del curso — el enlace que repartes
+          Tu página de regalo — el enlace que repartes
         </span>
-        <CopyLink url={roomUrl} />
+        <CopyLink url={giftUrl} />
         <span className="text-sm leading-relaxed text-[#6E7694]">
           Ofrece el curso y el funnel gratis. Quien entre por aquí recibe su propia
           página y queda registrado como tuyo.

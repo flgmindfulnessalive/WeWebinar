@@ -31,8 +31,17 @@ export const metadata: Metadata = {
 export default function WeFunnelsLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className={`${archivo.variable} ${plexMono.variable} min-h-screen bg-black text-white`}
-      style={{ fontFamily: "var(--font-wefunnels), system-ui, sans-serif" }}
+      className={`${archivo.variable} ${plexMono.variable} min-h-screen`}
+      style={{
+        fontFamily: "var(--font-wefunnels), system-ui, sans-serif",
+        // The approved ground: very dark blue, near black, not black. Set
+        // here so every surface under /f shares it -- the official web, a
+        // distributor's gift page and somebody's personal funnel are one
+        // family, and a page that was pure black read as a different
+        // product sitting next to the other two.
+        background: "#050913",
+        color: "#EDF4FF",
+      }}
     >
       {children}
     </div>

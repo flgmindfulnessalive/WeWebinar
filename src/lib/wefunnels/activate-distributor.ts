@@ -72,7 +72,7 @@ export async function activateWeFunnelsDistributor({
   }
 
   // Nothing else to provision. Their course room is an address, not an
-  // object: wefunnels.wewebinars.com/<nombre>/curso resolves for any
+  // object: wefunnels.wewebinars.com/<nombre>/regalo resolves for any
   // account with this entitlement and a published page, and the room it
   // opens is the one shared course (see 20261007000009). The row written
   // above is the whole activation.
