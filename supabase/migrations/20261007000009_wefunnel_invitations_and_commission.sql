@@ -82,8 +82,8 @@ $$;
 --
 -- It answers about the INVITATION, never about the inviter: a closed one
 -- reads the same whether the page was suspended, the slug was invented, or
--- the free quota ran out. Someone probing slugs learns nothing about who
--- exists.
+-- its owner never bought the tier. Someone probing slugs learns nothing
+-- about who exists or who paid.
 -- =========================================================================
 create or replace function public.wefunnel_invitation_open(p_slug text)
 returns boolean
@@ -95,13 +95,10 @@ as $$
   select exists (
     select 1
     from public.wefunnel_sites s
+    join public.wefunnel_distributors d on d.account_id = s.account_id
     where s.slug = p_slug
       and s.status = 'published'
       and s.suspended_at is null
-      and (
-        exists (select 1 from public.wefunnel_distributors d where d.account_id = s.account_id)
-        or (select count(*) from public.wefunnel_referrals r where r.referrer_site_id = s.id) < 3
-      )
   );
 $$;
 
@@ -123,9 +120,9 @@ grant execute on function public.wefunnel_invitation_open(text) to anon, authent
 --   them to buy into -- the fourth attempt is where the offer lands, and it
 --   lands on somebody who has already done it three times and liked it.
 --
---   A distributor invites without limit. That is what the tier buys.
---
--- The three-invitation number lives here and nowhere else.
+--   Only a distributor invites, and without limit. That is what the tier
+--   buys, and it is the whole of what it buys on this side: a free account
+--   cannot gift a funnel at all, so there is no quota anywhere in here.
 -- =========================================================================
 create or replace function public.claim_wefunnel_site(
   p_display_name text,
@@ -139,7 +136,6 @@ security definer
 set search_path = public
 as $$
 declare
-  FREE_INVITATIONS constant int := 3;
   v_account_id uuid;
   v_account_slug text;
   v_suffix int := 0;
@@ -147,7 +143,6 @@ declare
   v_referrer_id uuid;
   v_referrer_account uuid;
   v_referrer_is_distributor boolean;
-  v_used int;
   v_new_account boolean := false;
   v_seeded boolean := false;
 begin
@@ -181,19 +176,17 @@ begin
         using errcode = 'check_violation';
     end if;
 
+    -- Gifting is the distributor tier, whole. A free account's link is its
+    -- own funnel and invites nobody: it has no quota to spend because it
+    -- never had one. Checked against the database and not against what the
+    -- cookie claims, because the slug arrived from the client.
     select exists (
       select 1 from public.wefunnel_distributors d where d.account_id = v_referrer_account
     ) into v_referrer_is_distributor;
 
     if not v_referrer_is_distributor then
-      select count(*) into v_used
-      from public.wefunnel_referrals r
-      where r.referrer_site_id = v_referrer_id;
-
-      if v_used >= FREE_INVITATIONS then
-        raise exception 'wefunnel: invitation quota exhausted'
-          using errcode = 'check_violation';
-      end if;
+      raise exception 'wefunnel: inviter is not a distributor'
+        using errcode = 'check_violation';
     end if;
   end if;
 
@@ -235,8 +228,7 @@ begin
 
   -- Only a brand-new account carries an origin. Someone who already had an
   -- account arrived here by some other road, and crediting an invitation
-  -- for them would be inventing a referral -- and spending one of the
-  -- inviter's three on nothing.
+  -- for them would be inventing a referral.
   if v_new_account and v_referrer_id is not null then
     insert into public.wefunnel_referrals (referrer_site_id, referred_account_id, touched_at)
     values (v_referrer_id, v_account_id, p_touched_at)
@@ -250,51 +242,16 @@ $$;
 grant execute on function public.claim_wefunnel_site(text, text, text, timestamptz) to authenticated;
 
 -- =========================================================================
--- How many invitations are left
+-- There is no invitations screen any more
 --
--- What the panel shows beside the link. `remaining` is null for a
--- distributor, which the screen renders as unlimited rather than as a
--- number -- a very large number would read as a limit nobody has hit yet.
+-- wefunnel_invitations() reported a quota -- used, remaining, unlimited --
+-- and the quota is gone: a free account gifts nothing and a distributor
+-- gifts without limit, so every row it could return is a constant. What a
+-- distributor actually wants to know is how many funnels their link has
+-- handed out, and that is the claims step of wefunnel_site_stats
+-- (20261007000010).
 -- =========================================================================
-create or replace function public.wefunnel_invitations()
-returns table (used bigint, remaining int, unlimited boolean)
-language plpgsql
-stable
-security definer
-set search_path = public
-as $$
-declare
-  FREE_INVITATIONS constant int := 3;
-  v_site_id uuid;
-  v_account_id uuid;
-  v_unlimited boolean;
-  v_used bigint;
-begin
-  select u.account_id, s.id into v_account_id, v_site_id
-  from public.users u
-  join public.wefunnel_sites s on s.account_id = u.account_id
-  where u.id = auth.uid();
-
-  if v_site_id is null then
-    return;
-  end if;
-
-  select exists (
-    select 1 from public.wefunnel_distributors d where d.account_id = v_account_id
-  ) into v_unlimited;
-
-  select count(*) into v_used
-  from public.wefunnel_referrals r
-  where r.referrer_site_id = v_site_id;
-
-  return query select
-    v_used,
-    case when v_unlimited then null else greatest(FREE_INVITATIONS - v_used, 0)::int end,
-    v_unlimited;
-end;
-$$;
-
-grant execute on function public.wefunnel_invitations() to authenticated;
+drop function if exists public.wefunnel_invitations();
 
 -- =========================================================================
 -- What a distributor has earned, at 20%
@@ -408,7 +365,7 @@ grant execute on function public.wefunnel_commissions() to authenticated;
 -- =========================================================================
 create or replace function public.wefunnel_grant_distributor(
   p_account_id uuid,
-  p_included_months int default 1
+  p_included_months int default 2
 )
 returns public.wefunnel_distributors
 language plpgsql
@@ -420,7 +377,12 @@ begin
     raise exception 'platform admin required';
   end if;
 
-  return public.wefunnel_activate_distributor(p_account_id, null, p_included_months);
+  -- 'granted', not 'public': nobody paid for this one, and the price
+  -- column has to stay empty so it never shows up as revenue
+  -- (20261007000011).
+  return public.wefunnel_activate_distributor(
+    p_account_id, null, p_included_months, 'granted'
+  );
 end;
 $$;
 

@@ -360,6 +360,11 @@ export async function POST(request: Request): Promise<Response> {
         await activateWeFunnelsDistributor({
           membershipId: event.data.id,
           accountId: resolveAccountId(event),
+          // Defaults to the public price when the metadata is missing or
+          // unrecognised: 199 is the price nobody has to qualify for, so an
+          // unreadable sale lands on the one that needs no entitlement.
+          licenseSource:
+            event.data.metadata?.license_source === "invited" ? "invited" : "public",
         });
       }
     } else {

@@ -4,7 +4,7 @@ import { getPanelViewer } from "@/lib/wefunnels/site";
 import { DistributorCheckoutButton } from "./checkout-button";
 
 const CHANGES = [
-  "Repartes funnels sin límite — hoy tienes tres invitaciones",
+  "Repartes funnels sin límite, de por vida — hoy no puedes regalar ninguno",
   "Tu sala del curso, en tu dirección y con tu nombre",
   "2 meses de WeWebinars Starter incluidos",
   "20% del plan de cada cuenta que llegue por ti, mientras lo tenga",

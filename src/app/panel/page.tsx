@@ -37,14 +37,13 @@ export default async function PanelHomePage() {
             WeFunnels es por invitación
           </h1>
           <p className="m-0 text-[16px] leading-relaxed text-[#A9B0C9]">
-            Las páginas no se piden: te las regala alguien que ya tiene la suya. Si
-            conoces a la persona que te habló de esto, pídele su enlace — con él tu
-            funnel es gratis de por vida, sin tarjeta y sin mensualidad.
+            Las páginas no se piden: te las regala un distribuidor. Si conoces a la
+            persona que te habló de esto, pídele su enlace de regalo — con él tu funnel
+            es gratis de por vida, sin tarjeta y sin mensualidad.
           </p>
           <p className="m-0 text-[15px] leading-relaxed text-[#6E7694]">
             Si entraste por un enlace y ves esto, puede que haya pasado demasiado tiempo
-            o que esa persona ya haya repartido sus invitaciones. Vuelve a abrir el
-            enlace que te pasaron.
+            o que ese enlace no sea el de regalo. Vuelve a abrir el que te pasaron.
           </p>
         </div>
       );

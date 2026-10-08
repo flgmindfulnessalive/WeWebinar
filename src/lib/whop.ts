@@ -181,15 +181,30 @@ export async function createUpgradeCheckoutUrl({
   return config?.purchaseUrl ?? null;
 }
 
-// WeFunnels' $100 lifetime distributor tier. Unlike every plan id above
-// this one is read from the environment rather than committed: those were
-// created in the Whop dashboard and are stable, while this product does not
-// exist there yet. Leaving it as an env var means the checkout route can
-// ship, fail honestly while it is unset, and start working the day the
-// listing is created -- with no code change and no placeholder id that
-// would silently resolve to the wrong product if someone ever reused it.
-export function wefunnelsDistributorPlanId(): string | undefined {
-  return process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID || undefined;
+// WeFunnels' lifetime distributor licence, which has two prices for the
+// same rights: $199 on the public web and $100 for someone a distributor
+// invited. Two listings in Whop, therefore two plan ids.
+//
+// Read from the environment rather than committed, unlike every plan id
+// above: those were created in the Whop dashboard and are stable, while
+// these two do not exist there yet. Env vars mean the checkout route can
+// ship, fail honestly while they are unset, and start working the day the
+// listings are created -- with no code change and no placeholder id that
+// would silently resolve to the wrong product.
+//
+// WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID is still read as the public one, so an
+// environment configured before the split keeps working.
+export type LicenseSource = "public" | "invited";
+
+export function wefunnelsDistributorPlanId(source: LicenseSource): string | undefined {
+  if (source === "invited") {
+    return process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID_INVITED || undefined;
+  }
+  return (
+    process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID_PUBLIC ||
+    process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID ||
+    undefined
+  );
 }
 
 // A one-time purchase, not a subscription, so it carries its own metadata
@@ -197,19 +212,31 @@ export function wefunnelsDistributorPlanId(): string | undefined {
 // membership apart from a Starter/Pro/Business one.
 export const WEFUNNELS_DISTRIBUTOR_METADATA = "wefunnels_distributor";
 
+// `source` is resolved server-side by the caller, from the account's own
+// referral rows -- never from the request body. It rides along in the
+// metadata so the webhook can record which price was actually charged, and
+// the activation function checks it again against those same rows before
+// granting anything.
 export async function createDistributorCheckoutUrl(
-  accountId: string
+  accountId: string,
+  source: LicenseSource
 ): Promise<string | null> {
-  const planId = wefunnelsDistributorPlanId();
+  const planId = wefunnelsDistributorPlanId(source);
   if (!whopConfigured() || !planId) {
-    console.error("[whop] WeFunnels distributor plan id or API key not configured");
+    console.error(
+      `[whop] WeFunnels distributor plan id (${source}) or API key not configured`
+    );
     return null;
   }
 
   try {
     const config = await whopClient().checkoutConfigurations.create({
       plan_id: planId,
-      metadata: { account_id: accountId, product: WEFUNNELS_DISTRIBUTOR_METADATA },
+      metadata: {
+        account_id: accountId,
+        product: WEFUNNELS_DISTRIBUTOR_METADATA,
+        license_source: source,
+      },
       redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/repartir`,
     });
     return config.purchase_url ?? null;

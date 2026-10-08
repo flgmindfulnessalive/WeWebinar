@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { LeadForm } from "./lead-form";
+import { CountVisit } from "@/components/wefunnels/count-visit";
 
 type RouteParams = { slug: string };
 
@@ -142,6 +143,11 @@ export default async function WeFunnelSitePage({
 
   return (
     <main className="mx-auto max-w-[460px] px-6 pb-2">
+      {/* Only a live page counts. A draft is seen by its owner and nobody
+          else, so counting it would start everyone's panel at a number made
+          of their own reloads. */}
+      {isLive && <CountVisit slug={site.slug} surface="funnel" />}
+
       {!isLive && (
         <div className="-mx-6 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#A855F7] bg-gradient-to-br from-[#10163A] to-[#250F3D] px-5 py-3.5">
           <div className="min-w-0">

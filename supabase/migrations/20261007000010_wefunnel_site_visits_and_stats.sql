@@ -1,19 +1,19 @@
 -- =========================================================================
--- The room funnel: visits -> course registrations -> funnels claimed
+-- Page visits, and the funnel each one belongs to
 --
--- A distributor could already see the end of the chain (how many people
--- claimed a funnel with their link) and the middle of it (the contacts the
--- course registration leaves them, in Mis registrados). What they could not
--- see is the top: how many people opened their room and did nothing. That
--- is the only one of the three numbers that tells them whether the problem
--- is their traffic or their pitch, so it is the one worth adding.
+-- Two surfaces get counted, because the approved panel asks about both:
 --
--- Only the room is instrumented, not the personal funnel. The room is the
--- single entrance to a claim -- the badge at the foot of a funnel page
--- stopped offering one when the tier went invitation-only
--- (20261007000009), so a claim can only have come through /r/<slug>, which
--- only the room links to. Counting funnel-page views here would put a
--- number in the same table that belongs to a different funnel.
+--   'funnel' -- the free user's own page. Their panel shows visits,
+--   registros and conversión for it, which is the only diagnostic they
+--   have: no visits is a traffic problem, visits without registros is the
+--   page.
+--
+--   'gift'   -- a distributor's gift page, the single public link that
+--   hands out funnels. Its chain is visits -> claims.
+--
+-- The surface column is the correction of a narrower call made two days
+-- earlier: with only the gift page instrumented, a free user's panel had
+-- no numbers at all to show.
 -- =========================================================================
 
 -- A daily rollup, not a row per visit. Deliberate: viewer_events already
@@ -24,19 +24,21 @@
 -- No visitor identity of any kind: not a hash, not an ip, not a session.
 -- The number is "how many times was this opened", and the moment it became
 -- "who opened it" it would need a consent story it does not have.
-create table public.wefunnel_room_visits (
+create table public.wefunnel_site_visits (
   site_id uuid not null references public.wefunnel_sites (id) on delete cascade,
+  surface text not null constraint wefunnel_site_visits_surface_check
+    check (surface in ('funnel', 'gift')),
   day date not null,
-  views bigint not null default 0 constraint wefunnel_room_visits_views_check check (views >= 0),
-  primary key (site_id, day)
+  views bigint not null default 0 constraint wefunnel_site_visits_views_check check (views >= 0),
+  primary key (site_id, surface, day)
 );
 
-alter table public.wefunnel_room_visits enable row level security;
+alter table public.wefunnel_site_visits enable row level security;
 
 -- Readable by its own account and by a platform admin; written only through
 -- the function below, which is the reason there is no insert or update
 -- policy at all.
-create policy wefunnel_room_visits_select_members on public.wefunnel_room_visits
+create policy wefunnel_site_visits_select_members on public.wefunnel_site_visits
   for select to authenticated
   using (
     exists (
@@ -87,11 +89,18 @@ as $$
 declare
   v_role text := coalesce(nullif(current_setting('role', true), 'none'), session_user);
 begin
-  if new.source is distinct from 'form'
-    and v_role not in ('service_role', 'postgres')
-    and coalesce(auth.role(), '') <> 'service_role'
+  -- Only when the value is being SET, which on an update means actually
+  -- changing it. Without the tg_op arm an owner marking a course lead as
+  -- 'contactado' would rewrite its source to 'form' on the way through,
+  -- silently emptying the registros step of their funnel.
+  if (tg_op = 'INSERT' and new.source is distinct from 'form')
+     or (tg_op = 'UPDATE' and new.source is distinct from old.source)
   then
-    new.source := 'form';
+    if v_role not in ('service_role', 'postgres')
+      and coalesce(auth.role(), '') <> 'service_role'
+    then
+      new.source := case when tg_op = 'UPDATE' then old.source else 'form' end;
+    end if;
   end if;
   return new;
 end;
@@ -102,7 +111,7 @@ create trigger wefunnel_guard_lead_source
   for each row execute function public.wefunnel_guard_lead_source();
 
 -- =========================================================================
--- Recording a room visit
+-- Recording a visit
 --
 -- Callable by anyone, like the report function and for the same reason: the
 -- visitor it counts is anonymous by definition. Takes a slug because that
@@ -110,12 +119,14 @@ create trigger wefunnel_guard_lead_source
 -- (published, unsuspended), and returns nothing -- whether a slug exists is
 -- not something a stranger gets told.
 --
--- Someone can sit on a room and inflate the number. That is accepted: the
--- only person it misleads is the room's owner, the figure carries no money,
--- and the alternatives (a cookie, a fingerprint, a rate-limit table keyed
--- by ip) all cost a visitor record this deliberately does not keep.
+-- Deduplication and the owner's own reloads are handled by the caller, not
+-- here: the app knows whether this browser was already counted today and
+-- whether the viewer is the page's owner, and this function deliberately
+-- knows nothing about either. Inflating your own number by sitting on your
+-- own page is accepted -- the only person it misleads is you, and the
+-- figure carries no money.
 -- =========================================================================
-create or replace function public.wefunnel_record_room_visit(p_slug text)
+create or replace function public.wefunnel_record_visit(p_slug text, p_surface text)
 returns void
 language plpgsql
 volatile
@@ -125,6 +136,10 @@ as $$
 declare
   v_site_id uuid;
 begin
+  if p_surface not in ('funnel', 'gift') then
+    return;
+  end if;
+
   select s.id into v_site_id
   from public.wefunnel_sites s
   where s.slug = p_slug
@@ -135,10 +150,10 @@ begin
     return;
   end if;
 
-  insert into public.wefunnel_room_visits (site_id, day, views)
-  values (v_site_id, current_date, 1)
-  on conflict (site_id, day)
-  do update set views = public.wefunnel_room_visits.views + 1;
+  insert into public.wefunnel_site_visits (site_id, surface, day, views)
+  values (v_site_id, p_surface, current_date, 1)
+  on conflict (site_id, surface, day)
+  do update set views = public.wefunnel_site_visits.views + 1;
 end;
 $$;
 
@@ -148,19 +163,31 @@ $$;
 -- function still lands with PUBLIC execute (check with: select proname,
 -- proacl from pg_proc join pg_namespace ... where nspname = 'public').
 -- Revoking per function is the only thing that actually closes it.
-revoke execute on function public.wefunnel_record_room_visit(text) from public;
-grant execute on function public.wefunnel_record_room_visit(text) to anon, authenticated;
+revoke execute on function public.wefunnel_record_visit(text, text) from public;
+grant execute on function public.wefunnel_record_visit(text, text) to anon, authenticated;
 
 -- =========================================================================
--- The three steps, for the caller's own page
+-- Everything the panel's performance block needs, for the caller's own page
+--
+-- One call rather than two, and one window rather than two: the approved
+-- panel has a single period selector governing every metric, so visits
+-- (a per-day rollup) and registros and claims (timestamps) are all cut on
+-- the same calendar boundary. Mixing a date window with a `now() - n days`
+-- window would put the three numbers on slightly different days and make
+-- the conversion rate wrong at the edges.
 --
 -- Separate from wefunnel_referral_stats (20261007000004), which answers a
 -- different question -- what the arrivals are worth -- and is read by a
 -- screen that argues someone should become a distributor. This one is
--- diagnostics for somebody who already is.
+-- diagnostics for whoever already has a page.
 -- =========================================================================
-create or replace function public.wefunnel_room_funnel()
-returns table (visits bigint, registrations bigint, claims bigint)
+create or replace function public.wefunnel_site_stats(p_days int default 7)
+returns table (
+  visits bigint,        -- the free user's own funnel page
+  leads bigint,         -- registros on that page
+  gift_visits bigint,   -- the distributor's gift page, null surface for others
+  claims bigint         -- funnels handed out through their link
+)
 language plpgsql
 stable
 security definer
@@ -168,6 +195,7 @@ set search_path = public
 as $$
 declare
   v_site_id uuid;
+  v_from date;
 begin
   select s.id into v_site_id
   from public.wefunnel_sites s
@@ -175,29 +203,37 @@ begin
   where u.id = auth.uid();
 
   if v_site_id is null then
-    return query select 0::bigint, 0::bigint, 0::bigint;
+    return query select 0::bigint, 0::bigint, 0::bigint, 0::bigint;
     return;
   end if;
+
+  -- Inclusive of today: 7 days means today and the six before it, which is
+  -- what "últimos 7 días" reads as on the screen.
+  v_from := current_date - (greatest(p_days, 1) - 1);
 
   return query
   select
     coalesce((
-      select sum(v.views) from public.wefunnel_room_visits v
-      where v.site_id = v_site_id
+      select sum(v.views) from public.wefunnel_site_visits v
+      where v.site_id = v_site_id and v.surface = 'funnel' and v.day >= v_from
     ), 0)::bigint,
     (
       select count(*) from public.wefunnel_leads l
-      where l.site_id = v_site_id and l.source = 'course'
+      where l.site_id = v_site_id and l.created_at::date >= v_from
     )::bigint,
+    coalesce((
+      select sum(v.views) from public.wefunnel_site_visits v
+      where v.site_id = v_site_id and v.surface = 'gift' and v.day >= v_from
+    ), 0)::bigint,
     (
       select count(*) from public.wefunnel_referrals r
-      where r.referrer_site_id = v_site_id
+      where r.referrer_site_id = v_site_id and r.created_at::date >= v_from
     )::bigint;
 end;
 $$;
 
-revoke execute on function public.wefunnel_room_funnel() from public;
-grant execute on function public.wefunnel_room_funnel() to authenticated;
+revoke execute on function public.wefunnel_site_stats(int) from public;
+grant execute on function public.wefunnel_site_stats(int) to authenticated;
 
 -- Same close for the trigger function. A trigger's EXECUTE privilege is
 -- checked when the trigger is created, not when it fires, so taking PUBLIC

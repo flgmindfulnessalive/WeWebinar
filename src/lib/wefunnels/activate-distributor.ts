@@ -17,9 +17,14 @@ const INCLUDED_MONTHS = 2;
 export async function activateWeFunnelsDistributor({
   membershipId,
   accountId,
+  licenseSource,
 }: {
   membershipId: string;
   accountId: string | null;
+  // What the checkout metadata says was charged. Trusted only as far as
+  // naming the listing: the activation function re-derives the entitlement
+  // and refuses an invited price with no referral behind it.
+  licenseSource: "public" | "invited";
 }): Promise<void> {
   if (!accountId) {
     // A distributor checkout always carries metadata.account_id, because we
@@ -44,10 +49,15 @@ export async function activateWeFunnelsDistributor({
     return;
   }
 
+  // The source rides in from the checkout metadata, and the function
+  // recomputes it from the referral rows before granting anything: an
+  // 'invited' sale for an account nobody referred is refused outright
+  // rather than quietly upgraded to the public price (20261007000011).
   const { error } = await supabase.rpc("wefunnel_activate_distributor", {
     p_account_id: accountId,
     p_membership_id: membershipId,
     p_included_months: INCLUDED_MONTHS,
+    p_license_source: licenseSource,
   });
 
   if (error) {

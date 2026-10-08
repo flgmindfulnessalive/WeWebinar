@@ -3,10 +3,15 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createDistributorCheckoutUrl } from "@/lib/whop";
 
-// The $100 lifetime distributor tier. Separate from /api/whop/checkout
+// The lifetime distributor licence. Separate from /api/whop/checkout
 // because that route speaks in plan keys and billing periods, and requires
 // getCurrentAccount() -- which returns null for a free WeFunnels account on
 // purpose, since it has no plan. This is exactly the person buying.
+//
+// The price is decided here, from wefunnel_license_price(), which reads the
+// account's own referral rows. The body of this request is not consulted
+// for it and does not need to be: $100 is a fact about who invited you, and
+// the browser is not a witness to that.
 export async function POST() {
   const supabase = await createClient();
   const {
@@ -37,7 +42,13 @@ export async function POST() {
     return NextResponse.json({ error: "already a distributor" }, { status: 409 });
   }
 
-  const url = await createDistributorCheckoutUrl(profile.account_id);
+  // Server-side, and checked a second time inside
+  // wefunnel_activate_distributor before any licence is granted. Two gates
+  // because a checkout url, once created, is a link anybody can open.
+  const { data: pricing } = await supabase.rpc("wefunnel_license_price");
+  const source = pricing?.[0]?.source === "invited" ? "invited" : "public";
+
+  const url = await createDistributorCheckoutUrl(profile.account_id, source);
   if (!url) {
     // Unset plan id or a Whop outage. Either way it is ours, not theirs.
     return NextResponse.json({ error: "checkout unavailable" }, { status: 503 });

@@ -8,7 +8,7 @@ import { CopyLink } from "@/components/wefunnels/copy-link";
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric" });
 
 // Written from their side, in the order a visitor moves through it. The
-// numbers live in wefunnel_room_funnel (20261007000010).
+// numbers live in wefunnel_site_stats (20261007000010).
 const STEPS = [
   {
     label: "Abrieron tu sala",
@@ -31,10 +31,18 @@ export default async function PanelSharePage() {
   if (!viewer.distributor) redirect("/panel/distribuidor");
 
   const supabase = await createClient();
-  const { data: funnel } = await supabase.rpc("wefunnel_room_funnel");
-  const visits = Number(funnel?.[0]?.visits ?? 0);
-  const registrations = Number(funnel?.[0]?.registrations ?? 0);
-  const claimed = Number(funnel?.[0]?.claims ?? 0);
+  // The gift page's chain. Its window is the same one the free panel uses,
+  // so the two screens never disagree about what "últimos 30 días" covers.
+  const { data: stats } = await supabase.rpc("wefunnel_site_stats", { p_days: 30 });
+  const visits = Number(stats?.[0]?.gift_visits ?? 0);
+  const registrations = Number(
+    (await supabase
+      .from("wefunnel_leads")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", viewer.site.id)
+      .eq("source", "course")).count ?? 0
+  );
+  const claimed = Number(stats?.[0]?.claims ?? 0);
 
   // The rate that tells them which half to work on: traffic, or the room.
   // Shown only once there is traffic, because a percentage of nothing reads

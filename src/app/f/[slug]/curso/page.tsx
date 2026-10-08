@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
+import { CountVisit } from "@/components/wefunnels/count-visit";
 
 type RouteParams = { slug: string };
 
@@ -77,17 +78,6 @@ export default async function WeFunnelCourseRoomPage({
 
   if (!distributor) notFound();
 
-  // The top of the room funnel (20261007000010). Counted here rather than
-  // in a client effect so an adblocker does not decide whether a visit
-  // happened, and after the two checks above so only a room that actually
-  // resolves is counted. Best-effort: a visitor who came to claim a funnel
-  // is not shown an error because a counter missed.
-  try {
-    await supabase.rpc("wefunnel_record_room_visit", { p_slug: site.slug });
-  } catch (err) {
-    console.error("[wefunnels] room visit not counted:", err);
-  }
-
   // There is one course room, shared, and the link into it goes through
   // ./ver so the referral is stamped before the visitor leaves this host
   // (see 20261007000009). Null only while the course has not been
@@ -103,6 +93,10 @@ export default async function WeFunnelCourseRoomPage({
 
   return (
     <main className="mx-auto max-w-[560px] px-6 pb-2">
+      {/* The top of the gift funnel. A beacon rather than a write during
+          render, so the owner's own reloads and every crawler stay out of
+          the number (see lib/wefunnels/visits.ts). */}
+      <CountVisit slug={site.slug} surface="gift" />
       <section className="flex flex-col gap-6 pt-10">
         <div className="flex items-center gap-3.5">
           <span

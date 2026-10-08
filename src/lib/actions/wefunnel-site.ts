@@ -66,10 +66,14 @@ export async function claimWeFunnelSite(
     if (error.message.includes("reserved")) {
       return { error: "Esa dirección está reservada. Prueba con otra." };
     }
-    if (error.message.includes("invitation quota exhausted")) {
+    // Replaces the old "they spent their three invitations": there is no
+    // quota any more, so the only way an invitation fails this way is that
+    // whoever shared the link never bought the licence. Said without
+    // revealing their billing state -- the message is about the link.
+    if (error.message.includes("inviter is not a distributor")) {
       return {
         error:
-          "Quien te invitó ya repartió sus tres invitaciones. Pídele que active su nivel distribuidor, o consigue el enlace de otra persona.",
+          "Ese enlace no está regalando funnels. Pide el enlace de regalo de quien te invitó, o consigue el de otra persona.",
       };
     }
     if (error.message.includes("invitation required")) {

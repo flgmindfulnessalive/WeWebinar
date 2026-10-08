@@ -1725,6 +1725,8 @@ export interface Database {
           accent: string;
           contact_whatsapp: string | null;
           question_label: string | null;
+          description: string | null;
+          photo_url: string | null;
           pixel_provider: string | null;
           pixel_id: string | null;
           suspended_at: string | null;
@@ -1866,6 +1868,8 @@ export interface Database {
           activated_at: string;
           starter_until: string | null;
           created_at: string;
+                  license_source: "public" | "invited" | "granted" | null;
+          license_price_usd: number | null;
         };
         Insert: Partial<
           Database["public"]["Tables"]["wefunnel_distributors"]["Row"]
@@ -1948,6 +1952,7 @@ export interface Database {
           email: string | null;
           answer: string | null;
           source: "form" | "course";
+          status: "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]> & {
@@ -1965,20 +1970,22 @@ export interface Database {
           },
         ];
       };
-      wefunnel_room_visits: {
+      wefunnel_site_visits: {
         Row: {
           site_id: string;
+          surface: "funnel" | "gift";
           day: string;
           views: number;
         };
-        Insert: Partial<Database["public"]["Tables"]["wefunnel_room_visits"]["Row"]> & {
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_site_visits"]["Row"]> & {
           site_id: string;
+          surface: "funnel" | "gift";
           day: string;
         };
-        Update: Partial<Database["public"]["Tables"]["wefunnel_room_visits"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["wefunnel_site_visits"]["Row"]>;
         Relationships: [
           {
-            foreignKeyName: "wefunnel_room_visits_site_id_fkey";
+            foreignKeyName: "wefunnel_site_visits_site_id_fkey";
             columns: ["site_id"];
             isOneToOne: false;
             referencedRelation: "wefunnel_sites";
@@ -2113,17 +2120,30 @@ export interface Database {
         };
         Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
       };
-      wefunnel_room_funnel: {
-        Args: Record<string, never>;
+      wefunnel_site_stats: {
+        Args: { p_days?: number };
         Returns: {
           visits: number;
-          registrations: number;
+          leads: number;
+          gift_visits: number;
           claims: number;
         }[];
       };
-      wefunnel_record_room_visit: {
-        Args: { p_slug: string };
+      wefunnel_record_visit: {
+        Args: { p_slug: string; p_surface: "funnel" | "gift" };
         Returns: undefined;
+      };
+      wefunnel_license_price: {
+        Args: Record<string, never>;
+        Returns: {
+          source: "public" | "invited";
+          price_usd: number;
+          public_price_usd: number;
+        }[];
+      };
+      wefunnel_set_lead_status: {
+        Args: { p_lead_id: string; p_status: string };
+        Returns: boolean;
       };
       wefunnel_referral_stats: {
         Args: Record<string, never>;
@@ -2138,6 +2158,7 @@ export interface Database {
           p_account_id: string;
           p_membership_id: string;
           p_included_months?: number;
+          p_license_source?: "public" | "invited" | "granted";
         };
         Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
       };
@@ -2151,10 +2172,6 @@ export interface Database {
           plan_price_usd: number;
           commission_usd: number;
         }[];
-      };
-      wefunnel_invitations: {
-        Args: Record<string, never>;
-        Returns: { used: number; remaining: number | null; unlimited: boolean }[];
       };
       wefunnel_invitation_open: {
         Args: { p_slug: string };
