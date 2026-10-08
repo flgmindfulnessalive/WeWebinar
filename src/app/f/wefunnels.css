@@ -1,0 +1,283 @@
+/* WeFunnels' own layer. Everything here is scoped under .wf -- the class the
+   layout puts on its root -- so none of it can reach the dashboard, which
+   shares the same document and a completely different design system.
+
+   Two things live here rather than in Tailwind classes: the type scale,
+   because it is a system and reads as one in a single block, and the
+   effects, which need keyframes and a motion guard that utility classes
+   cannot express. */
+
+.wf {
+  /* Type. Every size on the page comes from this scale, and the scale is
+     the fix for the copy reading small: the body text used to bottom out at
+     13px, which is fine for a dashboard and too small for a page that has
+     to sell something across a room. */
+  --wf-display: clamp(2.6rem, 6.1vw, 4.35rem);
+  --wf-h2: clamp(1.95rem, 4.1vw, 2.7rem);
+  --wf-h3: clamp(1.12rem, 1.85vw, 1.3rem);
+  --wf-lead: clamp(1.06rem, 1.75vw, 1.22rem);
+  --wf-body: clamp(0.98rem, 1.5vw, 1.1rem);
+  --wf-small: clamp(0.86rem, 1.2vw, 0.94rem);
+  --wf-kicker: clamp(0.7rem, 0.95vw, 0.79rem);
+
+  /* Ground and ink, from the approved palette. */
+  --wf-ink: #f3f7ff;
+  --wf-ink-2: #c8d6ea;
+  --wf-ink-3: #9fb3cd;
+  --wf-cyan: #43e2ee;
+  --wf-line: #22334a;
+  --wf-line-lit: #3e5f85;
+
+  --wf-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+/* ---------------------------------------------------------------- hero grid
+
+   The perspective lines are two layers of the same drawing. The lower one is
+   always there, dim. The upper one is the same geometry in cyan and violet,
+   bright, and visible only through a round hole that follows the pointer --
+   so moving the mouse lights the lines it passes over instead of switching a
+   whole effect on.
+
+   Rays and rings rather than the parallel lines this started as: both are
+   drawn from one vanishing point on the right, which is what makes the space
+   read as depth instead of as a texture. */
+
+.wf-grid {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Where the light is. The component writes these on pointermove; until it
+     does, the ambient drift below owns them. */
+  --wf-x: 78%;
+  --wf-y: 42%;
+  --wf-glow: 0;
+}
+
+.wf-grid__layer {
+  position: absolute;
+  inset: -20% -10% -20% 0;
+  background-image:
+    repeating-conic-gradient(
+      from 128deg at 100% 44%,
+      transparent 0deg 2.6deg,
+      var(--wf-ray) 2.6deg 2.78deg,
+      transparent 2.78deg 7.4deg
+    ),
+    repeating-radial-gradient(
+      circle at 100% 44%,
+      transparent 0 118px,
+      var(--wf-ring) 118px 119.4px,
+      transparent 119.4px 237px
+    );
+  /* The drawing is only ever a backdrop: it fades out towards the headline
+     so nothing competes with the words. */
+  -webkit-mask-image: linear-gradient(97deg, transparent 32%, #000 88%);
+  mask-image: linear-gradient(97deg, transparent 32%, #000 88%);
+}
+
+.wf-grid__base {
+  --wf-ray: rgba(119, 150, 206, 0.26);
+  --wf-ring: rgba(70, 185, 214, 0.19);
+}
+
+/* The lit copy. Its own mask is the pointer's halo, multiplied with the
+   layer mask by compositing the two: hence the wrapper. */
+.wf-grid__glow {
+  position: absolute;
+  inset: 0;
+  opacity: var(--wf-glow);
+  transition: opacity 0.5s var(--wf-ease);
+  -webkit-mask-image: radial-gradient(
+    circle at var(--wf-x) var(--wf-y),
+    #000 0,
+    rgba(0, 0, 0, 0.62) 19%,
+    transparent 47%
+  );
+  mask-image: radial-gradient(
+    circle at var(--wf-x) var(--wf-y),
+    #000 0,
+    rgba(0, 0, 0, 0.62) 19%,
+    transparent 47%
+  );
+}
+
+.wf-grid__glow .wf-grid__layer {
+  --wf-ray: rgba(167, 139, 250, 0.92);
+  --wf-ring: rgba(80, 231, 243, 0.85);
+  filter: drop-shadow(0 0 9px rgba(72, 214, 238, 0.55));
+}
+
+/* A soft bloom under the halo, so the light looks like it has a source. */
+.wf-grid__bloom {
+  position: absolute;
+  inset: 0;
+  opacity: var(--wf-glow);
+  transition: opacity 0.5s var(--wf-ease);
+  background: radial-gradient(
+    circle at var(--wf-x) var(--wf-y),
+    rgba(86, 196, 255, 0.14) 0,
+    rgba(140, 108, 255, 0.075) 34%,
+    transparent 60%
+  );
+}
+
+/* Before the pointer arrives -- and on a touch screen, where it never does --
+   the light drifts on its own. Without this the hero is a still image for
+   every phone visitor, which is most of them. */
+.wf-grid[data-idle="true"] {
+  animation: wf-drift 17s var(--wf-ease) infinite;
+}
+
+@keyframes wf-drift {
+  0% {
+    --wf-x: 72%;
+    --wf-y: 34%;
+  }
+  50% {
+    --wf-x: 88%;
+    --wf-y: 62%;
+  }
+  100% {
+    --wf-x: 72%;
+    --wf-y: 34%;
+  }
+}
+
+/* --wf-x and --wf-y have to be registered as real percentage properties or
+   the keyframes above jump between stops instead of interpolating. */
+@property --wf-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 78%;
+}
+
+@property --wf-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 42%;
+}
+
+/* ------------------------------------------------------------- scroll reveal
+
+   Hidden only once the script has run: without JavaScript the page is a
+   normal page, fully readable, rather than a blank one waiting for an
+   observer that will never fire. */
+
+.wf-js [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--wf-ease),
+    transform 0.7s var(--wf-ease);
+  transition-delay: var(--wf-delay, 0s);
+}
+
+.wf-js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* --------------------------------------------------------------- hover state
+
+   One rule per family, so a new card inherits the behaviour instead of
+   restating it. */
+
+.wf-card {
+  transition:
+    transform 0.35s var(--wf-ease),
+    border-color 0.35s var(--wf-ease),
+    box-shadow 0.35s var(--wf-ease);
+}
+
+@media (hover: hover) {
+  .wf-card:hover {
+    transform: translateY(-3px);
+    border-color: #40607f;
+    box-shadow: 0 18px 46px -22px rgba(64, 196, 232, 0.5);
+  }
+
+  .wf-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 42px -14px rgba(72, 206, 236, 0.62);
+  }
+
+  .wf-link:hover {
+    color: var(--wf-ink);
+  }
+
+  .wf-link::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.5rem;
+    bottom: 0.3rem;
+    height: 1px;
+    background: var(--wf-cyan);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s var(--wf-ease);
+  }
+
+  .wf-link:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+.wf-cta {
+  transition:
+    transform 0.3s var(--wf-ease),
+    box-shadow 0.3s var(--wf-ease);
+}
+
+.wf-link {
+  position: relative;
+  transition: color 0.25s var(--wf-ease);
+}
+
+/* The step numbers' rule grows into place as its card arrives. */
+.wf-rule {
+  position: relative;
+}
+
+.wf-rule::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--wf-cyan), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.9s var(--wf-ease) 0.15s;
+}
+
+.wf-js [data-reveal].is-in .wf-rule::before,
+.wf-js [data-reveal].is-in.wf-rule::before {
+  transform: scaleX(1);
+}
+
+/* ------------------------------------------------------------------- motion
+
+   One switch for everyone who asked not to be moved: the page keeps every
+   colour and every border, and loses every animation. The reveal has to be
+   forced visible here or the content would never appear at all. */
+
+@media (prefers-reduced-motion: reduce) {
+  .wf *,
+  .wf *::before,
+  .wf *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .wf-js [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .wf-rule::before {
+    transform: scaleX(1);
+  }
+}
