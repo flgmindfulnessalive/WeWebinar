@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { Gift, PanelTop, ChartNoAxesCombined, Play } from "lucide-react";
 
 import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { HeroGrid } from "@/components/wefunnels/hero-grid";
+import { Reveal } from "@/components/wefunnels/reveal";
 import { Wordmark } from "@/components/wefunnels/wordmark";
 
 // The official web. One job: sell the distributor licence at $199.
@@ -110,16 +113,22 @@ const QUESTIONS: [string, string][] = [
 // the hero's perspective lines all reach the edge -- and SHELL is the column
 // its content sits in. Both numbers are the page's old ones: 1180 including
 // the 6% gutters, so nothing below that width moves a pixel.
-const SECTION = "border-b border-[#202B3C] py-[clamp(34px,5vw,49px)]";
+const SECTION = "border-b border-[#202B3C] py-[clamp(44px,6vw,74px)]";
 const SHELL = "mx-auto w-full max-w-[1180px] px-[6%]";
-const KICKER = "m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase";
-const H2 = "m-0 mt-2.5 mb-5 text-[clamp(26px,3.6vw,32px)] leading-[1.17] font-bold tracking-[-0.03em] text-[#F3F7FF] text-balance";
-const BODY = "m-0 text-[clamp(13px,1.5vw,15px)] leading-relaxed text-[#B7C7DC]";
-const PANEL = "rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(20px,2.6vw,26px)]";
+const KICKER =
+  "m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.17em] text-[#70E9EF] uppercase";
+const H2 =
+  "m-0 mt-3.5 mb-6 text-[length:var(--wf-h2)] leading-[1.1] font-bold tracking-[-0.032em] text-[#F3F7FF] text-balance";
+const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[#C1D1E6]";
+const SMALL = "m-0 text-[length:var(--wf-small)] leading-relaxed text-[#9FB3CD]";
+const NAV =
+  "wf-link px-2 py-2 text-[length:var(--wf-small)] text-[#C4D5E9] no-underline";
+const PANEL =
+  "wf-card rounded-[16px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(22px,2.8vw,30px)]";
 const GRADIENT =
   "bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent";
 const PRIMARY =
-  "inline-flex min-h-[49px] items-center justify-center gap-3.5 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-[21px] py-3.5 text-[15px] font-bold text-[#071521] no-underline";
+  "wf-cta inline-flex min-h-[54px] items-center justify-center gap-3.5 rounded-xl bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-[26px] py-4 text-[length:var(--wf-lead)] font-bold text-[#071521] no-underline";
 
 export default function WeFunnelsOfficialPage() {
   return (
@@ -128,18 +137,20 @@ export default function WeFunnelsOfficialPage() {
         <div className={`${SHELL} flex flex-wrap items-center justify-between gap-5`}>
           <Wordmark />
           <nav aria-label="Navegación principal" className="flex flex-wrap gap-[18px]">
-            <a href="#como-funciona" className="py-2 text-xs text-[#C4D5E9] no-underline">
+            <a href="#como-funciona" className={NAV}>
               Cómo funciona
             </a>
-            <a href="#precio" className="py-2 text-xs text-[#C4D5E9] no-underline">
+            <a href="#precio" className={NAV}>
               Precio
             </a>
-            <a href="#preguntas" className="py-2 text-xs text-[#C4D5E9] no-underline">
+            <a href="#preguntas" className={NAV}>
               Preguntas
             </a>
           </nav>
         </div>
       </header>
+
+      <Reveal />
 
       <main>
         {/* Hero. The thin lines in perspective are the package's signature on
@@ -152,33 +163,24 @@ export default function WeFunnelsOfficialPage() {
               "radial-gradient(ellipse at 95% 50%, rgba(48,32,90,0.53), transparent 55%)",
           }}
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 left-[55%] -z-10"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(150deg,transparent 0 80px,rgba(130,102,201,0.33) 81px,transparent 82px 140px),repeating-linear-gradient(90deg,transparent 0 78px,rgba(56,216,235,0.27) 79px,transparent 80px 141px)",
-              maskImage: "linear-gradient(90deg,transparent,#000)",
-              WebkitMaskImage: "linear-gradient(90deg,transparent,#000)",
-            }}
-          />
+          <HeroGrid />
           <div className={SHELL}>
             <div className="grid items-center gap-[38px] lg:grid-cols-[1.2fr_1fr]">
               <div className="min-w-0">
                 <p className={KICKER}>Para network marketers que construyen equipo</p>
-                <h1 className="m-0 mt-[18px] mb-[22px] text-[clamp(36px,5.3vw,59px)] leading-[1.06] font-extrabold tracking-[-0.042em] text-[#F3F7FF] text-balance">
+                <h1 className="m-0 mt-5 mb-6 text-[length:var(--wf-display)] leading-[1.02] font-extrabold tracking-[-0.045em] text-[#F3F7FF] text-balance">
                   Abre la conversación
                   <br />
                   <span className={GRADIENT}>con un regalo.</span>
                 </h1>
-                <p className="m-0 mb-6 max-w-[480px] text-[clamp(15px,1.9vw,17px)] leading-relaxed text-[#B7C7DC]">
+                <p className="m-0 mb-8 max-w-[34ch] text-[length:var(--wf-lead)] leading-[1.6] text-[#C1D1E6]">
                   Regala funnels profesionales a otros constructores y empieza a prospectar
                   ofreciendo una herramienta útil para su negocio.
                 </p>
                 <Link href={BUY_URL} className={`${PRIMARY} w-full sm:w-auto`}>
                   Quiero ser Distribuidor <span aria-hidden="true">→</span>
                 </Link>
-                <p className="m-0 mt-4 text-xs leading-relaxed text-[#AFC2DA]">
+                <p className={`${SMALL} mt-5`}>
                   199 dólares · Un solo pago
                   <br />
                   Funnels ilimitados para regalar. De por vida.
@@ -188,7 +190,7 @@ export default function WeFunnelsOfficialPage() {
               {/* The preview of what a distributor shares. Its gift button is
                   part of the picture, not a way to claim one from here. */}
               <div className="min-w-0">
-                <div className="mx-auto max-w-[400px] overflow-hidden rounded-[14px] border border-[#3D4C68] bg-[#0B1423] shadow-[0_20px_65px_rgba(0,0,0,0.53)] lg:max-w-none lg:rotate-2">
+                <div className="wf-card mx-auto max-w-[430px] overflow-hidden rounded-[16px] border border-[#3D4C68] bg-[#0B1423] shadow-[0_20px_65px_rgba(0,0,0,0.53)] lg:max-w-none lg:rotate-2">
                   <p
                     className="m-0 bg-[#182237] px-4 py-3 text-[11px] break-words text-[#C1D3E7]"
                     style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
@@ -222,7 +224,7 @@ export default function WeFunnelsOfficialPage() {
                     </p>
                   </div>
                 </div>
-                <p className="m-0 mt-[17px] text-center text-[11px] text-[#B2C5DC]">
+                <p className={`${SMALL} mt-5 text-center`}>
                   Vista de ejemplo de la página que compartirás como Distribuidor.
                 </p>
               </div>
@@ -231,7 +233,7 @@ export default function WeFunnelsOfficialPage() {
         </section>
 
         <section className={SECTION} id="como-funciona">
-          <div className={SHELL}>
+          <div data-reveal className={SHELL}>
             <p className={KICKER}>Una forma concreta de aportar valor</p>
             <h2 className={H2}>
               Un enlace para iniciar.
@@ -239,15 +241,20 @@ export default function WeFunnelsOfficialPage() {
               Una conversación para conocer.
             </h2>
             <div className="grid gap-[26px] sm:grid-cols-2 lg:grid-cols-3">
-              {STEPS.map((step) => (
-                <div key={step.n} className="min-w-0 border-t border-[#35465F] pt-[17px]">
+              {STEPS.map((step, index) => (
+                <div
+                  key={step.n}
+                  data-reveal
+                  className="wf-rule min-w-0 border-t border-[#35465F] pt-[19px]"
+                  style={{ "--wf-delay": `${index * 0.09}s` } as CSSProperties}
+                >
                   <p
-                    className="m-0 text-xs text-[#76E8EE]"
+                    className="m-0 text-[length:var(--wf-small)] text-[#76E8EE]"
                     style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
                   >
                     {step.n}
                   </p>
-                  <h3 className="m-0 mt-2.5 mb-2 text-[18px] leading-[1.35] font-semibold text-[#F3F7FF]">
+                  <h3 className="m-0 mt-3 mb-2.5 text-[length:var(--wf-h3)] leading-[1.3] font-semibold text-[#F3F7FF]">
                     {step.title}
                   </h3>
                   <p className={BODY}>{step.body}</p>
@@ -258,7 +265,7 @@ export default function WeFunnelsOfficialPage() {
         </section>
 
         <section className={SECTION}>
-          <div className={SHELL}>
+          <div data-reveal className={SHELL}>
             <div className="grid items-center gap-[38px] lg:grid-cols-[1.2fr_1fr]">
               <div className="min-w-0">
                 <p className={KICKER}>Pensado para tu prospección</p>
@@ -267,25 +274,27 @@ export default function WeFunnelsOfficialPage() {
                   <br />
                   Una razón para conversar.
                 </h2>
-                <blockquote className="m-0 my-[18px] text-[clamp(21px,2.6vw,27px)] leading-[1.3] tracking-[-0.022em] text-[#EFF8FF]">
+                <blockquote className="m-0 my-6 text-[clamp(23px,3vw,32px)] leading-[1.28] tracking-[-0.024em] text-[#EFF8FF]">
                   «¿Estás buscando nuevas formas de prospectar? Te regalo un funnel y un
                   curso para aprender a usarlo.»
-                  <footer className="mt-[18px] text-xs tracking-normal text-[#A9BFD7]">
+                  <footer className={`${SMALL} mt-5 tracking-normal`}>
                     Ejemplo de apertura para un constructor.
                   </footer>
                 </blockquote>
-                <p className="m-0 text-xs leading-relaxed text-[#AFC2DA]">
+                <p className={SMALL}>
                   Aceptar el regalo no implica interés en cambiar de compañía. La
                   conversación te ayuda a conocer a la persona.
                 </p>
               </div>
               <div className={PANEL}>
                 {FEATURES.map(({ Icon, title, body }) => (
-                  <div key={title} className="my-[19px] flex items-start gap-3.5 first:mt-0 last:mb-0">
-                    <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#73E5EC]" aria-hidden="true" />
+                  <div key={title} className="my-[22px] flex items-start gap-4 first:mt-0 last:mb-0">
+                    <Icon className="mt-0.5 h-[21px] w-[21px] shrink-0 text-[#73E5EC]" aria-hidden="true" />
                     <div className="min-w-0">
-                      <strong className="text-sm font-semibold text-[#F3F7FF]">{title}</strong>
-                      <p className="m-0 mt-1 text-xs leading-relaxed text-[#B7C7DC]">{body}</p>
+                      <strong className="text-[length:var(--wf-body)] font-semibold text-[#F3F7FF]">
+                        {title}
+                      </strong>
+                      <p className={`${SMALL} mt-1.5`}>{body}</p>
                     </div>
                   </div>
                 ))}
@@ -295,7 +304,7 @@ export default function WeFunnelsOfficialPage() {
         </section>
 
         <section className={`${SECTION} bg-[#091221]`}>
-          <div className={SHELL}>
+          <div data-reveal className={SHELL}>
             <p className={KICKER}>Parte del ecosistema WeWebinars</p>
             <h2 className={H2}>
               WeFunnels abre la conversación.
@@ -308,32 +317,32 @@ export default function WeFunnelsOfficialPage() {
             </p>
             <div className="mt-7 grid gap-5 sm:grid-cols-2">
               <div className={PANEL}>
-                <p className="m-0 text-[clamp(34px,4vw,45px)] leading-[1.1] font-bold tracking-[-0.025em] text-[#72E4EF]">
+                <p className="m-0 text-[clamp(40px,4.8vw,56px)] leading-[1.05] font-bold tracking-[-0.03em] text-[#72E4EF]">
                   2 meses
                 </p>
-                <h3 className="m-0 mt-2.5 mb-2 text-[18px] font-semibold text-[#F3F7FF]">
+                <h3 className="m-0 mt-3 mb-2.5 text-[length:var(--wf-h3)] font-semibold text-[#F3F7FF]">
                   De Starter incluidos
                 </h3>
                 <p className={BODY}>
                   Prueba WeWebinars con tu presentación. Al terminar los 2 meses, continuar
                   con Starter es opcional.
                 </p>
-                <p className="m-0 mt-3 text-xs leading-relaxed text-[#AFC2DA]">
+                <p className={`${SMALL} mt-4`}>
                   Tu licencia Distribuidor, tu funnel y tu sala del curso permanecen activos.
                 </p>
               </div>
               <div className={PANEL}>
-                <p className="m-0 text-[clamp(34px,4vw,45px)] leading-[1.1] font-bold tracking-[-0.025em] text-[#72E4EF]">
+                <p className="m-0 text-[clamp(40px,4.8vw,56px)] leading-[1.05] font-bold tracking-[-0.03em] text-[#72E4EF]">
                   20%
                 </p>
-                <h3 className="m-0 mt-2.5 mb-2 text-[18px] font-semibold text-[#F3F7FF]">
+                <h3 className="m-0 mt-3 mb-2.5 text-[length:var(--wf-h3)] font-semibold text-[#F3F7FF]">
                   Sobre las suscripciones de tus referidos
                 </h3>
                 <p className={BODY}>
                   Recibe una comisión por los planes de WeWebinars de tus referidos
                   directos, mensuales o anuales, mientras mantengan su suscripción.
                 </p>
-                <p className="m-0 mt-3 text-xs leading-relaxed text-[#AFC2DA]">
+                <p className={`${SMALL} mt-4`}>
                   Sin comisión por vender la licencia Distribuidor. Sin segundo nivel.
                 </p>
               </div>
@@ -349,7 +358,7 @@ export default function WeFunnelsOfficialPage() {
               "radial-gradient(ellipse at 95% 70%, rgba(37,27,69,0.27), transparent 65%), #0B1422",
           }}
         >
-          <div className={SHELL}>
+          <div data-reveal className={SHELL}>
             <div className="grid items-center gap-[38px] lg:grid-cols-[1.2fr_1fr]">
               <div className="min-w-0">
                 <p className={KICKER}>Licencia Distribuidor</p>
@@ -364,21 +373,21 @@ export default function WeFunnelsOfficialPage() {
                   Activa tu página de regalo y empieza a compartir una herramienta que otros
                   constructores pueden usar en su negocio.
                 </p>
-                <p className="m-0 mt-4 text-xs leading-relaxed text-[#AFC2DA]">
+                <p className={`${SMALL} mt-5`}>
                   El tráfico y la publicidad que decidas contratar se pagan por separado.
                 </p>
               </div>
-              <div className="rounded-[15px] border border-[#5B87A3] bg-[#0E1929] p-[clamp(22px,2.8vw,29px)] shadow-[0_0_35px_rgba(34,181,213,0.06)]">
+              <div className="wf-card rounded-[18px] border border-[#5B87A3] bg-[#0E1929] p-[clamp(26px,3.2vw,34px)] shadow-[0_0_35px_rgba(34,181,213,0.06)]">
                 <p className={KICKER}>Precio público · USD</p>
-                <p className="m-0 mt-3.5 mb-1 text-[clamp(48px,7vw,64px)] leading-[1.05] font-bold tracking-[-0.047em] text-[#F2F8FF]">
+                <p className="m-0 mt-4 mb-1.5 text-[clamp(56px,8vw,78px)] leading-[1] font-bold tracking-[-0.05em] text-[#F2F8FF]">
                   $199
                 </p>
-                <p className="m-0 text-xs text-[#AFC2DA]">
+                <p className={SMALL}>
                   Pago único por la licencia Distribuidor
                 </p>
-                <ul className="my-[23px] flex list-none flex-col gap-3 p-0">
+                <ul className="my-7 flex list-none flex-col gap-3.5 p-0">
                   {INCLUDES.map((item) => (
-                    <li key={item} className="flex gap-2.5 text-[13px] text-[#D2DFEF]">
+                    <li key={item} className="flex gap-3 text-[length:var(--wf-body)] leading-snug text-[#D2DFEF]">
                       <span className="text-[#6EE8E5]" aria-hidden="true">
                         ✓
                       </span>
@@ -395,19 +404,19 @@ export default function WeFunnelsOfficialPage() {
         </section>
 
         <section className={SECTION} id="preguntas">
-          <div className={SHELL}>
-            <div className="mx-auto max-w-[740px]">
+          <div data-reveal className={SHELL}>
+            <div className="mx-auto max-w-[800px]">
               <p className={KICKER}>Resolvamos tus dudas</p>
               <h2 className={H2}>Antes de empezar.</h2>
               {QUESTIONS.map(([question, answer]) => (
-                <details key={question} className="border-b border-[#2C3B51] py-4">
-                  <summary className="flex min-h-[32px] cursor-pointer items-center justify-between gap-4 text-sm font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
+                <details key={question} data-reveal className="group border-b border-[#2C3B51] py-5">
+                  <summary className="flex min-h-[36px] cursor-pointer items-center justify-between gap-4 text-[length:var(--wf-h3)] font-medium text-[#F3F7FF] transition-colors duration-300 hover:text-[#8EEFF5] marker:content-none [&::-webkit-details-marker]:hidden">
                     {question}
-                    <span className="shrink-0 text-[#77DFE9]" aria-hidden="true">
+                    <span className="shrink-0 text-[length:var(--wf-h3)] text-[#77DFE9] transition-transform duration-300 group-open:rotate-45" aria-hidden="true">
                       +
                     </span>
                   </summary>
-                  <p className="m-0 mt-2.5 text-[13px] leading-relaxed text-[#B7C7DC]">
+                  <p className={`${SMALL} mt-3 max-w-[66ch]`}>
                     {answer}
                   </p>
                 </details>
@@ -423,8 +432,8 @@ export default function WeFunnelsOfficialPage() {
               "radial-gradient(ellipse at 50% 100%, rgba(25,44,75,0.53), transparent 70%)",
           }}
         >
-          <div className={SHELL}>
-            <h2 className={`${H2} mx-auto max-w-[620px]`}>
+          <div data-reveal className={SHELL}>
+            <h2 className={`${H2} mx-auto max-w-[16ch]`}>
               Tu próxima conversación
               <br />
               puede empezar con <span className={GRADIENT}>«te regalo».</span>
@@ -432,14 +441,14 @@ export default function WeFunnelsOfficialPage() {
             <Link href={BUY_URL} className={`${PRIMARY} w-full sm:w-auto`}>
               Activar mi licencia Distribuidor <span aria-hidden="true">→</span>
             </Link>
-            <p className="m-0 mt-4 text-xs leading-relaxed text-[#AFC2DA]">
+            <p className={`${SMALL} mt-5`}>
               199 dólares · Pago único · Regalos ilimitados de por vida
             </p>
           </div>
         </section>
       </main>
 
-      <footer className="py-5 text-[11px] text-[#A8BDD4]">
+      <footer className="py-7 text-[length:var(--wf-small)] text-[#A8BDD4]">
         <div className={`${SHELL} flex flex-wrap items-center justify-between gap-4`}>
           <span>WeFunnels · Una solución de WeWebinars</span>
           <div className="flex flex-wrap gap-4">

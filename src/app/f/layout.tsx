@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 
+import "./wefunnels.css";
+
 // WeFunnels has its own type system, separate from the app shell's Geist:
 // Archivo is the closest grotesque to the wordmark, and the mono is there
 // for one thing only -- the address with the person's name in it, which is
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
 export default function WeFunnelsLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className={`${archivo.variable} ${plexMono.variable} min-h-screen`}
+      className={`wf ${archivo.variable} ${plexMono.variable} min-h-screen`}
       style={{
         fontFamily: "var(--font-wefunnels), system-ui, sans-serif",
         // The approved ground: very dark blue, near black, not black. Set
