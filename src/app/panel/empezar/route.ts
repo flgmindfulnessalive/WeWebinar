@@ -35,7 +35,7 @@ export async function GET() {
       .eq("account_id", profile.account_id)
       .maybeSingle();
 
-    if (existing) redirect("/panel");
+    if (existing) redirect("/panel/pagina");
   }
 
   const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
@@ -46,8 +46,9 @@ export async function GET() {
   const slug = proposeSlug(displayName);
 
   // Without an invitation or a usable name there is nothing to create, and
-  // /panel already says the right thing in both cases rather than guessing.
-  if (!touch || !slug) redirect("/panel");
+  // /panel/pagina already says the right thing in both cases rather than
+  // guessing.
+  if (!touch || !slug) redirect("/panel/pagina");
 
   const claim = (candidate: string) =>
     supabase.rpc("claim_wefunnel_site", {
@@ -77,5 +78,5 @@ export async function GET() {
     }
   }
 
-  redirect("/panel");
+  redirect("/panel/pagina");
 }

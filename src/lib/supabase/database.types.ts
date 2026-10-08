@@ -2120,6 +2120,14 @@ export interface Database {
         };
         Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
       };
+      wefunnel_course_progress: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          registered: boolean;
+          position_seconds: number | null;
+          duration_seconds: number | null;
+        }[];
+      };
       wefunnel_site_stats: {
         Args: { p_days?: number };
         Returns: {

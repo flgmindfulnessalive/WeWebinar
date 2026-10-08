@@ -1,16 +1,30 @@
 import { redirect } from "next/navigation";
 
+import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { DistributorCheckoutButton } from "./checkout-button";
 
-const CHANGES = [
-  "Repartes funnels sin límite, de por vida — hoy no puedes regalar ninguno",
-  "Tu sala del curso, en tu dirección y con tu nombre",
-  "2 meses de WeWebinars Starter incluidos",
-  "20% del plan de cada cuenta que llegue por ti, mientras lo tenga",
+// Ser Distribuidor, inside the authenticated panel, which is the only place
+// the invitation price may be named: the official web shows 199 and nothing
+// else, because 100 is a fact about who invited you and not a public offer.
+//
+// The figure is not written in this file. wefunnel_license_price decides it
+// from the account's own referral rows, and wefunnel_activate_distributor
+// checks the same rows again before granting anything -- so a page that
+// hardcoded 100 would be claiming an entitlement it cannot confer.
+const INCLUDES = [
+  "Tu página de regalo para compartir funnels ilimitados.",
+  "Panel con analítica y registros de tu propia página.",
+  "Tu sala del curso de prospección.",
+  "2 meses de Starter de WeWebinars para usar presentaciones grabadas en webinars automatizados.",
+  "20% sobre los planes de WeWebinars de tus referidos directos, mensuales o anuales, mientras mantengan su suscripción.",
 ];
 
-const DOTS = ["#2BD7F5", "#4F8BFF", "#8B5CF6", "#A855F7"];
+const MONEY = new Intl.NumberFormat("es", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 export default async function PanelDistributorPage() {
   const viewer = await getPanelViewer();
@@ -18,62 +32,79 @@ export default async function PanelDistributorPage() {
   if (!viewer.site) redirect("/panel");
   if (viewer.distributor) redirect("/panel/repartir");
 
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("wefunnel_license_price");
+  const pricing = data?.[0];
+  const invited = pricing?.source === "invited";
+  const price = Number(pricing?.price_usd ?? 199);
+  const publicPrice = Number(pricing?.public_price_usd ?? 199);
+
   return (
-    <div className="flex max-w-[620px] flex-col gap-6">
-      <h1 className="m-0 text-[32px] leading-tight font-extrabold tracking-tight text-balance">
-        Reparte funnels con tu nombre
-      </h1>
+    <div className="flex max-w-[760px] flex-col gap-6">
+      <div>
+        <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#D8B4FE] uppercase">
+          Tu siguiente opción · Distribuidor
+        </p>
+        <h1 className="m-0 mt-2.5 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[#F3F7FF] text-balance">
+          Abre conversaciones con un regalo.
+        </h1>
+        <p className="m-0 mt-3 text-[15px] leading-relaxed text-[#B7C7DC]">
+          Ofrece a otros constructores un funnel gratuito, su panel y un curso para
+          aprender a usarlo.
+        </p>
+      </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-        <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-          Qué cambia
-        </span>
-        {CHANGES.map((change, index) => (
-          <div key={change} className="flex items-start gap-3">
-            <span
-              className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
-              style={{ background: DOTS[index] }}
-              aria-hidden="true"
-            />
-            <span className="text-[16px] leading-snug text-[#D7DCEC]">{change}</span>
+      <section className="flex flex-col gap-5 rounded-[16px] border border-[#A855F7] bg-gradient-to-br from-[#0B1230] to-[#1B0C2E] p-[clamp(20px,3vw,30px)]">
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div className="min-w-0">
+            <span className="inline-block rounded-full border border-[#D8B4FE] px-3 py-1 text-[11px] text-[#E9D5FF]">
+              {invited ? "Precio por invitación" : "Precio público"}
+            </span>
+            <p className="m-0 mt-3 text-[clamp(34px,5vw,46px)] leading-none font-extrabold tracking-[-0.04em] text-[#F3F7FF]">
+              {MONEY.format(price)}
+            </p>
+            <p className="m-0 mt-2 text-sm text-[#B7C7DC]">
+              Un solo pago · Regalos ilimitados de por vida
+            </p>
           </div>
-        ))}
-      </div>
+          {invited && (
+            <p className="m-0 max-w-[24ch] text-sm leading-relaxed text-[#8498B4]">
+              Llegaste por invitación.
+              <br />
+              Precio público en la web: {MONEY.format(publicPrice)}.
+            </p>
+          )}
+        </div>
 
-      {/* Nothing in the offer is conditional any more, so this block says
-          exactly that and stops. It used to end with "the only thing that
-          needs an active plan is collecting the 20%" -- a clause that made
-          WeWebinars something you buy in order to be allowed to get paid,
-          and that at $3 per referred Starter asked most distributors for
-          $15 to collect less than that. */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-[#1E4FA8] bg-gradient-to-br from-[#081026] to-[#0D1430] p-6">
-        <span className="text-xs font-semibold tracking-[0.08em] text-[#2BD7F5] uppercase">
-          Qué no cambia
-        </span>
-        <span className="text-[16px] leading-snug text-[#D7DCEC]">
-          Tu funnel sigue gratis, el curso sigue siendo tuyo, tu sala no se apaga nunca y
-          tu 20% se sigue pagando — pagues o no pagues una mensualidad después. No hay
-          nada que mantener activo.
-        </span>
-      </div>
+        <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+          {INCLUDES.map((item) => (
+            <li key={item} className="flex gap-2.5 text-[15px] leading-relaxed text-[#D2DFEF]">
+              <span className="shrink-0 text-[#6EE8E5]" aria-hidden="true">
+                ✓
+              </span>
+              <span className="min-w-0">{item}</span>
+            </li>
+          ))}
+        </ul>
 
-      <div className="flex flex-wrap items-baseline gap-2.5">
-        <span className="text-[26px] font-semibold text-[#6E7694] line-through">$199</span>
-        <span className="text-[48px] leading-none font-extrabold tracking-tighter">$99</span>
-        <span className="text-[17px] text-[#A9B0C9]">una sola vez, de por vida</span>
-      </div>
+        <DistributorCheckoutButton price={MONEY.format(price)} />
 
-      {/* Still said up front, because a charge on month three that nobody
-          mentioned is a refund request. What changed is that it is now an
-          offer and not a condition: the two months are a trial of the
-          platform, and nothing in the tier stops if they end. */}
-      <p className="m-0 text-[15px] leading-relaxed text-[#A9B0C9]">
-        Los 2 meses de Starter son para que pruebes la plataforma. Si te sirve, son $15 al
-        mes desde el tercero; si no, no pagas nada y no pierdes nada — ni los funnels, ni
-        la sala, ni tu 20%.
+        <div className="flex flex-col gap-2 border-t border-[#3B2A5C] pt-4">
+          <p className="m-0 text-sm leading-relaxed text-[#B7C7DC]">
+            Los 2 meses de Starter son para que pruebes la plataforma. Continuar después es
+            opcional: tu licencia Distribuidor, tu funnel y tu sala del curso permanecen
+            activos.
+          </p>
+          <p className="m-0 text-sm leading-relaxed text-[#8498B4]">
+            Sin comisión por la licencia Distribuidor. Sin segundo nivel.
+          </p>
+        </div>
+      </section>
+
+      <p className="m-0 text-sm leading-relaxed text-[#8498B4]">
+        Puedes seguir usando tu funnel, tu panel y tu curso gratuitos sin activar
+        Distribuidor.
       </p>
-
-      <DistributorCheckoutButton />
     </div>
   );
 }

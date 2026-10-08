@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
+import { LeadRow, type LeadCard, type LeadStatus } from "./lead-row";
 
 const DATE = new Intl.DateTimeFormat("es", {
   day: "numeric",
@@ -10,14 +11,21 @@ const DATE = new Intl.DateTimeFormat("es", {
   minute: "2-digit",
 });
 
-// The message the owner opens the chat with. Written from their side, so
-// the first thing the lead reads is a person, not a template.
+// The message the owner opens the chat with. Written from their side, so the
+// first thing the lead reads is a person, not a template.
 function whatsappLink(number: string, ownerName: string, leadName: string) {
   const first = leadName.split(/\s+/)[0] ?? "";
   const text = `Hola ${first}, soy ${ownerName}. Gracias por dejarme tus datos.`;
   return `https://wa.me/${number.replace(/^\+/, "")}?text=${encodeURIComponent(text)}`;
 }
 
+// Mis registros. Every row is somebody who filled in their page or took
+// their gift, with a follow-up state they can move and a ficha they can
+// open without leaving the list.
+//
+// RLS is what keeps this to their own page: wefunnel_leads_select_owner
+// admits only the owning account, so there is no account filter in this
+// query and no way to widen it from here.
 export default async function PanelLeadsPage() {
   const viewer = await getPanelViewer();
   if (!viewer) redirect("/login?next=/panel/registrados");
@@ -26,66 +34,80 @@ export default async function PanelLeadsPage() {
   const supabase = await createClient();
   const { data: leads } = await supabase
     .from("wefunnel_leads")
-    .select("id, name, whatsapp, email, answer, created_at")
+    .select("id, name, whatsapp, email, answer, source, status, created_at")
     .eq("site_id", viewer.site.id)
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const rows = leads ?? [];
   const question = viewer.site.question_label ?? "Su respuesta";
+  const rows: LeadCard[] = (leads ?? []).map((lead) => ({
+    id: lead.id,
+    name: lead.name,
+    email: lead.email,
+    whatsapp: lead.whatsapp,
+    answer: lead.answer,
+    source: lead.source,
+    status: lead.status as LeadStatus,
+    createdAt: DATE.format(new Date(lead.created_at)),
+    question,
+    whatsappLink: lead.whatsapp
+      ? whatsappLink(lead.whatsapp, viewer.site!.display_name, lead.name)
+      : null,
+  }));
+
+  const pending = rows.filter((lead) => lead.status === "nuevo").length;
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="m-0 text-[28px] font-bold tracking-tight">Mis registrados</h1>
+      <div>
+        <h1 className="m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[#F3F7FF]">
+          Mis registros
+        </h1>
+        <p className="m-0 mt-2 text-[15px] leading-relaxed text-[#B7C7DC]">
+          {rows.length === 0
+            ? "Aquí aparecerá cada persona que llene tu formulario."
+            : pending > 0
+              ? `${pending} ${pending === 1 ? "persona espera" : "personas esperan"} que les escribas.`
+              : "Al día. No tienes registros nuevos sin contactar."}
+        </p>
+      </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-          <p className="m-0 text-[16px] leading-relaxed text-[#A9B0C9]">
+        <div className="rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-6">
+          <p className="m-0 text-[15px] leading-relaxed text-[#B7C7DC]">
             Todavía no hay nadie en tu lista. Aparecen aquí en cuanto alguien llena tu
             formulario, con todo lo que escribieron.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#23233A] bg-[#0D0D15]">
+        <div className="overflow-x-auto rounded-[14px] border border-[#2D3E57] bg-[#0E192A]">
           <table className="w-full min-w-[620px] border-collapse text-[15px]">
             <thead>
-              <tr className="text-left text-[#6E7694]">
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">Fecha</th>
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">Nombre</th>
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">{question}</th>
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">Contacto</th>
+              <tr className="text-left">
+                {["Persona", "Fecha", "Estado", "Ficha"].map((head) => (
+                  <th
+                    key={head}
+                    scope="col"
+                    className="border-b border-[#2D3E57] bg-[#091221] px-5 py-3 text-[11px] font-semibold tracking-[0.1em] text-[#8498B4] uppercase"
+                  >
+                    {head}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((lead) => (
-                <tr key={lead.id}>
-                  <td className="border-b border-[#14141F] px-5 py-3.5 whitespace-nowrap text-[#6E7694] tabular-nums">
-                    {DATE.format(new Date(lead.created_at))}
-                  </td>
-                  <td className="border-b border-[#14141F] px-5 py-3.5 font-semibold">{lead.name}</td>
-                  <td className="border-b border-[#14141F] px-5 py-3.5 text-[#A9B0C9]">{lead.answer ?? "—"}</td>
-                  <td className="border-b border-[#14141F] px-5 py-3.5">
-                    {lead.whatsapp ? (
-                      <a
-                        href={whatsappLink(lead.whatsapp, viewer.site!.display_name, lead.name)}
-                        className="inline-block rounded-[9px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white no-underline"
-                      >
-                        WhatsApp
-                      </a>
-                    ) : (
-                      <span className="text-sm break-all text-[#A9B0C9]">{lead.email ?? "—"}</span>
-                    )}
-                  </td>
-                </tr>
+                <LeadRow key={lead.id} lead={lead} />
               ))}
             </tbody>
           </table>
         </div>
       )}
 
-      <p className="m-0 text-sm leading-relaxed text-[#6E7694]">
-        El botón de WhatsApp abre el chat con el mensaje escrito. El envío automático de
-        correos llega con un plan de WeWebinars.
+      <p className="m-0 text-sm leading-relaxed text-[#8498B4]">
+        Personas registradas en tu página. Solo tú accedes a estos contactos: quien te
+        regaló tu funnel no los ve. El botón de WhatsApp abre el chat con el mensaje
+        escrito; el envío automático de correos llega con un plan de WeWebinars.
       </p>
     </div>
   );

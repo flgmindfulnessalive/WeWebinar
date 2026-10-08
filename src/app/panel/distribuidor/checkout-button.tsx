@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export function DistributorCheckoutButton() {
+// The price shown on the button comes from the server, formatted by the page
+// that read wefunnel_license_price. It is a label: the checkout route resolves
+// the plan again from the account's own referral rows, so a tampered prop
+// changes the text and nothing that is charged.
+export function DistributorCheckoutButton({ price }: { price: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,10 +41,9 @@ export function DistributorCheckoutButton() {
         type="button"
         onClick={start}
         disabled={busy}
-        className="self-start rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-7 py-4 text-[17px] font-semibold text-white disabled:opacity-60"
-        style={{ boxShadow: "0 0 28px rgba(147,51,234,0.36)" }}
+        className="inline-flex min-h-[52px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] disabled:opacity-60"
       >
-        {busy ? "Abriendo…" : "Hacerme distribuidor"}
+        {busy ? "Abriendo…" : `Activar Distribuidor · ${price} →`}
       </button>
       {error && (
         <p role="alert" className="m-0 text-sm text-[#FF8A8A]">

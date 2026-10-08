@@ -6,14 +6,15 @@ import { usePathname } from "next/navigation";
 type NavItem = { href: string; label: string; countKey?: "leads" };
 
 const ITEMS: NavItem[] = [
-  { href: "/panel", label: "Mi página" },
-  { href: "/panel/registrados", label: "Mis registrados", countKey: "leads" },
-  { href: "/panel/curso", label: "El curso" },
+  { href: "/panel", label: "Mi panel" },
+  { href: "/panel/pagina", label: "Mi página" },
+  { href: "/panel/registrados", label: "Mis registros", countKey: "leads" },
+  { href: "/panel/curso", label: "Mi curso" },
 ];
 
-// The two a distributor gets on top. Not shown to anyone else -- a free
-// user seeing a "Mis comisiones" they cannot earn is a worse pitch than
-// the invitation counter, which at least shows them something real.
+// The two a distributor gets on top. Not shown to anyone else: a free user
+// looking at a "Mis comisiones" they cannot earn is being shown a locked
+// door, and the offer they can act on already has its own card on Mi panel.
 const DISTRIBUTOR_ITEMS: NavItem[] = [
   { href: "/panel/repartir", label: "Funnels repartidos" },
   { href: "/panel/comisiones", label: "Mis comisiones" },

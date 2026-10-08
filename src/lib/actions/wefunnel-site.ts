@@ -255,3 +255,39 @@ export async function saveAndPublishWeFunnelSite(
   publishData.set("published", "true");
   return setWeFunnelPublished(prev, publishData);
 }
+
+// The follow-up state on one registro. Through the RPC rather than a plain
+// update, because wefunnel_leads has no UPDATE policy on purpose: the list
+// is an append-only record of what somebody typed, and an owner who could
+// edit a lead's name could edit the evidence of who asked for what. The
+// function writes that one column and checks the caller owns the page.
+export async function setLeadStatus(
+  _prev: SaveState,
+  formData: FormData
+): Promise<SaveState> {
+  const leadId = field(formData, "leadId", 64);
+  const status = field(formData, "status", 32);
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("wefunnel_set_lead_status", {
+    p_lead_id: leadId,
+    p_status: status,
+  });
+
+  if (error) {
+    if (error.message.includes("unknown follow-up state")) {
+      return { error: "Ese estado no existe." };
+    }
+    console.error("[wefunnel] lead status failed:", error.message);
+    return { error: "No pudimos guardar el estado. Intenta de nuevo." };
+  }
+
+  // The function answers false for a lead on somebody else's page, the same
+  // answer it gives for one that does not exist.
+  if (data === false) {
+    return { error: "Ese registro no es de tu página." };
+  }
+
+  revalidatePath("/panel/registrados");
+  return { success: true };
+}
