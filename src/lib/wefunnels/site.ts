@@ -11,6 +11,10 @@ export type WeFunnelDistributor =
 export type PanelViewer = {
   userId: string;
   email: string;
+  // Publishing needs a verified address, because a published page is a
+  // public address on a shared domain. Carried here so the editor can say
+  // so before the button is pressed instead of only after.
+  emailVerified: boolean;
   site: WeFunnelSite | null;
   distributor: WeFunnelDistributor | null;
 };
@@ -40,6 +44,7 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
   return {
     userId: user.id,
     email: user.email ?? "",
+    emailVerified: Boolean(user.email_confirmed_at),
     site: site ?? null,
     distributor: distributor ?? null,
   };

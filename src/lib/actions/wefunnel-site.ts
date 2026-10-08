@@ -125,6 +125,11 @@ export async function saveWeFunnelSite(
       display_name: field(formData, "displayName", 120) || undefined,
       location: field(formData, "location", 120) || null,
       headline: field(formData, "headline", 300) || null,
+      // The two fields the approved editor writes. description is capped
+      // at 300 in the database too, so a longer paste is trimmed here
+      // rather than rejected after they have typed it.
+      description: field(formData, "description", 300) || null,
+      photo_url: field(formData, "photoUrl", 500) || null,
       bullets,
       video_url: field(formData, "videoUrl", 500) || null,
       accent: accent || "cyan",
@@ -153,6 +158,7 @@ export async function setWeFunnelPublished(
   const published = formData.get("published") === "true";
   const supabase = await createClient();
 
+
   const { error } = await supabase.rpc("wefunnel_publish_site", {
     p_published: published,
   });
@@ -161,10 +167,91 @@ export async function setWeFunnelPublished(
     if (error.message.includes("suspended")) {
       return { error: "Esta página está suspendida. Escríbenos para revisarla." };
     }
+    // Raised by wefunnel_publish_site (20261007000012), which is where the
+    // rule lives: that function is callable with any session, so checking
+    // here as well would only duplicate a gate it already holds.
+    if (error.message.includes("email not verified")) {
+      return {
+        error:
+          "Verifica tu email antes de publicar. Te mandamos el enlace al correo con el que te registraste.",
+      };
+    }
     console.error("[wefunnel] publish failed:", error.message);
     return { error: "No pudimos cambiar el estado de la página." };
   }
 
   revalidatePath("/panel");
   return { success: true };
+}
+
+// Changing the address, which is only possible before the page goes live:
+// the database freezes the slug once published_at is set, because a link
+// already in circulation cannot start pointing at a different person.
+//
+// Separate from saveWeFunnelSite because it has its own availability check
+// and its own failure modes, and because sharing a payload with the rest of
+// the editor would mean every save re-checked a value that almost never
+// changes.
+export async function changeWeFunnelSlug(
+  _prev: SaveState,
+  formData: FormData
+): Promise<SaveState> {
+  const slug = normalizeSlug(field(formData, "slug", 64));
+
+  const lengthProblem = slugLengthHint(slug);
+  if (lengthProblem) return { error: lengthProblem };
+  if (!isWellFormedSlug(slug)) {
+    return { error: "La dirección solo admite letras, números y guiones." };
+  }
+
+  const supabase = await createClient();
+
+  const { data: available } = await supabase.rpc("wefunnel_slug_available", {
+    p_slug: slug,
+  });
+  if (available === false) {
+    return { error: "Esa dirección ya está tomada. Prueba con otra." };
+  }
+
+  const { error } = await supabase
+    .from("wefunnel_sites")
+    .update({ slug })
+    .eq("id", field(formData, "siteId", 64));
+
+  if (error) {
+    // wefunnel_guard_slug raises this once the page has been published.
+    if (error.message.includes("slug is fixed")) {
+      return {
+        error:
+          "Tu dirección ya está publicada y no puede cambiar: el enlace que compartiste tiene que seguir llevando a tu página.",
+      };
+    }
+    if (error.code === "23505" || error.message.includes("duplicate")) {
+      return { error: "Esa dirección acaba de ser tomada. Prueba con otra." };
+    }
+    if (error.message.includes("reserved")) {
+      return { error: "Esa dirección está reservada. Prueba con otra." };
+    }
+    console.error("[wefunnel] slug change failed:", error.message);
+    return { error: "No pudimos cambiar tu dirección. Intenta de nuevo." };
+  }
+
+  revalidatePath("/panel");
+  return { success: true };
+}
+
+// Save and publish in one call, which is what the approved editor's primary
+// button does. Two separate round trips would publish whatever was last
+// saved rather than what is on screen -- the opposite of what somebody
+// pressing "Publicar mi funnel" after editing a headline expects.
+export async function saveAndPublishWeFunnelSite(
+  prev: SaveState,
+  formData: FormData
+): Promise<SaveState> {
+  const saved = await saveWeFunnelSite(prev, formData);
+  if (saved && "error" in saved) return saved;
+
+  const publishData = new FormData();
+  publishData.set("published", "true");
+  return setWeFunnelPublished(prev, publishData);
 }

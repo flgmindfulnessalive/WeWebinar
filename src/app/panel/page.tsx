@@ -52,5 +52,11 @@ export default async function PanelHomePage() {
     return <ClaimForm />;
   }
 
-  return <SiteEditor site={viewer.site} steps={checklist(viewer.site)} />;
+  return (
+    <SiteEditor
+      site={viewer.site}
+      steps={checklist(viewer.site)}
+      emailVerified={viewer.emailVerified}
+    />
+  );
 }

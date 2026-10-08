@@ -151,7 +151,9 @@ export default async function WeFunnelGiftPage({
   // reads as "coming" rather than as a failure -- the claim is the
   // conversion either way.
   const hasCourse = Boolean(courseTemplateWebinarId());
-  const claimUrl = wefunnelAppUrl(`/signup?next=/panel`);
+  // The approved registration screen, on this same host: no change of
+  // address and no change of branding in the middle of accepting a gift.
+  const claimUrl = "/registro";
   const faq = questions(site.display_name);
 
   return (
