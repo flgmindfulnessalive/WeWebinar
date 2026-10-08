@@ -258,6 +258,83 @@
   transform: scaleX(1);
 }
 
+/* --------------------------------------------------------------- volver arriba
+
+   El botón vive fijo abajo a la derecha y solo aparece pasado el hero. Entra
+   desde abajo y a escala, que es de donde viene, y sale igual: una opacidad
+   suelta lo haría parpadear en el borde de su umbral. */
+
+.wf-top {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #2d3e57;
+  border-radius: 14px;
+  background: rgba(14, 25, 42, 0.92);
+  color: var(--wf-cyan);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px) scale(0.92);
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.9);
+  transition:
+    opacity 0.3s var(--wf-ease),
+    transform 0.3s var(--wf-ease),
+    border-color 0.3s var(--wf-ease),
+    box-shadow 0.3s var(--wf-ease);
+}
+
+.wf-top.is-shown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+@media (hover: hover) {
+  .wf-top:hover {
+    border-color: var(--wf-cyan);
+    box-shadow: 0 16px 38px -16px rgba(67, 226, 238, 0.55);
+  }
+}
+
+.wf-top:focus-visible {
+  outline: 2px solid var(--wf-cyan);
+  outline-offset: 3px;
+}
+
+/* El logo de la cabecera, que ahora es el enlace de vuelta al principio. */
+.wf-home {
+  display: inline-flex;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.25s var(--wf-ease);
+}
+
+@media (hover: hover) {
+  .wf-home:hover {
+    opacity: 0.82;
+  }
+}
+
+.wf-home:focus-visible {
+  outline: 2px solid var(--wf-cyan);
+  outline-offset: 4px;
+}
+
+/* El desplazamiento suave es del documento, no de un div, así que la regla
+   tiene que ir en la raíz. Acotada con :has para que solo se aplique a las
+   páginas de WeFunnels y no al panel, que comparte documento. */
+:root:has(.wf) {
+  scroll-behavior: smooth;
+}
+
 /* ------------------------------------------------------------------- motion
 
    One switch for everyone who asked not to be moved: the page keeps every
@@ -280,5 +357,9 @@
 
   .wf-rule::before {
     transform: scaleX(1);
+  }
+
+  :root:has(.wf) {
+    scroll-behavior: auto;
   }
 }

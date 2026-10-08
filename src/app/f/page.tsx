@@ -6,6 +6,7 @@ import { Gift, PanelTop, ChartNoAxesCombined, Play } from "lucide-react";
 import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { HeroGrid } from "@/components/wefunnels/hero-grid";
 import { Reveal } from "@/components/wefunnels/reveal";
+import { BackToTop } from "@/components/wefunnels/back-to-top";
 import { Wordmark } from "@/components/wefunnels/wordmark";
 
 // The official web. One job: sell the distributor licence at $199.
@@ -136,10 +137,16 @@ const PRIMARY =
 
 export default function WeFunnelsOfficialPage() {
   return (
-    <div>
+    // El ancla del logo y del botón de volver arriba.
+    <div id="top">
       <header className="border-b border-[#202A3B] py-6">
         <div className={`${SHELL} flex flex-wrap items-center justify-between gap-5`}>
-          <Wordmark />
+          {/* El logo es el camino de vuelta al principio, que es lo que
+              cualquiera espera de él -- y la cabecera no acompaña el
+              scroll, así que sin esto bajar por el menú era de ida. */}
+          <a href="#top" className="wf-home" aria-label="WeFunnels, volver arriba">
+            <Wordmark />
+          </a>
           <nav aria-label="Navegación principal" className="flex flex-wrap gap-[18px]">
             <a href="#como-funciona" className={NAV}>
               Cómo funciona
@@ -155,6 +162,7 @@ export default function WeFunnelsOfficialPage() {
       </header>
 
       <Reveal />
+      <BackToTop />
 
       <main>
         {/* Hero. The thin lines in perspective are the package's signature on
