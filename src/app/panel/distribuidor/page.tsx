@@ -6,7 +6,7 @@ import { DistributorCheckoutButton } from "./checkout-button";
 const CHANGES = [
   "Repartes funnels sin límite — hoy tienes tres invitaciones",
   "Tu sala del curso, en tu dirección y con tu nombre",
-  "1 mes de WeWebinars Starter incluido",
+  "2 meses de WeWebinars Starter incluidos",
   "20% del plan de cada cuenta que llegue por ti, mientras lo tenga",
 ];
 
@@ -65,7 +65,7 @@ export default async function PanelDistributorPage() {
           whole offer is this one, and burying it would turn month two into
           a surprise and a refund request. */}
       <p className="m-0 text-[15px] leading-relaxed text-[#A9B0C9]">
-        Desde el segundo mes, $15 al mes. Repartir funnels y tu sala del curso no dependen
+        Desde el tercer mes, $15 al mes. Repartir funnels y tu sala del curso no dependen
         de eso y no se apagan nunca; el plan activo es lo que mantiene tu 20% corriendo —
         y para entonces ya sabrás si te está entrando.
       </p>
