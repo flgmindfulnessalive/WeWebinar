@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 
-export function DistributorCheckoutButton() {
+import { PRIMARY_BUTTON } from "@/components/wefunnels/brand";
+
+// Starts the Whop checkout. It sends nothing about the price: the server
+// decides the tier from the account's referral and creates the checkout
+// with the matching plan.
+export function DistributorCheckoutButton({ label }: { label: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -11,39 +16,31 @@ export function DistributorCheckoutButton() {
     setError(null);
     try {
       const response = await fetch("/api/whop/wefunnels-checkout", { method: "POST" });
-      const body = (await response.json()) as { url?: string; error?: string };
+      const body = (await response.json().catch(() => ({}))) as { url?: string };
       if (body.url) {
         window.location.href = body.url;
         return;
       }
-      // The failure modes here are all ours -- an unset plan id, a Whop
-      // outage -- so the message says so instead of implying they did
-      // something wrong.
       setError(
         response.status === 409
-          ? "Ya eres distribuidor."
-          : "El pago no está disponible en este momento. Vuelve a intentarlo en un rato."
+          ? "Tu licencia Distribuidor ya está activa."
+          : response.status === 401
+            ? "Tu sesión expiró. Vuelve a iniciar sesión."
+            : "El pago no está disponible en este momento. Vuelve a intentarlo en un rato."
       );
     } catch {
       setError("No pudimos abrir el pago. Revisa tu conexión e intenta de nuevo.");
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <button
-        type="button"
-        onClick={start}
-        disabled={busy}
-        className="self-start rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-7 py-4 text-[17px] font-semibold text-white disabled:opacity-60"
-        style={{ boxShadow: "0 0 28px rgba(147,51,234,0.36)" }}
-      >
-        {busy ? "Abriendo…" : "Hacerme distribuidor"}
+    <div>
+      <button type="button" onClick={start} disabled={busy} className={`${PRIMARY_BUTTON} w-full`}>
+        {busy ? "Abriendo el pago…" : label} {!busy && <span aria-hidden="true">→</span>}
       </button>
       {error && (
-        <p role="alert" className="m-0 text-sm text-[#FF8A8A]">
+        <p role="alert" className="mt-2.5 mb-0 text-[14px] text-[#ffb4b4]">
           {error}
         </p>
       )}

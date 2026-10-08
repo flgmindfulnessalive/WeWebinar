@@ -7,7 +7,10 @@ import {
   STARTER_KIT_PRODUCT_ID,
   WEFUNNELS_DISTRIBUTOR_METADATA,
 } from "@/lib/whop";
-import { activateWeFunnelsDistributor } from "@/lib/wefunnels/activate-distributor";
+import {
+  activateWeFunnelsDistributor,
+  revokeWeFunnelsDistributor,
+} from "@/lib/wefunnels/activate-distributor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   accountActivatedEmail,
@@ -327,6 +330,17 @@ export async function POST(request: Request): Promise<Response> {
 
     if (disputeAccountId) {
       await suspendAccountForDispute(createAdminClient(), disputeAccountId);
+
+      // A refund or dispute of the Distributor licence itself also revokes
+      // the licence (once per event id). Identified by our own metadata
+      // marker, so a dispute on a Starter subscription does not touch it.
+      if (event.data.metadata?.product === WEFUNNELS_DISTRIBUTOR_METADATA && event.data.id) {
+        await revokeWeFunnelsDistributor({
+          accountId: disputeAccountId,
+          eventType: event.type,
+          externalId: event.data.id,
+        });
+      }
     }
   }
 
@@ -346,21 +360,35 @@ export async function POST(request: Request): Promise<Response> {
         });
       }
     } else if (event.data.metadata?.product === WEFUNNELS_DISTRIBUTOR_METADATA) {
-      // The $100 lifetime tier. Identified by our own metadata rather than
-      // by plan id, because the plan id lives in an env var that is not set
-      // in every environment -- and because a one-time purchase has no
-      // plan_key for syncMembership to resolve, so routing it there would
-      // write a nonsense subscription_status.
+      // The Distributor licence (199 public / 100 invitation). Routed by our
+      // own metadata marker -- a one-time purchase has no plan_key for
+      // syncMembership -- and then verified by plan id inside
+      // activateWeFunnelsDistributor, which also decides the tier.
       //
       // Only "activated" does anything: the rights are lifetime, so a
       // deactivation (a membership record closing after a one-time sale)
       // has nothing to unwind. A refund is a different event entirely and
       // is already handled by DISPUTE_EVENTS above.
       if (event.type === "membership.activated") {
-        await activateWeFunnelsDistributor({
+        const result = await activateWeFunnelsDistributor({
           membershipId: event.data.id,
           accountId: resolveAccountId(event),
+          planId: event.data.plan?.id ?? null,
         });
+        if (!result.ok) {
+          // Someone paid and got nothing: a human has to look. Best-effort,
+          // like every other ops alert in this route.
+          try {
+            const { subject, html } = whopMembershipUnresolvedEmail({
+              membershipId: event.data.id,
+              productId: event.data.product?.id ?? null,
+              status: `wefunnels distributor not activated: ${result.reason ?? "unknown"}`,
+            });
+            await sendEmail({ to: OPERATIONS_EMAIL, subject, html });
+          } catch (err) {
+            console.error("[whop webhook] distributor activation alert failed:", err);
+          }
+        }
       }
     } else {
       await syncMembership(event);

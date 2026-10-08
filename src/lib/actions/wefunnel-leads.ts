@@ -41,8 +41,10 @@ export async function submitWeFunnelLead(
   if (!name) {
     return { error: "Escribe tu nombre." };
   }
-  if (!rawWhatsapp && !email) {
-    return { error: "Déjanos un WhatsApp o un email para poder responderte." };
+  // Name and email are the form's two required fields (approved design);
+  // WhatsApp is optional and only adds a channel.
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Escribe un email válido para que puedan responderte." };
   }
 
   const whatsapp = rawWhatsapp ? normalizeWhatsapp(rawWhatsapp) : null;
