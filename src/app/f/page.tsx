@@ -27,7 +27,11 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-const BUY_URL = wefunnelAppUrl("/signup?next=/panel/distribuidor");
+// El botón de compra no decide a dónde va: lo decide /comprar, que mira
+// si ya hay sesión. Apuntaba al registro de WeWebinars, que es otra marca,
+// pregunta por planes de webinar y descarta el ?next que recibía -- así que
+// nadie llegaba nunca a la licencia que había pulsado para comprar.
+const BUY_URL = "/comprar";
 
 const STEPS = [
   {

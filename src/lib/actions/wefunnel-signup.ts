@@ -6,13 +6,33 @@ import { createClient } from "@/lib/supabase/server";
 
 export type WeFunnelSignUpState = { error: string } | { sent: string } | null;
 
-// Signup for someone who arrived through a distributor's gift page.
+// Where the confirmation email lands, by intent. A fixed map and not a path
+// read off the form: that path is written into a link we email, so accepting
+// whatever the browser sent would turn every signup into an open redirect
+// with our own domain in front of it.
+const DESTINATIONS = {
+  // Accepting the gift: creates their page and opens the editor.
+  regalo: "/panel/empezar",
+  // Buying the licence: the only screen that can price it, from the
+  // account's own referral rows.
+  distribuidor: "/panel/distribuidor",
+} as const;
+
+type Intent = keyof typeof DESTINATIONS;
+
+function destinationFor(value: FormDataEntryValue | null): string {
+  const key = String(value ?? "");
+  return DESTINATIONS[key as Intent] ?? DESTINATIONS.regalo;
+}
+
+// Signup for someone arriving from WeFunnels, by either door: accepting a
+// distributor's gift, or buying the licence from the official web.
 //
 // A sibling of auth.ts's signUpWithPassword rather than a flag on it,
-// because the only thing that differs is where the confirmation lands:
-// /panel/empezar, which creates their page and drops them in the editor.
-// The WeWebinars signup goes to /onboarding, which asks about webinars --
-// questions this person has no reason to answer to receive a gift.
+// because the only thing that differs is where the confirmation lands --
+// see DESTINATIONS. The WeWebinars signup goes to /onboarding, which asks
+// about webinars: questions neither of these two people has any reason to
+// answer yet.
 //
 // Everything else is deliberately the same account system: same
 // supabase.auth.signUp, same Turnstile verification, same email
@@ -32,6 +52,7 @@ export async function weFunnelSignUp(
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("name") ?? "").trim().slice(0, 80);
   const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
+  const destination = destinationFor(formData.get("destino"));
 
   if (!fullName) return { error: "Escribe tu nombre." };
   if (!email) return { error: "Escribe tu email." };
@@ -43,7 +64,7 @@ export async function weFunnelSignUp(
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=${encodeURIComponent("/panel/empezar")}`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=${encodeURIComponent(destination)}`,
         ...(captchaToken ? { captchaToken } : {}),
       },
     });

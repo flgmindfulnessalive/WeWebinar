@@ -14,7 +14,12 @@ const FIELD =
 const LABEL = "block text-[13px] font-semibold text-[#D2DFEF]";
 const HELP = "m-0 mt-1.5 text-xs leading-relaxed text-[#8498B4]";
 
-export function WeFunnelSignUpForm() {
+// Two doors into the same form. "regalo" is somebody accepting a
+// distributor's gift; "compra" is somebody buying the licence from the
+// official web. Only the words and the destination differ -- the account,
+// the validation and the confirmation email are one thing.
+export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | "compra" }) {
+  const buying = intent === "compra";
   const [state, formAction, isPending] = useActionState<WeFunnelSignUpState, FormData>(
     weFunnelSignUp,
     null
@@ -40,7 +45,9 @@ export function WeFunnelSignUpForm() {
         </h2>
         <p className="m-0 mt-3 text-[15px] leading-relaxed text-[#B7C7DC]">
           Te mandamos un enlace a <strong className="text-[#F3F7FF]">{state.sent}</strong>.
-          Ábrelo y tu página queda creada, lista para personalizar.
+          {buying
+            ? " Ábrelo y te llevamos a activar tu licencia Distribuidor."
+            : " Ábrelo y tu página queda creada, lista para personalizar."}
         </p>
         <p className={HELP}>
           Si no llega en unos minutos, revisa el correo no deseado.
@@ -52,16 +59,20 @@ export function WeFunnelSignUpForm() {
   return (
     <div className="rounded-[15px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(22px,3vw,30px)]">
       <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
-        Gratis de por vida · Sin tarjeta
+        {buying ? "Paso 1 de 2 · Licencia Distribuidor" : "Gratis de por vida · Sin tarjeta"}
       </p>
       <h1 className="m-0 mt-3 text-[clamp(27px,4vw,36px)] leading-[1.1] font-extrabold tracking-[-0.035em] text-[#F3F7FF]">
-        Crea tu cuenta gratis
+        {buying ? "Crea tu cuenta" : "Crea tu cuenta gratis"}
       </h1>
       <p className="m-0 mt-2.5 text-[15px] leading-relaxed text-[#B7C7DC]">
-        Después podrás personalizar y publicar tu página.
+        {buying
+          ? "El pago viene después, en tu panel. Aquí todavía no se cobra nada."
+          : "Después podrás personalizar y publicar tu página."}
       </p>
 
       <form id="wf-signup-form" action={formAction} className="mt-6 flex flex-col gap-5">
+        {/* Read through a fixed map on the server, never as a path. */}
+        <input type="hidden" name="destino" value={buying ? "distribuidor" : "regalo"} />
         <div>
           <label className={LABEL} htmlFor="wf-name">
             Tu nombre
@@ -151,7 +162,11 @@ export function WeFunnelSignUpForm() {
           disabled={isPending || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}
           className="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] disabled:opacity-60"
         >
-          {isPending ? "Creando tu cuenta…" : "Crear mi cuenta gratis →"}
+          {isPending
+            ? "Creando tu cuenta…"
+            : buying
+              ? "Crear mi cuenta y continuar →"
+              : "Crear mi cuenta gratis →"}
         </button>
 
         <p className="m-0 text-xs leading-relaxed text-[#8498B4]">
@@ -169,7 +184,12 @@ export function WeFunnelSignUpForm() {
 
       <p className="m-0 mt-5 border-t border-[#1F2A3C] pt-5 text-sm text-[#B7C7DC]">
         ¿Ya tienes cuenta?{" "}
-        <a href={wefunnelAppUrl("/login?next=/panel")} className="font-semibold text-[#43E2EE]">
+        <a
+          href={wefunnelAppUrl(
+            `/login?next=${encodeURIComponent(buying ? "/panel/distribuidor" : "/panel")}`
+          )}
+          className="font-semibold text-[#43E2EE]"
+        >
           Inicia sesión
         </a>
       </p>
