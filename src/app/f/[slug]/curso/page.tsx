@@ -77,6 +77,17 @@ export default async function WeFunnelCourseRoomPage({
 
   if (!distributor) notFound();
 
+  // The top of the room funnel (20261007000010). Counted here rather than
+  // in a client effect so an adblocker does not decide whether a visit
+  // happened, and after the two checks above so only a room that actually
+  // resolves is counted. Best-effort: a visitor who came to claim a funnel
+  // is not shown an error because a counter missed.
+  try {
+    await supabase.rpc("wefunnel_record_room_visit", { p_slug: site.slug });
+  } catch (err) {
+    console.error("[wefunnels] room visit not counted:", err);
+  }
+
   // There is one course room, shared, and the link into it goes through
   // ./ver so the referral is stamped before the visitor leaves this host
   // (see 20261007000009). Null only while the course has not been

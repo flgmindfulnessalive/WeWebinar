@@ -7,6 +7,23 @@ import { CopyLink } from "@/components/wefunnels/copy-link";
 
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric" });
 
+// Written from their side, in the order a visitor moves through it. The
+// numbers live in wefunnel_room_funnel (20261007000010).
+const STEPS = [
+  {
+    label: "Abrieron tu sala",
+    body: "Visitas al enlace que repartes.",
+  },
+  {
+    label: "Se registraron al curso",
+    body: "Y te quedaron en Mis registrados.",
+  },
+  {
+    label: "Reclamaron su funnel",
+    body: "Ya tienen su página, de por vida.",
+  },
+];
+
 export default async function PanelSharePage() {
   const viewer = await getPanelViewer();
   if (!viewer) redirect("/login?next=/panel/repartir");
@@ -14,8 +31,15 @@ export default async function PanelSharePage() {
   if (!viewer.distributor) redirect("/panel/distribuidor");
 
   const supabase = await createClient();
-  const { data: stats } = await supabase.rpc("wefunnel_referral_stats");
-  const claimed = stats?.[0]?.arrivals ?? 0;
+  const { data: funnel } = await supabase.rpc("wefunnel_room_funnel");
+  const visits = Number(funnel?.[0]?.visits ?? 0);
+  const registrations = Number(funnel?.[0]?.registrations ?? 0);
+  const claimed = Number(funnel?.[0]?.claims ?? 0);
+
+  // The rate that tells them which half to work on: traffic, or the room.
+  // Shown only once there is traffic, because a percentage of nothing reads
+  // as a judgement.
+  const claimRate = visits > 0 ? Math.round((claimed / visits) * 100) : null;
 
   const siteUrl = `https://${WEFUNNELS_HOST}/${viewer.site.slug}`;
   const roomUrl = `${siteUrl}/curso`;
@@ -48,26 +72,55 @@ export default async function PanelSharePage() {
           Tu funnel personal
         </span>
         <CopyLink url={siteUrl} />
+        {/* No longer "the badge counts too": the foot of a funnel page stopped
+            offering a claim when the tier went invitation-only
+            (20261007000009), so the room above is the only door. Saying
+            otherwise would have them sending traffic to the wrong link. */}
         <span className="text-sm leading-relaxed text-[#6E7694]">
-          Presenta lo que haces y capta interesados en tu propuesta. El badge a su pie
-          lleva al mismo sitio, así que lo que mandes ahí también cuenta.
+          Presenta lo que haces y capta interesados en tu propuesta. Para repartir
+          funnels, el enlace es el de arriba: es el único por el que se reclaman.
         </span>
       </div>
 
-      <div className="flex flex-col gap-2.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
+      {/* The three steps of the room, in the order they happen. Separated
+          because each one fails for a different reason: no visits is a
+          traffic problem, visits without registrations is the room, and
+          registrations without claims is the course. A single "reclamados"
+          number could not tell them which. */}
+      <div className="flex flex-col gap-5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
         <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-          Funnels reclamados
+          Tu embudo
         </span>
-        <span className="text-[58px] leading-none font-extrabold tracking-tighter text-[#2BD7F5] tabular-nums">
-          {claimed}
-        </span>
+        <ol className="m-0 flex list-none flex-col gap-4 p-0 sm:flex-row sm:gap-3">
+          {STEPS.map((step, index) => (
+            <li
+              key={step.label}
+              className="flex min-w-0 flex-1 flex-col gap-1 border-[#1A1A2A] sm:border-l sm:pl-4 sm:first:border-l-0 sm:first:pl-0"
+            >
+              <span
+                className={`text-[44px] leading-none font-extrabold tracking-tighter tabular-nums ${
+                  index === 0 ? "text-[#F4F5FA]" : index === 1 ? "text-[#A9B0C9]" : "text-[#2BD7F5]"
+                }`}
+              >
+                {[visits, registrations, claimed][index]}
+              </span>
+              <span className="text-[15px] font-semibold">{step.label}</span>
+              <span className="text-sm leading-snug text-[#6E7694]">{step.body}</span>
+            </li>
+          ))}
+        </ol>
+        {claimRate !== null && (
+          <span className="text-sm leading-relaxed text-[#6E7694]">
+            De cada 100 personas que abren tu sala, {claimRate} se queda con su funnel.
+          </span>
+        )}
         {/* The sentence that answers the question before it gets asked. The
             giver never sees these people's leads -- each page belongs to the
             account that received it, and that is enforced by the schema, not
             by this screen choosing not to show them. */}
-        <span className="max-w-[46ch] text-[15px] leading-snug text-[#A9B0C9]">
-          personas reclamaron su página con tu enlace. Solo ves cuántas: los registrados
-          de cada funnel son de su dueño, igual que los tuyos son solo tuyos.
+        <span className="max-w-[52ch] border-t border-[#1A1A2A] pt-4 text-[15px] leading-snug text-[#A9B0C9]">
+          De los funnels que repartiste solo ves cuántos: los registrados de cada uno son
+          de su dueño, igual que los tuyos son solo tuyos.
         </span>
       </div>
 

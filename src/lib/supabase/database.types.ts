@@ -1947,6 +1947,7 @@ export interface Database {
           whatsapp: string | null;
           email: string | null;
           answer: string | null;
+          source: "form" | "course";
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]> & {
@@ -1957,6 +1958,27 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: "wefunnel_leads_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_room_visits: {
+        Row: {
+          site_id: string;
+          day: string;
+          views: number;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_room_visits"]["Row"]> & {
+          site_id: string;
+          day: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_room_visits"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_room_visits_site_id_fkey";
             columns: ["site_id"];
             isOneToOne: false;
             referencedRelation: "wefunnel_sites";
@@ -2090,6 +2112,18 @@ export interface Database {
           p_touched_at?: string;
         };
         Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_room_funnel: {
+        Args: Record<string, never>;
+        Returns: {
+          visits: number;
+          registrations: number;
+          claims: number;
+        }[];
+      };
+      wefunnel_record_room_visit: {
+        Args: { p_slug: string };
+        Returns: undefined;
       };
       wefunnel_referral_stats: {
         Args: Record<string, never>;

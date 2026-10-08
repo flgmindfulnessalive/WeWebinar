@@ -103,10 +103,14 @@ export async function recordCourseLeadForReferrer({
 
   if (existing) return;
 
+  // source, not the sentence in answer: the room funnel counts this step
+  // and counting it by matching prose breaks the day somebody rewords it
+  // (20261007000010). Only the service role may write 'course'.
   await admin.from("wefunnel_leads").insert({
     site_id: site.id,
     name,
     email,
+    source: "course",
     answer: "Se registró al curso desde tu sala.",
   });
 }
