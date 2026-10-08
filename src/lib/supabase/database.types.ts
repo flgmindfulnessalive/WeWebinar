@@ -2150,7 +2150,6 @@ export interface Database {
           billing_period: "monthly" | "annual" | null;
           plan_price_usd: number;
           commission_usd: number;
-          payable: boolean;
         }[];
       };
       wefunnel_invitations: {

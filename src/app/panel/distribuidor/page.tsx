@@ -40,18 +40,20 @@ export default async function PanelDistributorPage() {
         ))}
       </div>
 
-      {/* Said as plainly as what they are buying, not in smaller type at the
-          bottom. Hidden, every charge on month four is a surprise and a
-          refund request; said up front it is one of the reasons the offer
-          reads as honest -- and it is true, which no competitor can say. */}
+      {/* Nothing in the offer is conditional any more, so this block says
+          exactly that and stops. It used to end with "the only thing that
+          needs an active plan is collecting the 20%" -- a clause that made
+          WeWebinars something you buy in order to be allowed to get paid,
+          and that at $3 per referred Starter asked most distributors for
+          $15 to collect less than that. */}
       <div className="flex flex-col gap-3 rounded-2xl border border-[#1E4FA8] bg-gradient-to-br from-[#081026] to-[#0D1430] p-6">
         <span className="text-xs font-semibold tracking-[0.08em] text-[#2BD7F5] uppercase">
           Qué no cambia
         </span>
         <span className="text-[16px] leading-snug text-[#D7DCEC]">
-          Tu funnel sigue gratis, el curso sigue siendo tuyo, y tu sala no se apaga nunca
-          — pagues o no pagues una mensualidad después. Lo único que necesita plan activo
-          es cobrar el 20%.
+          Tu funnel sigue gratis, el curso sigue siendo tuyo, tu sala no se apaga nunca y
+          tu 20% se sigue pagando — pagues o no pagues una mensualidad después. No hay
+          nada que mantener activo.
         </span>
       </div>
 
@@ -61,13 +63,14 @@ export default async function PanelDistributorPage() {
         <span className="text-[17px] text-[#A9B0C9]">una sola vez, de por vida</span>
       </div>
 
-      {/* Said plainly and up front, like the price. The one condition in the
-          whole offer is this one, and burying it would turn month two into
-          a surprise and a refund request. */}
+      {/* Still said up front, because a charge on month three that nobody
+          mentioned is a refund request. What changed is that it is now an
+          offer and not a condition: the two months are a trial of the
+          platform, and nothing in the tier stops if they end. */}
       <p className="m-0 text-[15px] leading-relaxed text-[#A9B0C9]">
-        Desde el tercer mes, $15 al mes. Repartir funnels y tu sala del curso no dependen
-        de eso y no se apagan nunca; el plan activo es lo que mantiene tu 20% corriendo —
-        y para entonces ya sabrás si te está entrando.
+        Los 2 meses de Starter son para que pruebes la plataforma. Si te sirve, son $15 al
+        mes desde el tercero; si no, no pagas nada y no pierdes nada — ni los funnels, ni
+        la sala, ni tu 20%.
       </p>
 
       <DistributorCheckoutButton />

@@ -319,8 +319,18 @@ grant execute on function public.wefunnel_invitations() to authenticated;
 -- distributor is owed a commission, not a contact list, and the people
 -- behind these rows never agreed to be anybody's lead.
 -- =========================================================================
--- Dropped rather than replaced: the return type gains billing_period and
--- payable, and Postgres refuses to redefine OUT parameters in place.
+-- Dropped rather than replaced: the return type gains billing_period, and
+-- Postgres refuses to redefine OUT parameters in place.
+--
+-- There is no `payable` column, and that is the point. The commission used
+-- to accrue only while the distributor's own plan was active, which made
+-- WeWebinars something you buy in order to be allowed to collect. The
+-- arithmetic said what the framing already felt like: at 20% of a $15
+-- Starter, a referral is worth $3 a month, so the plan only paid for itself
+-- past five paying referrals -- and the product deliberately lets a
+-- referred person stay free forever, so most distributors would sit below
+-- that line being asked for $15 to collect $6. The 20% is now
+-- unconditional, for life, like everything else the $99 buys.
 drop function if exists public.wefunnel_commissions();
 
 create function public.wefunnel_commissions()
@@ -330,8 +340,7 @@ returns table (
   plan_name text,
   billing_period text,
   plan_price_usd numeric,
-  commission_usd numeric,
-  payable boolean
+  commission_usd numeric
 )
 language plpgsql
 stable
@@ -342,7 +351,6 @@ declare
   COMMISSION_RATE constant numeric := 0.20;
   v_site_id uuid;
   v_account_id uuid;
-  v_payable boolean;
 begin
   select u.account_id, s.id into v_account_id, v_site_id
   from public.users u
@@ -358,11 +366,6 @@ begin
   if not exists (select 1 from public.wefunnel_distributors where account_id = v_account_id) then
     return;
   end if;
-
-  select (a.plan_id is not null and a.subscription_status = 'active')
-  into v_payable
-  from public.accounts a
-  where a.id = v_account_id;
 
   return query
     select
@@ -384,8 +387,7 @@ begin
           2
         )
         else 0
-      end,
-      coalesce(v_payable, false)
+      end
     from public.wefunnel_referrals r
     join public.accounts a on a.id = r.referred_account_id
     left join public.plans p on p.id = a.plan_id
