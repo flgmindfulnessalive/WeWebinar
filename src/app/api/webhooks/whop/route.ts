@@ -346,11 +346,12 @@ export async function POST(request: Request): Promise<Response> {
         });
       }
     } else if (event.data.metadata?.product === WEFUNNELS_DISTRIBUTOR_METADATA) {
-      // The $100 lifetime tier. Identified by our own metadata rather than
-      // by plan id, because the plan id lives in an env var that is not set
-      // in every environment -- and because a one-time purchase has no
-      // plan_key for syncMembership to resolve, so routing it there would
-      // write a nonsense subscription_status.
+      // The lifetime licence ($199 public, $100 by invitation). Identified
+      // by our own metadata rather than by plan id, because the plan ids
+      // live in env vars that are not set in every environment -- and
+      // because a one-time purchase has no plan_key for syncMembership to
+      // resolve, so routing it there would write a nonsense
+      // subscription_status.
       //
       // Only "activated" does anything: the rights are lifetime, so a
       // deactivation (a membership record closing after a one-time sale)
