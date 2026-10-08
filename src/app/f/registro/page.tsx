@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
-import { PanelTop, ChartNoAxesCombined, Play } from "lucide-react";
+import { Gift, PanelTop, ChartNoAxesCombined, Play } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
@@ -37,6 +37,27 @@ const BENEFITS = [
   },
 ];
 
+// Lo que compra quien llega por la web oficial. Sin precio: lo decide el
+// panel a partir de las filas de referido de la cuenta, y una cifra escrita
+// aquí estaría afirmando un derecho que esta pantalla no puede conceder.
+const LICENSE = [
+  {
+    Icon: Gift,
+    title: "Tu página de regalo",
+    body: "Reparte funnels sin límite, de por vida.",
+  },
+  {
+    Icon: ChartNoAxesCombined,
+    title: "Tu panel y tus registros",
+    body: "Quién abre tu página y quién se queda.",
+  },
+  {
+    Icon: Play,
+    title: "Tu sala del curso",
+    body: "Y 2 meses de Starter de WeWebinars incluidos.",
+  },
+];
+
 function initials(name: string): string {
   return name
     .split(/\s+/)
@@ -46,7 +67,15 @@ function initials(name: string): string {
     .join("");
 }
 
-export default async function WeFunnelSignUpPage() {
+export default async function WeFunnelSignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ compra?: string }>;
+}) {
+  // ?compra=1 llega desde /comprar, que es donde apunta "Quiero ser
+  // Distribuidor" en la web oficial. Cambia las palabras y el destino del
+  // correo de confirmación; la cuenta que se crea es la misma.
+  const buying = (await searchParams).compra === "1";
   // Who is giving the gift, read from the cookie and confirmed against the
   // database. A slug that no longer resolves, a suspended page or an owner
   // without the licence simply leaves the block out: the screen never names
@@ -54,7 +83,10 @@ export default async function WeFunnelSignUpPage() {
   const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
   let referrer: string | null = null;
 
-  if (touch) {
+  // Quien viene a comprar no está recibiendo un regalo, así que la tarjeta
+  // de quien invita no le dice nada. Su precio sigue decidiéndose en el
+  // panel con esas mismas filas, que es donde importa.
+  if (touch && !buying) {
     const supabase = await createClient();
     const [{ data: open }, { data: site }] = await Promise.all([
       supabase.rpc("wefunnel_invitation_open", { p_slug: touch.slug }),
@@ -79,23 +111,39 @@ export default async function WeFunnelSignUpPage() {
       <main className="grid items-start gap-[clamp(28px,4vw,46px)] px-[clamp(20px,5vw,34px)] py-[clamp(28px,5vw,52px)] lg:grid-cols-[1fr_1.05fr]">
         <section className="min-w-0">
           <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
-            Tu regalo empieza aquí
+            {buying ? "Licencia Distribuidor" : "Tu regalo empieza aquí"}
           </p>
           <h2 className="m-0 mt-3.5 text-[clamp(30px,4.6vw,46px)] leading-[1.06] font-extrabold tracking-[-0.04em] text-[#F3F7FF] text-balance">
-            Tu funnel.
-            <br />
-            Tu panel.
-            <br />
-            <span className="bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent">
-              Tu próximo paso.
-            </span>
+            {buying ? (
+              <>
+                Un solo pago.
+                <br />
+                Regalos ilimitados.
+                <br />
+                <span className="bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent">
+                  De por vida.
+                </span>
+              </>
+            ) : (
+              <>
+                Tu funnel.
+                <br />
+                Tu panel.
+                <br />
+                <span className="bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent">
+                  Tu próximo paso.
+                </span>
+              </>
+            )}
           </h2>
           <p className="m-0 mt-4 max-w-[42ch] text-[15px] leading-relaxed text-[#B7C7DC]">
-            Todo lo que recibes para empezar a prospectar con tu propio enlace.
+            {buying
+              ? "Primero tu cuenta, después el pago. Todo en tu panel, sin salir de aquí."
+              : "Todo lo que recibes para empezar a prospectar con tu propio enlace."}
           </p>
 
           <div className="mt-7 flex flex-col gap-5">
-            {BENEFITS.map(({ Icon, title, body }) => (
+            {(buying ? LICENSE : BENEFITS).map(({ Icon, title, body }) => (
               <div key={title} className="flex min-w-0 items-start gap-3.5">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] border border-[#2D3E57] bg-[#0E192A]">
                   <Icon className="h-[18px] w-[18px] text-[#73E5EC]" aria-hidden="true" />
@@ -127,7 +175,7 @@ export default async function WeFunnelSignUpPage() {
         </section>
 
         <section className="min-w-0">
-          <WeFunnelSignUpForm />
+          <WeFunnelSignUpForm intent={buying ? "compra" : "regalo"} />
         </section>
       </main>
 
