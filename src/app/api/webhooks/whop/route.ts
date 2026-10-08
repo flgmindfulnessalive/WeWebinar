@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { unwrapWebhook, WebhookVerificationError } from "@whop/sdk/helpers";
 
-import { planKeyForWhopPlanId, STARTER_KIT_PRODUCT_ID } from "@/lib/whop";
+import {
+  billingPeriodForWhopPlanId,
+  planKeyForWhopPlanId,
+  STARTER_KIT_PRODUCT_ID,
+  WEFUNNELS_DISTRIBUTOR_METADATA,
+} from "@/lib/whop";
+import { activateWeFunnelsDistributor } from "@/lib/wefunnels/activate-distributor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   accountActivatedEmail,
@@ -186,6 +192,9 @@ async function syncMembership(payload: WhopWebhookPayload) {
   const newStatus = mapWhopStatus(payload.data.status);
   if (newStatus === null) return; // "drafted" -- nothing to sync yet
   const planKey = payload.data.plan ? planKeyForWhopPlanId(payload.data.plan.id) : undefined;
+  const billingPeriod = payload.data.plan
+    ? billingPeriodForWhopPlanId(payload.data.plan.id)
+    : undefined;
 
   const { data: before } = await admin
     .from("accounts")
@@ -218,6 +227,15 @@ async function syncMembership(payload: WhopWebhookPayload) {
   if (planKey) {
     const { data: plan } = await admin.from("plans").select("id").eq("key", planKey).single();
     if (plan) update.plan_id = plan.id;
+  }
+
+  // Stored alongside the plan, never on its own: the referral commission is
+  // 20% of what this account actually pays, and the monthly and annual
+  // prices are different bases. Undefined only for a membership whose plan
+  // id is not one of ours, where overwriting a known period with a guess
+  // would be worse than leaving it.
+  if (billingPeriod) {
+    update.billing_period = billingPeriod;
   }
 
   const { error } = await admin.from("accounts").update(update).eq("id", accountId);
@@ -325,6 +343,29 @@ export async function POST(request: Request): Promise<Response> {
           whopUserId: event.data.user?.id ?? null,
           email: event.data.user?.email ?? null,
           name: event.data.user?.name ?? null,
+        });
+      }
+    } else if (event.data.metadata?.product === WEFUNNELS_DISTRIBUTOR_METADATA) {
+      // The lifetime licence ($199 public, $100 by invitation). Identified
+      // by our own metadata rather than by plan id, because the plan ids
+      // live in env vars that are not set in every environment -- and
+      // because a one-time purchase has no plan_key for syncMembership to
+      // resolve, so routing it there would write a nonsense
+      // subscription_status.
+      //
+      // Only "activated" does anything: the rights are lifetime, so a
+      // deactivation (a membership record closing after a one-time sale)
+      // has nothing to unwind. A refund is a different event entirely and
+      // is already handled by DISPUTE_EVENTS above.
+      if (event.type === "membership.activated") {
+        await activateWeFunnelsDistributor({
+          membershipId: event.data.id,
+          accountId: resolveAccountId(event),
+          // Defaults to the public price when the metadata is missing or
+          // unrecognised: 199 is the price nobody has to qualify for, so an
+          // unreadable sale lands on the one that needs no entitlement.
+          licenseSource:
+            event.data.metadata?.license_source === "invited" ? "invited" : "public",
         });
       }
     } else {

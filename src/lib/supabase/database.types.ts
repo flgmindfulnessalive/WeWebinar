@@ -11,6 +11,7 @@ export type Json =
   | Json[];
 
 export type UserRole = "owner" | "editor" | "viewer";
+export type WeFunnelSiteStatus = "draft" | "published";
 export type AccountLocale = "es" | "en";
 export type SubscriptionStatus =
   | "trialing"
@@ -186,6 +187,7 @@ export interface Database {
           branding: Json;
           billing_customer_id: string | null;
           billing_subscription_id: string | null;
+          billing_period: "monthly" | "annual" | null;
           subscription_status: SubscriptionStatus;
           plan_id: string | null;
           timezone_default: string;
@@ -197,6 +199,7 @@ export interface Database {
           trial_warning_sent_at: string | null;
           last_digest_sent_at: string | null;
           activation_nudge_sent_at: string | null;
+          attendee_overage_nudge_sent_at: string | null;
           digest_unsubscribed_at: string | null;
           unsubscribe_token: string;
           brevo_api_key: string | null;
@@ -1691,6 +1694,305 @@ export interface Database {
           },
         ];
       };
+      wefunnel_reserved_slugs: {
+        Row: {
+          slug: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_reserved_slugs"]["Row"]
+        > & {
+          slug: string;
+          reason: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_reserved_slugs"]["Row"]
+        >;
+        Relationships: [];
+      };
+      wefunnel_sites: {
+        Row: {
+          id: string;
+          account_id: string;
+          slug: string;
+          status: WeFunnelSiteStatus;
+          display_name: string;
+          location: string | null;
+          headline: string | null;
+          bullets: string[];
+          video_url: string | null;
+          accent: string;
+          contact_whatsapp: string | null;
+          question_label: string | null;
+          description: string | null;
+          photo_url: string | null;
+          pixel_provider: string | null;
+          pixel_id: string | null;
+          suspended_at: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_sites"]["Row"]> & {
+          account_id: string;
+          slug: string;
+          display_name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_sites"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_sites_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_suspensions: {
+        Row: {
+          id: string;
+          site_id: string;
+          rule: string;
+          note: string | null;
+          suspended_by: string | null;
+          lifted_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_suspensions"]["Row"]
+        > & {
+          site_id: string;
+          rule: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_suspensions"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_suspensions_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_blocked_terms: {
+        Row: {
+          term: string;
+          severity: "review" | "block";
+          rule: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_blocked_terms"]["Row"]
+        > & {
+          term: string;
+          severity: "review" | "block";
+          rule: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_blocked_terms"]["Row"]
+        >;
+        Relationships: [];
+      };
+      wefunnel_reviews: {
+        Row: {
+          id: string;
+          site_id: string;
+          source: "filter" | "report";
+          rule: string;
+          detail: string | null;
+          status: "open" | "cleared" | "actioned";
+          resolved_by: string | null;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_reviews"]["Row"]> & {
+          site_id: string;
+          source: "filter" | "report";
+          rule: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_reviews"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_reviews_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_referrals: {
+        Row: {
+          id: string;
+          referrer_site_id: string;
+          referred_account_id: string;
+          touched_at: string;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_referrals"]["Row"]
+        > & {
+          referrer_site_id: string;
+          referred_account_id: string;
+          touched_at: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_referrals"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_referrals_referrer_site_id_fkey";
+            columns: ["referrer_site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "wefunnel_referrals_referred_account_id_fkey";
+            columns: ["referred_account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_distributors: {
+        Row: {
+          account_id: string;
+          whop_membership_id: string | null;
+          activated_at: string;
+          starter_until: string | null;
+          created_at: string;
+                  license_source: "public" | "invited" | "granted" | null;
+          license_price_usd: number | null;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_distributors"]["Row"]
+        > & {
+          account_id: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_distributors"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_distributors_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_distributor_claims: {
+        Row: {
+          membership_id: string;
+          claimed_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["wefunnel_distributor_claims"]["Row"]
+        > & {
+          membership_id: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["wefunnel_distributor_claims"]["Row"]
+        >;
+        Relationships: [];
+      };
+      attendee_overage_days: {
+        Row: {
+          webinar_id: string;
+          account_id: string;
+          day: string;
+          plan_limit: number;
+          peak_concurrent: number;
+          admissions: number;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database["public"]["Tables"]["attendee_overage_days"]["Row"]
+        > & {
+          webinar_id: string;
+          account_id: string;
+          day: string;
+          plan_limit: number;
+          peak_concurrent: number;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["attendee_overage_days"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "attendee_overage_days_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendee_overage_days_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_leads: {
+        Row: {
+          id: string;
+          site_id: string;
+          name: string;
+          whatsapp: string | null;
+          email: string | null;
+          answer: string | null;
+          source: "form" | "course";
+          status: "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]> & {
+          site_id: string;
+          name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_leads_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wefunnel_site_visits: {
+        Row: {
+          site_id: string;
+          surface: "funnel" | "gift";
+          day: string;
+          views: number;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_site_visits"]["Row"]> & {
+          site_id: string;
+          surface: "funnel" | "gift";
+          day: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_site_visits"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_site_visits_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       custom_domain_lookup: {
@@ -1808,6 +2110,127 @@ export interface Database {
           p_locale?: AccountLocale;
         };
         Returns: Database["public"]["Tables"]["accounts"]["Row"];
+      };
+      claim_wefunnel_site: {
+        Args: {
+          p_display_name: string;
+          p_slug: string;
+          p_ref_slug?: string;
+          p_touched_at?: string;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_start_account: {
+        Args: { p_name: string };
+        Returns: string;
+      };
+      wefunnel_course_progress: {
+        Args: { p_webinar_id: string };
+        Returns: {
+          registered: boolean;
+          position_seconds: number | null;
+          duration_seconds: number | null;
+        }[];
+      };
+      wefunnel_site_stats: {
+        Args: { p_days?: number };
+        Returns: {
+          visits: number;
+          leads: number;
+          gift_visits: number;
+          claims: number;
+        }[];
+      };
+      wefunnel_record_visit: {
+        Args: { p_slug: string; p_surface: "funnel" | "gift" };
+        Returns: undefined;
+      };
+      wefunnel_license_price: {
+        Args: Record<string, never>;
+        Returns: {
+          source: "public" | "invited";
+          price_usd: number;
+          public_price_usd: number;
+        }[];
+      };
+      wefunnel_set_lead_status: {
+        Args: { p_lead_id: string; p_status: string };
+        Returns: boolean;
+      };
+      wefunnel_referral_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          arrivals: number;
+          paying: number;
+          monthly_usd: number;
+        }[];
+      };
+      wefunnel_activate_distributor: {
+        Args: {
+          p_account_id: string;
+          p_membership_id: string;
+          p_included_months?: number;
+          p_license_source?: "public" | "invited" | "granted";
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
+      };
+      wefunnel_commissions: {
+        Args: Record<string, never>;
+        Returns: {
+          referred_at: string;
+          is_paying: boolean;
+          plan_name: string | null;
+          billing_period: "monthly" | "annual" | null;
+          plan_price_usd: number;
+          commission_usd: number;
+        }[];
+      };
+      wefunnel_invitation_open: {
+        Args: { p_slug: string };
+        Returns: boolean;
+      };
+      wefunnel_grant_distributor: {
+        Args: { p_account_id: string; p_included_months?: number };
+        Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
+      };
+      wefunnel_slug_available: {
+        Args: { p_slug: string };
+        Returns: boolean;
+      };
+      wefunnel_publish_site: {
+        Args: { p_published: boolean };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_report_site: {
+        Args: { p_slug: string; p_note: string };
+        Returns: undefined;
+      };
+      wefunnel_set_suspended: {
+        Args: {
+          p_site_id: string;
+          p_suspended: boolean;
+          p_rule?: string;
+          p_note?: string;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_clear_review: {
+        Args: { p_review_id: string };
+        Returns: undefined;
+      };
+      revert_canceled_account_to_wefunnels: {
+        Args: { p_account_id: string };
+        Returns: boolean;
+      };
+      accounts_over_attendee_limit: {
+        Args: { p_days?: number; p_min_days?: number };
+        Returns: {
+          account_id: string;
+          days_over: number;
+          peak_concurrent: number;
+          plan_limit: number;
+          admissions: number;
+        }[];
       };
       record_growth_event: {
         Args: {

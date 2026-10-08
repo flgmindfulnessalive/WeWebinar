@@ -1,0 +1,36 @@
+-- =========================================================================
+-- One course room for everybody, not one per distributor.
+--
+-- 20261007000005 left wefunnel_distributors.course_webinar_id as a place
+-- to put "their own copy of the course, once that webinar exists to
+-- duplicate". The copy was built, and then taken out again, because
+-- measuring what distribution actually costs said the per-distributor room
+-- was the wrong shape.
+--
+-- A gifted funnel is nearly free: video_provider only admits youtube,
+-- vimeo and direct_url, so the hosting is somebody else's, and the free
+-- tier sends no mail at all. A course room is not. Every attendee writes
+-- about a hundred viewer_events rows -- one heartbeat per 15 seconds, and
+-- nothing prunes that table -- and pulls three to five emails that
+-- get_due_reminder_recipients sends without ever looking at the account's
+-- plan or subscription status. One room per buyer turned a single payment
+-- into a permanent, unbounded obligation, multiplied by every sale.
+--
+-- One room serves the same promise. "Tu sala con el curso, a tu nombre" is
+-- about the address and the name, and wefunnels.wewebinars.com/<nombre>/
+-- curso still carries both: the invite page has the distributor's name and
+-- photo, and /<nombre>/curso/ver stamps their referral before handing the
+-- visitor to the course. What a buyer loses is a webinar object inside a
+-- WeWebinars dashboard they can only open while their plan is active --
+-- which is also the hook for wanting the plan.
+--
+-- The contact is not lost either, and is better placed than a copy would
+-- have put it: registering for the course writes a wefunnel_leads row on
+-- the referrer's site, which their WeFunnels panel lists with no plan at
+-- all, whereas a copied room put those people in a dashboard that closes
+-- the day the subscription lapses.
+--
+-- So the column goes. Dropped rather than left null forever: a column the
+-- code never writes is a question every future reader has to answer twice.
+-- =========================================================================
+alter table public.wefunnel_distributors drop column if exists course_webinar_id;

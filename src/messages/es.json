@@ -444,7 +444,8 @@
     "summary": "Resumen",
     "accounts": "Cuentas",
     "leads": "Leads Enterprise",
-    "plans": "Planes"
+    "plans": "Planes",
+    "wefunnels": "WeFunnels"
   },
   "MobileNav": {
     "openMenu": "Abrir menú",
@@ -1014,6 +1015,7 @@
     "planTitle": "Plan {plan}",
     "activeWebinarsCount": "{count} / {max} webinars activos.",
     "monthlyRegistrantsCount": "{count} / {max} registrados este mes.",
+    "attendeeOverageNotice": "Este mes pasaste el tope de asistentes simultáneos en {days} día(s): llegaste a {peak} con un plan que incluye {max}. No rechazamos a nadie, pero conviene revisar el plan.",
     "billingNotActivated": "Todavía no activaste el cobro de tu suscripción.",
     "changePlanTitle": "Cambiar de plan",
     "changeToPlan": "Cambiar a {plan}",

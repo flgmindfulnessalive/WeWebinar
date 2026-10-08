@@ -14,11 +14,13 @@ import type { LaunchpadStepProgress } from "@/lib/launchpad/types";
 import {
   accountDeletionWarningEmail,
   activationNudgeEmail,
+  attendeeLimitUpgradeEmail,
   domainVerificationFailedEmail,
   launchpadReminderEmail,
   monthlyDigestEmail,
   trialEndedEmail,
   trialExpiringEmail,
+  wefunnelRetentionNoticeEmail,
 } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
@@ -63,6 +65,27 @@ const LAUNCHPAD_STEP_LABELS_EN: Record<string, string> = {
 };
 function launchpadStepLabel(stepKey: string, locale: AccountLocale): string {
   return (locale === "en" ? LAUNCHPAD_STEP_LABELS_EN : LAUNCHPAD_STEP_LABELS_ES)[stepKey];
+}
+
+// The accounts in this list that will never be purged, because they hold
+// something sold outright: a WeFunnels page, or the distributor tier.
+// One round trip for the whole list rather than a query per account --
+// these lists are small, but the purge loop walks them twice.
+async function accountsKeepingWeFunnels(
+  admin: SupabaseClient<Database>,
+  accountIds: string[]
+): Promise<Set<string>> {
+  if (accountIds.length === 0) return new Set();
+
+  const [{ data: sites }, { data: distributors }] = await Promise.all([
+    admin.from("wefunnel_sites").select("account_id").in("account_id", accountIds),
+    admin.from("wefunnel_distributors").select("account_id").in("account_id", accountIds),
+  ]);
+
+  return new Set([
+    ...(sites ?? []).map((row) => row.account_id),
+    ...(distributors ?? []).map((row) => row.account_id),
+  ]);
 }
 
 function isAuthorized(request: Request): boolean {
@@ -465,6 +488,95 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Attendee-limit upgrade nudge: the commercial half of the soft cap
+  // in 20261007000007. The database admits registrants above the plan's
+  // concurrent limit and records the day it happened; this notices when
+  // that has become a habit rather than one good afternoon, and asks the
+  // owner to move up a plan.
+  //
+  // Re-sendable, unlike the activation nudge: being over the line for a
+  // week in March and again in September is two conversations. The claim
+  // column is the same claim-before-send pattern, just with a cooldown
+  // instead of a null check.
+  const OVERAGE_WINDOW_DAYS = 7;
+  const OVERAGE_MIN_DAYS = 3;
+  const OVERAGE_NUDGE_COOLDOWN_DAYS = 30;
+  let attendeeLimitNudgesSent = 0;
+
+  const { data: overAccounts, error: overError } = await admin.rpc(
+    "accounts_over_attendee_limit",
+    { p_days: OVERAGE_WINDOW_DAYS, p_min_days: OVERAGE_MIN_DAYS }
+  );
+  if (overError) {
+    errors.push(`attendee overage query: ${overError.message}`);
+  }
+
+  const overageCooldown = new Date(
+    now.getTime() - OVERAGE_NUDGE_COOLDOWN_DAYS * DAY_MS
+  ).toISOString();
+
+  for (const row of overAccounts ?? []) {
+    const { data: account } = await admin
+      .from("accounts")
+      .select("id, name, locale, subscription_status, attendee_overage_nudge_sent_at")
+      .eq("id", row.account_id)
+      .maybeSingle();
+
+    // A canceled or suspended account is not a plan conversation.
+    if (!account) continue;
+    if (!["trialing", "active"].includes(account.subscription_status)) continue;
+    if (
+      account.attendee_overage_nudge_sent_at &&
+      account.attendee_overage_nudge_sent_at > overageCooldown
+    ) {
+      continue;
+    }
+
+    // Claim on the timestamp being what we just read, so two overlapping
+    // ticks cannot both send.
+    const claim = admin
+      .from("accounts")
+      .update({ attendee_overage_nudge_sent_at: now.toISOString() })
+      .eq("id", account.id);
+    const { data: claimed, error: claimError } = await (account.attendee_overage_nudge_sent_at
+      ? claim.eq("attendee_overage_nudge_sent_at", account.attendee_overage_nudge_sent_at)
+      : claim.is("attendee_overage_nudge_sent_at", null)
+    )
+      .select("id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`attendee nudge ${account.id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", account.id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        const { subject, html } = attendeeLimitUpgradeEmail(
+          account.name,
+          {
+            daysOver: row.days_over,
+            peakConcurrent: row.peak_concurrent,
+            planLimit: row.plan_limit,
+          },
+          account.locale
+        );
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      attendeeLimitNudgesSent++;
+    } catch (err) {
+      errors.push(
+        `attendee nudge ${account.id}: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
   // --- Cancellation retention: a canceled Whop subscription (billing
   // lapse, self-serve) keeps its data for RETENTION_DAYS so a reactivation
   // restores everything exactly as it was, warns the owner
@@ -489,6 +601,17 @@ export async function GET(request: Request) {
     .is("deletion_warning_sent_at", null)
     .not("canceled_at", "is", null)
     .lte("canceled_at", warningCutoff);
+
+  // Which of these are never going to be deleted: an account with a
+  // WeFunnels page or the distributor tier reverts to the free tier
+  // instead (20261007000008). They get a different email, because telling
+  // somebody their account is about to be deleted when it is not is a lie
+  // they can check -- and the one thing they would do about it, reactivate
+  // in a panic, is exactly what we should not be selling them.
+  const keepsWeFunnels = await accountsKeepingWeFunnels(
+    admin,
+    (dueForWarning ?? []).map((a) => a.id)
+  );
 
   for (const account of dueForWarning ?? []) {
     const { data: claimed, error: claimError } = await admin
@@ -519,7 +642,9 @@ export async function GET(request: Request) {
               DAY_MS
           )
         );
-        const { subject, html } = accountDeletionWarningEmail(account.name, daysLeft, account.locale);
+        const { subject, html } = keepsWeFunnels.has(account.id)
+          ? wefunnelRetentionNoticeEmail(account.name, daysLeft, account.locale)
+          : accountDeletionWarningEmail(account.name, daysLeft, account.locale);
         await sendEmail({ to: owner.email, subject, html });
       }
       deletionWarningsSent++;
@@ -538,8 +663,28 @@ export async function GET(request: Request) {
     .not("canceled_at", "is", null)
     .lte("canceled_at", purgeCutoff);
 
+  let accountsRevertedToWeFunnels = 0;
+
   for (const account of dueForPurge ?? []) {
     try {
+      // An account with a WeFunnels page or the distributor tier is not
+      // purged at all: it goes back to the free tier with its page, its
+      // leads and its entitlement intact, and only its own webinars are
+      // archived. Those were sold outright, and a canceled subscription
+      // is not a reason to take them back.
+      const { data: reverted, error: revertError } = await admin.rpc(
+        "revert_canceled_account_to_wefunnels",
+        { p_account_id: account.id }
+      );
+      if (revertError) {
+        errors.push(`purge ${account.id}: ${revertError.message}`);
+        continue;
+      }
+      if (reverted) {
+        accountsRevertedToWeFunnels++;
+        continue;
+      }
+
       // Re-check status + age in the delete's own filter, not just the
       // select above -- a webhook could have reactivated this account in
       // the moments between building this list and reaching it here, and
@@ -698,8 +843,10 @@ export async function GET(request: Request) {
     trialsCanceled,
     digestsSent,
     activationNudgesSent,
+    attendeeLimitNudgesSent,
     deletionWarningsSent,
     accountsPurged,
+    accountsRevertedToWeFunnels,
     domainAlertsSent,
     launchpadRemindersSent,
     errors,
