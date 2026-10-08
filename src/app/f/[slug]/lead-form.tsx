@@ -3,11 +3,8 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { FIELD, LABEL } from "@/components/wefunnels/brand";
 import { submitWeFunnelLead, type WeFunnelLeadState } from "@/lib/actions/wefunnel-leads";
-
-const FIELD =
-  "w-full rounded-[10px] border border-[#23233A] bg-[#050509] px-3.5 py-3.5 text-[16px] text-white outline-none focus-visible:border-[#2BD7F5]";
-const LABEL = "text-[13px] font-semibold text-[#A9B0C9]";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -15,9 +12,9 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-[11px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-5 py-4 text-[16px] font-semibold text-white disabled:opacity-60"
+      className="wf-btn-primary mt-1 min-h-[48px] w-full rounded-lg px-4 py-3 text-[15px] font-bold disabled:opacity-60"
     >
-      {pending ? "Enviando…" : "Enviar"}
+      {pending ? "Enviando…" : "Quiero más información →"}
     </button>
   );
 }
@@ -33,53 +30,41 @@ export function LeadForm({
   questionLabel: string | null;
   disabled: boolean;
 }) {
-  const [state, formAction] = useActionState<WeFunnelLeadState, FormData>(
-    submitWeFunnelLead,
-    null
-  );
+  const [state, formAction] = useActionState<WeFunnelLeadState, FormData>(submitWeFunnelLead, null);
+  const firstName = ownerName.split(/\s+/)[0] ?? ownerName;
 
-  // The thank-you screen replaces the form in place, on the same URL. It
-  // never becomes its own page: nothing extra to moderate, the back button
-  // doesn't resubmit, and this state change is the conversion event an
-  // owner's ad pixel fires on.
+  // Confirmation replaces the form in place, on the same URL: nothing extra
+  // to moderate, the back button doesn't resubmit, and this state change is
+  // the conversion event an owner's ad pixel fires on.
   if (state && "success" in state) {
     return (
-      <section className="mt-7 flex flex-col gap-4 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-5">
-        <span
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA]"
-          aria-hidden="true"
-        >
-          <svg width="20" height="15" viewBox="0 0 20 15" fill="none">
-            <path
-              d="M2 7.5L7.5 13L18 2"
-              stroke="#FFFFFF"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+      <section
+        className="mt-7 flex flex-col gap-4 rounded-[13px] border border-[#35445d] bg-[#0d1727] p-5"
+        role="status"
+        aria-live="polite"
+      >
+        <span className="wf-btn-primary inline-grid h-11 w-11 place-items-center rounded-full text-[18px] font-bold" aria-hidden="true">
+          ✓
         </span>
-        <h2 className="m-0 text-[24px] leading-tight font-extrabold tracking-tight">
-          Listo, ya tengo tus datos
+        <h2 className="m-0 text-[24px] leading-tight font-bold tracking-tight text-[#f2f7ff]">
+          Listo, recibí tus datos
         </h2>
         {state.whatsappUrl ? (
           <>
-            <p className="m-0 text-[16px] leading-relaxed text-[#A9B0C9]">
-              Si quieres, escríbeme ahora y empezamos hoy mismo. El mensaje ya va escrito.
+            <p className="m-0 text-[15px] leading-relaxed text-[#b4c6dc]">
+              {firstName} se pondrá en contacto contigo. Si prefieres, escríbele ahora: el mensaje ya
+              va escrito.
             </p>
             <a
               href={state.whatsappUrl}
-              className="rounded-[13px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-5 py-4 text-center text-[17px] font-semibold text-white no-underline"
+              className="wf-btn-primary rounded-lg px-5 py-3.5 text-center text-[15px] font-bold no-underline"
             >
-              Escribirle a {ownerName.split(/\s+/)[0]} por WhatsApp
+              Escribirle a {firstName} por WhatsApp
             </a>
-            <p className="m-0 text-sm leading-relaxed text-[#6E7694]">
-              Si prefieres esperar, {ownerName.split(/\s+/)[0]} te escribe.
-            </p>
           </>
         ) : (
-          <p className="m-0 text-[16px] leading-relaxed text-[#A9B0C9]">
-            {ownerName.split(/\s+/)[0]} te escribirá pronto.
+          <p className="m-0 text-[15px] leading-relaxed text-[#b4c6dc]">
+            {firstName} se pondrá en contacto contigo sobre esta propuesta.
           </p>
         )}
       </section>
@@ -87,58 +72,50 @@ export function LeadForm({
   }
 
   return (
-    <form
-      action={formAction}
-      className="mt-7 flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-5"
-    >
-      <h2 className="m-0 text-[19px] font-bold tracking-tight">
-        Déjame tus datos y te escribo
-      </h2>
+    <form action={formAction} className="mt-7 flex flex-col gap-3.5 border-t border-[#35445d] pt-6">
       <input type="hidden" name="siteId" value={siteId} />
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="wf-name" className={LABEL}>
-          Tu nombre
-        </label>
-        <input id="wf-name" name="name" type="text" required className={FIELD} />
+      <div>
+        <label htmlFor="wf-name" className={LABEL}>Tu nombre</label>
+        <input id="wf-name" name="name" type="text" required maxLength={120} autoComplete="name" placeholder="¿Cómo te llamas?" className={FIELD} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div>
+        <label htmlFor="wf-email" className={LABEL}>Email</label>
+        <input id="wf-email" name="email" type="email" required maxLength={320} autoComplete="email" placeholder="tu@email.com" className={FIELD} />
+      </div>
+
+      <div>
         <label htmlFor="wf-whatsapp" className={LABEL}>
-          Tu WhatsApp
+          WhatsApp <span className="font-normal text-[#a8bdd5]">· opcional</span>
         </label>
-        <input id="wf-whatsapp" name="whatsapp" type="tel" inputMode="tel" className={FIELD} />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="wf-email" className={LABEL}>
-          Tu email
-        </label>
-        <input id="wf-email" name="email" type="email" className={FIELD} />
+        <input id="wf-whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" maxLength={32} className={FIELD} />
       </div>
 
       {questionLabel && (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="wf-answer" className={LABEL}>
-            {questionLabel}
-          </label>
-          <input id="wf-answer" name="answer" type="text" className={FIELD} />
+        <div>
+          <label htmlFor="wf-answer" className={LABEL}>{questionLabel}</label>
+          <input id="wf-answer" name="answer" type="text" maxLength={1000} className={FIELD} />
         </div>
       )}
 
       {state && "error" in state && (
-        <p role="alert" className="m-0 text-sm leading-relaxed text-[#FF8A8A]">
+        <p role="alert" className="m-0 text-[14px] leading-relaxed text-[#ffb4b4]">
           {state.error}
         </p>
       )}
 
       {disabled ? (
-        <p className="m-0 text-sm leading-relaxed text-[#6E7694]">
+        <p className="m-0 text-[13px] leading-relaxed text-[#a8bdd5]">
           El formulario se activa cuando publiques la página.
         </p>
       ) : (
         <SubmitButton />
       )}
+
+      <p className="m-0 text-[12px] leading-relaxed text-[#a8bdd5]">
+        Al enviar, solicitas que {ownerName} te contacte sobre esta propuesta.
+      </p>
     </form>
   );
 }

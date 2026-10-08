@@ -1,117 +1,87 @@
 import { redirect } from "next/navigation";
 
+import { Kicker } from "@/components/wefunnels/brand";
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
+import { Card, DATE_SHORT, Metric } from "../ui";
 
-const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", year: "numeric" });
-const MONEY = new Intl.NumberFormat("es", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-});
+const MONEY = new Intl.NumberFormat("es", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
 
+const BASIS_LABEL = {
+  monthly: "Plan mensual · genera 20%",
+  annual: "Plan anual · no genera comisión",
+  unknown_period: "Periodo de cobro por confirmar",
+  not_paying: "Sin suscripción de pago",
+} as const;
+
+// What the 20% amounts to today: 20% of the MONTHLY WeWebinars plan of each
+// direct referral while they keep it. Computed by wefunnel_commissions;
+// nothing is paid on the licence itself and there is no second level.
+// No names or emails: a commission record is not a contact list.
 export default async function PanelCommissionsPage() {
   const viewer = await getPanelViewer();
   if (!viewer) redirect("/login?next=/panel/comisiones");
+  if (!viewer.isDistributor) redirect("/panel/distribuidor");
   if (!viewer.site) redirect("/panel");
-  if (!viewer.distributor) redirect("/panel/distribuidor");
 
   const supabase = await createClient();
-  const { data } = await supabase.rpc("wefunnel_commissions");
+  const { data, error } = await supabase.rpc("wefunnel_commissions");
   const rows = data ?? [];
-  const earning = rows.reduce((total, row) => total + Number(row.commission_usd ?? 0), 0);
-  const paying = rows.filter((row) => row.is_paying).length;
+  const monthly = rows.reduce((total, row) => total + Number(row.commission_usd ?? 0), 0);
+  const earning = rows.filter((row) => row.basis === "monthly").length;
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="m-0 text-[28px] font-bold tracking-tight">Mis comisiones</h1>
+    <div>
+      <Kicker>Distribuidor</Kicker>
+      <h1 className="mt-2 mb-1 text-[29px] font-bold tracking-[-1px]">Comisiones</h1>
+      <p className="mt-0 mb-5 text-[15px] text-[#afc1d9]">
+        20% sobre los planes mensuales de WeWebinars de tus referidos directos, mientras mantengan su suscripción.
+      </p>
 
-      <div className="flex flex-wrap items-stretch gap-5">
-        <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-2.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-          <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-            Lo que generas
-          </span>
-          <span className="text-[48px] leading-none font-extrabold tracking-tighter text-[#2BD7F5] tabular-nums">
-            {MONEY.format(earning)}
-          </span>
-          <span className="text-[15px] leading-snug text-[#A9B0C9]">
-            20% de lo que pagan {paying} {paying === 1 ? "cuenta" : "cuentas"} que llegaron
-            por ti
-          </span>
-        </div>
-        <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-2.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-          <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-            Llegaron por ti
-          </span>
-          <span className="text-[48px] leading-none font-extrabold tracking-tighter tabular-nums">
-            {rows.length}
-          </span>
-          <span className="text-[15px] leading-snug text-[#A9B0C9]">
-            personas reclamaron su funnel con tu enlace
-          </span>
-        </div>
+      <div className="mb-5 grid grid-cols-2 gap-3">
+        <Metric label="Comisión mensual estimada" value={MONEY.format(monthly)} hint={`${earning} ${earning === 1 ? "suscripción mensual activa" : "suscripciones mensuales activas"}`} />
+        <Metric label="Referidos directos" value={String(rows.length)} hint="Cuentas que recibieron tu regalo" />
       </div>
 
-      {rows.length === 0 ? (
-        <div className="rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-          <p className="m-0 text-[16px] leading-relaxed text-[#A9B0C9]">
-            Todavía no hay nadie. Reparte tu enlace y cada persona que reclame su funnel
-            aparece aquí; cuando alguna contrate un plan, su 20% empieza a contar.
+      <Card>
+        {error ? (
+          <p role="alert" className="m-0 text-[14px] text-[#ffb4b4]">No pudimos cargar tus comisiones. Recarga la página.</p>
+        ) : rows.length === 0 ? (
+          <p className="m-0 text-[14px] text-[#afc1d9]">
+            Todavía no tienes referidos. Cuando alguien reciba tu regalo y contrate un plan mensual de WeWebinars, su 20% aparecerá aquí.
           </p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#23233A] bg-[#0D0D15]">
-          <table className="w-full min-w-[520px] border-collapse text-[15px]">
-            <thead>
-              <tr className="text-left text-[#6E7694]">
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">Llegó</th>
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">Plan</th>
-                <th scope="col" className="border-b border-[#1A1A2A] px-5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase">Tu 20%</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, index) => (
-                <tr key={`${row.referred_at}-${index}`}>
-                  <td className="border-b border-[#14141F] px-5 py-3.5 whitespace-nowrap text-[#6E7694] tabular-nums">
-                    {DATE.format(new Date(row.referred_at))}
-                  </td>
-                  <td className="border-b border-[#14141F] px-5 py-3.5">
-                    {row.is_paying ? (
-                      <>
-                        {row.plan_name}
-                        <span className="text-[#6E7694]">
-                          {row.billing_period === "annual" ? " · anual" : " · mensual"}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[#6E7694]">Todavía gratis</span>
-                    )}
-                  </td>
-                  <td className="border-b border-[#14141F] px-5 py-3.5 tabular-nums">
-                    {row.is_paying ? (
-                      <>
-                        {MONEY.format(Number(row.commission_usd))}
-                        <span className="text-[#6E7694]">
-                          {row.billing_period === "annual" ? " / año" : " / mes"}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[#6E7694]">—</span>
-                    )}
-                  </td>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] border-collapse text-[13px]">
+              <thead>
+                <tr className="text-left text-[11px] text-[#f2f7ff]">
+                  <th scope="col" className="border-b border-[#3b4e68] px-2 py-3 font-medium">Llegó</th>
+                  <th scope="col" className="border-b border-[#3b4e68] px-2 py-3 font-medium">Plan</th>
+                  <th scope="col" className="border-b border-[#3b4e68] px-2 py-3 font-medium">Base</th>
+                  <th scope="col" className="border-b border-[#3b4e68] px-2 py-3 font-medium">Tu 20%</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <tr key={`${row.referred_at}-${index}`}>
+                    <td className="border-b border-[#25354b] px-2 py-3 whitespace-nowrap text-[#cbdcef]">{DATE_SHORT.format(new Date(row.referred_at))}</td>
+                    <td className="border-b border-[#25354b] px-2 py-3 text-[#cbdcef]">{row.is_paying ? row.plan_name : "Gratuita"}</td>
+                    <td className="border-b border-[#25354b] px-2 py-3 text-[#a8bfd8]">{BASIS_LABEL[row.basis]}</td>
+                    <td className="border-b border-[#25354b] px-2 py-3 tabular-nums text-[#cbdcef]">
+                      {row.basis === "monthly" ? `${MONEY.format(Number(row.commission_usd))} / mes` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
 
-      {/* Stated because the absence would read as an oversight. These rows
-          are a commission record, not a contact list: the people behind them
-          claimed a free page, they did not agree to become anybody's lead. */}
-      <p className="m-0 text-sm leading-relaxed text-[#6E7694]">
-        Aquí no aparecen nombres ni correos. Quien llegó por ti recibió su propia página,
-        y sus datos son suyos — lo que se te debe no depende de saber quién es.
+      <p className="text-[13px] text-[#a8bfd8]">
+        Es una estimación según el plan vigente de cada cuenta; las devoluciones y ajustes se reflejan
+        cuando se procesan los pagos. Sin comisión por la licencia Distribuidor. Sin segundo nivel. Aquí
+        no aparecen nombres ni correos: quien recibió tu regalo y sus datos son suyos.
       </p>
     </div>
   );

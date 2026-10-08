@@ -181,15 +181,40 @@ export async function createUpgradeCheckoutUrl({
   return config?.purchaseUrl ?? null;
 }
 
-// WeFunnels' $100 lifetime distributor tier. Unlike every plan id above
-// this one is read from the environment rather than committed: those were
-// created in the Whop dashboard and are stable, while this product does not
-// exist there yet. Leaving it as an env var means the checkout route can
-// ship, fail honestly while it is unset, and start working the day the
-// listing is created -- with no code change and no placeholder id that
-// would silently resolve to the wrong product if someone ever reused it.
-export function wefunnelsDistributorPlanId(): string | undefined {
-  return process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID || undefined;
+// WeFunnels Distributor licence: a one-time purchase with two prices and
+// the same benefits -- 199 USD public, 100 USD for an account a Distributor
+// brought. Each price is its own Whop plan, read from the environment (the
+// plans are created in the Whop dashboard, and an unset id makes checkout
+// fail honestly instead of charging the wrong amount):
+//
+//   WHOP_WEFUNNELS_DISTRIBUTOR_PUBLIC_PLAN_ID  -> 199 USD
+//   WHOP_WEFUNNELS_DISTRIBUTOR_INVITE_PLAN_ID  -> 100 USD
+//
+// WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID is the variable the previous version
+// used for its single invitation-priced plan; it is still honoured as the
+// invitation plan so an existing configuration keeps working.
+//
+// The browser never chooses between them: the checkout route asks the
+// database for the account's tier, and the webhook derives the tier from
+// the plan id Whop reports, not from anything the buyer could edit.
+export type DistributorPriceTier = "public" | "invitation";
+
+export function wefunnelsDistributorPlanId(tier: DistributorPriceTier): string | undefined {
+  if (tier === "public") {
+    return process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PUBLIC_PLAN_ID || undefined;
+  }
+  return (
+    process.env.WHOP_WEFUNNELS_DISTRIBUTOR_INVITE_PLAN_ID ||
+    process.env.WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID ||
+    undefined
+  );
+}
+
+export function distributorTierForPlanId(planId: string | null | undefined): DistributorPriceTier | null {
+  if (!planId) return null;
+  if (planId === wefunnelsDistributorPlanId("public")) return "public";
+  if (planId === wefunnelsDistributorPlanId("invitation")) return "invitation";
+  return null;
 }
 
 // A one-time purchase, not a subscription, so it carries its own metadata
@@ -198,19 +223,24 @@ export function wefunnelsDistributorPlanId(): string | undefined {
 export const WEFUNNELS_DISTRIBUTOR_METADATA = "wefunnels_distributor";
 
 export async function createDistributorCheckoutUrl(
-  accountId: string
+  accountId: string,
+  tier: DistributorPriceTier
 ): Promise<string | null> {
-  const planId = wefunnelsDistributorPlanId();
+  const planId = wefunnelsDistributorPlanId(tier);
   if (!whopConfigured() || !planId) {
-    console.error("[whop] WeFunnels distributor plan id or API key not configured");
+    console.error(`[whop] WeFunnels distributor ${tier} plan id or API key not configured`);
     return null;
   }
 
   try {
     const config = await whopClient().checkoutConfigurations.create({
       plan_id: planId,
-      metadata: { account_id: accountId, product: WEFUNNELS_DISTRIBUTOR_METADATA },
-      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/repartir`,
+      metadata: {
+        account_id: accountId,
+        product: WEFUNNELS_DISTRIBUTOR_METADATA,
+        price_tier: tier,
+      },
+      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/distribuidor/confirmacion`,
     });
     return config.purchase_url ?? null;
   } catch (err) {

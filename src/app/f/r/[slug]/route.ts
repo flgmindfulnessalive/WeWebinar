@@ -1,23 +1,25 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { createClient } from "@/lib/supabase/server";
 import { getSupabaseCookieDomain } from "@/lib/supabase/cookie-domain";
 import { normalizeSlug } from "@/lib/wefunnels/slug";
+import { wefunnelGiftUrl } from "@/lib/wefunnels/host";
 import {
   REFERRAL_COOKIE,
   REFERRAL_WINDOW_DAYS,
   serializeTouch,
 } from "@/lib/wefunnels/referral";
 
-// Where every badge points. It records the touch and sends the visitor on to
-// the offer, so the link in the page footer stays a plain link and the whole
-// mechanism is one redirect the person never sees.
+// Legacy invitation link: wefunnels.wewebinars.com/r/<slug>.
 //
-// The cookie is scoped to the parent domain, the same way the Supabase
-// session cookie already is: the badge sits on wefunnels.wewebinars.com but
-// the claim happens on the main host, and a host-scoped cookie would simply
-// not be there when it mattered. That helper returns undefined outside
-// production, where both hosts are the same origin anyway and a mismatched
-// Domain makes browsers drop the cookie outright.
+// Links of this shape are already circulating, so the route stays. It now
+// sends the visitor to that Distributor's gift page -- the one place a free
+// funnel is claimed -- and still records the legacy touch cookie, which
+// the old claim path (for people mid-way through it) reads.
+//
+// A slug that is not an active Distributor's live page (a free account,
+// whose gifting ended with the approved model, or a revoked licence) gets
+// no cookie and lands on the official website, which offers no free claim.
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -25,18 +27,23 @@ export async function GET(
   const { slug: raw } = await params;
   const slug = normalizeSlug(raw);
 
-  const response = NextResponse.redirect(new URL("/", request.url));
+  const supabase = await createClient();
+  const { data: referrerSiteId } = slug
+    ? await supabase.rpc("wefunnel_gift_referrer", { p_slug: slug })
+    : { data: null };
 
-  if (slug) {
-    response.cookies.set(REFERRAL_COOKIE, serializeTouch(slug), {
-      path: "/",
-      maxAge: REFERRAL_WINDOW_DAYS * 24 * 60 * 60,
-      sameSite: "lax",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      domain: getSupabaseCookieDomain(),
-    });
+  if (!referrerSiteId) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
+  const response = NextResponse.redirect(wefunnelGiftUrl(slug));
+  response.cookies.set(REFERRAL_COOKIE, serializeTouch(slug), {
+    path: "/",
+    maxAge: REFERRAL_WINDOW_DAYS * 24 * 60 * 60,
+    sameSite: "lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    domain: getSupabaseCookieDomain(),
+  });
   return response;
 }

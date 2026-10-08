@@ -1,19 +1,25 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 
+import { Avatar, FIELD, Kicker, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/components/wefunnels/brand";
 import {
+  resendVerificationEmail,
   saveWeFunnelSite,
-  setWeFunnelPublished,
+  unpublishWeFunnelSite,
+  uploadWeFunnelPhoto,
   type SaveState,
 } from "@/lib/actions/wefunnel-site";
-import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { normalizeSlug } from "@/lib/wefunnels/slug";
 import type { WeFunnelSite } from "@/lib/wefunnels/site";
 
-const FIELD =
-  "w-full rounded-[10px] border border-[#23233A] bg-[#050509] px-3.5 py-3 text-[15px] text-white outline-none focus-visible:border-[#2BD7F5]";
-const LABEL = "text-[13px] font-semibold text-[#A9B0C9]";
+const LABEL = "mb-1.5 block text-[13px] text-[#e2edfc]";
+const HELP = "mt-1.5 mb-0 text-[12px] text-[#a8bdd5]";
+
+const HEADLINE_EXAMPLE = "Explora una forma de construir tu negocio a tiempo parcial.";
+const DESCRIPTION_EXAMPLE =
+  "Acompaño a personas que quieren conocer el network marketing y aprender a construir equipo. Déjame tus datos y conversemos sobre lo que estás buscando.";
 
 const ACCENTS: { key: string; hex: string; label: string }[] = [
   { key: "cyan", hex: "#2BD7F5", label: "Cian" },
@@ -24,319 +30,303 @@ const ACCENTS: { key: string; hex: string; label: string }[] = [
   { key: "amber", hex: "#F5A524", label: "Ámbar" },
 ];
 
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-function SaveButton() {
+function IntentButton({ intent, className, children }: { intent: "draft" | "publish"; className: string; children: React.ReactNode }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="self-start rounded-[11px] border border-[#23233A] bg-[#0D0D15] px-5 py-3 text-[15px] font-semibold text-white disabled:opacity-60"
-    >
-      {pending ? "Guardando…" : "Guardar cambios"}
+    <button type="submit" name="intent" value={intent} disabled={pending} className={className}>
+      {pending ? "Guardando…" : children}
     </button>
-  );
-}
-
-function PublishButton({ published }: { published: boolean }) {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className={
-        published
-          ? "rounded-[10px] border border-[#23233A] bg-[#0D0D15] px-5 py-3 text-[15px] font-semibold text-[#A9B0C9] disabled:opacity-60"
-          : "rounded-[10px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-6 py-3 text-[15px] font-semibold text-white disabled:opacity-60"
-      }
-    >
-      {pending ? "…" : published ? "Despublicar" : "Publicar"}
-    </button>
-  );
-}
-
-function Step({ done, index, label }: { done: boolean; index: number; label: string }) {
-  return (
-    <span
-      className={
-        done
-          ? "inline-flex items-center gap-2.5 text-[15px] text-[#6E7694]"
-          : "inline-flex items-center gap-2.5 text-[15px] font-semibold text-white"
-      }
-    >
-      <span
-        className={
-          done
-            ? "inline-flex h-[22px] w-[22px] items-center justify-center rounded-[7px] bg-[#14263B] text-xs text-[#2BD7F5]"
-            : "inline-flex h-[22px] w-[22px] items-center justify-center rounded-[7px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-xs font-semibold text-white"
-        }
-        aria-hidden="true"
-      >
-        {done ? "✓" : index}
-      </span>
-      {label}
-    </span>
   );
 }
 
 export function SiteEditor({
   site,
-  steps,
+  emailVerified,
+  wefunnelsHost,
+  welcome,
 }: {
   site: WeFunnelSite;
-  steps: { watched: boolean; personalised: boolean; published: boolean };
+  emailVerified: boolean;
+  wefunnelsHost: string;
+  welcome: boolean;
 }) {
-  const [saveState, saveAction] = useActionState<SaveState, FormData>(saveWeFunnelSite, null);
-  const [publishState, publishAction] = useActionState<SaveState, FormData>(
-    setWeFunnelPublished,
-    null
-  );
-
+  const [dirty, setDirty] = useState(false);
+  const [state, action] = useActionState<SaveState, FormData>(async (prev, formData) => {
+    const result = await saveWeFunnelSite(prev, formData);
+    if (result && "success" in result) setDirty(false);
+    return result;
+  }, null);
   const [displayName, setDisplayName] = useState(site.display_name);
   const [headline, setHeadline] = useState(site.headline ?? "");
-  const [bullets, setBullets] = useState<string[]>([
-    site.bullets?.[0] ?? "",
-    site.bullets?.[1] ?? "",
-    site.bullets?.[2] ?? "",
-  ]);
-  const [accent, setAccent] = useState(site.accent);
+  const [description, setDescription] = useState(site.description ?? "");
+  const [slug, setSlug] = useState(site.slug);
+  const [photoUrl, setPhotoUrl] = useState(site.photo_url ?? "");
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [uploading, startUpload] = useTransition();
+  const [resent, setResent] = useState<"idle" | "sent" | "error">("idle");
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const published = site.status === "published";
   const suspended = Boolean(site.suspended_at);
-  const accentHex = ACCENTS.find((a) => a.key === accent)?.hex ?? "#2BD7F5";
+  const slugLocked = Boolean(site.published_at);
+
+  const stateLabel = published
+    ? dirty
+      ? "Publicada · Cambios sin guardar"
+      : "Publicada"
+    : dirty
+      ? "Borrador · Cambios sin publicar"
+      : "Borrador · No publicada";
+
+  function onPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setPhotoError("Elige un archivo JPG, PNG o WebP de hasta 5 MB.");
+      return;
+    }
+    setPhotoError(null);
+    startUpload(async () => {
+      const data = new FormData();
+      data.set("file", file);
+      const result = await uploadWeFunnelPhoto(data);
+      if ("error" in result) setPhotoError(result.error);
+      else {
+        setPhotoUrl(result.url);
+        setDirty(true);
+      }
+    });
+  }
+
+  if (suspended) {
+    return (
+      <div className="max-w-[640px] rounded-xl border border-[#A855F7] bg-[#151e31] p-5">
+        <Kicker>Página suspendida</Kicker>
+        <p className="mt-2 mb-0 text-[15px] leading-relaxed text-[#c3d2e8]">
+          Tu página no está visible y no puede editarse mientras se revisa. Tus registros siguen
+          intactos. Escríbenos para resolverlo.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      {suspended ? (
-        <div className="rounded-2xl border border-[#A855F7] bg-gradient-to-br from-[#10163A] to-[#250F3D] p-5">
-          <p className="m-0 text-xs font-semibold tracking-[0.08em] text-[#E879F9] uppercase">
-            Página suspendida
-          </p>
-          <p className="mt-2 mb-0 text-[15px] leading-relaxed text-[#A9B0C9]">
-            Tu página no está visible y no puede editarse mientras se revisa. Tus
-            registrados siguen intactos. Escríbenos para resolverlo.
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-[#23233A] bg-[#0D0D15] px-6 py-5">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Step done={steps.watched} index={1} label="Mira el curso" />
-            <Step done={steps.personalised} index={2} label="Personaliza tu página" />
-            <Step done={steps.published} index={3} label="Publícala" />
-          </div>
-          <form action={publishAction}>
-            <input type="hidden" name="published" value={published ? "false" : "true"} />
-            <PublishButton published={published} />
-          </form>
-        </div>
-      )}
-
-      {publishState && "error" in publishState && (
-        <p role="alert" className="m-0 text-sm text-[#FF8A8A]">
-          {publishState.error}
+    <div>
+      <div className="mb-6">
+        <Kicker>{welcome ? "Tu funnel ya es tuyo" : "Tu funnel"}</Kicker>
+        <h1 className="mt-2 mb-2 text-[29px] leading-tight font-bold tracking-[-1px] sm:text-[32px]">
+          Personaliza tu funnel
+        </h1>
+        <p className="m-0 text-[15px] text-[#b4c6dc]">
+          {welcome
+            ? "Tu funnel ya es tuyo. Ahora hagámoslo a tu medida."
+            : "Cuéntale a tus visitantes qué pueden descubrir contigo."}
         </p>
-      )}
+      </div>
 
-      <div className="flex flex-wrap items-start gap-6">
-        <form action={saveAction} className="flex min-w-0 flex-[999_1_340px] flex-col gap-5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-          <input type="hidden" name="siteId" value={site.id} />
+      <div className="grid items-start gap-7 lg:grid-cols-2">
+        <form action={action} onChange={() => setDirty(true)} className="min-w-0 rounded-xl border border-[#293a51] bg-[#0d1727] p-5 sm:p-6">
+          <h2 className="mt-0 mb-4 text-[18px] font-bold">Tu identidad y tu propuesta</h2>
+          <input type="hidden" name="photoUrl" value={photoUrl} />
 
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-              Tu dirección
-            </span>
-            <a
-              href={`https://${WEFUNNELS_HOST}/${site.slug}`}
-              className="text-[15px] break-all no-underline"
-              style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
-            >
-              <span className="text-[#6E7694]">{WEFUNNELS_HOST}/</span>
-              <span className="font-medium text-[#2BD7F5]">{site.slug}</span>
-            </a>
-            <span className="text-[13px] leading-relaxed text-[#6E7694]">
-              {site.published_at
-                ? "Ya está fija: un enlace que circuló no puede llevar a otra persona."
-                : "Puedes cambiarla hasta que publiques. Después queda fija."}
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="ed-name" className={LABEL}>Tu nombre</label>
-            <input
-              id="ed-name" name="displayName" type="text" className={FIELD}
-              value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="ed-location" className={LABEL}>Dónde estás</label>
-            <input
-              id="ed-location" name="location" type="text" className={FIELD}
-              defaultValue={site.location ?? ""} placeholder="Monterrey, México"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="ed-headline" className={LABEL}>Titular</label>
-            <textarea
-              id="ed-headline" name="headline" rows={2}
-              className={`${FIELD} resize-y leading-snug`}
-              value={headline} onChange={(e) => setHeadline(e.target.value)}
-              placeholder="A quién ayudas y a conseguir qué."
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="ed-video" className={LABEL}>Video (YouTube o Vimeo)</label>
-            <input
-              id="ed-video" name="videoUrl" type="url" className={FIELD}
-              defaultValue={site.video_url ?? ""} placeholder="youtube.com/watch?v=…"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <span className={LABEL}>Tres cosas que ofreces</span>
-            {bullets.map((value, index) => (
-              <input
-                key={index}
-                name={`bullet${index + 1}`}
-                type="text"
-                aria-label={`Punto ${index + 1}`}
-                className={FIELD}
-                value={value}
-                onChange={(e) =>
-                  setBullets((prev) => prev.map((b, i) => (i === index ? e.target.value : b)))
-                }
-              />
-            ))}
-          </div>
-
-          <div className="flex flex-col gap-1.5 border-t border-[#1A1A2A] pt-5">
-            <label htmlFor="ed-whatsapp" className={LABEL}>Tu WhatsApp</label>
-            <input
-              id="ed-whatsapp" name="whatsapp" type="tel" className={FIELD}
-              defaultValue={site.contact_whatsapp ?? ""} placeholder="+52 81 1234 5678"
-            />
-            <span className="text-[13px] leading-relaxed text-[#6E7694]">
-              Es el botón que ve quien te deja sus datos, con el mensaje ya escrito. Sin
-              esto solo verá que le escribirás tú.
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="ed-question" className={LABEL}>Tu pregunta del formulario</label>
-            <input
-              id="ed-question" name="questionLabel" type="text" className={FIELD}
-              defaultValue={site.question_label ?? ""}
-              placeholder="¿Qué es lo que más te cuesta hoy?"
-            />
-          </div>
-
-          <fieldset className="flex flex-col gap-2 border-0 border-t border-[#1A1A2A] p-0 pt-5">
-            <legend className={`${LABEL} px-0`}>Color de acento</legend>
-            <div className="flex flex-wrap gap-2.5">
-              {ACCENTS.map((option) => (
-                <label key={option.key} className="cursor-pointer">
-                  <input
-                    type="radio" name="accent" value={option.key}
-                    checked={accent === option.key}
-                    onChange={() => setAccent(option.key)}
-                    className="sr-only peer"
-                  />
-                  <span
-                    title={option.label}
-                    className="block h-8 w-8 rounded-[9px] peer-focus-visible:ring-2 peer-focus-visible:ring-white"
-                    style={{
-                      background: option.hex,
-                      boxShadow:
-                        accent === option.key ? "0 0 0 2px #000, 0 0 0 4px #fff" : undefined,
-                    }}
-                  />
-                  <span className="sr-only">{option.label}</span>
-                </label>
-              ))}
+          <div className="mb-5 flex flex-wrap items-center gap-3.5">
+            <Avatar name={displayName} photoUrl={photoUrl || null} size={57} />
+            <div className="min-w-0">
+              <span className={LABEL}>Tu foto · opcional</span>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className={SECONDARY_BUTTON}>
+                  {uploading ? "Subiendo…" : photoUrl ? "Cambiar foto" : "Subir foto"}
+                </button>
+                {photoUrl && (
+                  <button type="button" onClick={() => { setPhotoUrl(""); setDirty(true); }} className={SECONDARY_BUTTON}>
+                    Quitar
+                  </button>
+                )}
+              </div>
+              <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={onPhoto} className="sr-only" aria-label="Elegir foto" tabIndex={-1} />
+              <p className={HELP}>JPG, PNG o WebP. Hasta 5 MB.</p>
+              {photoError && <p role="alert" className="mt-1 mb-0 text-[13px] text-[#ffb4b4]">{photoError}</p>}
             </div>
-          </fieldset>
-
-          <div className="flex flex-col gap-1.5 border-t border-[#1A1A2A] pt-5">
-            <label htmlFor="ed-pixel" className={LABEL}>ID de píxel</label>
-            <div className="flex flex-wrap gap-2">
-              <select
-                name="pixelProvider"
-                aria-label="Proveedor del píxel"
-                defaultValue={site.pixel_provider ?? "meta"}
-                className={`${FIELD} w-auto flex-none`}
-              >
-                <option value="meta">Meta</option>
-                <option value="tiktok">TikTok</option>
-              </select>
-              <input
-                id="ed-pixel" name="pixelId" type="text"
-                className={`${FIELD} min-w-0 flex-1`}
-                defaultValue={site.pixel_id ?? ""} placeholder="1234567890123456"
-                style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
-              />
-            </div>
-            <span className="text-[13px] leading-relaxed text-[#6E7694]">
-              Solo el número. Nosotros ponemos el script oficial, y la conversión se
-              dispara cuando alguien envía tu formulario.
-            </span>
           </div>
 
-          {saveState && "error" in saveState && (
-            <p role="alert" className="m-0 text-sm text-[#FF8A8A]">{saveState.error}</p>
-          )}
-          {saveState && "success" in saveState && (
-            <p className="m-0 text-sm text-[#2BD7F5]">Guardado.</p>
+          <div className="mb-4">
+            <label htmlFor="ed-name" className={LABEL}>Nombre público</label>
+            <input id="ed-name" name="displayName" required maxLength={60} value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={FIELD} />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="ed-headline" className={LABEL}>¿A quién ayudas y con qué?</label>
+            <input id="ed-headline" name="headline" maxLength={110} value={headline} placeholder={HEADLINE_EXAMPLE} onChange={(e) => setHeadline(e.target.value)} className={FIELD} aria-describedby="ed-headline-help" />
+            <p id="ed-headline-help" className={HELP}>Esta frase será el titular de tu página.</p>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="ed-description" className={LABEL}>Cuéntales un poco más</label>
+            <textarea id="ed-description" name="description" maxLength={300} rows={4} value={description} placeholder={DESCRIPTION_EXAMPLE} onChange={(e) => setDescription(e.target.value)} className={`${FIELD} min-h-[100px] resize-y`} aria-describedby="ed-description-help" />
+            <p id="ed-description-help" className={HELP}>Explica tu propuesta con claridad y sin prometer resultados.</p>
+          </div>
+
+          <div className="my-5 h-px bg-[#2b3b51]" />
+          <h2 className="mt-0 mb-3 text-[18px] font-bold">Tu enlace personal</h2>
+          <label htmlFor="ed-slug" className={LABEL}>Elige tu dirección</label>
+          <input
+            id="ed-slug"
+            name="slug"
+            maxLength={32}
+            value={slug}
+            readOnly={slugLocked}
+            onChange={(e) => setSlug(normalizeSlug(e.target.value))}
+            className={`${FIELD} ${slugLocked ? "opacity-70" : ""}`}
+            aria-describedby="ed-slug-help"
+          />
+          <p id="ed-slug-help" className={HELP}>
+            {slugLocked
+              ? "Tu enlace ya es definitivo: un enlace que circuló no puede llevar a otra persona."
+              : "Usa letras minúsculas, números y guiones. La disponibilidad se comprueba al guardar."}
+          </p>
+          <p className="mt-2 mb-0 text-[12px] break-all text-[#84e1ed]">{wefunnelsHost}/{slug || "tu-nombre"}</p>
+
+          <details className="wf-details mt-5 border-t border-[#2b3b51] pt-4">
+            <summary className="flex min-h-[44px] items-center justify-between gap-3 text-[14px] text-[#dcecff]">
+              Más opciones (video, puntos, WhatsApp, píxel)
+            </summary>
+            <div className="mt-3 flex flex-col gap-4">
+              <div>
+                <label htmlFor="ed-location" className={LABEL}>Dónde estás</label>
+                <input id="ed-location" name="location" maxLength={120} defaultValue={site.location ?? ""} className={FIELD} />
+              </div>
+              <div>
+                <label htmlFor="ed-video" className={LABEL}>Video (YouTube o Vimeo)</label>
+                <input id="ed-video" name="videoUrl" type="url" defaultValue={site.video_url ?? ""} placeholder="youtube.com/watch?v=…" className={FIELD} />
+              </div>
+              <fieldset className="m-0 border-0 p-0">
+                <legend className={LABEL}>Tres cosas que ofreces</legend>
+                {[0, 1, 2].map((i) => (
+                  <input key={i} name={`bullet${i + 1}`} maxLength={160} defaultValue={site.bullets?.[i] ?? ""} aria-label={`Punto ${i + 1}`} className={`${FIELD} mb-2`} />
+                ))}
+              </fieldset>
+              <div>
+                <label htmlFor="ed-whatsapp" className={LABEL}>Tu WhatsApp</label>
+                <input id="ed-whatsapp" name="whatsapp" type="tel" defaultValue={site.contact_whatsapp ?? ""} placeholder="+52 81 1234 5678" className={FIELD} />
+                <p className={HELP}>Aparece como botón para escribirte después de que alguien deja sus datos.</p>
+              </div>
+              <div>
+                <label htmlFor="ed-question" className={LABEL}>Una pregunta en tu formulario</label>
+                <input id="ed-question" name="questionLabel" maxLength={160} defaultValue={site.question_label ?? ""} placeholder="¿Qué es lo que más te cuesta hoy?" className={FIELD} />
+              </div>
+              <fieldset className="m-0 border-0 p-0">
+                <legend className={LABEL}>Color de los puntos</legend>
+                <div className="flex flex-wrap gap-2.5">
+                  {ACCENTS.map((option) => (
+                    <label key={option.key} className="cursor-pointer">
+                      <input type="radio" name="accent" value={option.key} defaultChecked={site.accent === option.key} className="peer sr-only" />
+                      <span title={option.label} className="block h-8 w-8 rounded-[9px] ring-offset-2 ring-offset-[#0d1727] peer-checked:ring-2 peer-checked:ring-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#76e3ed]" style={{ background: option.hex }} />
+                      <span className="sr-only">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <div>
+                <label htmlFor="ed-pixel" className={LABEL}>ID de píxel</label>
+                <div className="flex flex-wrap gap-2">
+                  <select name="pixelProvider" aria-label="Proveedor del píxel" defaultValue={site.pixel_provider ?? "meta"} className={`${FIELD} w-auto flex-none`}>
+                    <option value="meta">Meta</option>
+                    <option value="tiktok">TikTok</option>
+                  </select>
+                  <input id="ed-pixel" name="pixelId" defaultValue={site.pixel_id ?? ""} placeholder="1234567890123456" className={`${FIELD} min-w-0 flex-1`} />
+                </div>
+              </div>
+            </div>
+          </details>
+
+          {state && "error" in state && <p role="alert" className="mt-4 mb-0 text-[14px] text-[#ffb4b4]">{state.error}</p>}
+          {state && "success" in state && (
+            <p role="status" className="mt-4 mb-0 rounded-lg bg-[#143038] p-3 text-[13px] text-[#c7f6ed]">
+              {state.published ? "¡Listo! Tu funnel está publicado." : "Cambios guardados."}
+            </p>
           )}
 
-          <SaveButton />
+          <div className="mt-6 grid gap-2.5">
+            {published ? (
+              <IntentButton intent="publish" className={`${PRIMARY_BUTTON} w-full`}>Guardar y publicar cambios</IntentButton>
+            ) : (
+              <>
+                <IntentButton intent="publish" className={`${PRIMARY_BUTTON} w-full`}>Publicar mi funnel →</IntentButton>
+                <IntentButton intent="draft" className={SECONDARY_BUTTON}>Guardar borrador</IntentButton>
+              </>
+            )}
+          </div>
+          <p className={HELP}>
+            {published
+              ? "Los cambios se ven en tu página en cuanto los guardas."
+              : "Tú decides cuándo publicar. Podrás editar tu página después."}
+          </p>
         </form>
 
-        <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-2.5">
-          <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
-            Vista previa
-          </span>
-          <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#050509] p-5">
-            <div className="flex items-center gap-3">
-              <span
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[15px] font-bold text-white"
-                aria-hidden="true"
-              >
-                {initials(displayName)}
-              </span>
-              <strong className="text-[15px] font-semibold">{displayName}</strong>
-            </div>
-            {headline && (
-              <strong className="text-[20px] leading-tight font-extrabold tracking-tight">
-                {headline}
-              </strong>
-            )}
-            <div className="aspect-video rounded-[10px] border border-[#1A1A2A] bg-[#0D0D15]" />
-            <div className="flex flex-col gap-2">
-              {bullets.filter(Boolean).map((bullet, index) => (
-                <span key={index} className="flex items-start gap-2.5 text-sm leading-snug text-[#A9B0C9]">
-                  <span
-                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ background: accentHex }}
-                    aria-hidden="true"
-                  />
-                  {bullet}
-                </span>
-              ))}
-            </div>
-            <div className="h-9 rounded-[9px] border border-[#23233A] bg-[#0D0D15]" />
-            <span className="text-xs text-[#4A5173]">Creado con WeFunnels</span>
+        <section className="min-w-0">
+          <div className="mb-3.5 flex items-center justify-between gap-3">
+            <strong className="text-[14px]">Así verán tu página</strong>
+            <span className="text-[12px] text-[#98d9d9]" aria-live="polite">{stateLabel}</span>
           </div>
-        </div>
+          <div className="overflow-hidden rounded-[13px] border border-[#3d526d] bg-[#0a1322] shadow-[0_20px_50px_#0005]">
+            <div className="bg-[#19253a] px-4 py-3 text-[11px] break-all text-[#aebfd6]">{wefunnelsHost}/{slug || "tu-nombre"}</div>
+            <div className="bg-[radial-gradient(ellipse_at_100%_0,#32225977,transparent_60%),#0a1322] px-5 py-7 break-words sm:px-6">
+              <div className="mb-6 flex items-center gap-3 text-[14px]">
+                <Avatar name={displayName} photoUrl={photoUrl || null} size={48} />
+                <strong>{displayName || "Tu nombre"}</strong>
+              </div>
+              <Kicker>Conoce mi propuesta</Kicker>
+              <p className={`mt-3 mb-4 text-[26px] leading-[1.16] font-bold tracking-[-0.7px] ${headline ? "text-[#f2f7ff]" : "text-[#7f93ad]"}`}>
+                {headline || HEADLINE_EXAMPLE}
+              </p>
+              <p className={`mb-5 text-[14px] whitespace-pre-line ${description ? "text-[#b4c6dc]" : "text-[#7f93ad]"}`}>
+                {description || DESCRIPTION_EXAMPLE}
+              </p>
+              <div className="border-t border-[#35445d] pt-5" aria-hidden="true">
+                <span className="mb-1 block text-[11px] text-[#e2edfc]">Tu nombre</span>
+                <div className="mb-3 h-10 rounded-md border border-[#3d506b] bg-[#080f1b] px-3 py-2.5 text-[13px] text-[#90a6c1]">¿Cómo te llamas?</div>
+                <span className="mb-1 block text-[11px] text-[#e2edfc]">Email</span>
+                <div className="mb-3 h-10 rounded-md border border-[#3d506b] bg-[#080f1b] px-3 py-2.5 text-[13px] text-[#90a6c1]">tu@email.com</div>
+                <div className="wf-btn-primary rounded-lg py-3 text-center text-[14px] font-bold">Quiero más información →</div>
+                <p className="mt-3 mb-0 text-[11px] text-[#a8bdd5]">
+                  Al enviar, solicitas que {displayName || "la persona responsable"} te contacte sobre esta propuesta.
+                </p>
+              </div>
+            </div>
+            <div className="border-t border-[#23334b] p-3 text-center text-[11px] text-[#9fb3cf]">Creado con WeFunnels</div>
+          </div>
+          <p className="py-4 text-[13px] text-[#a8bdd3]">
+            Los registros de esta página aparecerán en tu panel, junto con las visitas y la conversión.
+          </p>
+
+          {!emailVerified && (
+            <div className="rounded-lg border border-[#354460] bg-[#151e31] p-4 text-[13px] text-[#c3d2e8]">
+              <strong className="text-[#f2f7ff]">Antes de publicar, verifica tu email.</strong>
+              <br />
+              Puedes seguir personalizando tu página mientras completas este paso.
+              <div className="mt-3">
+                <button
+                  type="button"
+                  className={SECONDARY_BUTTON}
+                  disabled={resent === "sent"}
+                  onClick={async () => setResent((await resendVerificationEmail()).ok ? "sent" : "error")}
+                >
+                  {resent === "sent" ? "Te enviamos un nuevo enlace" : "Reenviar email de verificación"}
+                </button>
+                {resent === "error" && <p role="alert" className="mt-2 mb-0 text-[#ffb4b4]">No pudimos reenviarlo. Intenta en unos minutos.</p>}
+              </div>
+            </div>
+          )}
+
+          {published && (
+            <form action={unpublishWeFunnelSite} className="mt-4">
+              <button type="submit" className="min-h-[40px] text-[13px] text-[#9fb6d0] underline underline-offset-4">
+                Despublicar mi página
+              </button>
+            </form>
+          )}
+        </section>
       </div>
     </div>
   );

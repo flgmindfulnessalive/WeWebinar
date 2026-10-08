@@ -26,6 +26,14 @@ export function wefunnelSiteUrl(slug: string): string {
   return `https://${WEFUNNELS_HOST}/${slug}`;
 }
 
+// A Distributor's gift page: the single public link they share to give
+// funnels away. Separate from their personal funnel on purpose -- a
+// personal page that is already published is never turned into a gift
+// page.
+export function wefunnelGiftUrl(slug: string): string {
+  return `https://${WEFUNNELS_HOST}/${slug}/regalo`;
+}
+
 // Anything that is not a published page -- the panel, the report form, the
 // rules -- lives on the main host, because the subdomain rewrites every
 // path onto /f and those routes simply do not resolve there. They have to

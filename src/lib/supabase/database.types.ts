@@ -12,6 +12,7 @@ export type Json =
 
 export type UserRole = "owner" | "editor" | "viewer";
 export type WeFunnelSiteStatus = "draft" | "published";
+export type WeFunnelFollowUpStatus = "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
 export type AccountLocale = "es" | "en";
 export type SubscriptionStatus =
   | "trialing"
@@ -1727,6 +1728,8 @@ export interface Database {
           question_label: string | null;
           pixel_provider: string | null;
           pixel_id: string | null;
+          description: string | null;
+          photo_url: string | null;
           suspended_at: string | null;
           published_at: string | null;
           created_at: string;
@@ -1865,6 +1868,10 @@ export interface Database {
           whop_membership_id: string | null;
           activated_at: string;
           starter_until: string | null;
+          price_tier: "public" | "invitation" | "comp" | null;
+          whop_plan_id: string | null;
+          revoked_at: string | null;
+          revoked_reason: string | null;
           created_at: string;
         };
         Insert: Partial<
@@ -1948,6 +1955,8 @@ export interface Database {
           email: string | null;
           answer: string | null;
           source: "form" | "course";
+          follow_up_status: WeFunnelFollowUpStatus;
+          follow_up_updated_at: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["wefunnel_leads"]["Row"]> & {
@@ -1985,6 +1994,75 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      wefunnel_page_visits: {
+        Row: {
+          site_id: string;
+          page: "funnel" | "gift";
+          day: string;
+          views: number;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_page_visits"]["Row"]> & {
+          site_id: string;
+          page: "funnel" | "gift";
+          day: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_page_visits"]["Row"]>;
+        Relationships: [];
+      };
+      wefunnel_pending_claims: {
+        Row: {
+          user_id: string;
+          referrer_site_id: string | null;
+          touched_at: string | null;
+          display_name: string;
+          proposed_slug: string | null;
+          intent: "gift" | "distributor";
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_pending_claims"]["Row"]> & {
+          user_id: string;
+          display_name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_pending_claims"]["Row"]>;
+        Relationships: [];
+      };
+      wefunnel_contact_requests: {
+        Row: {
+          id: string;
+          referred_account_id: string;
+          referrer_site_id: string;
+          name: string;
+          email: string;
+          message: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_contact_requests"]["Row"]> & {
+          referred_account_id: string;
+          referrer_site_id: string;
+          name: string;
+          email: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_contact_requests"]["Row"]>;
+        Relationships: [];
+      };
+      wefunnel_license_events: {
+        Row: {
+          id: string;
+          account_id: string;
+          kind: "refund" | "dispute" | "manual_revoke";
+          source_event_type: string | null;
+          external_id: string;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["wefunnel_license_events"]["Row"]> & {
+          account_id: string;
+          kind: "refund" | "dispute" | "manual_revoke";
+          external_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["wefunnel_license_events"]["Row"]>;
+        Relationships: [];
       };
     };
     Views: {
@@ -2136,8 +2214,10 @@ export interface Database {
       wefunnel_activate_distributor: {
         Args: {
           p_account_id: string;
-          p_membership_id: string;
-          p_included_months?: number;
+          p_membership_id: string | null;
+          p_included_months: number;
+          p_price_tier: "public" | "invitation" | "comp";
+          p_whop_plan_id: string | null;
         };
         Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
       };
@@ -2150,7 +2230,67 @@ export interface Database {
           billing_period: "monthly" | "annual" | null;
           plan_price_usd: number;
           commission_usd: number;
+          basis: "monthly" | "annual" | "unknown_period" | "not_paying";
         }[];
+      };
+      wefunnel_revoke_distributor: {
+        Args: {
+          p_account_id: string;
+          p_kind: "refund" | "dispute" | "manual_revoke";
+          p_source_event_type: string | null;
+          p_external_id: string;
+          p_note?: string | null;
+        };
+        Returns: boolean;
+      };
+      wefunnel_price_tier_for: {
+        Args: { p_account_id: string };
+        Returns: "public" | "invitation";
+      };
+      wefunnel_my_offer: {
+        Args: Record<string, never>;
+        Returns: {
+          has_account: boolean;
+          is_distributor: boolean;
+          price_tier: "public" | "invitation";
+          referrer_name: string | null;
+          referrer_photo_url: string | null;
+          referrer_slug: string | null;
+          referrer_is_distributor: boolean;
+        }[];
+      };
+      wefunnel_gift_referrer: {
+        Args: { p_slug: string };
+        Returns: string | null;
+      };
+      wefunnel_claim_pending: {
+        Args: Record<string, never>;
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"] | null;
+      };
+      wefunnel_ensure_account: {
+        Args: { p_display_name: string };
+        Returns: string;
+      };
+      wefunnel_record_visit: {
+        Args: { p_slug: string; p_page: "funnel" | "gift" };
+        Returns: undefined;
+      };
+      wefunnel_panel_metrics: {
+        Args: { p_days: number };
+        Returns: {
+          page: "funnel" | "gift";
+          visits: number;
+          registrations: number;
+          tracking_since: string | null;
+        }[];
+      };
+      wefunnel_set_lead_status: {
+        Args: { p_lead_id: string; p_status: WeFunnelFollowUpStatus };
+        Returns: undefined;
+      };
+      wefunnel_request_orientation: {
+        Args: { p_message?: string | null };
+        Returns: Database["public"]["Tables"]["wefunnel_contact_requests"]["Row"];
       };
       wefunnel_invitations: {
         Args: Record<string, never>;

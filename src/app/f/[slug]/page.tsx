@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
+import { Avatar, Kicker } from "@/components/wefunnels/brand";
+import { VisitBeacon } from "@/components/wefunnels/visit-beacon";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { wefunnelAppUrl } from "@/lib/wefunnels/host";
@@ -20,15 +22,6 @@ const ACCENTS: Record<string, string> = {
   green: "#28C98B",
   amber: "#F5A524",
 };
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 // YouTube and Vimeo are the only two the editor accepts, and the URL is
 // re-parsed here rather than trusted as stored: the column holds whatever
@@ -58,25 +51,16 @@ function embedUrl(raw: string | null): string | null {
   return null;
 }
 
-function Badge({ slug }: { slug?: string }) {
+function Footer({ slug }: { slug?: string }) {
   return (
-    <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-[#1A1A2A] px-6 pt-4 pb-8 text-[13px] text-[#6E7694]">
-      {/* No "get your own" link any more. A funnel exists because somebody
-          gave it, and a page that hands one out to whoever scrolls to the
-          bottom makes the person who gave it skippable -- which is the one
-          thing the distributor tier sells. The page now carries no mark of
-          the platform at all, which also reads better as its owner's.
-
-          The report link stays. It is the only way a visitor can flag an
-          abusive page, and the whole shared-domain reputation posture
-          (20261007000001) depends on it existing on every page. */}
-      {/* Stays on this host: the visitor reporting a page should not be
-          bounced to another domain mid-decision, and /reportar resolves
-          here because a static segment beats [slug] and the name is in the
-          reserved list. */}
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#23334b] px-1 pt-4 pb-8 text-[12px] text-[#9fb3cf]">
+      <span>Creado con WeFunnels</span>
+      {/* The report link is the only way a visitor can flag an abusive
+          page; the shared-domain reputation posture depends on it being on
+          every page. It stays on this host. */}
       <a
         href={slug ? `/reportar?p=${encodeURIComponent(slug)}` : "/reportar"}
-        className="text-xs text-[#4A5173] no-underline"
+        className="text-[#8ea3bf] underline-offset-4 hover:underline"
       >
         Reportar
       </a>
@@ -85,46 +69,43 @@ function Badge({ slug }: { slug?: string }) {
 }
 
 // Shown to anyone who isn't the owner when the page exists but isn't live:
-// still a draft, or suspended. The two cases read the same on purpose --
-// a moderation decision is not something to broadcast to visitors.
+// still a draft, or suspended. The two cases read the same on purpose.
 function NotLiveYet() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-[420px] flex-col justify-center px-6">
-      <h1 className="m-0 text-[26px] leading-tight font-extrabold tracking-tight">
+    <main className="mx-auto flex min-h-screen max-w-[440px] flex-col justify-center px-6">
+      <h1 className="m-0 text-[26px] leading-tight font-bold tracking-tight text-[#f2f7ff]">
         Esta página todavía no está publicada
       </h1>
-      <p className="mt-3 mb-0 text-[16px] leading-relaxed text-[#A9B0C9]">
+      <p className="mt-3 mb-0 text-[16px] leading-relaxed text-[#b4c6dc]">
         Su dueño aún la está preparando. Vuelve a intentarlo más tarde.
       </p>
-      <Badge />
+      <Footer />
     </main>
   );
 }
 
-export default async function WeFunnelSitePage({
-  params,
-}: {
-  params: Promise<RouteParams>;
-}) {
+// A free user's personal funnel: wefunnels.wewebinars.com/<slug>
+//
+// It presents THEIR proposal and captures THEIR prospects. It never offers
+// to give funnels away -- that is a Distributor's gift page, at a separate
+// address, so an already published personal page is never turned into one.
+export default async function WeFunnelSitePage({ params }: { params: Promise<RouteParams> }) {
   const { slug } = await params;
   const supabase = await createClient();
 
-  // RLS does the state machine here. An anonymous visitor only ever gets
-  // the row back when it is published and unsuspended; a member of the
-  // owning account gets it in any state. So if the row came back at all
-  // and isn't live, the person looking at it is the owner.
+  // RLS does the state machine: an anonymous visitor only gets the row when
+  // it is published and unsuspended; a member of the owning account gets
+  // it in any state. So a row that came back and isn't live means the
+  // person looking at it is the owner.
   const { data: site } = await supabase
     .from("wefunnel_sites")
     .select(
-      "id, slug, status, display_name, location, headline, bullets, video_url, accent, question_label, suspended_at"
+      "id, slug, status, display_name, location, headline, description, photo_url, bullets, video_url, accent, question_label, suspended_at"
     )
     .eq("slug", slug)
     .maybeSingle();
 
   if (!site) {
-    // Nothing readable. Either the name was never claimed, or it was and
-    // the viewer has no business seeing it. Those deserve different pages,
-    // and only the service role can tell them apart.
     const admin = createAdminClient();
     const { data: exists } = await admin
       .from("wefunnel_sites")
@@ -141,88 +122,81 @@ export default async function WeFunnelSitePage({
   const bullets = (site.bullets ?? []).filter(Boolean);
 
   return (
-    <main className="mx-auto max-w-[460px] px-6 pb-2">
-      {!isLive && (
-        <div className="-mx-6 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#A855F7] bg-gradient-to-br from-[#10163A] to-[#250F3D] px-5 py-3.5">
-          <div className="min-w-0">
-            <p className="m-0 text-xs font-semibold tracking-[0.08em] text-[#E879F9] uppercase">
-              {site.suspended_at ? "Suspendida" : "Borrador"}
-            </p>
-            <p className="m-0 text-[13px] leading-snug text-[#A9B0C9]">
-              {site.suspended_at
-                ? "Escríbenos para revisarla."
-                : "Solo tú la ves así"}
-            </p>
-          </div>
-          {!site.suspended_at && (
-            <a
-              href={wefunnelAppUrl("/panel")}
-              className="rounded-[10px] bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-5 py-3 text-[15px] font-semibold text-white no-underline"
-            >
-              Publicar
-            </a>
-          )}
-        </div>
-      )}
-
-      <div className={isLive ? "" : "opacity-60"}>
-        <div className="flex items-center gap-3.5 pt-8">
-          <span
-            className="flex h-[62px] w-[62px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[22px] font-bold text-white"
-            aria-hidden="true"
-          >
-            {initials(site.display_name)}
-          </span>
-          <div className="min-w-0">
-            <p className="m-0 text-[18px] font-semibold">{site.display_name}</p>
-            {site.location && (
-              <p className="m-0 text-sm text-[#6E7694]">{site.location}</p>
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_100%_0,#32225955,transparent_55%),#0a1322]">
+      {isLive && <VisitBeacon slug={site.slug} page="funnel" />}
+      <main className="mx-auto max-w-[560px] px-5 pb-2 sm:px-6">
+        {!isLive && (
+          <div className="-mx-5 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#354460] bg-[#151e31] px-5 py-3.5 sm:-mx-6">
+            <div className="min-w-0">
+              <p className="m-0 text-[11px] font-bold tracking-[1.4px] text-[#75e4ef] uppercase">
+                {site.suspended_at ? "Suspendida" : "Borrador · No publicada"}
+              </p>
+              <p className="m-0 text-[13px] leading-snug text-[#c3d2e8]">
+                {site.suspended_at ? "Escríbenos para revisarla." : "Solo tú la ves así."}
+              </p>
+            </div>
+            {!site.suspended_at && (
+              <a href={wefunnelAppUrl("/panel/personalizar")} className="wf-btn-primary rounded-lg px-4 py-2.5 text-[14px] font-bold no-underline">
+                Editar y publicar
+              </a>
             )}
           </div>
+        )}
+
+        <div className={isLive ? "" : "opacity-70"}>
+          <div className="flex items-center gap-3 pt-8">
+            <Avatar name={site.display_name} photoUrl={site.photo_url} size={57} />
+            <div className="min-w-0">
+              <p className="m-0 text-[16px] font-bold text-[#f2f7ff]">{site.display_name}</p>
+              {site.location && <p className="m-0 text-[13px] text-[#a8bdd5]">{site.location}</p>}
+            </div>
+          </div>
+
+          <Kicker className="mt-7">Conoce mi propuesta</Kicker>
+          {site.headline && (
+            <h1 className="mt-3 mb-0 text-[30px] leading-[1.16] font-bold tracking-[-0.7px] text-balance text-[#f2f7ff]">
+              {site.headline}
+            </h1>
+          )}
+          {site.description && (
+            <p className="mt-4 mb-0 text-[15px] leading-relaxed whitespace-pre-line text-[#b4c6dc]">
+              {site.description}
+            </p>
+          )}
+
+          {video && (
+            <div className="mt-6 aspect-video overflow-hidden rounded-[13px] border border-[#3d526d] bg-[#070d18]">
+              <iframe
+                src={video}
+                title={`Video de ${site.display_name}`}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full border-0"
+              />
+            </div>
+          )}
+
+          {bullets.length > 0 && (
+            <ul className="mt-6 flex list-none flex-col gap-3 p-0">
+              {bullets.map((bullet, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: accent }} aria-hidden="true" />
+                  <span className="text-[15px] leading-snug text-[#d7e3f3]">{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <LeadForm
+            siteId={site.id}
+            ownerName={site.display_name}
+            questionLabel={site.question_label}
+            disabled={!isLive}
+          />
         </div>
 
-        {site.headline && (
-          <h1 className="mt-5 mb-0 text-[29px] leading-[1.1] font-extrabold tracking-tight text-balance">
-            {site.headline}
-          </h1>
-        )}
-
-        {video && (
-          <div className="mt-5 aspect-video overflow-hidden rounded-[14px] border border-[#1A1A2A] bg-[#07070C]">
-            <iframe
-              src={video}
-              title={`Video de ${site.display_name}`}
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="h-full w-full border-0"
-            />
-          </div>
-        )}
-
-        {bullets.length > 0 && (
-          <ul className="mt-5 flex list-none flex-col gap-3 p-0">
-            {bullets.map((bullet, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <span
-                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
-                  style={{ background: accent }}
-                  aria-hidden="true"
-                />
-                <span className="text-[16px] leading-snug text-[#D7DCEC]">{bullet}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <LeadForm
-          siteId={site.id}
-          ownerName={site.display_name}
-          questionLabel={site.question_label}
-          disabled={!isLive}
-        />
-      </div>
-
-      <Badge slug={site.slug} />
-    </main>
+        <Footer slug={site.slug} />
+      </main>
+    </div>
   );
 }

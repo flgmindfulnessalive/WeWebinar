@@ -7,21 +7,26 @@ import type { Database } from "@/lib/supabase/database.types";
 export type WeFunnelSite = Database["public"]["Tables"]["wefunnel_sites"]["Row"];
 export type WeFunnelDistributor =
   Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
+export type WeFunnelOffer = Database["public"]["Functions"]["wefunnel_my_offer"]["Returns"][number];
 
 export type PanelViewer = {
   userId: string;
   email: string;
+  emailVerified: boolean;
+  fullName: string | null;
   site: WeFunnelSite | null;
+  // The licence row, revoked or not. Use isDistributor for rights.
   distributor: WeFunnelDistributor | null;
+  isDistributor: boolean;
+  offer: WeFunnelOffer | null;
 };
 
 // The panel's own session read. Deliberately not getCurrentAccount(): that
 // one needs a plan and returns null without one, which is right for the
 // WeWebinars dashboard and wrong here -- a free WeFunnels account has no
-// plan by design (see 20261007000002_wefunnel_claim.sql).
+// plan by design.
 //
-// Returns null only when nobody is signed in. A signed-in person with no
-// account and no site is the normal state right before claiming.
+// Returns null only when nobody is signed in.
 export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
   const supabase = await createClient();
   const {
@@ -30,30 +35,26 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
 
   if (!user) return null;
 
-  // RLS lets a member read their own site in any state, so one query covers
-  // draft, published and suspended alike.
-  const [{ data: site }, { data: distributor }] = await Promise.all([
+  // RLS lets a member read their own site in any state.
+  const [{ data: site }, { data: distributor }, { data: offerRows }] = await Promise.all([
     supabase.from("wefunnel_sites").select("*").limit(1).maybeSingle(),
     supabase.from("wefunnel_distributors").select("*").limit(1).maybeSingle(),
+    supabase.rpc("wefunnel_my_offer"),
   ]);
 
   return {
     userId: user.id,
     email: user.email ?? "",
+    emailVerified: Boolean(user.email_confirmed_at),
+    fullName: (user.user_metadata?.full_name as string | undefined)?.trim() || null,
     site: site ?? null,
     distributor: distributor ?? null,
+    isDistributor: Boolean(distributor && !distributor.revoked_at),
+    offer: offerRows?.[0] ?? null,
   };
 });
 
-// The three steps the panel nags about until they are done. Watching the
-// course is tracked once the course exists; for now the first step is
-// marked from the fact that they got here at all, since the only way in is
-// through the room.
-export function checklist(site: WeFunnelSite | null) {
-  const personalised = Boolean(site?.headline?.trim());
-  return {
-    watched: Boolean(site),
-    personalised,
-    published: site?.status === "published",
-  };
+export function firstName(viewer: PanelViewer): string {
+  const source = viewer.site?.display_name || viewer.fullName || viewer.email.split("@")[0] || "";
+  return source.split(/\s+/)[0] ?? source;
 }

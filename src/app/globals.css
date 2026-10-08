@@ -622,3 +622,55 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ===================================================================
+   WeFunnels brand utilities (approved designs, 8 Oct 2026).
+   Dark navy surfaces, cyan / electric blue / violet accents. Gradients
+   only on highlighted headline words and primary buttons; primary
+   buttons carry dark text for contrast.
+   =================================================================== */
+.wf-gradient-text {
+  color: #76d7f5;
+  background: linear-gradient(110deg, #41e5ec 5%, #83b5ff 55%, #bd8bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.wf-btn-primary {
+  background: linear-gradient(100deg, #3fe4ec, #83b9ff);
+  color: #061421;
+  -webkit-text-fill-color: #061421;
+}
+.wf-btn-primary:disabled {
+  opacity: 0.6;
+}
+/* Fine lines in perspective on the right side of commercial pages. */
+.wf-lines {
+  position: absolute;
+  inset: 0 0 0 55%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(150deg, transparent 0 80px, #8266c955 81px, transparent 82px 140px),
+    repeating-linear-gradient(90deg, transparent 0 78px, #38d8eb44 79px, transparent 80px 141px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+  mask-image: linear-gradient(90deg, transparent, #000);
+}
+.wf-glow-right {
+  background: radial-gradient(ellipse at 95% 50%, #30205a88, transparent 55%);
+}
+.wf-details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.wf-details > summary::-webkit-details-marker {
+  display: none;
+}
+.wf-details > summary::after {
+  content: "+";
+  color: #77dfe9;
+  flex-shrink: 0;
+}
+.wf-details[open] > summary::after {
+  content: "−";
+}
