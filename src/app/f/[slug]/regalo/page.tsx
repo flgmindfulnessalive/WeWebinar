@@ -5,10 +5,11 @@ import { PanelTop, Play, ChartNoAxesCombined } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 import { CountVisit } from "@/components/wefunnels/count-visit";
 import { Wordmark } from "@/components/wefunnels/wordmark";
+import { BackToTop } from "@/components/wefunnels/back-to-top";
 
 type RouteParams = { slug: string };
 
@@ -159,6 +160,9 @@ export default async function WeFunnelGiftPage({
   return (
     <div className="mx-auto max-w-[1180px]">
       <CountVisit slug={site.slug} surface="gift" />
+      {/* La página es larga y su CTA vive arriba del todo: sin esto, quien
+          llega al final solo puede volver arrastrando. */}
+      <BackToTop />
 
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#202A3B] px-[clamp(20px,5vw,34px)] py-5">
         <Wordmark size="sm" />
