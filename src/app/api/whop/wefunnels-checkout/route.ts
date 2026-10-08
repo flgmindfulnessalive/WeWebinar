@@ -28,14 +28,35 @@ export async function POST() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile?.account_id) {
-    return NextResponse.json({ error: "claim a page first" }, { status: 409 });
+  // Somebody buying from the public web has no account yet: the account
+  // used to be created by the claim, and the claim needs an invitation they
+  // have not got (20261007000014). So the checkout creates it. An account
+  // on its own grants nothing -- no page, no licence, no plan -- and the
+  // function is idempotent, so a reload of this route cannot make a second.
+  let accountId = profile?.account_id ?? null;
+
+  if (!accountId) {
+    const name =
+      (user.user_metadata?.full_name as string | undefined)?.trim() ||
+      user.email?.split("@")[0] ||
+      "Mi cuenta";
+
+    const { data: started, error: startError } = await supabase.rpc(
+      "wefunnel_start_account",
+      { p_name: name }
+    );
+
+    if (startError || !started) {
+      console.error("[wefunnel] start account failed:", startError?.message);
+      return NextResponse.json({ error: "checkout unavailable" }, { status: 503 });
+    }
+    accountId = started;
   }
 
   const { data: existing } = await supabase
     .from("wefunnel_distributors")
     .select("account_id")
-    .eq("account_id", profile.account_id)
+    .eq("account_id", accountId)
     .maybeSingle();
 
   if (existing) {
@@ -48,7 +69,7 @@ export async function POST() {
   const { data: pricing } = await supabase.rpc("wefunnel_license_price");
   const source = pricing?.[0]?.source === "invited" ? "invited" : "public";
 
-  const url = await createDistributorCheckoutUrl(profile.account_id, source);
+  const url = await createDistributorCheckoutUrl(accountId, source);
   if (!url) {
     // Unset plan id or a Whop outage. Either way it is ours, not theirs.
     return NextResponse.json({ error: "checkout unavailable" }, { status: 503 });

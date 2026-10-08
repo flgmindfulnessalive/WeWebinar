@@ -2120,6 +2120,10 @@ export interface Database {
         };
         Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
       };
+      wefunnel_start_account: {
+        Args: { p_name: string };
+        Returns: string;
+      };
       wefunnel_course_progress: {
         Args: { p_webinar_id: string };
         Returns: {

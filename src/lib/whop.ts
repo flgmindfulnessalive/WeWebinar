@@ -237,7 +237,10 @@ export async function createDistributorCheckoutUrl(
         product: WEFUNNELS_DISTRIBUTOR_METADATA,
         license_source: source,
       },
-      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/repartir`,
+      // To the confirmation rather than straight to the distributor panel:
+      // a public buyer has no page yet, and that screen is where they
+      // choose their address once the webhook has landed.
+      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/distribuidor/listo`,
     });
     return config.purchase_url ?? null;
   } catch (err) {

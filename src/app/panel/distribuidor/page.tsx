@@ -29,8 +29,13 @@ const MONEY = new Intl.NumberFormat("es", {
 export default async function PanelDistributorPage() {
   const viewer = await getPanelViewer();
   if (!viewer) redirect("/login?next=/panel/distribuidor");
-  if (!viewer.site) redirect("/panel");
   if (viewer.distributor) redirect("/panel/repartir");
+
+  // No redirect for a missing page. Somebody who bought from the public web
+  // has no page yet and this is the screen they came for; the page comes
+  // after the payment, because claiming before it would hand out a free
+  // funnel to anyone who started a purchase and walked away
+  // (20261007000014).
 
   const supabase = await createClient();
   const { data } = await supabase.rpc("wefunnel_license_price");
