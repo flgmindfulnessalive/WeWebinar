@@ -4,7 +4,13 @@ import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 
-export type WeFunnelSignUpState = { error: string } | { sent: string } | null;
+export type WeFunnelSignUpState =
+  | { error: string }
+  | { sent: string }
+  // Ya tenía cuenta. Su propio estado y no un error: no hizo nada mal, y
+  // lo que le falta es un enlace, no una corrección.
+  | { exists: true }
+  | null;
 
 // Where the confirmation email lands, by intent. A fixed map and not a path
 // read off the form: that path is written into a link we email, so accepting
@@ -59,7 +65,7 @@ export async function weFunnelSignUp(
 
   try {
     const supabase = await createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -75,6 +81,23 @@ export async function weFunnelSignUp(
         return { error: t("captchaFailed") };
       }
       return { error: error.message };
+    }
+
+    // Un alta sobre un email que ya tiene cuenta devuelve éxito y no manda
+    // nada: Supabase lo hace así para no confirmarle a un desconocido qué
+    // direcciones están registradas. El usuario vuelve sin identidades, que
+    // es la única señal de que eso ha pasado.
+    //
+    // Sin mirarla, esta pantalla decía "revisa tu correo" por un correo que
+    // nunca salió, y la persona se quedaba esperándolo. En un embudo eso no
+    // es una molestia, es la pérdida completa: se ha ido y no sabe por qué.
+    //
+    // Se gana decirle a quien pregunta si un email está registrado. Es un
+    // precio consciente: quien llega aquí viene de un enlace de regalo o de
+    // la web de compra, y dejarlo en un callejón sin salida cuesta más que
+    // lo que ese dato vale.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      return { exists: true };
     }
   } catch (err) {
     console.error("[wefunnel] signup failed:", err);
