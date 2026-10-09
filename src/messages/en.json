@@ -105,7 +105,7 @@
     "emailRequired": "Email is required.",
     "sendEmailFailed": "We couldn't send the email. Try again in a moment.",
     "passwordTooShort": "Password must be at least 8 characters.",
-    "captchaFailed": "We couldn't verify you're human. Reload the page and try again."
+    "captchaFailed": "We couldn't verify you're human. Wait for the checkbox to tick again, then resend."
   },
   "Home": {
     "metaTitle": "WeWebinars — Automate presentations that sell 24/7",

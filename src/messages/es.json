@@ -105,7 +105,7 @@
     "emailRequired": "El email es obligatorio.",
     "sendEmailFailed": "No pudimos enviar el email. Prueba de nuevo en un momento.",
     "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
-    "captchaFailed": "No pudimos verificar que eres una persona. Recarga la página e intenta de nuevo."
+    "captchaFailed": "No pudimos verificar que eres una persona. Espera a que la casilla vuelva a marcarse y envía otra vez."
   },
   "Home": {
     "metaTitle": "WeWebinars — Automatiza presentaciones que venden 24/7",

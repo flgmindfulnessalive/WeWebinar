@@ -25,7 +25,7 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
     weFunnelSignUp,
     null
   );
-  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY, state);
   const [name, setName] = useState("");
   const [visible, setVisible] = useState(false);
 

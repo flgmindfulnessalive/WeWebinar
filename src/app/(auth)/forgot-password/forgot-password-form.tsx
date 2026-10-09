@@ -27,7 +27,7 @@ export function ForgotPasswordForm() {
     requestPasswordReset,
     null
   );
-  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY, state);
 
   if (state && "success" in state) {
     return (

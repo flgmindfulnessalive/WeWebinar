@@ -19,7 +19,7 @@ export function WeFunnelResetRequestForm() {
     weFunnelRequestReset,
     null
   );
-  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY, state);
 
   // Said without naming the address back, and without saying whether it had
   // an account: this screen is open to anyone.
