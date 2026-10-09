@@ -27,6 +27,7 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
   );
   const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY, state);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [visible, setVisible] = useState(false);
 
   // The suggestion is informational, exactly as approved: there is no fourth
@@ -132,6 +133,12 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
           <label className={LABEL} htmlFor="wf-email">
             Email
           </label>
+          {/* Controlado, como el nombre, y por el mismo motivo que no se
+              veía: React limpia los campos no controlados cuando termina
+              la acción de un formulario. Así que cada intento fallido
+              -- un captcha que no verifica, un corte -- borraba el email
+              que la persona acababa de escribir, y el formulario volvía
+              con el nombre puesto y el email en blanco. */}
           <input
             id="wf-email"
             name="email"
@@ -139,6 +146,8 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
             required
             autoComplete="email"
             placeholder="tu@email.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             className={`${FIELD} mt-2`}
           />
         </div>
