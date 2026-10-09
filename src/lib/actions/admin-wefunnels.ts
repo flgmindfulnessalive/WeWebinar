@@ -75,6 +75,18 @@ export async function clearReview(
 
 export type ConsoleState = { error: string } | { success: string } | null;
 
+// PostgREST contesta PGRST202 cuando le piden una función que no está en su
+// caché de esquema, y su mensaje es la firma entera con los argumentos. Para
+// quien mira esta pantalla eso no dice nada; lo que ha pasado casi siempre
+// es que la migración todavía no se ha aplicado.
+const MIGRATION_PENDING =
+  "Falta aplicar la migración: ejecuta «supabase db push» y vuelve a intentarlo. " +
+  "Si ya la aplicaste, recarga la caché de esquema con «notify pgrst, 'reload schema';».";
+
+function readable(error: { code?: string; message: string }): string {
+  return error.code === "PGRST202" ? MIGRATION_PENDING : error.message;
+}
+
 async function assertAdmin(): Promise<string | null> {
   const supabase = await createClient();
   const { data: isAdmin } = await supabase.rpc("is_platform_admin");
@@ -154,7 +166,7 @@ export async function createWeFunnelAccount(
 
   if (error) {
     console.error("[wefunnel/admin] create site failed:", error.message);
-    return { error: error.message };
+    return { error: readable(error) };
   }
 
   revalidatePath("/admin/wefunnels");
@@ -190,7 +202,7 @@ export async function grantDistributorLicense(
 
   if (error) {
     console.error("[wefunnel/admin] grant failed:", error.message);
-    return { error: error.message };
+    return { error: readable(error) };
   }
 
   revalidatePath("/admin/wefunnels");
