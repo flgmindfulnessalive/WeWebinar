@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { PanelTop, Play, ChartNoAxesCombined } from "lucide-react";
+import { PanelTop, Play, ChartNoAxesCombined, GraduationCap } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -355,7 +355,19 @@ export default async function WeFunnelGiftPage({
           <div data-reveal className={SHELL}>
             <div className="grid gap-[clamp(26px,4vw,38px)] lg:grid-cols-[1fr_1.1fr]">
               <div className="min-w-0">
-                <p className={LABEL}>Incluido gratis</p>
+                {/* "Incluido gratis" no dice QUÉ está incluido, y lo que
+                    sigue es un titular con el nombre del curso, no su
+                    categoría: hasta llegar a las tres lecciones de al lado
+                    nadie sabe que esto es un curso. La píldora lo nombra
+                    antes de leer nada más -- de contorno y no rellena,
+                    porque es una etiqueta, no un botón: nada que pulsar. */}
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <p className={LABEL}>Incluido gratis</p>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#43E2EE]/55 px-2.5 py-1 text-[length:var(--wf-kicker)] font-bold tracking-[0.14em] text-[#8EEFF5] uppercase">
+                    <GraduationCap className="size-3.5 shrink-0" aria-hidden="true" />
+                    Curso
+                  </span>
+                </div>
                 <h2 className={H2}>Cómo NUNCA quedarte sin prospectos.</h2>
                 <p className={BODY}>
                   Aprende a alimentar tu funnel con una rutina de prospección que puedas

@@ -1,8 +1,14 @@
 "use server";
 
+import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/resend";
+import { verifyTurnstile } from "@/lib/turnstile";
+import { wefunnelUrl } from "@/lib/wefunnels/host";
+import { weFunnelsConfirmEmail, weFunnelsFromEmail } from "@/lib/wefunnels/email";
 
 export type WeFunnelSignUpState =
   | { error: string }
@@ -26,11 +32,6 @@ const DESTINATIONS = {
 
 type Intent = keyof typeof DESTINATIONS;
 
-function destinationFor(value: FormDataEntryValue | null): string {
-  const key = String(value ?? "");
-  return DESTINATIONS[key as Intent] ?? DESTINATIONS.regalo;
-}
-
 // Signup for someone arriving from WeFunnels, by either door: accepting a
 // distributor's gift, or buying the licence from the official web.
 //
@@ -40,11 +41,9 @@ function destinationFor(value: FormDataEntryValue | null): string {
 // about webinars: questions neither of these two people has any reason to
 // answer yet.
 //
-// Everything else is deliberately the same account system: same
-// supabase.auth.signUp, same Turnstile verification, same email
-// confirmation requirement, same password policy. The approved mock asks
-// for 8 characters; whatever the project already enforces is stronger or
-// equal and is what applies.
+// Everything else is deliberately the same account system: same Supabase
+// project, same users table, same email confirmation requirement, same
+// password policy.
 //
 // The distributor's attribution is not in this payload. It lives in the
 // wf_ref cookie and is validated against the database by
@@ -58,11 +57,128 @@ export async function weFunnelSignUp(
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("name") ?? "").trim().slice(0, 80);
   const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
-  const destination = destinationFor(formData.get("destino"));
+  const intent: Intent = formData.get("destino") === "distribuidor" ? "distribuidor" : "regalo";
+  const destination = DESTINATIONS[intent];
 
   if (!fullName) return { error: "Escribe tu nombre." };
   if (!email) return { error: "Escribe tu email." };
 
+  const forwarded = (await headers()).get("x-forwarded-for") ?? "";
+  const ip = forwarded.split(",")[0]?.trim() || null;
+  const captcha = await verifyTurnstile(captchaToken, ip);
+
+  if (captcha === "failed") {
+    const t = await getTranslations("AuthActions");
+    return { error: t("captchaFailed") };
+  }
+
+  // Sin TURNSTILE_SECRET_KEY no podemos comprobar el captcha nosotros, y
+  // Supabase sí. Así que el alta sigue yendo por donde iba: su API lo
+  // verifica al recibirla y manda su propio correo, el de la plantilla
+  // única del proyecto -- con la marca de WeWebinars.
+  //
+  // Es el peor de los dos resultados y es el que había siempre, así que
+  // dejarlo como reserva no quita nada. Lo que no se puede es tomar el
+  // camino propio sin esa comprobación: dejaría este formulario, que es
+  // público, abierto a cualquier script.
+  if (captcha === "unconfigured") {
+    return signUpThroughSupabase({ email, password, fullName, captchaToken, destination });
+  }
+
+  return signUpWithOurOwnEmail({ email, password, fullName, destination, intent });
+}
+
+// El camino propio: la cuenta se crea con la API de administración, que no
+// manda ningún correo, y el correo lo manda WeFunnels.
+async function signUpWithOurOwnEmail({
+  email,
+  password,
+  fullName,
+  destination,
+  intent,
+}: {
+  email: string;
+  password: string;
+  fullName: string;
+  destination: string;
+  intent: Intent;
+}): Promise<WeFunnelSignUpState> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin.auth.admin.generateLink({
+      type: "signup",
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+
+    if (error) {
+      // Una dirección que ya tiene cuenta confirmada. Antes esto había que
+      // deducirlo de un éxito con la lista de identidades vacía, que es la
+      // forma en que supabase.auth.signUp evita confirmarle a un
+      // desconocido qué direcciones están registradas. Aquí viene dicho.
+      //
+      // Una cuenta SIN confirmar no cae aquí: para ella generateLink
+      // devuelve un enlace nuevo, que es justo lo que necesita quien se
+      // registró y no encontró el correo.
+      const message = error.message.toLowerCase();
+      if (
+        error.code === "email_exists" ||
+        error.status === 422 ||
+        message.includes("already") ||
+        message.includes("registered")
+      ) {
+        return { exists: true };
+      }
+      console.error("[wefunnel] signup generateLink failed:", error.message);
+      const t = await getTranslations("AuthActions");
+      return { error: t("connectionError") };
+    }
+
+    const tokenHash = data?.properties?.hashed_token;
+    const verificationType = data?.properties?.verification_type;
+    if (!tokenHash || !verificationType) {
+      console.error("[wefunnel] signup link came back without a token");
+      const t = await getTranslations("AuthActions");
+      return { error: t("connectionError") };
+    }
+
+    const actionUrl = wefunnelUrl(
+      `/confirmar?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(
+        verificationType
+      )}&next=${encodeURIComponent(destination)}`
+    );
+
+    const { subject, html } = weFunnelsConfirmEmail(actionUrl, intent === "distribuidor" ? "compra" : "regalo");
+    await sendEmail({ to: email, subject, html, from: weFunnelsFromEmail() });
+  } catch (err) {
+    // Lo único que llega aquí es el envío: lo de arriba devuelve en vez de
+    // lanzar. La cuenta ya existe sin confirmar, así que volver a intentarlo
+    // le dará un enlace nuevo en vez de chocar.
+    console.error("[wefunnel] signup email failed:", err);
+    return {
+      error: "Creamos tu cuenta pero el correo no salió. Vuelve a intentarlo en un minuto.",
+    };
+  }
+
+  return { sent: email };
+}
+
+// El camino de siempre, intacto. Supabase comprueba el captcha al recibir el
+// alta y manda su propio correo.
+async function signUpThroughSupabase({
+  email,
+  password,
+  fullName,
+  captchaToken,
+  destination,
+}: {
+  email: string;
+  password: string;
+  fullName: string;
+  captchaToken: string;
+  destination: string;
+}): Promise<WeFunnelSignUpState> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signUp({
@@ -91,11 +207,6 @@ export async function weFunnelSignUp(
     // Sin mirarla, esta pantalla decía "revisa tu correo" por un correo que
     // nunca salió, y la persona se quedaba esperándolo. En un embudo eso no
     // es una molestia, es la pérdida completa: se ha ido y no sabe por qué.
-    //
-    // Se gana decirle a quien pregunta si un email está registrado. Es un
-    // precio consciente: quien llega aquí viene de un enlace de regalo o de
-    // la web de compra, y dejarlo en un callejón sin salida cuesta más que
-    // lo que ese dato vale.
     if (data.user && (data.user.identities?.length ?? 0) === 0) {
       return { exists: true };
     }
@@ -105,8 +216,5 @@ export async function weFunnelSignUp(
     return { error: t("connectionError") };
   }
 
-  // Confirmation is required, so there is no session to redirect with. The
-  // screen says to go to their inbox, which is the truth and the only thing
-  // they can act on.
   return { sent: email };
 }
