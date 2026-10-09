@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { kickerOf } from "@/lib/wefunnels/kicker";
 import { LeadForm } from "./lead-form";
 import { CountVisit } from "@/components/wefunnels/count-visit";
 import { HeroGrid } from "@/components/wefunnels/hero-grid";
@@ -118,7 +119,10 @@ export default async function WeFunnelSitePage({
   const { data: site } = await supabase
     .from("wefunnel_sites")
     .select(
-      "id, slug, status, display_name, location, headline, bullets, video_url, accent, question_label, suspended_at"
+      // photo_url, description y kicker llevaban meses en la base y en el
+      // editor, y esta consulta no los pedía: su dueño los escribía, los veía
+      // en la vista previa y sus visitantes no llegaban a leerlos nunca.
+      "id, slug, status, display_name, location, headline, bullets, video_url, accent, question_label, suspended_at, photo_url, description, kicker"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -182,12 +186,27 @@ export default async function WeFunnelSitePage({
 
         <div className={isLive ? "" : "opacity-60"}>
           <div className="flex items-center gap-3.5 pt-8">
-            <span
-              className="flex h-[70px] w-[70px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[25px] font-bold text-white"
-              aria-hidden="true"
-            >
-              {initials(site.display_name)}
-            </span>
+            {site.photo_url ? (
+              // Su cara, que es de lo que va esta página: alguien decide si
+              // deja sus datos mirando a una persona, no a dos iniciales.
+              // Sin optimizar, igual que en la página de regalo -- a 70 px el
+              // optimizador no compra nada y añade un salto que puede fallar.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={site.photo_url}
+                alt={site.display_name}
+                width={70}
+                height={70}
+                className="h-[70px] w-[70px] shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <span
+                className="flex h-[70px] w-[70px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[25px] font-bold text-white"
+                aria-hidden="true"
+              >
+                {initials(site.display_name)}
+              </span>
+            )}
             <div className="min-w-0">
               <p className="m-0 text-[length:var(--wf-h3)] font-semibold">{site.display_name}</p>
               {site.location && (
@@ -197,9 +216,23 @@ export default async function WeFunnelSitePage({
           </div>
 
           {site.headline && (
-            <h1 className="mt-6 mb-0 text-[clamp(30px,4.6vw,42px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-balance">
-              {site.headline}
-            </h1>
+            <>
+              <p
+                className="m-0 mt-7 text-[length:var(--wf-kicker)] font-bold tracking-[0.13em] uppercase"
+                style={{ color: accent }}
+              >
+                {kickerOf(site.kicker)}
+              </p>
+              <h1 className="mt-2.5 mb-0 text-[clamp(30px,4.6vw,42px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-balance">
+                {site.headline}
+              </h1>
+            </>
+          )}
+
+          {site.description && (
+            <p className="mt-4 mb-0 text-[length:var(--wf-lead)] leading-relaxed text-[#C1D1E6]">
+              {site.description}
+            </p>
           )}
 
           {video && (

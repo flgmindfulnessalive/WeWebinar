@@ -153,6 +153,9 @@ export async function saveWeFunnelSite(
       // at 300 in the database too, so a longer paste is trimmed here
       // rather than rejected after they have typed it.
       description: field(formData, "description", 300) || null,
+      // Vacío es nulo y no cadena vacía: nulo quiere decir "el de siempre",
+      // y la aplicación pone el texto por defecto (lib/wefunnels/kicker.ts).
+      kicker: field(formData, "kicker", 60) || null,
       photo_url: field(formData, "photoUrl", 500) || null,
       bullets,
       video_url: field(formData, "videoUrl", 500) || null,
