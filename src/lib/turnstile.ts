@@ -26,6 +26,18 @@ export async function verifyTurnstile(
   // al camino de Supabase, que sí lo verifica.
   if (!secret) return "unconfigured";
 
+  // La confusión que costó una tarde: poner la Site Key en las dos
+  // variables. El widget se pinta y se resuelve, porque esa mitad es
+  // correcta, y Cloudflare rechaza la otra con `invalid-input-secret` --
+  // un código que no dice en ningún sitio que las dos claves sean la
+  // misma. Aquí se nombra el error de verdad, antes de salir a la red.
+  if (secret === process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) {
+    console.error(
+      "[turnstile] TURNSTILE_SECRET_KEY tiene el mismo valor que NEXT_PUBLIC_TURNSTILE_SITE_KEY: es la Site Key, no la Secret Key. La secreta se obtiene en Cloudflare > Turnstile > el widget > Settings > Rotate Secret Key."
+    );
+    return "failed";
+  }
+
   if (!token) return "failed";
 
   try {
