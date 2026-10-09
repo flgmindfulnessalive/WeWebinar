@@ -87,10 +87,41 @@ function readable(error: { code?: string; message: string }): string {
   return error.code === "PGRST202" ? MIGRATION_PENDING : error.message;
 }
 
+// Tres respuestas distintas, no una.
+//
+// Antes se quedaba solo con `data` y cualquier cosa que no fuera cierta
+// salía como "No autorizado.": daba igual que la comprobación hubiera
+// fallado, que la sesión se hubiera perdido o que la persona de verdad
+// no fuera administradora. Eso convierte un fallo con causa en un
+// mensaje sin pistas, delante de alguien que está mirando su propio
+// panel de administración y sabe que sí lo es.
+//
+// El caso que se vio en producción: las dos marcas comparten la cookie
+// de sesión en .wewebinars.com, así que darse de alta con una cuenta de
+// prueba en WeFunnels SUSTITUYE la sesión de administrador. La pantalla
+// ya cargada sigue a la vista con los datos de antes, y el primer envío
+// de un formulario va con la sesión nueva, que no es administradora.
 async function assertAdmin(): Promise<string | null> {
   const supabase = await createClient();
-  const { data: isAdmin } = await supabase.rpc("is_platform_admin");
-  return isAdmin ? null : "No autorizado.";
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return "Tu sesión caducó o se cambió por otra. Recarga la página y vuelve a entrar.";
+  }
+
+  const { data: isAdmin, error } = await supabase.rpc("is_platform_admin");
+  if (error) {
+    console.error("[wefunnel/admin] is_platform_admin falló:", error.message);
+    return `No pudimos comprobar tus permisos: ${readable(error)}`;
+  }
+
+  return isAdmin
+    ? null
+    : `La sesión actual (${user.email ?? "sin email"}) no es de administrador. ` +
+        "Si acabas de crear una cuenta de prueba, esa sesión sustituyó a la tuya: " +
+        "cierra sesión y vuelve a entrar con tu cuenta.";
 }
 
 // Contra public.users y no contra auth.admin.listUsers: aquella pagina y
