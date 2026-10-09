@@ -123,7 +123,7 @@ export default async function WeFunnelSignUpPage({
           {referrer ? (
             <div className="flex min-w-0 items-center gap-3">
               {referrer.photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
+                // eslint-disable-next-line @next/next/no-img-element -- 44 px: el optimizador no compra nada
                 <img
                   src={referrer.photo}
                   alt=""
