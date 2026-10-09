@@ -25,14 +25,14 @@ import type { WeFunnelSite, checklist } from "@/lib/wefunnels/site";
 // can carry.
 
 const FIELD =
-  "w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3 text-[15px] text-[#F3F7FF] outline-none placeholder:text-[#5E7290] focus-visible:border-[#43E2EE] focus-visible:ring-2 focus-visible:ring-[#43E2EE]/30";
-const LABEL = "block text-[13px] font-semibold text-[#D2DFEF]";
-const HELP = "m-0 mt-1.5 text-xs leading-relaxed text-[#8498B4]";
+  "w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3 text-[length:var(--wf-body)] text-[#F3F7FF] outline-none placeholder:text-[#5E7290] focus-visible:border-[#43E2EE] focus-visible:ring-2 focus-visible:ring-[#43E2EE]/30";
+const LABEL = "block text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]";
+const HELP = "m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]";
 const PANEL = "rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.4vw,24px)]";
 const H2 = "m-0 text-[18px] font-semibold tracking-[-0.015em] text-[#F3F7FF]";
 
 const ACCENTS: { key: string; hex: string; label: string }[] = [
-  { key: "cyan", hex: "#2BD7F5", label: "Cian" },
+  { key: "cyan", hex: "#43E2EE", label: "Cian" },
   { key: "blue", hex: "#2E63FF", label: "Azul" },
   { key: "violet", hex: "#A855F7", label: "Violeta" },
   { key: "pink", hex: "#F0479B", label: "Rosa" },
@@ -66,8 +66,8 @@ function Submit({
       disabled={pending}
       className={
         variant === "primary"
-          ? "inline-flex min-h-[48px] items-center justify-center gap-2.5 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[15px] font-bold text-[#071521] disabled:opacity-60"
-          : "inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[#2D3E57] px-5 py-3.5 text-[15px] font-semibold text-[#D2DFEF] disabled:opacity-60"
+          ? "inline-flex min-h-[48px] items-center justify-center gap-2.5 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[#071521] disabled:opacity-60"
+          : "inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[#2D3E57] px-5 py-3.5 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF] disabled:opacity-60"
       }
     >
       {pending ? "Guardando…" : children}
@@ -91,7 +91,7 @@ function Avatar({ photo, name, size }: { photo: string | null; name: string; siz
   }
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] font-bold text-white"
+      className="wf-cta grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] font-bold text-white"
       style={{ width: size, height: size, fontSize: Math.round(size / 2.8) }}
       aria-hidden="true"
     >
@@ -151,13 +151,13 @@ export function SiteEditor({
   return (
     <div className="flex flex-col gap-7">
       <div>
-        <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
           Tu funnel ya es tuyo
         </p>
         <h1 className="m-0 mt-2.5 text-[clamp(26px,4vw,34px)] leading-tight font-extrabold tracking-[-0.03em] text-[#F3F7FF]">
           Personaliza tu funnel
         </h1>
-        <p className="m-0 mt-2.5 max-w-[58ch] text-[15px] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-2.5 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
           Ahora hagámoslo a tu medida. Cuéntale a tus visitantes qué pueden descubrir
           contigo.
         </p>
@@ -182,7 +182,7 @@ export function SiteEditor({
                 <span className={LABEL}>Tu foto · opcional</span>
                 <p className={HELP}>JPG, PNG o WebP. Hasta 5 MB.</p>
                 {photoState && "error" in photoState && (
-                  <p className="m-0 mt-1.5 text-xs text-[#FF9A9A]" role="alert">
+                  <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[#FF9A9A]" role="alert">
                     {photoState.error}
                   </p>
                 )}
@@ -245,7 +245,7 @@ export function SiteEditor({
           {/* Everything the editor had before the approved five. Kept, not
               removed: these are on pages that are already published. */}
           <details className={PANEL}>
-            <summary className="cursor-pointer text-[15px] font-semibold text-[#D2DFEF]">
+            <summary className="cursor-pointer text-[length:var(--wf-body)] font-semibold text-[#D2DFEF]">
               Más opciones de tu página
             </summary>
             <div className="mt-5 flex flex-col gap-5">
@@ -324,7 +324,7 @@ export function SiteEditor({
                   {ACCENTS.map((accent) => (
                     <label
                       key={accent.key}
-                      className="flex cursor-pointer items-center gap-2 rounded-[9px] border border-[#2D3E57] px-3 py-2 text-[13px] text-[#D2DFEF] has-checked:border-[#43E2EE]"
+                      className="flex cursor-pointer items-center gap-2 rounded-[9px] border border-[#2D3E57] px-3 py-2 text-[length:var(--wf-small)] text-[#D2DFEF] has-checked:border-[#43E2EE]"
                     >
                       <input
                         type="radio"
@@ -386,12 +386,12 @@ export function SiteEditor({
               Tú decides cuándo publicar. Podrás editar tu página después.
             </p>
             {state && "error" in state && (
-              <p className="m-0 text-sm leading-relaxed text-[#FF9A9A]" role="alert">
+              <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#FF9A9A]" role="alert">
                 {state.error}
               </p>
             )}
             {state && "success" in state && (
-              <p className="m-0 text-sm text-[#4ED8A8]" role="status">
+              <p className="m-0 text-[length:var(--wf-body)] text-[#4ED8A8]" role="status">
                 Guardado.
               </p>
             )}
@@ -401,17 +401,17 @@ export function SiteEditor({
         {/* ---------- la vista previa ---------- */}
         <section className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <strong className="text-[15px] font-semibold text-[#F3F7FF]">
+            <strong className="text-[length:var(--wf-body)] font-semibold text-[#F3F7FF]">
               Así verán tu página
             </strong>
-            <span className="rounded-full border border-[#2D3E57] px-3 py-1 text-[11px] text-[#B7C7DC]">
+            <span className="rounded-full border border-[#2D3E57] px-3 py-1 text-[length:var(--wf-kicker)] text-[#B7C7DC]">
               {stateLabel}
             </span>
           </div>
 
           <div className="mt-3 overflow-hidden rounded-[14px] border border-[#3D4C68] bg-[#0B1423]">
             <p
-              className="m-0 bg-[#182237] px-4 py-3 text-[11px] break-all text-[#C1D3E7]"
+              className="m-0 bg-[#182237] px-4 py-3 text-[length:var(--wf-kicker)] break-all text-[#C1D3E7]"
               style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
             >
               {WEFUNNELS_HOST}/{slug}
@@ -423,13 +423,13 @@ export function SiteEditor({
                   {name || "Tu nombre"}
                 </strong>
               </div>
-              <p className="m-0 mt-5 text-[11px] font-bold tracking-[0.14em] text-[#70E9EF] uppercase">
+              <p className="m-0 mt-5 text-[length:var(--wf-kicker)] font-bold tracking-[0.14em] text-[#70E9EF] uppercase">
                 Conoce mi propuesta
               </p>
               <p className="m-0 mt-2 text-[clamp(20px,2.8vw,25px)] leading-[1.18] font-bold tracking-[-0.025em] text-[#F3F7FF]">
                 {headline || "Tu titular aparecerá aquí."}
               </p>
-              <p className="m-0 mt-3 text-[14px] leading-relaxed text-[#B7C7DC]">
+              <p className="m-0 mt-3 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
                 {description || "Y debajo, lo que quieras contarles de tu propuesta."}
               </p>
 
@@ -437,39 +437,39 @@ export function SiteEditor({
                   is a preview, and a working form here would write a row on
                   the owner's own page. */}
               <div className="mt-5 flex flex-col gap-2.5 border-t border-[#1F2A3C] pt-5">
-                <span className="text-[12px] font-semibold text-[#D2DFEF]">Tu nombre</span>
-                <p className="m-0 rounded-[9px] border border-[#2D3E57] px-3 py-2.5 text-[13px] text-[#5E7290]">
+                <span className="text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]">Tu nombre</span>
+                <p className="m-0 rounded-[9px] border border-[#2D3E57] px-3 py-2.5 text-[length:var(--wf-small)] text-[#5E7290]">
                   ¿Cómo te llamas?
                 </p>
-                <span className="mt-1 text-[12px] font-semibold text-[#D2DFEF]">Email</span>
-                <p className="m-0 rounded-[9px] border border-[#2D3E57] px-3 py-2.5 text-[13px] text-[#5E7290]">
+                <span className="mt-1 text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]">Email</span>
+                <p className="m-0 rounded-[9px] border border-[#2D3E57] px-3 py-2.5 text-[length:var(--wf-small)] text-[#5E7290]">
                   tu@email.com
                 </p>
-                <p className="m-0 mt-2 rounded-md bg-[#48E0E8] px-3 py-2.5 text-center text-[13px] font-bold text-[#051521]">
+                <p className="m-0 mt-2 rounded-md bg-[#48E0E8] px-3 py-2.5 text-center text-[length:var(--wf-small)] font-bold text-[#051521]">
                   Quiero más información →
                 </p>
-                <p className="m-0 text-[11px] leading-relaxed text-[#8498B4]">
+                <p className="m-0 text-[length:var(--wf-kicker)] leading-relaxed text-[#8498B4]">
                   Al enviar, solicitan que {name || "tú"} les contactes sobre esta
                   propuesta.
                 </p>
               </div>
             </div>
-            <p className="m-0 border-t border-[#1F2A3C] bg-[#091221] px-4 py-3 text-center text-[11px] text-[#8498B4]">
+            <p className="m-0 border-t border-[#1F2A3C] bg-[#091221] px-4 py-3 text-center text-[length:var(--wf-kicker)] text-[#8498B4]">
               Creado con WeFunnels
             </p>
           </div>
 
-          <p className="m-0 mt-3 text-xs leading-relaxed text-[#8498B4]">
+          <p className="m-0 mt-3 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
             Los registros de esta página aparecerán en tu panel, junto con las visitas y la
             conversión.
           </p>
 
           {!emailVerified && (
             <div className="mt-4 rounded-[13px] border border-[#F5BE52] bg-[#1A1407] p-4">
-              <strong className="text-[14px] font-semibold text-[#F7D79B]">
+              <strong className="text-[length:var(--wf-body)] font-semibold text-[#F7D79B]">
                 Antes de publicar, verifica tu email.
               </strong>
-              <p className="m-0 mt-1.5 text-[13px] leading-relaxed text-[#D8C49A]">
+              <p className="m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[#D8C49A]">
                 Puedes seguir personalizando tu página mientras completas este paso.
               </p>
             </div>
@@ -505,12 +505,12 @@ export function SiteEditor({
               <>
                 <Submit variant="ghost">Guardar mi dirección</Submit>
                 {slugState && "error" in slugState && (
-                  <p className="m-0 text-sm leading-relaxed text-[#FF9A9A]" role="alert">
+                  <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#FF9A9A]" role="alert">
                     {slugState.error}
                   </p>
                 )}
                 {slugState && "success" in slugState && (
-                  <p className="m-0 text-sm text-[#4ED8A8]" role="status">
+                  <p className="m-0 text-[length:var(--wf-body)] text-[#4ED8A8]" role="status">
                     Tu dirección quedó guardada.
                   </p>
                 )}
@@ -531,14 +531,14 @@ export function SiteEditor({
             name="file"
             type="file"
             accept="image/png,image/jpeg,image/webp"
-            className="mt-2 w-full text-[13px] text-[#B7C7DC] file:mr-3 file:rounded-md file:border-0 file:bg-[#1C2A3F] file:px-3 file:py-2 file:text-[13px] file:font-semibold file:text-[#D2DFEF]"
+            className="mt-2 w-full text-[length:var(--wf-small)] text-[#B7C7DC] file:mr-3 file:rounded-md file:border-0 file:bg-[#1C2A3F] file:px-3 file:py-2 file:text-[13px] file:font-semibold file:text-[#D2DFEF]"
           />
         </div>
         <Submit variant="ghost">Subir</Submit>
       </form>
 
       {steps && (
-        <p className="m-0 text-xs leading-relaxed text-[#8498B4]">
+        <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
           {steps.published
             ? "Tu página está publicada. Comparte tu enlace y revisa tus registros en el panel."
             : "Cuando la publiques, tu enlace queda vivo y empieza a captar registros."}

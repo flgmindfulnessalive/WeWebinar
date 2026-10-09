@@ -13,7 +13,7 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex min-h-[52px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] disabled:opacity-60"
+      className="wf-cta inline-flex min-h-[52px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] disabled:opacity-60"
     >
       {pending ? "Reservando…" : "Reservar mi dirección →"}
     </button>
@@ -35,7 +35,7 @@ export function AddressPicker({ suggestedFrom }: { suggestedFrom: string }) {
   return (
     <form action={action} className="flex flex-col gap-5">
       <div>
-        <label className="block text-[13px] font-semibold text-[#D2DFEF]" htmlFor="ap-name">
+        <label className="block text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]" htmlFor="ap-name">
           Tu nombre público
         </label>
         <input
@@ -45,19 +45,19 @@ export function AddressPicker({ suggestedFrom }: { suggestedFrom: string }) {
           maxLength={60}
           autoComplete="name"
           placeholder="Ej.: Lucía Pérez"
-          className="mt-2 w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3 text-[15px] text-[#F3F7FF] outline-none placeholder:text-[#5E7290] focus-visible:border-[#43E2EE]"
+          className="mt-2 w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3 text-[length:var(--wf-body)] text-[#F3F7FF] outline-none placeholder:text-[#5E7290] focus-visible:border-[#43E2EE]"
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
       </div>
 
       <div>
-        <label className="block text-[13px] font-semibold text-[#D2DFEF]" htmlFor="ap-slug">
+        <label className="block text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]" htmlFor="ap-slug">
           Tu dirección
         </label>
         <div className="mt-2 flex flex-wrap items-center gap-1 rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-2.5">
           <span
-            className="text-[13px] text-[#5E7290]"
+            className="text-[length:var(--wf-small)] text-[#5E7290]"
             style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
           >
             {WEFUNNELS_HOST}/
@@ -68,7 +68,7 @@ export function AddressPicker({ suggestedFrom }: { suggestedFrom: string }) {
             required
             maxLength={32}
             pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-            className="min-w-[8ch] flex-1 bg-transparent text-[15px] text-[#43E2EE] outline-none"
+            className="min-w-[8ch] flex-1 bg-transparent text-[length:var(--wf-body)] text-[#43E2EE] outline-none"
             style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
             value={value}
             onChange={(event) => {
@@ -77,14 +77,14 @@ export function AddressPicker({ suggestedFrom }: { suggestedFrom: string }) {
             }}
           />
         </div>
-        <p className="m-0 mt-1.5 text-xs leading-relaxed text-[#8498B4]">
+        <p className="m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
           Letras minúsculas, números y guiones. Se propone desde tu nombre; cámbiala si
           quieres. Una vez publicada ya no cambia.
         </p>
       </div>
 
       {state && "error" in state && (
-        <p className="m-0 text-sm leading-relaxed text-[#FF8A8A]" role="alert">
+        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#FF8A8A]" role="alert">
           {state.error}
         </p>
       )}

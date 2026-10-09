@@ -63,7 +63,7 @@ export default async function PanelLeadsPage() {
         <h1 className="m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[#F3F7FF]">
           Mis registros
         </h1>
-        <p className="m-0 mt-2 text-[15px] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
           {rows.length === 0
             ? "Aquí aparecerá cada persona que llene tu formulario."
             : pending > 0
@@ -74,21 +74,21 @@ export default async function PanelLeadsPage() {
 
       {rows.length === 0 ? (
         <div className="rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-6">
-          <p className="m-0 text-[15px] leading-relaxed text-[#B7C7DC]">
+          <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
             Todavía no hay nadie en tu lista. Aparecen aquí en cuanto alguien llena tu
             formulario, con todo lo que escribieron.
           </p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-[14px] border border-[#2D3E57] bg-[#0E192A]">
-          <table className="w-full min-w-[620px] border-collapse text-[15px]">
+          <table className="w-full min-w-[620px] border-collapse text-[length:var(--wf-body)]">
             <thead>
               <tr className="text-left">
                 {["Persona", "Fecha", "Estado", "Ficha"].map((head) => (
                   <th
                     key={head}
                     scope="col"
-                    className="border-b border-[#2D3E57] bg-[#091221] px-5 py-3 text-[11px] font-semibold tracking-[0.1em] text-[#8498B4] uppercase"
+                    className="border-b border-[#2D3E57] bg-[#091221] px-5 py-3 text-[length:var(--wf-kicker)] font-semibold tracking-[0.1em] text-[#8498B4] uppercase"
                   >
                     {head}
                   </th>
@@ -104,7 +104,7 @@ export default async function PanelLeadsPage() {
         </div>
       )}
 
-      <p className="m-0 text-sm leading-relaxed text-[#8498B4]">
+      <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
         Personas registradas en tu página. Solo tú accedes a estos contactos: quien te
         regaló tu funnel no los ve. El botón de WhatsApp abre el chat con el mensaje
         escrito; el envío automático de correos llega con un plan de WeWebinars.
