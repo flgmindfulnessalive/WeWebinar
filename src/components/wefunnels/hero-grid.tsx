@@ -10,7 +10,7 @@ import { useEffect, useRef } from "react";
 // needs a ref to the element it lights -- reading the pointer on window and
 // writing a variable on :root would light every page that happens to use
 // the same names.
-export function HeroGrid() {
+export function HeroGrid({ className = "" }: { className?: string } = {}) {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function HeroGrid() {
     <div
       ref={root}
       aria-hidden="true"
-      className="wf-grid -z-10"
+      className={`wf-grid -z-10 ${className}`}
       data-idle="true"
       style={{ "--wf-glow": 0.5 } as React.CSSProperties}
     >
