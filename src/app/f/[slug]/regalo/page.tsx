@@ -180,10 +180,9 @@ export default async function WeFunnelGiftPage({
           persona concreta. La marca baja al pie, que es donde una
           herramienta se nombra sin disputarle el sitio a su dueño.
 
-          Un <img> y no next/image: la foto la sube cada distribuidor y vive
-          en el almacenamiento de Supabase, que no está declarado en
-          remotePatterns. Añadir un host remoto al config para una foto de 44
-          píxeles es más superficie de la que el caso pide. */}
+          Un <img> y no next/image: para 44 píxeles el optimizador no
+          compra nada, y así esta cabecera no depende de que el host de
+          almacenamiento esté declarado en el config. */}
       <header className="border-b border-[#202A3B] py-5">
         <div className={`${SHELL} flex flex-wrap items-center justify-between gap-4`}>
           <div className="flex min-w-0 items-center gap-3">

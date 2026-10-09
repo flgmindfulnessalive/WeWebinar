@@ -23,7 +23,40 @@ const SHORT_LINKS = [
   },
 ] as const;
 
+// Las imágenes que suben los usuarios -- el avatar de un presentador en la
+// página pública de su webinar, la foto de un distribuidor en su panel --
+// viven en el almacenamiento de Supabase y se pintan con next/image, que se
+// niega a optimizar cualquier host que no esté declarado aquí. Sin esta
+// entrada la pantalla entera falla en cuanto alguien sube su primera imagen,
+// y hasta entonces no falla nada: por eso el fallo esperó a que hubiera una
+// foto de verdad.
+//
+// El host sale de la variable de entorno y no escrito a mano, porque cada
+// entorno apunta a su propio proyecto de Supabase y uno fijo rompería las
+// previsualizaciones, que es justo donde más se prueba.
+const supabaseImageHost = (() => {
+  try {
+    const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return raw ? new URL(raw).hostname : null;
+  } catch {
+    return null;
+  }
+})();
+
 const nextConfig: NextConfig = {
+  images: {
+    // Acotado al prefijo público del almacenamiento: así el optimizador no
+    // queda abierto como proxy para cualquier otra ruta de ese host.
+    remotePatterns: supabaseImageHost
+      ? [
+          {
+            protocol: "https" as const,
+            hostname: supabaseImageHost,
+            pathname: "/storage/v1/object/public/**",
+          },
+        ]
+      : [],
+  },
   // Skip auto-generating AGENTS.md/CLAUDE.md on every `next dev` — this
   // repo already has its own README/CLAUDE conventions.
   agentRules: false,
