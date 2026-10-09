@@ -101,27 +101,31 @@ export async function proxy(request: NextRequest) {
     return rewriteResponse;
   }
 
-  // WeFunnels' own app paths -- the panel, the access screens, the legal
-  // pages -- asked for on a host that is not the WeFunnels one.
+  // Las rutas propias de WeFunnels -- el panel, las pantallas de acceso, las
+  // legales -- pedidas en un host que no es el de WeFunnels. En producción
+  // eso es una marca de libro antigua (el panel vivía en el host de la app)
+  // o un enlace de un correo ya enviado.
   //
-  // In production that is an old bookmark (the panel used to live on the app
-  // host) or an email link, and the answer is to send them to the address
-  // the product actually has: a permanent redirect, so nothing that was ever
-  // shared breaks and nobody ends up operating WeFunnels from a URL that
-  // says WeWebinars.
-  //
-  // Anywhere else -- localhost, a preview deployment -- there is no second
-  // hostname to redirect to, so the same paths are rewritten onto /f in
-  // place. That is what keeps the whole panel reachable in development
-  // without pointing a subdomain at a laptop.
-  if (isWeFunnelsAppPath(request.nextUrl.pathname)) {
+  // Solo en nuestros propios hosts. Un dominio personalizado de un cliente
+  // (custom_domains, la rama de abajo) sirve SUS páginas de webinar, y
+  // cualquier ruta en él tiene que seguir yendo a /w/<cuenta>/...: servir el
+  // panel de WeFunnels desde el dominio de otra empresa sería peor que el
+  // 404 que daba antes.
+  if (isOwnHostname(hostname) && isWeFunnelsAppPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
-    if (isOwnHostname(hostname) && hostname !== "localhost" && !hostname.endsWith(".vercel.app")) {
-      return NextResponse.redirect(
-        wefunnelUrl(`${url.pathname}${url.search}`),
-        308
-      );
+
+    // El host real de producción: un 308 hacia el de WeFunnels. Es una
+    // marca de libro antiguo o un enlace de correo ya enviado, y la
+    // respuesta es llevarlo a la dirección que el producto sí tiene.
+    const isLocal = hostname === "localhost" || hostname.endsWith(".vercel.app");
+    if (!isLocal) {
+      return NextResponse.redirect(wefunnelUrl(`${url.pathname}${url.search}`), 308);
     }
+
+    // En local y en una preview no hay segundo host al que mandar a nadie,
+    // así que la misma ruta se reescribe en sitio. Es lo que mantiene el
+    // panel entero alcanzable en desarrollo sin apuntar un subdominio a un
+    // portátil.
     url.pathname = `${WEFUNNELS_PATH_PREFIX}${url.pathname}`;
     const rewriteResponse = NextResponse.rewrite(url);
     for (const cookie of sessionResponse.cookies.getAll()) {

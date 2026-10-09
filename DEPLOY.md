@@ -285,6 +285,46 @@ dominio desde **Configuración → Dominio propio** dentro de su cuenta.
 No requiere ninguna migración adicional: la tabla `custom_domains` y el
 ruteo en `proxy.ts` ya están en el código.
 
+## 4quinquies. WeFunnels (subdominio propio)
+
+WeFunnels se sirve entero desde `wefunnels.wewebinars.com`: las páginas
+personales de la gente (`/<nombre>`), la web oficial, el registro, el acceso
+y el panel.
+
+1. En Vercel → Settings → Domains, añadir `wefunnels.wewebinars.com` al mismo
+   proyecto y crear el CNAME que Vercel indique.
+2. No hace falta ninguna variable: `NEXT_PUBLIC_WEFUNNELS_HOST` solo se toca
+   si el subdominio va a ser otro (por defecto
+   `wefunnels.wewebinars.com`).
+
+Qué hay que saber del ruteo, porque no es obvio leyendo las rutas:
+
+- El subdominio reescribe **toda** ruta sobre `/f`, para que el espacio de
+  nombres sea plano (`/<nombre>`) y para que el dashboard, el admin y el
+  login de WeWebinars no resuelvan en el host donde publican desconocidos.
+- Las rutas propias de WeFunnels que no son la página de nadie — `/panel`,
+  `/entrar`, `/recuperar`, `/nueva-clave`, `/registro`, `/comprar`,
+  `/reportar`, `/reglas`, `/legal` — están declaradas en
+  `WEFUNNELS_APP_PATHS` (`src/lib/wefunnels/host.ts`). El proxy las
+  reescribe sobre `/f` desde cualquiera de nuestros hosts, y desde el host
+  de la app responde además con un **308 hacia el subdominio**, para que las
+  marcas de libro antiguas y los correos ya enviados sigan funcionando.
+- Cada una de esas rutas está reservada como nombre
+  (`wefunnel_reserved_slugs`, migración `20261009000002`). **Al añadir una
+  ruta nueva hay que reservarla en la misma migración**: si no, la primera
+  persona que reclame ese nombre la deja inalcanzable. Hay una prueba que lo
+  comprueba (`src/lib/wefunnels/host.test.ts`).
+- La sesión es la misma en los dos hosts porque la cookie está acotada al
+  dominio registrable (`src/lib/supabase/cookie-domain.ts`), y eso **solo
+  ocurre en producción** (`VERCEL_ENV === "production"`). En una preview la
+  cookie es por host, así que si pruebas WeFunnels en una preview hazlo por
+  ruta (`/f/panel`, `/f/entrar`) en el mismo host, no con un subdominio.
+- `/auth/confirm` se queda en el host de la app a propósito: es la dirección
+  dada de alta en la lista de redirecciones de Supabase (paso 1bis). Los
+  correos de WeFunnels pasan por ahí y luego saltan al subdominio.
+- Un dominio propio de un cliente (paso 4quater) no sirve nada de WeFunnels:
+  la rama del proxy está acotada a nuestros propios hosts.
+
 ## 4ter. Cron externo para recordatorios cada 5 minutos (gratis, sin plan Pro)
 
 Necesario solo si estás en el plan Hobby de Vercel (ver nota en el paso 4)
