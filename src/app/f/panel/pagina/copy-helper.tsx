@@ -35,14 +35,24 @@ export function CopyHelper({ onCopy }: { onCopy: (copy: WeFunnelCopy) => void })
         type="button"
         onClick={() => setOpen((shown) => !shown)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2.5 border-0 bg-transparent p-0 text-left"
+        className="flex w-full items-start gap-2.5 border-0 bg-transparent p-0 text-left"
       >
-        <Sparkles className="size-4 shrink-0 text-[#8EEFF5]" aria-hidden="true" />
-        <span className="flex-1 text-[length:var(--wf-body)] font-semibold text-[#E6EFFA]">
-          ¿No sabes qué escribir?
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-[#8EEFF5]" aria-hidden="true" />
+        {/* Dos líneas y no una. La pregunta sola habla de la necesidad y no
+            dice qué hay detrás: quien la lee no sabe si va a abrir una guía,
+            unos ejemplos o un formulario. La segunda nombra el mecanismo, que
+            es lo que hace que se pulse -- y lo hace antes de abrirlo, no
+            dentro. */}
+        <span className="min-w-0 flex-1">
+          <span className="block text-[length:var(--wf-body)] font-semibold text-[#E6EFFA]">
+            ¿No sabes qué escribir?
+          </span>
+          <span className="mt-0.5 block text-[length:var(--wf-small)] leading-relaxed text-[#9FB3CD]">
+            Genera tu antetítulo, tu titular y tu descripción con ayuda de la IA.
+          </span>
         </span>
         <span
-          className={`text-[#8498B4] transition-transform duration-200 ${open ? "rotate-45" : ""}`}
+          className={`mt-0.5 shrink-0 text-[#8498B4] transition-transform duration-200 ${open ? "rotate-45" : ""}`}
           aria-hidden="true"
         >
           +
@@ -72,8 +82,8 @@ export function CopyHelper({ onCopy }: { onCopy: (copy: WeFunnelCopy) => void })
             id="wf-brief-help"
             className="m-0 text-[length:var(--wf-kicker)] leading-relaxed text-[#8498B4]"
           >
-            Escribo tu antetítulo, tu titular y tu descripción. Los tres respetan las
-            reglas de contenido de WeFunnels, así que no te van a mandar a revisión.
+            Lo que escriba respeta las reglas de contenido de WeFunnels, así que no te
+            va a mandar a revisión. Nada se guarda hasta que tú le des a guardar.
           </p>
 
           <button
