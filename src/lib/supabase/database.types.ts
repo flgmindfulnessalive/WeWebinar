@@ -2217,6 +2217,16 @@ export interface Database {
           created_at: string;
         }[];
       };
+      wefunnel_reset_allowed: {
+        Args: {
+          p_email: string;
+          p_ip: string | null;
+          p_per_email?: number;
+          p_per_ip?: number;
+          p_window?: string;
+        };
+        Returns: boolean;
+      };
       wefunnel_slug_available: {
         Args: { p_slug: string };
         Returns: boolean;

@@ -4,8 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
+import { headers } from "next/headers";
+
 import { createClient } from "@/lib/supabase/server";
-import { wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/resend";
+import { wefunnelAppUrl, wefunnelUrl } from "@/lib/wefunnels/host";
+import { weFunnelsFromEmail, weFunnelsResetEmail } from "@/lib/wefunnels/email";
 
 // WeFunnels' own access actions.
 //
@@ -100,43 +105,108 @@ export async function weFunnelSignIn(
   redirect(next);
 }
 
-// "Olvidé mi contraseña". The link in the email comes back through
-// /auth/confirm, which is on the app host because that is the address
-// registered in Supabase's redirect allowlist -- and from there to
-// /nueva-clave, which the proxy sends to the WeFunnels host. So the only
-// WeWebinars-shaped thing left in this flow is a URL nobody reads.
+// "Olvidé mi contraseña", con el correo de WeFunnels.
+//
+// Lo manda esta función, por Resend, en vez de dejarlo en manos de
+// supabase.auth.resetPasswordForEmail. La razón es que Supabase tiene UNA
+// plantilla por proyecto: el mismo encabezado y la misma marca salen para
+// quien se registra en WeWebinars y para quien pide su contraseña aquí, así
+// que no hay forma de que diga las dos cosas. Quien acababa de pulsar el
+// enlace en una pantalla de WeFunnels recibía un correo de WeWebinars.
+//
+// Lo que se pierde al salirse de ahí, y hay que reponer:
+//
+//   el límite de frecuencia -- la API de administración no lo tiene, así
+//   que lo pone wefunnel_reset_allowed (20261009000003), por dirección y
+//   por IP, en la misma llamada que lo registra;
+//
+//   la verificación del captcha -- Supabase comprobaba el token de
+//   Turnstile al recibir la petición. Aquí ya no pasa por ahí, y el
+//   proyecto no tiene la clave secreta de Turnstile para comprobarlo por su
+//   cuenta, así que el freno de arriba es lo que queda sosteniendo esto.
+//
+// El enlace apunta a /auth/confirm en el host de la app, igual que antes:
+// es la pantalla que gasta el token de un clic y no del escaneo antivirus
+// de un correo corporativo. Desde ahí salta a /nueva-clave en el host de
+// WeFunnels.
 export async function weFunnelRequestReset(
   _prev: WeFunnelSentState,
   formData: FormData
 ): Promise<WeFunnelSentState> {
-  const email = String(formData.get("email") ?? "").trim();
-  const captchaToken = String(formData.get("cf-turnstile-response") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email || !email.includes("@")) return { error: "Escribe tu email." };
 
-  if (!email) return { error: "Escribe tu email." };
+  // Lo mismo se responde pase lo que pase a partir de aquí. Decir "esa
+  // dirección no tiene cuenta" convertiría esta pantalla, que es pública,
+  // en una forma de averiguar quién está registrado.
+  const sent: WeFunnelSentState = { sent: true };
 
   try {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: wefunnelAppUrl("/auth/confirm?next=/nueva-clave"),
-      ...(captchaToken ? { captchaToken } : {}),
+    const admin = createAdminClient();
+
+    const forwarded = (await headers()).get("x-forwarded-for") ?? "";
+    const ip = forwarded.split(",")[0]?.trim() || null;
+
+    const { data: allowed, error: throttleError } = await admin.rpc(
+      "wefunnel_reset_allowed",
+      { p_email: email, p_ip: ip }
+    );
+
+    if (throttleError) {
+      // La migración todavía no está aplicada, o la base falló. No se manda
+      // nada: un correo sin freno es peor que un correo que no sale.
+      console.error("[wefunnel] reset throttle failed:", throttleError.message);
+      return {
+        error: "No pudimos mandar el correo. Inténtalo en unos minutos.",
+      };
+    }
+
+    if (allowed !== true) return sent;
+
+    // Que la cuenta exista se comprueba antes de pedir el enlace, y no se
+    // deduce del error de generateLink: para los tipos 'signup' y
+    // 'magiclink' esa llamada CREA el usuario que no existe, y una pantalla
+    // pública que crea cuentas de paso no es una pantalla de recuperación.
+    const { data: existing } = await admin
+      .from("users")
+      .select("id")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (!existing) return sent;
+
+    const { data: link, error: linkError } = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email,
     });
 
-    if (error) {
-      if (error.message.toLowerCase().includes("captcha")) {
-        const t = await getTranslations("AuthActions");
-        return { error: t("captchaFailed") };
-      }
-      console.error("[wefunnel] reset request failed:", error.message);
-      return { error: "No pudimos mandar el correo. Inténtalo en un minuto." };
+    const tokenHash = link?.properties?.hashed_token;
+    // El tipo que devuelve GoTrue, no el que pedimos: es el que
+    // verifyOtp va a esperar al otro lado, y es lo que hace el otro sitio
+    // del proyecto que manda un enlace así (whop-starter-kit-claim.ts).
+    const verificationType = link?.properties?.verification_type;
+    if (linkError || !tokenHash || !verificationType) {
+      console.error("[wefunnel] reset generateLink failed:", linkError?.message);
+      return sent;
     }
+
+    // En el host de WeFunnels, no en el de la app. Con generateLink la
+    // dirección la construimos nosotros, así que no hay lista de
+    // redirecciones de Supabase que respetar -- esa lista gobierna los
+    // parámetros redirectTo, y aquí no se usa ninguno. El enlace que la
+    // persona ve en su correo dice wefunnels, que es de donde viene.
+    const actionUrl = wefunnelUrl(
+      `/confirmar?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(verificationType)}&next=${encodeURIComponent("/nueva-clave")}`
+    );
+
+    const { subject, html } = weFunnelsResetEmail(actionUrl);
+    await sendEmail({ to: email, subject, html, from: weFunnelsFromEmail() });
   } catch (err) {
     console.error("[wefunnel] reset request failed:", err);
-    return { error: "No pudimos mandar el correo. Inténtalo en un minuto." };
+    return { error: "No pudimos mandar el correo. Inténtalo en unos minutos." };
   }
 
-  // Said the same whether or not that address has an account: confirming
-  // which emails are registered is not something this screen gets to do.
-  return { sent: true };
+  return sent;
 }
 
 export async function weFunnelSetPassword(
