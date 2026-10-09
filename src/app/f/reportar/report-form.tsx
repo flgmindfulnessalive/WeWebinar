@@ -26,7 +26,7 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-6 py-4 text-[17px] font-semibold text-white disabled:opacity-60"
+      className="wf-cta rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-6 py-4 text-[length:var(--wf-lead)] font-semibold text-white disabled:opacity-60"
     >
       {pending ? "Enviando…" : "Enviar el reporte"}
     </button>
@@ -41,11 +41,11 @@ export function ReportForm({ slug }: { slug: string }) {
 
   if (state && "success" in state) {
     return (
-      <main className="mx-auto flex min-h-svh max-w-[460px] flex-col justify-center px-6">
-        <h1 className="m-0 text-[28px] leading-tight font-extrabold tracking-tight">
+      <main className="mx-auto flex min-h-svh max-w-[560px] flex-col justify-center px-6">
+        <h1 className="m-0 text-[clamp(28px,4.4vw,38px)] leading-[1.1] font-extrabold tracking-[-0.032em] text-balance">
           Gracias, lo vamos a revisar
         </h1>
-        <p className="mt-3 mb-0 text-[16px] leading-relaxed text-[#A9B0C9]">
+        <p className="mt-4 mb-0 text-[length:var(--wf-lead)] leading-relaxed text-[#C1D1E6]">
           Alguien lo mira en persona. No podemos contarte en qué termina, pero cada
           reporte se revisa.
         </p>
@@ -54,16 +54,16 @@ export function ReportForm({ slug }: { slug: string }) {
   }
 
   return (
-    <main className="mx-auto max-w-[460px] px-6 py-10">
-      <h1 className="m-0 text-[28px] leading-tight font-extrabold tracking-tight">
+    <main className="mx-auto max-w-[560px] px-6 py-14">
+      <h1 className="m-0 text-[clamp(28px,4.4vw,38px)] leading-[1.1] font-extrabold tracking-[-0.032em] text-balance">
         Reportar una página
       </h1>
-      <p className="mt-3 mb-0 text-[16px] leading-relaxed text-[#A9B0C9]">
+      <p className="mt-4 mb-0 text-[length:var(--wf-lead)] leading-relaxed text-[#C1D1E6]">
         {slug ? (
           <>
             Estás reportando{" "}
             <span
-              className="break-all text-[#2BD7F5]"
+              className="break-all text-[#43E2EE]"
               style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
             >
               {WEFUNNELS_HOST}/{slug}
@@ -80,7 +80,7 @@ export function ReportForm({ slug }: { slug: string }) {
           <input type="hidden" name="slug" value={slug} />
         ) : (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="rp-slug" className="text-[13px] font-semibold text-[#A9B0C9]">
+            <label htmlFor="rp-slug" className="text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]">
               Dirección de la página
             </label>
             <input
@@ -89,13 +89,13 @@ export function ReportForm({ slug }: { slug: string }) {
               type="text"
               required
               placeholder="nombre"
-              className="w-full rounded-[10px] border border-[#23233A] bg-[#0D0D15] px-3.5 py-3.5 text-[16px] text-white outline-none focus-visible:border-[#2BD7F5]"
+              className="w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3.5 text-[length:var(--wf-body)] text-white outline-none focus-visible:border-[#43E2EE]"
             />
           </div>
         )}
 
         <fieldset className="m-0 flex flex-col gap-2.5 border-0 p-0">
-          <legend className="mb-1 p-0 text-[13px] font-semibold text-[#A9B0C9]">
+          <legend className="mb-1 p-0 text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]">
             ¿Qué viste?
           </legend>
           {RULES.map((rule) => (
@@ -116,7 +116,7 @@ export function ReportForm({ slug }: { slug: string }) {
         </fieldset>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="rp-note" className="text-[13px] font-semibold text-[#A9B0C9]">
+          <label htmlFor="rp-note" className="text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]">
             Cuéntanos más (opcional)
           </label>
           <textarea
