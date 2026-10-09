@@ -1,0 +1,21 @@
+-- =========================================================================
+-- El permiso que le faltaba a wefunnel_reset_allowed
+--
+-- La migración anterior (20261009000003) revoca EXECUTE de PUBLIC y no se
+-- lo concede a nadie. La función la llama la acción del servidor con la
+-- clave de servicio, así que el rol que la necesita es service_role -- y
+-- es exactamente lo que hacen las demás funciones del proyecto que se
+-- llaman así (wefunnel_activate_distributor, 20261007000005 y
+-- 20261007000011).
+--
+-- Sin esto, según cómo estén los privilegios por defecto del proyecto, la
+-- llamada puede fallar con un error de permisos en vez de funcionar: y el
+-- fallo se presenta como "no pudimos mandar el correo", que es lo que ve
+-- quien pide una contraseña nueva.
+--
+-- Hacia adelante y no editando la migración anterior, que puede estar ya
+-- aplicada: GRANT es idempotente, así que esto deja el mismo estado tanto
+-- en una base que ya la tiene como en una recién creada.
+-- =========================================================================
+grant execute on function public.wefunnel_reset_allowed(text, text, int, int, interval)
+  to service_role;

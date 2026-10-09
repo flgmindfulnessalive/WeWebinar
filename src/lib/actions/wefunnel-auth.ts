@@ -31,6 +31,20 @@ import { weFunnelsFromEmail, weFunnelsResetEmail } from "@/lib/wefunnels/email";
 // should not be one: a distributor's 2 included months of WeWebinars Starter
 // are an entitlement on the same account.
 
+// Lo mismo que dice la consola de administración cuando una función no
+// está en el esquema: es el mismo hecho y pide la misma acción.
+const MIGRATION_PENDING =
+  "Falta aplicar la migración: ejecuta «supabase db push» y vuelve a intentarlo. " +
+  "Si ya la aplicaste, recarga la caché de esquema con «notify pgrst, 'reload schema';».";
+
+// Lo que no supimos traducir se dice igualmente, con el motivo entre
+// paréntesis. Un fallo con nombre se arregla; "inténtalo en unos minutos"
+// se repite para siempre.
+function detail(message: string): string {
+  const clean = message.replace(/^wefunnel:\s*/, "").trim().slice(0, 140);
+  return clean ? ` (${clean})` : "";
+}
+
 export type WeFunnelAuthState = { error: string } | null;
 export type WeFunnelSentState = { error: string } | { sent: true } | null;
 export type WeFunnelSavedState = { error: string } | { success: string } | null;
@@ -153,11 +167,20 @@ export async function weFunnelRequestReset(
     );
 
     if (throttleError) {
-      // La migración todavía no está aplicada, o la base falló. No se manda
-      // nada: un correo sin freno es peor que un correo que no sale.
+      // No se manda nada: un correo sin freno es peor que un correo que no
+      // sale. Pero el motivo se dice, y se distingue -- las dos causas
+      // posibles piden cosas opuestas de quien lee esto.
+      //
+      // PGRST202 es "esa función no está en el esquema", que en la práctica
+      // significa una sola cosa: falta aplicar la migración. Decirle
+      // "inténtalo en unos minutos" a eso es mandar a alguien a esperar un
+      // minuto que no va a cambiar nada, para siempre.
       console.error("[wefunnel] reset throttle failed:", throttleError.message);
+      if (throttleError.code === "PGRST202") {
+        return { error: MIGRATION_PENDING };
+      }
       return {
-        error: "No pudimos mandar el correo. Inténtalo en unos minutos.",
+        error: `No pudimos mandar el correo.${detail(throttleError.message)}`,
       };
     }
 
@@ -202,8 +225,16 @@ export async function weFunnelRequestReset(
     const { subject, html } = weFunnelsResetEmail(actionUrl);
     await sendEmail({ to: email, subject, html, from: weFunnelsFromEmail() });
   } catch (err) {
-    console.error("[wefunnel] reset request failed:", err);
-    return { error: "No pudimos mandar el correo. Inténtalo en unos minutos." };
+    // El envío por Resend es lo único que llega hasta aquí: lo de arriba
+    // devuelve en vez de lanzar. Un fallo suyo no es lo mismo que el
+    // anterior -- la base está bien y lo que falta es una clave o un
+    // dominio verificado -- así que no puede leerse igual.
+    console.error("[wefunnel] reset send failed:", err);
+    return {
+      error: `No pudimos mandar el correo.${detail(
+        err instanceof Error ? err.message : String(err)
+      )}`,
+    };
   }
 
   return sent;
