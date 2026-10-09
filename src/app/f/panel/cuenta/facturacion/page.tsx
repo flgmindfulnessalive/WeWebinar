@@ -121,11 +121,18 @@ export default async function PanelBillingPage() {
                   Tu licencia incluyó 2 meses de Starter de WeWebinars, contados hasta
                   el {DATE.format(starterUntil)}.
                 </p>
+                {/* Aquí decía que la comisión del 20% necesita un plan activo
+                    de WeWebinars. Es falso, y lo escribí yo: wefunnel_commissions
+                    (20261007000009) no mira el plan de quien cobra en ningún
+                    sitio -- la única condición está sobre la cuenta REFERIDA,
+                    que tiene que estar pagando. El comentario de esa migración
+                    lo dice con todas sus letras: la condición se quitó
+                    justamente porque convertía a WeWebinars en algo que hay que
+                    comprar para poder cobrar. */}
                 <p className={SMALL}>
-                  Cuando se acaban no se apaga nada de WeFunnels: tu página, tus
-                  registros, tu curso y tu página de regalo son de por vida. Lo que
-                  necesita un plan activo de WeWebinars es el beneficio de comisión del
-                  20% sobre las suscripciones de tus referidos directos.
+                  Cuando se acaban no se apaga nada: tu página, tus registros, tu curso,
+                  tu página de regalo y tu comisión del 20% son de por vida. No hace
+                  falta mantener ningún plan para seguir cobrándola.
                 </p>
               </>
             ) : (
