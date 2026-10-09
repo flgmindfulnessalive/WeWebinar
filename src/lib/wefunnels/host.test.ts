@@ -60,6 +60,7 @@ describe("isWeFunnelsAppPath", () => {
       "entrar",
       "recuperar",
       "nueva-clave",
+      "confirmar",
       "registro",
       "comprar",
       "reportar",

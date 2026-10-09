@@ -22,6 +22,7 @@ insert into public.wefunnel_reserved_slugs (slug, reason) values
   -- Acceso
   ('entrar', 'system'), ('acceso', 'system'), ('recuperar', 'system'),
   ('nueva-clave', 'system'), ('clave', 'system'), ('password', 'system'),
+  ('confirmar', 'system'), ('confirm', 'system'), ('verificar', 'system'),
   ('logout', 'system'), ('signout', 'system'), ('session', 'system'),
   -- La cuenta
   ('cuenta', 'system'), ('perfil', 'system'), ('profile', 'system'),

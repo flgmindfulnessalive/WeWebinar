@@ -53,6 +53,7 @@ export const WEFUNNELS_APP_PATHS = [
   "/entrar",
   "/recuperar",
   "/nueva-clave",
+  "/confirmar",
   "/registro",
   "/comprar",
   "/reportar",

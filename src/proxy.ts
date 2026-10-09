@@ -23,7 +23,15 @@ function isOwnHostname(hostname: string): boolean {
     const appHostname = process.env.NEXT_PUBLIC_APP_URL
       ? new URL(process.env.NEXT_PUBLIC_APP_URL).hostname
       : null;
-    return hostname === appHostname;
+    if (!appHostname) return false;
+    // Con y sin www. Los dos sirven la aplicación -- wewebinars.com redirige
+    // a www en el borde -- y comparar la cadena exacta contra
+    // NEXT_PUBLIC_APP_URL hacía que uno de los dos no se reconociera como
+    // nuestro, según cuál de las dos formas estuviera configurada. El
+    // síntoma era un 404 en www.wewebinars.com/entrar: el host no se
+    // reconocía, así que la rama de WeFunnels no llegaba a correr.
+    const bare = (value: string) => value.replace(/^www\./, "");
+    return bare(hostname) === bare(appHostname);
   } catch {
     return false;
   }
@@ -62,6 +70,30 @@ function resolveLocaleFromPath(pathname: string): "es" | "en" {
 }
 
 export async function proxy(request: NextRequest) {
+  const hostname = request.headers.get("host")?.split(":")[0] ?? "";
+
+  // La vuelta al host de WeFunnels se decide antes que nada.
+  //
+  // Antes iba después de la puerta de sesión, y eso rompía justo el caso
+  // que existe para resolver: quien abría una marca de libro de
+  // www.wewebinars.com/panel sin sesión era mandado por la puerta a
+  // /entrar EN EL HOST DE LA APP, donde esa pantalla no existe. El 308
+  // hacia WeFunnels ya no llegaba a correr nunca.
+  //
+  // Ponerlo aquí también le ahorra a Supabase una llamada por cada
+  // petición que de todos modos se va a ir a otro host.
+  if (
+    isOwnHostname(hostname) &&
+    hostname !== "localhost" &&
+    !hostname.endsWith(".vercel.app") &&
+    isWeFunnelsAppPath(request.nextUrl.pathname)
+  ) {
+    return NextResponse.redirect(
+      wefunnelUrl(`${request.nextUrl.pathname}${request.nextUrl.search}`),
+      308
+    );
+  }
+
   const sessionResponse = await updateSession(request);
 
   // An auth-gate redirect always wins, regardless of locale.
@@ -78,7 +110,6 @@ export async function proxy(request: NextRequest) {
   // serve the default locale (no /en prefix) for now, so this skips the
   // next-intl branch below entirely instead of feeding it a rewritten
   // request it wasn't built to see.
-  const hostname = request.headers.get("host")?.split(":")[0] ?? "";
 
   // WeFunnels (wefunnels.wewebinars.com): every path on this host is a
   // personal funnel page, so the whole subdomain rewrites onto the /f
@@ -111,21 +142,12 @@ export async function proxy(request: NextRequest) {
   // cualquier ruta en él tiene que seguir yendo a /w/<cuenta>/...: servir el
   // panel de WeFunnels desde el dominio de otra empresa sería peor que el
   // 404 que daba antes.
+  // Lo que queda aquí es local y preview: no hay segundo host al que mandar
+  // a nadie (el 308 de arriba ya los excluyó), así que la misma ruta se
+  // reescribe en sitio. Es lo que mantiene el panel entero alcanzable en
+  // desarrollo sin apuntar un subdominio a un portátil.
   if (isOwnHostname(hostname) && isWeFunnelsAppPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
-
-    // El host real de producción: un 308 hacia el de WeFunnels. Es una
-    // marca de libro antiguo o un enlace de correo ya enviado, y la
-    // respuesta es llevarlo a la dirección que el producto sí tiene.
-    const isLocal = hostname === "localhost" || hostname.endsWith(".vercel.app");
-    if (!isLocal) {
-      return NextResponse.redirect(wefunnelUrl(`${url.pathname}${url.search}`), 308);
-    }
-
-    // En local y en una preview no hay segundo host al que mandar a nadie,
-    // así que la misma ruta se reescribe en sitio. Es lo que mantiene el
-    // panel entero alcanzable en desarrollo sin apuntar un subdominio a un
-    // portátil.
     url.pathname = `${WEFUNNELS_PATH_PREFIX}${url.pathname}`;
     const rewriteResponse = NextResponse.rewrite(url);
     for (const cookie of sessionResponse.cookies.getAll()) {
