@@ -56,7 +56,7 @@ export function WaitingForLicence() {
             role="progressbar"
             aria-label="Confirmando tu pago"
           >
-            <div className="wf-cta h-full w-1/3 animate-pulse rounded-full bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF]" />
+            <div className="h-full w-1/3 animate-pulse rounded-full bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF]" />
           </div>
         </>
       )}
