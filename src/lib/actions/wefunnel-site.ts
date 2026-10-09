@@ -31,6 +31,24 @@ function detail(message: string): string {
   return clean ? ` (${clean})` : "";
 }
 
+// Los dos códigos que significan "falta aplicar la migración", dichos en
+// castellano y con lo que hay que hacer.
+//
+// PGRST202 es una función que no está en el esquema; PGRST204, una columna.
+// El segundo se vio en vivo al añadir `kicker`: el mensaje salía correcto
+// pero en inglés y en jerga de PostgREST ("Could not find the 'kicker'
+// column of 'wefunnel_sites' in the schema cache"), que para el dueño de una
+// página no es una instrucción, es un susto. Decía la verdad; ahora además
+// dice qué hacer con ella.
+const MIGRATION_PENDING =
+  "Falta aplicar una migración de la base: ejecuta «supabase db push» y vuelve a " +
+  "intentarlo. Si ya la aplicaste, recarga la caché de esquema con " +
+  "«notify pgrst, 'reload schema';».";
+
+function isMigrationPending(error: { code?: string }): boolean {
+  return error.code === "PGRST202" || error.code === "PGRST204";
+}
+
 // Un UPDATE que no encuentra fila no es un error en PostgREST: es una
 // respuesta vacía. Con RLS de por medio eso es justo el caso que hay que
 // contar -- la política de escritura está acotada a la cuenta y excluye las
@@ -170,6 +188,7 @@ export async function saveWeFunnelSite(
 
   if (error) {
     console.error("[wefunnel] save failed:", error.message);
+    if (isMigrationPending(error)) return { error: MIGRATION_PENDING };
     return { error: `No pudimos guardar los cambios.${detail(error.message)}` };
   }
 
@@ -218,6 +237,7 @@ export async function setWeFunnelPublished(
       };
     }
     console.error("[wefunnel] publish failed:", error.message);
+    if (isMigrationPending(error)) return { error: MIGRATION_PENDING };
     return {
       error: `No pudimos cambiar el estado de la página.${detail(error.message)}`,
     };
@@ -277,6 +297,7 @@ export async function changeWeFunnelSlug(
       return { error: "Esa dirección está reservada. Prueba con otra." };
     }
     console.error("[wefunnel] slug change failed:", error.message);
+    if (isMigrationPending(error)) return { error: MIGRATION_PENDING };
     return { error: `No pudimos cambiar tu dirección.${detail(error.message)}` };
   }
 

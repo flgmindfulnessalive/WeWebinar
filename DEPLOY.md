@@ -325,6 +325,36 @@ Qué hay que saber del ruteo, porque no es obvio leyendo las rutas:
 - Un dominio propio de un cliente (paso 4quater) no sirve nada de WeFunnels:
   la rama del proxy está acotada a nuestros propios hosts.
 
+## 4sexies. El orden entre el despliegue y `supabase db push`
+
+Las migraciones se aplican a mano, así que **el código siempre llega antes
+que el esquema**. Entre un deploy y el `db push` hay una ventana, y lo que
+se escriba sin tenerla en cuenta se rompe ahí dentro. Pasó de verdad: una
+columna nueva en la consulta de la página pública dejó fuera de línea una
+página publicada, porque PostgREST rechaza la consulta entera por una
+columna que no conoce.
+
+Tres reglas, las tres aprendidas de ese fallo:
+
+1. **En las lecturas, `select("*")`.** Una columna que todavía no existe
+   simplemente no viene en la fila, y el código la trata como nula. Pedir
+   columnas por su nombre acopla la ruta al minuto exacto en que alguien
+   ejecuta el push.
+
+2. **Nunca confundir "la consulta falló" con "no hay fila".** La segunda
+   tiene un significado de producto — no publicada, no existe, no tienes
+   página — y decírselo a alguien por un error de lectura es mentirle sobre
+   el estado de su cuenta. Un error se propaga al límite de error, que dice
+   lo único cierto: algo falló, vuelve a intentarlo.
+
+3. **En las escrituras no hay truco: una columna nueva en el payload bloquea
+   el guardado entero hasta que la migración esté aplicada.** Si eso no es
+   aceptable para la pantalla que la usa, el cambio va en dos entregas —
+   primero la migración, después el código que escribe la columna. Si se
+   entrega junto, el error tiene que decir que falta el `db push`
+   (PGRST202 para una función, PGRST204 para una columna), no el texto
+   crudo de PostgREST en inglés.
+
 ## 4ter. Cron externo para recordatorios cada 5 minutos (gratis, sin plan Pro)
 
 Necesario solo si estás en el plan Hobby de Vercel (ver nota en el paso 4)
