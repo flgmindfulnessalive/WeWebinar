@@ -1727,6 +1727,7 @@ export interface Database {
           question_label: string | null;
           description: string | null;
           photo_url: string | null;
+          kicker: string | null;
           pixel_provider: string | null;
           pixel_id: string | null;
           suspended_at: string | null;
@@ -2216,6 +2217,10 @@ export interface Database {
           starter_until: string | null;
           created_at: string;
         }[];
+      };
+      wefunnel_ai_use_allowed: {
+        Args: { p_account_id: string; p_limit?: number; p_window?: string };
+        Returns: boolean;
       };
       wefunnel_reset_allowed: {
         Args: {

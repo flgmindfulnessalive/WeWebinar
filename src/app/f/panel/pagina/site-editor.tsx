@@ -11,6 +11,8 @@ import {
   type SaveState,
 } from "@/lib/actions/wefunnel-site";
 import { uploadFunnelPhoto, type PhotoState } from "@/lib/actions/wefunnel-photo";
+import { DEFAULT_KICKER, KICKER_MAX, kickerOf } from "@/lib/wefunnels/kicker";
+import { CopyHelper } from "./copy-helper";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import type { WeFunnelSite, checklist } from "@/lib/wefunnels/site";
 
@@ -136,6 +138,7 @@ export function SiteEditor({
   const [name, setName] = useState(site.display_name);
   const [headline, setHeadline] = useState(site.headline ?? "");
   const [description, setDescription] = useState(site.description ?? "");
+  const [kicker, setKicker] = useState(site.kicker ?? "");
   const [slug, setSlug] = useState(site.slug);
   const [touched, setTouched] = useState(false);
   // El aviso de tamaño se da aquí y no en el servidor: una foto demasiado
@@ -172,6 +175,17 @@ export function SiteEditor({
           contigo.
         </p>
       </div>
+
+      {/* Fuera del formulario de abajo a propósito: un <form> dentro de otro
+          no es HTML válido. */}
+      <CopyHelper
+        onCopy={(copy) => {
+          setKicker(copy.kicker);
+          setHeadline(copy.headline);
+          setDescription(copy.description);
+          setTouched(true);
+        }}
+      />
 
       <div className="grid items-start gap-6 lg:grid-cols-[1.05fr_1fr]">
         {/* ---------- el formulario ---------- */}
@@ -213,6 +227,26 @@ export function SiteEditor({
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
+            </div>
+
+            <div>
+              <label className={LABEL} htmlFor="wf-kicker">
+                Antetítulo
+              </label>
+              <input
+                id="wf-kicker"
+                name="kicker"
+                maxLength={KICKER_MAX}
+                autoComplete="off"
+                placeholder={DEFAULT_KICKER}
+                aria-describedby="wf-kicker-help"
+                className={`${FIELD} mt-2`}
+                value={kicker}
+                onChange={(event) => setKicker(event.target.value)}
+              />
+              <p className={HELP} id="wf-kicker-help">
+                La línea pequeña encima de tu titular. Si la dejas vacía sale «{DEFAULT_KICKER}».
+              </p>
             </div>
 
             <div>
@@ -434,7 +468,7 @@ export function SiteEditor({
                 </strong>
               </div>
               <p className="m-0 mt-5 text-[length:var(--wf-kicker)] font-bold tracking-[0.14em] text-[#70E9EF] uppercase">
-                Conoce mi propuesta
+                {kickerOf(kicker)}
               </p>
               <p className="m-0 mt-2 text-[clamp(20px,2.8vw,25px)] leading-[1.18] font-bold tracking-[-0.025em] text-[#F3F7FF]">
                 {headline || "Tu titular aparecerá aquí."}
