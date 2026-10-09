@@ -2,13 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSupabaseCookieDomain } from "@/lib/supabase/cookie-domain";
 import { normalizeSlug } from "@/lib/wefunnels/slug";
-import {
-  REFERRAL_COOKIE,
-  REFERRAL_WINDOW_DAYS,
-  serializeTouch,
-} from "@/lib/wefunnels/referral";
+import { referralCookie } from "@/lib/wefunnels/referral";
 import { courseRoomUrl } from "@/lib/wefunnels/course-room";
 
 // The door into the shared course room, from a distributor's invite page.
@@ -61,14 +56,7 @@ export async function GET(
   const response = NextResponse.redirect(destination);
 
   if (slug && distributor) {
-    response.cookies.set(REFERRAL_COOKIE, serializeTouch(slug), {
-      path: "/",
-      maxAge: REFERRAL_WINDOW_DAYS * 24 * 60 * 60,
-      sameSite: "lax",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      domain: getSupabaseCookieDomain(),
-    });
+    response.cookies.set(referralCookie(slug));
   }
 
   return response;

@@ -11,10 +11,53 @@
 // argument: the badge that produced the registration is the one that gets
 // the credit.
 
+import { getSupabaseCookieDomain } from "@/lib/supabase/cookie-domain";
+
 export const REFERRAL_COOKIE = "wf_ref";
 export const REFERRAL_WINDOW_DAYS = 90;
 
 export type ReferralTouch = { slug: string; touchedAt: Date };
+
+// Cómo se escribe la cookie, en un solo sitio.
+//
+// La ponen tres cosas distintas -- /r/<slug>, /<slug>/curso/ver y el
+// proxy al servir una página de regalo -- y antes cada una repetía las
+// seis opciones a mano. Una sola que se desviara (un maxAge, un domain)
+// daba una atribución que se pierde a mitad de camino, sin error y sin
+// forma de verlo hasta que alguien reclama y no cuenta para nadie.
+export function referralCookie(slug: string) {
+  return {
+    name: REFERRAL_COOKIE,
+    value: serializeTouch(slug),
+    path: "/",
+    maxAge: REFERRAL_WINDOW_DAYS * 24 * 60 * 60,
+    sameSite: "lax" as const,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    domain: getSupabaseCookieDomain(),
+  };
+}
+
+// El slug de una página de regalo, cuando la ruta es una.
+//
+// Existe porque el enlace que un distribuidor reparte de verdad es
+// /<slug>/regalo -- es literalmente lo que copia /panel/repartir -- y
+// hasta ahora esa dirección no sellaba nada. La única ruta que sellaba
+// era /r/<slug>, a la que no apunta ninguna pantalla.
+//
+// El efecto era que todo regalo repartido desde el panel llegaba sin
+// atribución: la persona se registraba, confirmaba, y /panel/empezar la
+// encontraba sin touch, así que no creaba ninguna página y el panel le
+// decía que WeFunnels es por invitación. Con su invitación en la mano.
+//
+// Va en el proxy y no en la página porque un componente de servidor no
+// puede escribir una cookie mientras renderiza, y los dos botones de esa
+// página van directos a /registro.
+const GIFT_PATH = /^\/([a-z0-9][a-z0-9-]{1,30}[a-z0-9])\/regalo\/?$/;
+
+export function giftPageSlug(pathname: string): string | null {
+  return GIFT_PATH.exec(pathname.toLowerCase())?.[1] ?? null;
+}
 
 export function serializeTouch(slug: string, touchedAt: Date = new Date()): string {
   return `${slug}.${touchedAt.getTime()}`;

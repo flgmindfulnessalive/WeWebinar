@@ -82,6 +82,15 @@ export async function weFunnelSignUp(
   // camino propio sin esa comprobación: dejaría este formulario, que es
   // público, abierto a cualquier script.
   if (captcha === "unconfigured") {
+    // Que se vea en los registros. Este camino manda el correo de
+    // Supabase -- cabecera de WeWebinars, enlace al host de la
+    // aplicación -- a alguien que acaba de darse de alta en una pantalla
+    // de WeFunnels, y no da ningún error: el alta funciona, solo que con
+    // la marca equivocada. Sin esta línea la única forma de enterarse es
+    // que alguien se registre y mire su bandeja de entrada.
+    console.error(
+      "[wefunnel] TURNSTILE_SECRET_KEY ausente: el alta usa el correo de Supabase, con la marca de WeWebinars. Revisa la variable en el entorno y vuelve a desplegar."
+    );
     return signUpThroughSupabase({ email, password, fullName, captchaToken, destination });
   }
 
