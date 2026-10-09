@@ -8,7 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 import { CountVisit } from "@/components/wefunnels/count-visit";
-import { Wordmark } from "@/components/wefunnels/wordmark";
+import { HeroGrid } from "@/components/wefunnels/hero-grid";
+import { Reveal } from "@/components/wefunnels/reveal";
 import { BackToTop } from "@/components/wefunnels/back-to-top";
 
 type RouteParams = { slug: string };
@@ -109,14 +110,22 @@ function initials(name: string): string {
     .join("");
 }
 
-const SECTION = "border-t border-[#1B2538] px-[clamp(20px,5vw,34px)] py-[clamp(34px,5vw,48px)]";
-const LABEL = "m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase";
-const H2 = "m-0 mt-2.5 mb-5 text-[clamp(25px,3.4vw,31px)] leading-[1.17] font-bold tracking-[-0.03em] text-[#F3F7FF] text-balance";
-const BODY = "m-0 text-[clamp(13px,1.6vw,15px)] leading-relaxed text-[#B7C7DC]";
+// La banda ocupa la ventana y SHELL es la columna donde vive el contenido,
+// igual que en la web oficial. Un escalón por debajo de ella en tamaños: esta
+// es la página personal de alguien, y un titular que grite igual que el de
+// una página de venta se come su foto y su nombre.
+const SECTION = "border-t border-[#1B2538] py-[clamp(40px,5.5vw,66px)]";
+const SHELL = "mx-auto w-full max-w-[1180px] px-[clamp(20px,5vw,34px)]";
+const LABEL =
+  "m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.17em] text-[#70E9EF] uppercase";
+const H2 =
+  "m-0 mt-3 mb-5 text-[clamp(26px,3.5vw,38px)] leading-[1.12] font-bold tracking-[-0.03em] text-[#F3F7FF] text-balance";
+const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[#C1D1E6]";
+const SMALL = "m-0 text-[length:var(--wf-small)] leading-relaxed text-[#9FB3CD]";
 const GRADIENT =
   "bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent";
 const CTA =
-  "inline-flex min-h-[52px] w-full items-center justify-center gap-3.5 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline sm:w-auto";
+  "wf-cta inline-flex min-h-[54px] w-full items-center justify-center gap-3.5 rounded-xl bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-7 py-4 text-[length:var(--wf-lead)] font-bold text-[#071521] no-underline sm:w-auto";
 
 export default async function WeFunnelGiftPage({
   params,
@@ -131,7 +140,7 @@ export default async function WeFunnelGiftPage({
   const supabase = await createClient();
   const { data: site } = await supabase
     .from("wefunnel_sites")
-    .select("id, slug, account_id, display_name, location")
+    .select("id, slug, account_id, display_name, location, photo_url, description")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -158,48 +167,80 @@ export default async function WeFunnelGiftPage({
   const faq = questions(site.display_name);
 
   return (
-    <div className="mx-auto max-w-[1180px]">
+    <div>
       <CountVisit slug={site.slug} surface="gift" />
+      <Reveal />
       {/* La página es larga y su CTA vive arriba del todo: sin esto, quien
           llega al final solo puede volver arrastrando. */}
       <BackToTop />
 
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#202A3B] px-[clamp(20px,5vw,34px)] py-5">
-        <Wordmark size="sm" />
-        <span className="text-[10px] font-bold tracking-[0.14em] text-[#8498B4] uppercase">
-          Por WeWebinars
-        </span>
+      {/* La cabecera es de quien regala, no de la marca. Aquí estaba el
+          logotipo de WeFunnels, y con él la página se leía como una página
+          de producto que alguien reenvió en vez de como el regalo de una
+          persona concreta. La marca baja al pie, que es donde una
+          herramienta se nombra sin disputarle el sitio a su dueño.
+
+          Un <img> y no next/image: la foto la sube cada distribuidor y vive
+          en el almacenamiento de Supabase, que no está declarado en
+          remotePatterns. Añadir un host remoto al config para una foto de 44
+          píxeles es más superficie de la que el caso pide. */}
+      <header className="border-b border-[#202A3B] py-5">
+        <div className={`${SHELL} flex flex-wrap items-center justify-between gap-4`}>
+          <div className="flex min-w-0 items-center gap-3">
+            {site.photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={site.photo_url}
+                alt=""
+                width={44}
+                height={44}
+                className="h-11 w-11 shrink-0 rounded-full border border-[#2D3E57] object-cover"
+              />
+            ) : (
+              <span
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-sm font-bold text-white"
+                aria-hidden="true"
+              >
+                {initials(site.display_name)}
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="m-0 text-[length:var(--wf-body)] font-semibold text-[#F3F7FF]">
+                {site.display_name}
+              </p>
+              {site.location && (
+                <p className="m-0 text-[length:var(--wf-small)] text-[#8498B4]">
+                  {site.location}
+                </p>
+              )}
+            </div>
+          </div>
+          <span className="text-[length:var(--wf-kicker)] font-bold tracking-[0.14em] text-[#8498B4] uppercase">
+            Un regalo para ti
+          </span>
+        </div>
       </header>
 
       <main>
         <section
-          className="relative isolate overflow-hidden px-[clamp(20px,5vw,34px)] pt-[clamp(32px,5vw,56px)] pb-[clamp(32px,5vw,50px)]"
+          className="relative isolate overflow-hidden pt-[clamp(38px,5.5vw,64px)] pb-[clamp(36px,5vw,56px)]"
           style={{
             background:
               "radial-gradient(ellipse at 92% 40%, rgba(48,32,90,0.5), transparent 58%)",
           }}
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 left-[58%] -z-10"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(150deg,transparent 0 80px,rgba(130,102,201,0.3) 81px,transparent 82px 140px),repeating-linear-gradient(90deg,transparent 0 78px,rgba(56,216,235,0.24) 79px,transparent 80px 141px)",
-              maskImage: "linear-gradient(90deg,transparent,#000)",
-              WebkitMaskImage: "linear-gradient(90deg,transparent,#000)",
-            }}
-          />
-          <div className="grid items-center gap-[clamp(28px,4vw,40px)] lg:grid-cols-[1.1fr_1fr]">
+          <HeroGrid className="wf-grid--soft" />
+          <div className={`${SHELL} grid items-center gap-[clamp(28px,4vw,40px)] lg:grid-cols-[1.1fr_1fr]`}>
             <div className="min-w-0">
               <p className={LABEL}>Para network marketers que construyen equipo</p>
-              <h1 className="m-0 mt-[18px] mb-[20px] text-[clamp(36px,5.6vw,58px)] leading-[1.05] font-extrabold tracking-[-0.042em] text-[#F3F7FF] text-balance">
+              <h1 className="m-0 mt-5 mb-6 text-[clamp(38px,5.4vw,62px)] leading-[1.03] font-extrabold tracking-[-0.044em] text-[#F3F7FF] text-balance">
                 Te regalo
                 <br />
                 tu funnel.
                 <br />
                 <span className={GRADIENT}>Gratis de por vida.</span>
               </h1>
-              <p className="m-0 mb-6 max-w-[46ch] text-[clamp(15px,2vw,17px)] leading-relaxed text-[#B7C7DC]">
+              <p className="m-0 mb-7 max-w-[42ch] text-[length:var(--wf-lead)] leading-[1.6] text-[#C1D1E6]">
                 Tu propia página para atraer prospectos,{" "}
                 <strong className="font-semibold text-[#E4EEFB]">
                   un panel para ver tus visitas y registros
@@ -209,29 +250,20 @@ export default async function WeFunnelGiftPage({
               <Link href={claimUrl} className={CTA}>
                 Quiero mi funnel gratis <span aria-hidden="true">→</span>
               </Link>
-              <p className="m-0 mt-3.5 text-xs text-[#AFC2DA]">
+              <p className={`${SMALL} mt-4`}>
                 Sin tarjeta · Con tu nombre · Con tu propio enlace
               </p>
 
-              <div className="mt-6 flex items-center gap-3.5 border-t border-[#1F2A3C] pt-5">
-                <span
-                  className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-sm font-bold text-white"
-                  aria-hidden="true"
-                >
-                  {initials(site.display_name)}
-                </span>
-                <div className="min-w-0">
-                  <p className="m-0 text-[11px] tracking-[0.1em] text-[#8498B4] uppercase">
-                    Un regalo de
-                  </p>
-                  <p className="m-0 text-[17px] font-semibold text-[#F3F7FF]">
-                    {site.display_name}
-                  </p>
-                  {site.location && (
-                    <p className="m-0 text-xs text-[#8498B4]">{site.location}</p>
-                  )}
-                </div>
-              </div>
+              {/* La ficha de quien regala vivía aquí; ahora es la cabecera.
+                  En su sitio van sus propias palabras, que es lo único de
+                  esta página que no se repite en las de los demás. Si no
+                  escribió ninguna no va nada: la cabecera ya dice quién es,
+                  y un hueco con texto de relleno diría menos. */}
+              {site.description && (
+                <blockquote className="m-0 mt-7 border-l-2 border-[#2D5F7A] pl-4 text-[length:var(--wf-body)] leading-relaxed text-[#C1D1E6] italic">
+                  {site.description}
+                </blockquote>
+              )}
             </div>
 
             {/* What the free funnel looks like: a personal proposal with a
@@ -288,81 +320,87 @@ export default async function WeFunnelGiftPage({
         </section>
 
         <section className={SECTION}>
-          <p className={LABEL}>Todo empieza con tu enlace</p>
-          <h2 className={H2}>Tu sistema de prospección empieza aquí.</h2>
-          <div className="grid gap-[26px] sm:grid-cols-2 lg:grid-cols-3">
-            {BENEFITS.map(({ Icon, title, body }) => (
-              <div key={title} className="min-w-0">
-                <Icon className="h-6 w-6 text-[#73E5EC]" aria-hidden="true" />
-                <h3 className="m-0 mt-3 mb-2 text-[18px] leading-[1.35] font-semibold text-[#F3F7FF]">
-                  {title}
-                </h3>
-                <p className={BODY}>{body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className={`${SECTION} bg-[#091221]`}>
-          <div className="grid gap-[clamp(26px,4vw,38px)] lg:grid-cols-[1fr_1.1fr]">
-            <div className="min-w-0">
-              <p className={LABEL}>Incluido gratis</p>
-              <h2 className={H2}>Cómo NUNCA quedarte sin prospectos.</h2>
-              <p className={BODY}>
-                Aprende a alimentar tu funnel con una rutina de prospección que puedas
-                poner en práctica.
-              </p>
-              {!hasCourse && (
-                <p className="m-0 mt-4 text-xs leading-relaxed text-[#AFC2DA]">
-                  El curso abre en unos días y te avisamos por correo. Reclama tu funnel
-                  ahora: ya es tuyo desde hoy.
-                </p>
-              )}
-            </div>
-            <div className="flex min-w-0 flex-col gap-4">
-              {LESSONS.map((lesson) => (
-                <div
-                  key={lesson.n}
-                  className="flex min-w-0 items-start gap-4 rounded-[13px] border border-[#2D3E57] bg-[#0E192A] p-[18px]"
-                >
-                  <span
-                    className="text-sm font-semibold text-[#76E8EE]"
-                    style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
-                    aria-hidden="true"
-                  >
-                    {lesson.n}
-                  </span>
-                  <div className="min-w-0">
-                    <strong className="text-[15px] font-semibold text-[#F3F7FF]">
-                      {lesson.title}
-                    </strong>
-                    <p className="m-0 mt-1 text-[13px] leading-relaxed text-[#B7C7DC]">
-                      {lesson.body}
-                    </p>
-                  </div>
+          <div data-reveal className={SHELL}>
+            <p className={LABEL}>Todo empieza con tu enlace</p>
+            <h2 className={H2}>Tu sistema de prospección empieza aquí.</h2>
+            <div className="grid gap-[26px] sm:grid-cols-2 lg:grid-cols-3">
+              {BENEFITS.map(({ Icon, title, body }) => (
+                <div key={title} className="min-w-0">
+                  <Icon className="h-7 w-7 text-[#73E5EC]" aria-hidden="true" />
+                  <h3 className="m-0 mt-3.5 mb-2 text-[length:var(--wf-h3)] leading-[1.3] font-semibold text-[#F3F7FF]">
+                    {title}
+                  </h3>
+                  <p className={BODY}>{body}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className={SECTION}>
-          <div className="mx-auto max-w-[740px]">
-            <p className={LABEL}>Claro desde el principio</p>
-            <h2 className={H2}>Tu regalo, sin complicaciones.</h2>
-            {faq.map(([question, answer]) => (
-              <details key={question} className="border-b border-[#2C3B51] py-4">
-                <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-sm font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
-                  {question}
-                  <span className="shrink-0 text-[#77DFE9]" aria-hidden="true">
-                    +
-                  </span>
-                </summary>
-                <p className="m-0 mt-2.5 text-[13px] leading-relaxed text-[#B7C7DC]">
-                  {answer}
+        <section className={`${SECTION} bg-[#091221]`}>
+          <div data-reveal className={SHELL}>
+            <div className="grid gap-[clamp(26px,4vw,38px)] lg:grid-cols-[1fr_1.1fr]">
+              <div className="min-w-0">
+                <p className={LABEL}>Incluido gratis</p>
+                <h2 className={H2}>Cómo NUNCA quedarte sin prospectos.</h2>
+                <p className={BODY}>
+                  Aprende a alimentar tu funnel con una rutina de prospección que puedas
+                  poner en práctica.
                 </p>
-              </details>
-            ))}
+                {!hasCourse && (
+                  <p className="m-0 mt-4 text-xs leading-relaxed text-[#AFC2DA]">
+                    El curso abre en unos días y te avisamos por correo. Reclama tu funnel
+                    ahora: ya es tuyo desde hoy.
+                  </p>
+                )}
+              </div>
+              <div className="flex min-w-0 flex-col gap-4">
+                {LESSONS.map((lesson) => (
+                  <div
+                    key={lesson.n}
+                    className="wf-card flex min-w-0 items-start gap-4 rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-5"
+                  >
+                    <span
+                      className="text-sm font-semibold text-[#76E8EE]"
+                      style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
+                      aria-hidden="true"
+                    >
+                      {lesson.n}
+                    </span>
+                    <div className="min-w-0">
+                      <strong className="text-[15px] font-semibold text-[#F3F7FF]">
+                        {lesson.title}
+                      </strong>
+                      <p className="m-0 mt-1 text-[13px] leading-relaxed text-[#B7C7DC]">
+                        {lesson.body}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={SECTION}>
+          <div data-reveal className={SHELL}>
+            <div className="mx-auto max-w-[740px]">
+              <p className={LABEL}>Claro desde el principio</p>
+              <h2 className={H2}>Tu regalo, sin complicaciones.</h2>
+              {faq.map(([question, answer]) => (
+                <details key={question} className="border-b border-[#2C3B51] py-4">
+                  <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-sm font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
+                    {question}
+                    <span className="shrink-0 text-[#77DFE9]" aria-hidden="true">
+                      +
+                    </span>
+                  </summary>
+                  <p className="m-0 mt-2.5 text-[13px] leading-relaxed text-[#B7C7DC]">
+                    {answer}
+                  </p>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -387,24 +425,26 @@ export default async function WeFunnelGiftPage({
         </section>
       </main>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1B2538] px-[clamp(20px,5vw,34px)] py-5 text-[11px] text-[#8498B4]">
-        <span>
-          <strong className="font-semibold text-[#B7C7DC]">WeFunnels</strong> · Una
-          solución de WeWebinars
-        </span>
-        <div className="flex flex-wrap gap-4">
-          <Link href={`/${site.slug}`} className="text-[#8498B4] no-underline">
-            La página de {site.display_name}
-          </Link>
-          {/* The only way a visitor can flag an abusive page, and the whole
-              shared-domain reputation posture depends on it being on every
-              page (20261007000001). */}
-          <Link
-            href={`/reportar?p=${encodeURIComponent(site.slug)}`}
-            className="text-[#6E7C96] no-underline"
-          >
-            Reportar
-          </Link>
+      <footer className="border-t border-[#1B2538] py-6 text-[length:var(--wf-small)] text-[#8498B4]">
+        <div className={`${SHELL} flex flex-wrap items-center justify-between gap-3`}>
+          <span>
+            Tu funnel funciona con{" "}
+            <strong className="font-semibold text-[#B7C7DC]">WeFunnels</strong>
+          </span>
+          <div className="flex flex-wrap gap-4">
+            <Link href={`/${site.slug}`} className="text-[#8498B4] no-underline">
+              La página de {site.display_name}
+            </Link>
+            {/* The only way a visitor can flag an abusive page, and the whole
+                shared-domain reputation posture depends on it being on every
+                page (20261007000001). */}
+            <Link
+              href={`/reportar?p=${encodeURIComponent(site.slug)}`}
+              className="text-[#6E7C96] no-underline"
+            >
+              Reportar
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

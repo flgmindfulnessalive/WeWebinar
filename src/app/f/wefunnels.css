@@ -160,6 +160,19 @@
   initial-value: 42%;
 }
 
+/* Medio tono más abajo, para la página de regalo. Allí el protagonista es
+   la persona que regala, no la tipografía: una rejilla tan presente como la
+   de la web oficial se come su foto y su nombre. */
+.wf-grid--soft .wf-grid__base {
+  --wf-ray: rgba(130, 102, 201, 0.2);
+  --wf-ring: rgba(56, 216, 235, 0.16);
+}
+
+.wf-grid--soft .wf-grid__glow .wf-grid__layer {
+  --wf-ray: rgba(178, 150, 255, 0.72);
+  --wf-ring: rgba(96, 238, 250, 0.68);
+}
+
 /* ------------------------------------------------------------- scroll reveal
 
    Hidden only once the script has run: without JavaScript the page is a
