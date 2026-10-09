@@ -1,12 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getSupabaseCookieDomain } from "@/lib/supabase/cookie-domain";
 import { normalizeSlug } from "@/lib/wefunnels/slug";
-import {
-  REFERRAL_COOKIE,
-  REFERRAL_WINDOW_DAYS,
-  serializeTouch,
-} from "@/lib/wefunnels/referral";
+import { referralCookie } from "@/lib/wefunnels/referral";
 
 // Where a shared referral link points. It records the touch and sends the
 // visitor on to the gift page, so the link stays a plain link and the whole
@@ -37,14 +32,7 @@ export async function GET(
   );
 
   if (slug) {
-    response.cookies.set(REFERRAL_COOKIE, serializeTouch(slug), {
-      path: "/",
-      maxAge: REFERRAL_WINDOW_DAYS * 24 * 60 * 60,
-      sameSite: "lax",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      domain: getSupabaseCookieDomain(),
-    });
+    response.cookies.set(referralCookie(slug));
   }
 
   return response;

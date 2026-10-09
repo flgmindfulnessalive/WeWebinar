@@ -10,6 +10,7 @@ import {
   isWeFunnelsHostname,
   wefunnelUrl,
 } from "@/lib/wefunnels/host";
+import { giftPageSlug, referralCookie } from "@/lib/wefunnels/referral";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -129,6 +130,13 @@ export async function proxy(request: NextRequest) {
     for (const cookie of sessionResponse.cookies.getAll()) {
       rewriteResponse.cookies.set(cookie);
     }
+    // Servir una página de regalo SELLA la atribución, aquí y no en la
+    // página: una página de servidor no puede escribir una cookie
+    // mientras renderiza. Ver giftPageSlug -- sin esto, el enlace que el
+    // panel le dice al distribuidor que reparta no acreditaba a nadie, y
+    // quien lo aceptaba terminaba sin funnel.
+    const gift = giftPageSlug(request.nextUrl.pathname);
+    if (gift) rewriteResponse.cookies.set(referralCookie(gift));
     return rewriteResponse;
   }
 
@@ -209,6 +217,14 @@ export async function proxy(request: NextRequest) {
     });
     return intlResponse;
   }
+
+  // Local y preview: no hay segundo host, así que una página de regalo se
+  // pide por su ruta real, /f/<slug>/regalo. Se sella igual, para que lo
+  // que se prueba antes de desplegar sea lo que de verdad pasa después.
+  const localGift = request.nextUrl.pathname.startsWith(WEFUNNELS_PATH_PREFIX)
+    ? giftPageSlug(request.nextUrl.pathname.slice(WEFUNNELS_PATH_PREFIX.length))
+    : null;
+  if (localGift) sessionResponse.cookies.set(referralCookie(localGift));
 
   return sessionResponse;
 }
