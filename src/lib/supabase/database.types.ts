@@ -2193,6 +2193,30 @@ export interface Database {
         Args: { p_account_id: string; p_included_months?: number };
         Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
       };
+      wefunnel_admin_create_site: {
+        Args: {
+          p_user_id: string;
+          p_display_name: string;
+          p_slug: string;
+          p_grant_license?: boolean;
+          p_included_months?: number;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
+      };
+      wefunnel_admin_distributors: {
+        Args: Record<string, never>;
+        Returns: {
+          account_id: string;
+          account_name: string | null;
+          owner_email: string | null;
+          slug: string | null;
+          site_status: WeFunnelSiteStatus | null;
+          license_source: string | null;
+          license_price_usd: number | null;
+          starter_until: string | null;
+          created_at: string;
+        }[];
+      };
       wefunnel_slug_available: {
         Args: { p_slug: string };
         Returns: boolean;
