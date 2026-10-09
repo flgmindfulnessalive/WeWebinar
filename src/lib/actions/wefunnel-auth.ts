@@ -73,9 +73,14 @@ export async function weFunnelSignIn(
       // about it, because the raw English string in the middle of this
       // screen reads as a crash.
       if (error.message.toLowerCase().includes("invalid login credentials")) {
+        // Nombra las dos salidas, no solo una. Supabase da esta misma
+        // respuesta a una contraseña equivocada y a una cuenta que nunca
+        // tuvo contraseña -- la creada con Google, o la que abrió un
+        // administrador sin ponerle una. Decir únicamente "no coinciden"
+        // dejaba a esas personas probando contraseñas que no existen.
         return {
           error:
-            "Ese email y esa contraseña no coinciden. Revísalos, o usa el enlace de abajo para cambiar la contraseña.",
+            "Ese email y esa contraseña no coinciden. Si creaste tu cuenta con Google, entra con el botón de arriba; si no, pide una contraseña nueva desde «Olvidé mi contraseña».",
         };
       }
       if (error.message.toLowerCase().includes("email not confirmed")) {
