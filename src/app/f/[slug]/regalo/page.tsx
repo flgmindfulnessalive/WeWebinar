@@ -261,16 +261,23 @@ export default async function WeFunnelGiftPage({
                 Sin tarjeta · Con tu nombre · Con tu propio enlace
               </p>
 
-              {/* La ficha de quien regala vivía aquí; ahora es la cabecera.
-                  En su sitio van sus propias palabras, que es lo único de
-                  esta página que no se repite en las de los demás. Si no
-                  escribió ninguna no va nada: la cabecera ya dice quién es,
-                  y un hueco con texto de relleno diría menos. */}
-              {site.description && (
-                <blockquote className="m-0 mt-7 border-l-2 border-[#2D5F7A] pl-4 text-[length:var(--wf-body)] leading-relaxed text-[#C1D1E6] italic">
-                  {site.description}
-                </blockquote>
-              )}
+              {/* Aquí iba la descripción de su funnel, y era un error de los
+                  que solo se ven en pantalla: ese campo se escribe para los
+                  visitantes de su página -- la gente a la que quiere
+                  prospectar -- y esta página la lee alguien que viene a
+                  recoger un regalo. Dos conversaciones distintas con un
+                  mismo texto, así que una de las dos siempre salía mal.
+
+                  Lo que se veía en vivo: "un sistema duplicable para escalar
+                  tu negocio multinivel", a quien solo venía por una
+                  herramienta gratis. Suena a reclutamiento, que es
+                  justamente lo que esta página promete que no es -- y
+                  "multinivel" está en el filtro de contenido.
+
+                  La cabecera ya trae su foto y su nombre, que es lo que hace
+                  propia esta página. Si algún día quiere además una frase
+                  suya aquí, es un campo nuevo con su propia etiqueta, no
+                  este prestado. */}
             </div>
 
             {/* What the free funnel looks like: a personal proposal with a
