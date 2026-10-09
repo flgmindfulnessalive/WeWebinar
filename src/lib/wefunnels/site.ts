@@ -64,6 +64,12 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
 
   const accountId = profile?.account_id ?? null;
 
+  // Los errores no se tragan. Una lectura fallida aquí no significa "no
+  // tienes página" ni "no tienes licencia" -- y el panel actuaba como si lo
+  // significara: al dueño de una página le habría enseñado la pantalla de
+  // reclamar una, y a un distribuidor el panel de alguien que no lo es.
+  // Mejor el límite de error, que dice la verdad: algo falló, vuelve a
+  // intentarlo.
   const [site, distributor, isPlatformAdmin] = await Promise.all([
     accountId
       ? supabase
@@ -71,7 +77,10 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
           .select("*")
           .eq("account_id", accountId)
           .maybeSingle()
-          .then(({ data }) => data)
+          .then(({ data, error }) => {
+            if (error) throw new Error(`wefunnel_sites: ${error.message}`);
+            return data;
+          })
       : null,
     accountId
       ? supabase
@@ -79,7 +88,10 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
           .select("*")
           .eq("account_id", accountId)
           .maybeSingle()
-          .then(({ data }) => data)
+          .then(({ data, error }) => {
+            if (error) throw new Error(`wefunnel_distributors: ${error.message}`);
+            return data;
+          })
       : null,
     supabase.rpc("is_platform_admin").then(({ data }) => Boolean(data)),
   ]);

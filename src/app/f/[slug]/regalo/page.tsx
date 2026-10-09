@@ -138,11 +138,19 @@ export default async function WeFunnelGiftPage({
   // when it is published and unsuspended, so a draft or a suspended page
   // cannot be used as a distribution front.
   const supabase = await createClient();
-  const { data: site } = await supabase
+  const { data: site, error: siteError } = await supabase
     .from("wefunnel_sites")
-    .select("id, slug, account_id, display_name, location, photo_url, description")
+    .select("*")
     .eq("slug", slug)
     .maybeSingle();
+
+  // Un fallo de lectura no es "esta página no existe". Devolver 404 ante un
+  // error borra del mapa la página de regalo de alguien que sí la tiene, y
+  // quien llegó por su enlace se va creyendo que le pasaron uno roto.
+  if (siteError) {
+    console.error("[wefunnel] gift read failed:", slug, siteError.message);
+    throw new Error(`No pudimos cargar esta página: ${siteError.message}`);
+  }
 
   if (!site) notFound();
 
