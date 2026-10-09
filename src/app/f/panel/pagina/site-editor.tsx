@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Image from "next/image";
+import { ImagePlus } from "lucide-react";
 
 import {
   saveWeFunnelSite,
@@ -128,7 +129,7 @@ export function SiteEditor({
     changeWeFunnelSlug,
     null
   );
-  const [photoState, photoAction] = useActionState<PhotoState, FormData>(
+  const [photoState, photoAction, photoPending] = useActionState<PhotoState, FormData>(
     uploadFunnelPhoto,
     null
   );
@@ -148,6 +149,37 @@ export function SiteEditor({
   const [photoTooBig, setPhotoTooBig] = useState(false);
 
   const photo = photoState && "url" in photoState ? photoState.url : site.photo_url;
+
+  // Se sube al elegir el archivo, sin un segundo botón.
+  //
+  // Antes había un formulario aparte, al final de la pantalla: elegir el
+  // archivo arriba no hacía nada hasta bajar hasta el fondo y pulsar
+  // "Subir". Dos pasos separados por toda la página, en lo primero que
+  // alguien quiere cambiar de su propia página.
+  //
+  // Vive fuera de un <form> propio a propósito: un formulario dentro de otro
+  // no es HTML válido, y esta zona está dentro del formulario del editor.
+  // Por eso la acción se llama a mano con su FormData en vez de enviarse.
+  function pickPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoTooBig(true);
+      input.value = "";
+      return;
+    }
+
+    setPhotoTooBig(false);
+    const data = new FormData();
+    data.set("file", file);
+    startTransition(() => photoAction(data));
+
+    // Se limpia para que volver a elegir el MISMO archivo dispare el cambio
+    // otra vez. El File ya está dentro del FormData, así que no se pierde.
+    input.value = "";
+  }
   const isPublished = site.status === "published" && !site.suspended_at;
   const state = publishState ?? saveState;
 
@@ -204,10 +236,47 @@ export function SiteEditor({
               <Avatar photo={photo} name={name} size={64} />
               <div className="min-w-0 flex-1">
                 <span className={LABEL}>Tu foto · opcional</span>
-                <p className={HELP}>JPG, PNG o WebP. Hasta 5 MB.</p>
+
+                {/* El input va oculto pero no quitado: clipado con sr-only
+                    sigue recibiendo el foco, así que al tabular se llega
+                    aquí y la etiqueta lo acompaña con su propio anillo. Con
+                    display:none dejaría de existir para el teclado. */}
+                <label
+                  className={`mt-2 inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[#2D3E57] bg-[#111C2E] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] transition-colors hover:border-[#43E2EE] focus-within:border-[#43E2EE] focus-within:ring-2 focus-within:ring-[#43E2EE]/30 ${
+                    photoPending ? "opacity-60" : ""
+                  }`}
+                >
+                  <ImagePlus className="size-4 shrink-0 text-[#8EEFF5]" aria-hidden="true" />
+                  {photoPending ? "Subiendo…" : photo ? "Cambiar mi foto" : "Subir mi foto"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    disabled={photoPending}
+                    onChange={pickPhoto}
+                    className="sr-only"
+                  />
+                </label>
+
+                <p className={`${HELP} ${photoTooBig ? "text-[#FCA5A5]" : ""}`}>
+                  {photoTooBig
+                    ? "Esa imagen pasa de 5 MB. Elige una más ligera."
+                    : "JPG, PNG o WebP. Hasta 5 MB."}
+                </p>
+
                 {photoState && "error" in photoState && (
                   <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[#FF9A9A]" role="alert">
                     {photoState.error}
+                  </p>
+                )}
+
+                {/* Subir no es guardar: la acción solo deja el archivo en el
+                    almacenamiento y devuelve su dirección, que viaja en el
+                    campo oculto de arriba y se escribe en la base al guardar.
+                    Sin decirlo, alguien sube su foto, la ve en el avatar, se
+                    va de la pantalla y la pierde. */}
+                {photoState && "url" in photoState && (
+                  <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[#8EEFF5]" role="status">
+                    Foto lista. Guarda para que quede en tu página.
                   </p>
                 )}
               </div>
@@ -563,34 +632,6 @@ export function SiteEditor({
           </form>
         </section>
       </div>
-
-      {/* ---------- la foto, en su propio formulario ---------- */}
-      <form action={photoAction} className={`${PANEL} flex flex-wrap items-end gap-4`}>
-        <div className="min-w-0 flex-1">
-          <label className={LABEL} htmlFor="wf-photo">
-            Cambiar tu foto
-          </label>
-          <input
-            id="wf-photo"
-            name="file"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0];
-              const tooBig = Boolean(file && file.size > MAX_PHOTO_BYTES);
-              setPhotoTooBig(tooBig);
-              if (tooBig) event.currentTarget.value = "";
-            }}
-            className="mt-2 w-full text-[length:var(--wf-small)] text-[#B7C7DC] file:mr-3 file:rounded-md file:border-0 file:bg-[#1C2A3F] file:px-3 file:py-2 file:text-[13px] file:font-semibold file:text-[#D2DFEF]"
-          />
-          <p className={`${HELP} ${photoTooBig ? "text-[#FCA5A5]" : ""}`}>
-            {photoTooBig
-              ? "Esa imagen pasa de 5 MB. Elige una más ligera."
-              : "JPG, PNG o WebP, hasta 5 MB."}
-          </p>
-        </div>
-        <Submit variant="ghost">Subir</Submit>
-      </form>
 
       {steps && (
         <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
