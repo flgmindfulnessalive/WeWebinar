@@ -57,14 +57,14 @@ export function PeriodStats() {
         <strong className="text-[16px] font-semibold text-[#F3F7FF]">
           Rendimiento de tu página
         </strong>
-        <label className="flex items-center gap-2 text-sm text-[#8498B4]">
+        <label className="flex items-center gap-2 text-[length:var(--wf-body)] text-[#8498B4]">
           Periodo
           <select
             value={days}
             onChange={(event) =>
               startTransition(() => setDays(Number(event.target.value)))
             }
-            className="rounded-lg border border-[#2D3E57] bg-[#0B1423] px-3 py-2 text-sm text-[#D2DFEF]"
+            className="rounded-lg border border-[#2D3E57] bg-[#0B1423] px-3 py-2 text-[length:var(--wf-body)] text-[#D2DFEF]"
           >
             {PERIODS.map((period) => (
               <option key={period.days} value={period.days}>
@@ -98,13 +98,13 @@ export function PeriodStats() {
       </div>
 
       {failed && (
-        <p className="m-0 text-sm text-[#F5BE52]">
+        <p className="m-0 text-[length:var(--wf-body)] text-[#F5BE52]">
           No pudimos cargar tus números ahora mismo. Vuelve a abrir esta pantalla en un
           rato.
         </p>
       )}
       {stats && visits === 0 && (
-        <p className="m-0 text-sm leading-relaxed text-[#8498B4]">
+        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
           Todavía no hay visitas en este periodo. Comparte tu enlace y vuelve a mirar.
         </p>
       )}
@@ -125,7 +125,7 @@ function Metric({
 }) {
   return (
     <div className="min-w-0 rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-5">
-      <p className="m-0 text-xs tracking-[0.1em] text-[#8498B4] uppercase">{label}</p>
+      <p className="m-0 text-[length:var(--wf-small)] tracking-[0.1em] text-[#8498B4] uppercase">{label}</p>
       <p
         className={`m-0 mt-2 text-[clamp(30px,4vw,40px)] leading-none font-extrabold tracking-[-0.03em] tabular-nums ${
           accent ? "text-[#43E2EE]" : "text-[#F3F7FF]"
@@ -133,7 +133,7 @@ function Metric({
       >
         {value}
       </p>
-      <p className="m-0 mt-2 text-xs text-[#8498B4]">{note}</p>
+      <p className="m-0 mt-2 text-[length:var(--wf-small)] text-[#8498B4]">{note}</p>
     </div>
   );
 }

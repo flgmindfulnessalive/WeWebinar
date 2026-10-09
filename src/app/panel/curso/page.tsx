@@ -102,13 +102,13 @@ export default async function PanelCoursePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
           Incluido con tu funnel gratuito
         </p>
         <h1 className="m-0 mt-2.5 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[#F3F7FF] text-balance">
           Cómo NUNCA quedarte sin prospectos
         </h1>
-        <p className="m-0 mt-3 max-w-[58ch] text-[15px] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-3 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
           Aprende a llevar tráfico a tu funnel y convertir el interés en conversaciones.
         </p>
       </div>
@@ -116,13 +116,13 @@ export default async function PanelCoursePage() {
       {sharedBy && (
         <div className="flex items-center gap-3.5">
           <span
-            className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[13px] font-bold text-white"
+            className="wf-cta grid h-[44px] w-[44px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[length:var(--wf-small)] font-bold text-white"
             aria-hidden="true"
           >
             {initials(sharedBy)}
           </span>
           <div className="min-w-0">
-            <p className="m-0 text-[11px] tracking-[0.1em] text-[#8498B4] uppercase">
+            <p className="m-0 text-[length:var(--wf-kicker)] tracking-[0.1em] text-[#8498B4] uppercase">
               Este curso te lo comparte
             </p>
             <p className="m-0 text-[16px] font-semibold text-[#F3F7FF]">{sharedBy}</p>
@@ -148,7 +148,7 @@ export default async function PanelCoursePage() {
           }}
         />
         <div className="p-[clamp(22px,4vw,44px)]">
-          <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+          <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
             Un método para network marketers constructores
           </p>
           <p className="m-0 mt-3 text-[clamp(22px,3.6vw,34px)] leading-[1.12] font-bold tracking-[-0.03em] text-[#F3F7FF]">
@@ -163,30 +163,30 @@ export default async function PanelCoursePage() {
             <>
               <Link
                 href="/panel/curso/ver"
-                className="mt-6 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
+                className="wf-cta mt-6 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
               >
                 <Play className="h-[18px] w-[18px]" aria-hidden="true" />
                 {resuming ? "Continuar viendo" : "Ver el curso"}
               </Link>
               {resuming && (
-                <p className="m-0 mt-3 text-sm text-[#B7C7DC]">
+                <p className="m-0 mt-3 text-[length:var(--wf-body)] text-[#B7C7DC]">
                   Lo dejaste en {clock(position!)}
                   {percent !== null ? ` · ${percent}% visto` : ""}.
                 </p>
               )}
-              <p className="m-0 mt-3 text-xs leading-relaxed text-[#8498B4]">
+              <p className="m-0 mt-3 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
                 Se abre en WeWebinars con tu nombre y tu correo. No tienes que registrarte
                 otra vez.
               </p>
             </>
           ) : (
-            <p className="m-0 mt-6 max-w-[52ch] text-[15px] leading-relaxed text-[#B7C7DC]">
+            <p className="m-0 mt-6 max-w-[52ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
               Lo estamos grabando. Te avisamos por correo en cuanto esté, y queda incluido
               con tu cuenta gratuita.
             </p>
           )}
         </div>
-        <p className="m-0 flex flex-wrap items-center justify-between gap-3 border-t border-[#1F2A3C] bg-[#091221] px-[clamp(22px,4vw,44px)] py-3.5 text-[11px] text-[#8498B4]">
+        <p className="m-0 flex flex-wrap items-center justify-between gap-3 border-t border-[#1F2A3C] bg-[#091221] px-[clamp(22px,4vw,44px)] py-3.5 text-[length:var(--wf-kicker)] text-[#8498B4]">
           <span>Reproductor de WeWebinars</span>
           <span>Tu curso permanece incluido con tu cuenta gratuita</span>
         </p>
@@ -196,9 +196,9 @@ export default async function PanelCoursePage() {
           lessons with their own links, because that is what they are. */}
       <div className="flex flex-wrap gap-x-6 gap-y-3">
         {TOPICS.map((topic) => (
-          <span key={topic.n} className="flex items-center gap-2.5 text-sm text-[#B7C7DC]">
+          <span key={topic.n} className="flex items-center gap-2.5 text-[length:var(--wf-body)] text-[#B7C7DC]">
             <b
-              className="text-xs font-semibold text-[#76E8EE]"
+              className="text-[length:var(--wf-small)] font-semibold text-[#76E8EE]"
               style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
             >
               {topic.n}
@@ -213,13 +213,13 @@ export default async function PanelCoursePage() {
       <div className="max-w-[740px]">
         {QUESTIONS.map(([question, answer]) => (
           <details key={question} className="border-b border-[#2C3B51] py-4">
-            <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-sm font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-[length:var(--wf-body)] font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
               {question}
               <span className="shrink-0 text-[#77DFE9]" aria-hidden="true">
                 +
               </span>
             </summary>
-            <p className="m-0 mt-2.5 text-[13px] leading-relaxed text-[#B7C7DC]">{answer}</p>
+            <p className="m-0 mt-2.5 text-[length:var(--wf-small)] leading-relaxed text-[#B7C7DC]">{answer}</p>
           </details>
         ))}
       </div>
@@ -236,7 +236,7 @@ function CourseOffer() {
   return (
     <section className="grid gap-6 rounded-[16px] border border-[#A855F7] bg-gradient-to-br from-[#0B1230] to-[#1B0C2E] p-[clamp(20px,3vw,30px)] lg:grid-cols-[1.1fr_1fr]">
       <div className="min-w-0">
-        <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#D8B4FE] uppercase">
+        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#D8B4FE] uppercase">
           El siguiente paso es opcional
         </p>
         <h2 className="m-0 mt-2.5 text-[clamp(22px,3.2vw,28px)] leading-[1.14] font-bold tracking-[-0.03em] text-[#F3F7FF]">
@@ -246,7 +246,7 @@ function CourseOffer() {
             «Te regalo tu funnel».
           </span>
         </h2>
-        <p className="m-0 mt-3 text-[15px] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-3 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
           Activa Distribuidor y ofrece a otros constructores un funnel, su panel y este
           curso. Abre la conversación dando una herramienta útil.
         </p>
@@ -259,7 +259,7 @@ function CourseOffer() {
           "2 meses de Starter de WeWebinars.",
           "20% sobre las suscripciones de tus referidos directos.",
         ].map((item) => (
-          <li key={item} className="flex gap-2.5 text-sm text-[#D2DFEF]">
+          <li key={item} className="flex gap-2.5 text-[length:var(--wf-body)] text-[#D2DFEF]">
             <span className="text-[#6EE8E5]" aria-hidden="true">
               ✓
             </span>
@@ -269,12 +269,12 @@ function CourseOffer() {
         <li className="mt-2 list-none">
           <Link
             href="/panel/distribuidor"
-            className="inline-flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[15px] font-bold text-[#071521] no-underline"
+            className="wf-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[#071521] no-underline"
           >
             Conocer los beneficios →
           </Link>
         </li>
-        <li className="list-none text-xs leading-relaxed text-[#8498B4]">
+        <li className="list-none text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
           Tu cuenta gratuita no depende de comprar. Sin comisión por la licencia. Sin
           segundo nivel.
         </li>

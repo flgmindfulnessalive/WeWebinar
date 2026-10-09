@@ -64,19 +64,19 @@ export default async function PanelSharePage() {
           product away, the funnel is what presents them. Both credit them,
           because the badge at the foot of the funnel points at the same
           /r/<slug> the gift page's button does. */}
-      <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-        <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
+      <div className="flex flex-col gap-3.5 rounded-2xl border border-[#2D3E57] bg-[#0E192A] p-6">
+        <span className="text-[length:var(--wf-small)] font-semibold tracking-[0.08em] text-[#8498B4] uppercase">
           Tu página de regalo — el enlace que repartes
         </span>
         <CopyLink url={giftUrl} />
-        <span className="text-sm leading-relaxed text-[#6E7694]">
+        <span className="text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
           Ofrece el curso y el funnel gratis. Quien entre por aquí recibe su propia
           página y queda registrado como tuyo.
         </span>
       </div>
 
-      <div className="flex flex-col gap-3.5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-        <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
+      <div className="flex flex-col gap-3.5 rounded-2xl border border-[#2D3E57] bg-[#0E192A] p-6">
+        <span className="text-[length:var(--wf-small)] font-semibold tracking-[0.08em] text-[#8498B4] uppercase">
           Tu funnel personal
         </span>
         <CopyLink url={siteUrl} />
@@ -84,7 +84,7 @@ export default async function PanelSharePage() {
             offering a claim when the tier went invitation-only
             (20261007000009), so the room above is the only door. Saying
             otherwise would have them sending traffic to the wrong link. */}
-        <span className="text-sm leading-relaxed text-[#6E7694]">
+        <span className="text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
           Presenta lo que haces y capta interesados en tu propuesta. Para repartir
           funnels, el enlace es el de arriba: es el único por el que se reclaman.
         </span>
@@ -95,30 +95,30 @@ export default async function PanelSharePage() {
           is a traffic problem, visits without registrations is the gift
           page, and registrations without claims is the course. A single
           "reclamados" number could not tell them which. */}
-      <div className="flex flex-col gap-5 rounded-2xl border border-[#23233A] bg-[#0D0D15] p-6">
-        <span className="text-xs font-semibold tracking-[0.08em] text-[#6E7694] uppercase">
+      <div className="flex flex-col gap-5 rounded-2xl border border-[#2D3E57] bg-[#0E192A] p-6">
+        <span className="text-[length:var(--wf-small)] font-semibold tracking-[0.08em] text-[#8498B4] uppercase">
           Tu embudo
         </span>
         <ol className="m-0 flex list-none flex-col gap-4 p-0 sm:flex-row sm:gap-3">
           {STEPS.map((step, index) => (
             <li
               key={step.label}
-              className="flex min-w-0 flex-1 flex-col gap-1 border-[#1A1A2A] sm:border-l sm:pl-4 sm:first:border-l-0 sm:first:pl-0"
+              className="flex min-w-0 flex-1 flex-col gap-1 border-[#1B2538] sm:border-l sm:pl-4 sm:first:border-l-0 sm:first:pl-0"
             >
               <span
                 className={`text-[44px] leading-none font-extrabold tracking-tighter tabular-nums ${
-                  index === 0 ? "text-[#F4F5FA]" : index === 1 ? "text-[#A9B0C9]" : "text-[#2BD7F5]"
+                  index === 0 ? "text-[#F3F7FF]" : index === 1 ? "text-[#C1D1E6]" : "text-[#43E2EE]"
                 }`}
               >
                 {[visits, registrations, claimed][index]}
               </span>
-              <span className="text-[15px] font-semibold">{step.label}</span>
-              <span className="text-sm leading-snug text-[#6E7694]">{step.body}</span>
+              <span className="text-[length:var(--wf-body)] font-semibold">{step.label}</span>
+              <span className="text-[length:var(--wf-body)] leading-snug text-[#8498B4]">{step.body}</span>
             </li>
           ))}
         </ol>
         {claimRate !== null && (
-          <span className="text-sm leading-relaxed text-[#6E7694]">
+          <span className="text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
             De cada 100 personas que abren tu página de regalo, {claimRate} se queda con su funnel.
           </span>
         )}
@@ -126,14 +126,14 @@ export default async function PanelSharePage() {
             giver never sees these people's leads -- each page belongs to the
             account that received it, and that is enforced by the schema, not
             by this screen choosing not to show them. */}
-        <span className="max-w-[52ch] border-t border-[#1A1A2A] pt-4 text-[15px] leading-snug text-[#A9B0C9]">
+        <span className="max-w-[52ch] border-t border-[#1B2538] pt-4 text-[length:var(--wf-body)] leading-snug text-[#C1D1E6]">
           De los funnels que repartiste solo ves cuántos: los registrados de cada uno son
           de su dueño, igual que los tuyos son solo tuyos.
         </span>
       </div>
 
       {starterUntil && (
-        <p className="m-0 text-sm leading-relaxed text-[#6E7694]">
+        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
           Tus 2 meses de WeWebinars Starter van hasta el {DATE.format(starterUntil)}. Son una
           prueba de la plataforma: si te sirve, siguen $15 al mes; si no, no pagas nada.
           Repartir funnels, tu sala del curso y tu 20% no dependen de eso y no se apagan.
