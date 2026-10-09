@@ -33,7 +33,8 @@ export default async function AdminWeFunnelsPage() {
   // cuenta y con el cliente de servicio esa comprobación no correría.
   const asAdmin = await createClient();
 
-  const [{ data: reviews }, { data: sites }, { data: distributors }] = await Promise.all([
+  const [{ data: reviews }, { data: sites }, { data: distributors, error: consoleError }] =
+    await Promise.all([
     supabase
       .from("wefunnel_reviews")
       .select("id, site_id, source, rule, detail, created_at")
@@ -52,6 +53,9 @@ export default async function AdminWeFunnelsPage() {
   const allSites = sites ?? [];
   const siteById = new Map(allSites.map((site) => [site.id, site]));
   const allDistributors = distributors ?? [];
+  // La consola entera depende de una migración. Si falta, la tabla saldría
+  // vacía sin decir por qué y los formularios fallarían uno a uno.
+  const migrationPending = consoleError?.code === "PGRST202";
 
   return (
     <div className="flex flex-col gap-8">
@@ -63,6 +67,15 @@ export default async function AdminWeFunnelsPage() {
           pagan. Bajar una página es inmediato y no necesita deploy.
         </p>
       </div>
+
+      {migrationPending && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+          <strong className="font-semibold">Falta aplicar la migración.</strong> La consola
+          necesita <code>20261009000001_wefunnel_admin_console.sql</code>. Ejecuta{" "}
+          <code>supabase db push</code> y recarga esta página. Si ya la aplicaste, recarga la
+          caché de esquema con <code>notify pgrst, &apos;reload schema&apos;;</code>.
+        </div>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">Crear una cuenta</h2>
