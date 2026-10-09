@@ -88,3 +88,39 @@ export function weFunnelsResetEmail(actionUrl: string): {
     html: wrapWeFunnelsEmailShell(inner),
   };
 }
+
+// El correo de confirmación del alta.
+//
+// Hasta ahora salía de la plantilla única de Supabase, con la cabecera de
+// WeWebinars, a alguien que acababa de crear su cuenta en una pantalla de
+// WeFunnels. Es el mismo problema que el de la contraseña y la misma
+// solución: lo manda la aplicación, con su marca y a su propio host.
+//
+// Dos intenciones, un correo. Quien acepta un regalo y quien compra la
+// licencia confirman lo mismo; solo cambia la frase que dice qué le espera
+// al otro lado, porque el enlace lleva a sitios distintos.
+export function weFunnelsConfirmEmail(
+  actionUrl: string,
+  intent: "regalo" | "compra" = "regalo"
+): { subject: string; html: string } {
+  const safeUrl = escapeHtml(actionUrl);
+  const whatFollows =
+    intent === "compra"
+      ? "Después entras a tu panel, donde está la licencia Distribuidor y tu precio."
+      : "Después entras a tu panel y eliges la dirección de tu funnel.";
+
+  const inner = `<p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#1d7f8c;">Tu cuenta de WeFunnels</p>
+<h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;color:#18181b;">Confirma tu email</h1>
+<p style="margin:0 0 22px;">Pulsa el botón para confirmar que esta dirección es tuya. ${whatFollows}</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:9px;background:${GROUND};">
+  <a href="${safeUrl}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;font-family:${FONT_STACK};">Confirmar mi email</a>
+</td></tr></table>
+<p style="margin:24px 0 0;font-size:13px;color:#71717a;">El enlace sirve una sola vez y caduca. Si no cabe en tu pantalla, cópialo entero:</p>
+<p style="margin:6px 0 0;font-size:12px;word-break:break-all;color:#52525b;">${safeUrl}</p>
+<p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no creaste ninguna cuenta, no hace falta que hagas nada: sin confirmar, esta dirección no queda asociada a nada.</p>`;
+
+  return {
+    subject: "Confirma tu email de WeFunnels",
+    html: wrapWeFunnelsEmailShell(inner),
+  };
+}

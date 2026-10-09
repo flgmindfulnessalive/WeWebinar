@@ -161,6 +161,39 @@ hosteado como el de Lemon Squeezy: cancelar la suscripción es una llamada
 directa a la API (`memberships.cancel`, con `cancel_at_period_end: true`),
 implementada en el botón "Cancelar suscripción" de Facturación.
 
+## 2bis. Whop — la licencia Distribuidor de WeFunnels
+
+Aparte de los 12 planes de WeWebinars del paso 2. Son **dos listados**, uno
+por precio, y los dos tienen que ser **pago único, no suscripción**: el
+código trata la licencia como vitalicia, no renueva nada y
+`membership.deactivated` no deshace nada para ella.
+
+1. En Whop, crear los dos productos/planes:
+   - **199 USD** — el precio público de la web oficial.
+   - **100 USD** — el precio de quien llega por el enlace de un distribuidor.
+2. En Vercel → Settings → Environment Variables, con **Production** marcado:
+   - `WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID_PUBLIC` = el plan de 199
+   - `WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID_INVITED` = el plan de 100
+   - (`WHOP_WEFUNNELS_DISTRIBUTOR_PLAN_ID`, sin sufijo, es la variable
+     antigua: se sigue leyendo como el público para no romper una
+     configuración previa. Si pones la nueva, esta sobra.)
+3. **Redeploy.** Las variables de entorno solo entran con un despliegue
+   nuevo.
+4. El webhook del paso 2.4 ya sirve: la activación de la licencia escucha
+   `membership.activated` en el mismo endpoint y se identifica por la
+   metadata que ponemos nosotros al crear el checkout, no por el plan id.
+
+**Qué NO hay que configurar**: el precio no se elige en el navegador. La
+ruta `/api/whop/wefunnels-checkout` lo decide con `wefunnel_license_price()`,
+que lo lee de las filas de referido de la cuenta, y
+`wefunnel_activate_distributor` lo vuelve a comprobar antes de conceder
+nada. El cuerpo de la petición no se consulta para esto.
+
+**Cómo comprobar que quedó bien**, sin cobrar de verdad: entrar al panel con
+una cuenta sin licencia y abrir `/panel/distribuidor`. Si el botón de pagar
+lleva a Whop, los plan ids están puestos; si responde "checkout
+unavailable", falta uno de los dos o el redeploy.
+
 ## 3. Resend (emails transaccionales)
 
 1. Crear cuenta en [resend.com](https://resend.com).
@@ -168,6 +201,28 @@ implementada en el botón "Cancelar suscripción" de Facturación.
 3. API Keys → crear una → `RESEND_API_KEY`.
 4. `RESEND_FROM_EMAIL` = una dirección de ese dominio verificado
    (ej. `noreply@tudominio.com`).
+
+## 3ter. Turnstile — la clave secreta, y por qué importa para WeFunnels
+
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` es la del widget y ya estaba. La **secreta**
+del mismo sitio (Cloudflare → Turnstile → tu sitio → Settings) es nueva:
+
+    TURNSTILE_SECRET_KEY=
+
+Hasta ahora no hacía falta porque quien comprobaba el token era Supabase, al
+recibir el alta o el inicio de sesión. Hace falta en cuanto una pantalla deja
+de pasar por ahí, y el alta de WeFunnels lo hace: para mandar su propio
+correo de confirmación con su marca, crea la cuenta con la API de
+administración, **que no verifica nada**.
+
+**Vacía es un estado soportado, no un error.** Sin ella el alta de WeFunnels
+vuelve al camino de siempre: `supabase.auth.signUp`, que sí comprueba el
+captcha y manda su propio correo — el de la plantilla única del proyecto, con
+la marca de WeWebinars. Es peor, y es exactamente lo que había antes, así que
+dejarlo como reserva no quita nada.
+
+Lo que **no** se puede hacer es tomar el camino propio sin esa comprobación:
+dejaría un formulario público abierto a cualquier script.
 
 ## 3bis. Anthropic (agente AI de respuestas en el chat, opcional)
 
