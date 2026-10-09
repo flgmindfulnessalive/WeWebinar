@@ -3,6 +3,8 @@ import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClearButton, SuspendButton } from "./moderation-actions";
+import { CreateAccountForm, GrantLicenseForm } from "./console-forms";
+import { createClient } from "@/lib/supabase/server";
 
 // Spanish only, unlike the rest of the admin: WeFunnels ships in Spanish,
 // and a moderation screen quoting Spanish page copy next to English chrome
@@ -26,7 +28,12 @@ export default async function AdminWeFunnelsPage() {
   // hides from everyone but their owner.
   const supabase = createAdminClient();
 
-  const [{ data: reviews }, { data: sites }] = await Promise.all([
+  // Los distribuidores se leen con la sesión del administrador, no con la
+  // clave de servicio: la función comprueba is_platform_admin() por su
+  // cuenta y con el cliente de servicio esa comprobación no correría.
+  const asAdmin = await createClient();
+
+  const [{ data: reviews }, { data: sites }, { data: distributors }] = await Promise.all([
     supabase
       .from("wefunnel_reviews")
       .select("id, site_id, source, rule, detail, created_at")
@@ -38,11 +45,13 @@ export default async function AdminWeFunnelsPage() {
       .select("id, slug, display_name, status, suspended_at, published_at, created_at")
       .order("created_at", { ascending: false })
       .limit(100),
+    asAdmin.rpc("wefunnel_admin_distributors"),
   ]);
 
   const openReviews = reviews ?? [];
   const allSites = sites ?? [];
   const siteById = new Map(allSites.map((site) => [site.id, site]));
+  const allDistributors = distributors ?? [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -54,6 +63,105 @@ export default async function AdminWeFunnelsPage() {
           pagan. Bajar una página es inmediato y no necesita deploy.
         </p>
       </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">Crear una cuenta</h2>
+        <p className="text-sm text-muted-foreground">
+          Crea la cuenta y la página de alguien sin que pase por el embudo ni pague.
+          Queda en borrador, a su nombre, y con el email ya confirmado para que pueda
+          publicarla. La licencia que se da aquí se marca como regalada: no entra en
+          los ingresos.
+        </p>
+        <Card>
+          <CardContent className="pt-6">
+            <CreateAccountForm />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Dar la licencia a una cuenta que ya existe
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Para quien ya se registró y solo le falta el nivel Distribuidor.
+        </p>
+        <Card>
+          <CardContent className="pt-6">
+            <GrantLicenseForm />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Distribuidores <span className="text-muted-foreground">({allDistributors.length})</span>
+        </h2>
+        <Card>
+          <CardContent className="overflow-x-auto p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground">
+                  <th className="border-b px-4 py-3 font-medium">Cuenta</th>
+                  <th className="border-b px-4 py-3 font-medium">Dirección</th>
+                  <th className="border-b px-4 py-3 font-medium">Licencia</th>
+                  <th className="border-b px-4 py-3 font-medium">Starter hasta</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allDistributors.length === 0 ? (
+                  <tr>
+                    <td className="px-4 py-6 text-muted-foreground" colSpan={4}>
+                      Todavía no hay distribuidores.
+                    </td>
+                  </tr>
+                ) : (
+                  allDistributors.map((d) => (
+                    <tr key={d.account_id}>
+                      <td className="border-b px-4 py-3">
+                        <div className="font-medium">{d.account_name}</div>
+                        <div className="text-xs text-muted-foreground">{d.owner_email}</div>
+                      </td>
+                      <td className="border-b px-4 py-3 whitespace-nowrap">
+                        {d.slug ? (
+                          <a
+                            href={`https://${WEFUNNELS_HOST}/${d.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            /{d.slug}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">sin página</span>
+                        )}
+                        {d.site_status === "draft" && (
+                          <Badge variant="secondary" className="ml-2">
+                            Borrador
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="border-b px-4 py-3 whitespace-nowrap">
+                        {d.license_source === "granted" ? (
+                          <Badge variant="secondary">Regalada</Badge>
+                        ) : (
+                          <span className="tabular-nums">
+                            {d.license_source === "invited" ? "Invitación" : "Público"}
+                            {d.license_price_usd != null && ` · $${d.license_price_usd}`}
+                          </span>
+                        )}
+                      </td>
+                      <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
+                        {d.starter_until ? DATE.format(new Date(d.starter_until)) : "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">
