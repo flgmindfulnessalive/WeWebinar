@@ -34,6 +34,39 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
   // often as they get clicked.
   const suggestion = proposeSlug(name) || "tunombre";
 
+  const loginHref = wefunnelAppUrl(
+    `/login?next=${encodeURIComponent(buying ? "/panel/distribuidor" : "/panel")}`
+  );
+
+  // Ya tenía cuenta. No se manda a crear otra: se le da el enlace que
+  // necesita, que es el de entrar.
+  if (state && "exists" in state) {
+    return (
+      <div className="rounded-[15px] border border-[#43E2EE] bg-[#0B1423] p-[clamp(22px,3vw,30px)]">
+        <p className="m-0 text-[11px] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+          Ya nos conocemos
+        </p>
+        <h2 className="m-0 mt-3 text-[clamp(22px,3vw,27px)] leading-tight font-bold tracking-[-0.025em] text-[#F3F7FF]">
+          Ese email ya tiene cuenta
+        </h2>
+        <p className="m-0 mt-3 text-[15px] leading-relaxed text-[#B7C7DC]">
+          {buying
+            ? "Inicia sesión y te llevamos directo a activar tu licencia Distribuidor."
+            : "Inicia sesión y continúas donde lo dejaste."}
+        </p>
+        <a
+          href={loginHref}
+          className="mt-5 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
+        >
+          Iniciar sesión →
+        </a>
+        <p className={`${HELP} mt-4`}>
+          ¿No recuerdas la contraseña? En esa pantalla puedes pedir una nueva.
+        </p>
+      </div>
+    );
+  }
+
   if (state && "sent" in state) {
     return (
       <div className="rounded-[15px] border border-[#43E2EE] bg-[#0B1423] p-[clamp(22px,3vw,30px)]">
@@ -184,12 +217,7 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
 
       <p className="m-0 mt-5 border-t border-[#1F2A3C] pt-5 text-sm text-[#B7C7DC]">
         ¿Ya tienes cuenta?{" "}
-        <a
-          href={wefunnelAppUrl(
-            `/login?next=${encodeURIComponent(buying ? "/panel/distribuidor" : "/panel")}`
-          )}
-          className="font-semibold text-[#43E2EE]"
-        >
+        <a href={loginHref} className="font-semibold text-[#43E2EE]">
           Inicia sesión
         </a>
       </p>
