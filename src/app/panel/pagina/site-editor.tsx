@@ -91,7 +91,7 @@ function Avatar({ photo, name, size }: { photo: string | null; name: string; siz
   }
   return (
     <span
-      className="wf-cta grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] font-bold text-white"
+      className="grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] font-bold text-white"
       style={{ width: size, height: size, fontSize: Math.round(size / 2.8) }}
       aria-hidden="true"
     >

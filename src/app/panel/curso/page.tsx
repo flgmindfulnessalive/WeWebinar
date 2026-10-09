@@ -116,7 +116,7 @@ export default async function PanelCoursePage() {
       {sharedBy && (
         <div className="flex items-center gap-3.5">
           <span
-            className="wf-cta grid h-[44px] w-[44px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[length:var(--wf-small)] font-bold text-white"
+            className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] text-[length:var(--wf-small)] font-bold text-white"
             aria-hidden="true"
           >
             {initials(sharedBy)}
