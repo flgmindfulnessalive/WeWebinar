@@ -15,6 +15,13 @@ export type PanelViewer = {
   // public address on a shared domain. Carried here so the editor can say
   // so before the button is pressed instead of only after.
   emailVerified: boolean;
+  // Which account these rows belong to. Null is the normal state of a
+  // brand-new signup, before the claim creates one.
+  accountId: string | null;
+  // A platform admin may claim a page without an invitation
+  // (claim_wefunnel_site, 20261007000014), so the screen that gates the
+  // claim form has to know.
+  isPlatformAdmin: boolean;
   site: WeFunnelSite | null;
   distributor: WeFunnelDistributor | null;
 };
@@ -34,17 +41,51 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
 
   if (!user) return null;
 
-  // RLS lets a member read their own site in any state, so one query covers
-  // draft, published and suspended alike.
-  const [{ data: site }, { data: distributor }] = await Promise.all([
-    supabase.from("wefunnel_sites").select("*").limit(1).maybeSingle(),
-    supabase.from("wefunnel_distributors").select("*").limit(1).maybeSingle(),
+  // The account has to be asked for by name, and the two reads below have to
+  // be filtered by it. RLS alone does not narrow them to this person:
+  // wefunnel_sites_select_live lets any signed-in visitor read every
+  // published page, and wefunnel_sites_select_members adds every page in any
+  // state for a platform admin. An unscoped `limit(1)` therefore hands the
+  // panel whichever row the planner returns first, which can be somebody
+  // else's -- and then the editor shows a page its viewer cannot write: the
+  // save matches no row, because the update policy is account-scoped and
+  // silent about it, and wefunnel_publish_site, which finds the page through
+  // the caller's own account, raises 'no page for this account'.
+  // /panel/empezar has always read it this way.
+  const { data: profile } = await supabase
+    .from("users")
+    .select("account_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const accountId = profile?.account_id ?? null;
+
+  const [site, distributor, isPlatformAdmin] = await Promise.all([
+    accountId
+      ? supabase
+          .from("wefunnel_sites")
+          .select("*")
+          .eq("account_id", accountId)
+          .maybeSingle()
+          .then(({ data }) => data)
+      : null,
+    accountId
+      ? supabase
+          .from("wefunnel_distributors")
+          .select("*")
+          .eq("account_id", accountId)
+          .maybeSingle()
+          .then(({ data }) => data)
+      : null,
+    supabase.rpc("is_platform_admin").then(({ data }) => Boolean(data)),
   ]);
 
   return {
     userId: user.id,
     email: user.email ?? "",
     emailVerified: Boolean(user.email_confirmed_at),
+    accountId,
+    isPlatformAdmin,
     site: site ?? null,
     distributor: distributor ?? null,
   };
