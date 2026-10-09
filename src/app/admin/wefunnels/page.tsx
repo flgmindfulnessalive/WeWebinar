@@ -33,8 +33,13 @@ export default async function AdminWeFunnelsPage() {
   // cuenta y con el cliente de servicio esa comprobación no correría.
   const asAdmin = await createClient();
 
-  const [{ data: reviews }, { data: sites }, { data: distributors, error: consoleError }] =
-    await Promise.all([
+  const [
+    { data: reviews },
+    { data: sites },
+    { data: distributors, error: consoleError },
+    { data: licensed },
+    { data: slugs },
+  ] = await Promise.all([
     supabase
       .from("wefunnel_reviews")
       .select("id, site_id, source, rule, detail, created_at")
@@ -43,16 +48,58 @@ export default async function AdminWeFunnelsPage() {
       .limit(100),
     supabase
       .from("wefunnel_sites")
-      .select("id, slug, display_name, status, suspended_at, published_at, created_at")
+      .select("id, account_id, slug, display_name, status, suspended_at, published_at, created_at")
       .order("created_at", { ascending: false })
       .limit(100),
     asAdmin.rpc("wefunnel_admin_distributors"),
+    // Quién tiene licencia, para poder distinguir en la lista de páginas
+    // una gratuita de la de un distribuidor. Sin esto las dos se ven
+    // exactamente igual, que es lo que hacía parecer que las cuentas
+    // gratuitas no salían: salían, sin nada que las identificara.
+    supabase.from("wefunnel_distributors").select("account_id"),
+    // Para resolver quién invitó a quién. Va aparte de la lista de arriba
+    // porque el que invitó puede no estar entre las últimas cien páginas.
+    supabase.from("wefunnel_sites").select("id, slug"),
   ]);
 
   const openReviews = reviews ?? [];
   const allSites = sites ?? [];
   const siteById = new Map(allSites.map((site) => [site.id, site]));
   const allDistributors = distributors ?? [];
+  const licensedAccounts = new Set((licensed ?? []).map((row) => row.account_id));
+  const slugBySiteId = new Map((slugs ?? []).map((row) => [row.id, row.slug]));
+
+  // El dueño real y su origen. Dependen de las cuentas que devolvió la
+  // consulta de arriba, así que no caben en el mismo Promise.all.
+  const accountIds = [
+    ...new Set(allSites.map((site) => site.account_id).filter((id): id is string => Boolean(id))),
+  ];
+  const [{ data: owners }, { data: referrals }] = accountIds.length
+    ? await Promise.all([
+        supabase.from("users").select("account_id, email, role").in("account_id", accountIds),
+        supabase
+          .from("wefunnel_referrals")
+          .select("referred_account_id, referrer_site_id")
+          .in("referred_account_id", accountIds),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  // El dueño, no un miembro cualquiera. Una cuenta puede tener equipo, y
+  // quedarse con la última fila que llegue mostraría en el panel un correo
+  // que no es el de quien reclamó la página -- exactamente el dato por el
+  // que se mira esta tabla.
+  const emailByAccount = new Map<string, string>();
+  for (const row of owners ?? []) {
+    if (!row.account_id) continue;
+    const current = emailByAccount.get(row.account_id);
+    if (!current || row.role === "owner") emailByAccount.set(row.account_id, row.email);
+  }
+  const referrerByAccount = new Map(
+    (referrals ?? []).map((row) => [
+      row.referred_account_id,
+      slugBySiteId.get(row.referrer_site_id) ?? null,
+    ])
+  );
   // La consola entera depende de una migración. Si falta, la tabla saldría
   // vacía sin decir por qué y los formularios fallarían uno a uno.
   const migrationPending = consoleError?.code === "PGRST202";
@@ -246,14 +293,23 @@ export default async function AdminWeFunnelsPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">Páginas</h2>
+        <h2 className="text-lg font-semibold tracking-tight">
+          Páginas <span className="text-muted-foreground">({allSites.length})</span>
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Todas, gratuitas y de distribuidor. Una página gratuita solo nace cuando
+          alguien reclama por el enlace de regalo de un distribuidor, así que la
+          columna «Invitó» dice de quién vino cada una.
+        </p>
         <Card>
           <CardContent className="overflow-x-auto p-0">
-            <table className="w-full min-w-[640px] border-collapse text-sm">
+            <table className="w-full min-w-[880px] border-collapse text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
                   <th scope="col" className="border-b px-4 py-3 font-medium">Dirección</th>
                   <th scope="col" className="border-b px-4 py-3 font-medium">Dueño</th>
+                  <th scope="col" className="border-b px-4 py-3 font-medium">Tipo</th>
+                  <th scope="col" className="border-b px-4 py-3 font-medium">Invitó</th>
                   <th scope="col" className="border-b px-4 py-3 font-medium">Estado</th>
                   <th scope="col" className="border-b px-4 py-3 font-medium">Creada</th>
                   <th scope="col" className="border-b px-4 py-3 font-medium"></th>
@@ -262,7 +318,7 @@ export default async function AdminWeFunnelsPage() {
               <tbody>
                 {allSites.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-muted-foreground">
+                    <td colSpan={7} className="px-4 py-6 text-muted-foreground">
                       Todavía no hay páginas.
                     </td>
                   </tr>
@@ -278,7 +334,41 @@ export default async function AdminWeFunnelsPage() {
                           /{site.slug}
                         </a>
                       </td>
-                      <td className="border-b px-4 py-3">{site.display_name}</td>
+                      <td className="border-b px-4 py-3">
+                        <div className="font-medium">{site.display_name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {(site.account_id && emailByAccount.get(site.account_id)) ?? "—"}
+                        </div>
+                      </td>
+                      <td className="border-b px-4 py-3 whitespace-nowrap">
+                        {site.account_id && licensedAccounts.has(site.account_id) ? (
+                          <Badge variant="secondary">Distribuidor</Badge>
+                        ) : (
+                          <Badge variant="outline">Gratis</Badge>
+                        )}
+                      </td>
+                      <td className="border-b px-4 py-3 whitespace-nowrap">
+                        {/* Sin fila de referido no hay a quién atribuirla: o la
+                            creó la consola de arriba, o la reclamó alguien que
+                            llegó sin pasar por una página de regalo. */}
+                        {(() => {
+                          const from = site.account_id
+                            ? referrerByAccount.get(site.account_id)
+                            : undefined;
+                          return from ? (
+                            <a
+                              href={`https://${WEFUNNELS_HOST}/${from}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              /{from}
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          );
+                        })()}
+                      </td>
                       <td className="border-b px-4 py-3">
                         {site.suspended_at ? (
                           <Badge variant="destructive">Suspendida</Badge>
