@@ -31,31 +31,26 @@ const SHORT_LINKS = [
 // y hasta entonces no falla nada: por eso el fallo esperó a que hubiera una
 // foto de verdad.
 //
-// El host sale de la variable de entorno y no escrito a mano, porque cada
-// entorno apunta a su propio proyecto de Supabase y uno fijo rompería las
-// previsualizaciones, que es justo donde más se prueba.
-const supabaseImageHost = (() => {
-  try {
-    const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    return raw ? new URL(raw).hostname : null;
-  } catch {
-    return null;
-  }
-})();
-
+// Por comodín y no leyendo NEXT_PUBLIC_SUPABASE_URL, que fue el primer
+// intento: esta configuración se evalúa al compilar, y si la variable no
+// está ahí la lista degrada a vacía sin avisar -- la peor forma de fallar,
+// porque el build pasa y el fallo reaparece en producción igual que antes.
+// Un comodín no puede quedarse vacío, y además cubre cualquier proyecto de
+// Supabase, que es lo que hace falta para que las previsualizaciones
+// funcionen sin configurar nada.
+//
+// Acotado al prefijo público del almacenamiento: el optimizador puede traer
+// una imagen que ya es pública de todos modos, y no sirve de proxy para
+// ninguna otra ruta de esos hosts.
 const nextConfig: NextConfig = {
   images: {
-    // Acotado al prefijo público del almacenamiento: así el optimizador no
-    // queda abierto como proxy para cualquier otra ruta de ese host.
-    remotePatterns: supabaseImageHost
-      ? [
-          {
-            protocol: "https" as const,
-            hostname: supabaseImageHost,
-            pathname: "/storage/v1/object/public/**",
-          },
-        ]
-      : [],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
   // Skip auto-generating AGENTS.md/CLAUDE.md on every `next dev` — this
   // repo already has its own README/CLAUDE conventions.
