@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 
 import { WhopClient } from "@whop/sdk";
 import type { Database } from "@/lib/supabase/database.types";
+import { wefunnelUrl } from "@/lib/wefunnels/host";
 
 // Thin wrapper over the Whop SDK -- same role as billing.ts's Lemon Squeezy
 // facade. See CreateCheckoutConfigurationsRequest in @whop/sdk: creating a
@@ -240,7 +241,11 @@ export async function createDistributorCheckoutUrl(
       // To the confirmation rather than straight to the distributor panel:
       // a public buyer has no page yet, and that screen is where they
       // choose their address once the webhook has landed.
-      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/panel/distribuidor/listo`,
+      // El host de WeFunnels, no el de la app: ahí es donde vive el panel.
+      // Por el host de la app también llegaría -- el proxy responde a /panel
+      // con un 308 -- pero la dirección a la que Whop devuelve a alguien que
+      // acaba de pagar no es sitio para un salto de más.
+      redirect_url: wefunnelUrl("/panel/distribuidor/listo"),
     });
     return config.purchase_url ?? null;
   } catch (err) {

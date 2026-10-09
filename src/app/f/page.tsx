@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Gift, PanelTop, ChartNoAxesCombined, Play } from "lucide-react";
 
-import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { HeroGrid } from "@/components/wefunnels/hero-grid";
 import { Reveal } from "@/components/wefunnels/reveal";
 import { BackToTop } from "@/components/wefunnels/back-to-top";
@@ -157,6 +157,15 @@ export default function WeFunnelsOfficialPage() {
             <a href="#preguntas" className={NAV}>
               Preguntas
             </a>
+            {/* La puerta de vuelta. No existía en ninguna parte de la web
+                pública: quien compraba y cerraba la pestaña no tenía forma
+                de volver a entrar a su panel desde aquí. */}
+            <Link
+              href="/entrar"
+              className="wf-cta ml-1 inline-flex items-center rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] no-underline"
+            >
+              Entrar
+            </Link>
           </nav>
         </div>
       </header>
@@ -464,14 +473,14 @@ export default function WeFunnelsOfficialPage() {
         <div className={`${SHELL} flex flex-wrap items-center justify-between gap-4`}>
           <span>WeFunnels · Una solución de WeWebinars</span>
           <div className="flex flex-wrap gap-4">
-            <Link href={wefunnelAppUrl("/reglas-wefunnels")} className="text-[#A8BDD4] no-underline">
+            <Link href="/reglas" className="text-[#A8BDD4] no-underline">
               Reglas de contenido
             </Link>
-            <Link href={wefunnelAppUrl("/terms")} className="text-[#A8BDD4] no-underline">
-              Términos
+            <Link href="/legal" className="text-[#A8BDD4] no-underline">
+              Condiciones y privacidad
             </Link>
-            <Link href={wefunnelAppUrl("/privacy")} className="text-[#A8BDD4] no-underline">
-              Privacidad
+            <Link href="/entrar" className="text-[#A8BDD4] no-underline">
+              Entrar
             </Link>
           </div>
         </div>

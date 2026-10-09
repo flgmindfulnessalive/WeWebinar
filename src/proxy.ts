@@ -4,7 +4,12 @@ import createIntlMiddleware from "next-intl/middleware";
 import { updateSession } from "@/lib/supabase/middleware";
 import { routing } from "@/i18n/routing";
 import { lookupAccountSlugByHostname, lookupPendingDomainStatus } from "@/lib/domains/lookup";
-import { WEFUNNELS_PATH_PREFIX, isWeFunnelsHostname } from "@/lib/wefunnels/host";
+import {
+  WEFUNNELS_PATH_PREFIX,
+  isWeFunnelsAppPath,
+  isWeFunnelsHostname,
+  wefunnelUrl,
+} from "@/lib/wefunnels/host";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -89,6 +94,39 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     const suffix = url.pathname === "/" ? "" : url.pathname;
     url.pathname = `${WEFUNNELS_PATH_PREFIX}${suffix}`;
+    const rewriteResponse = NextResponse.rewrite(url);
+    for (const cookie of sessionResponse.cookies.getAll()) {
+      rewriteResponse.cookies.set(cookie);
+    }
+    return rewriteResponse;
+  }
+
+  // Las rutas propias de WeFunnels -- el panel, las pantallas de acceso, las
+  // legales -- pedidas en un host que no es el de WeFunnels. En producción
+  // eso es una marca de libro antigua (el panel vivía en el host de la app)
+  // o un enlace de un correo ya enviado.
+  //
+  // Solo en nuestros propios hosts. Un dominio personalizado de un cliente
+  // (custom_domains, la rama de abajo) sirve SUS páginas de webinar, y
+  // cualquier ruta en él tiene que seguir yendo a /w/<cuenta>/...: servir el
+  // panel de WeFunnels desde el dominio de otra empresa sería peor que el
+  // 404 que daba antes.
+  if (isOwnHostname(hostname) && isWeFunnelsAppPath(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+
+    // El host real de producción: un 308 hacia el de WeFunnels. Es una
+    // marca de libro antiguo o un enlace de correo ya enviado, y la
+    // respuesta es llevarlo a la dirección que el producto sí tiene.
+    const isLocal = hostname === "localhost" || hostname.endsWith(".vercel.app");
+    if (!isLocal) {
+      return NextResponse.redirect(wefunnelUrl(`${url.pathname}${url.search}`), 308);
+    }
+
+    // En local y en una preview no hay segundo host al que mandar a nadie,
+    // así que la misma ruta se reescribe en sitio. Es lo que mantiene el
+    // panel entero alcanzable en desarrollo sin apuntar un subdominio a un
+    // portátil.
+    url.pathname = `${WEFUNNELS_PATH_PREFIX}${url.pathname}`;
     const rewriteResponse = NextResponse.rewrite(url);
     for (const cookie of sessionResponse.cookies.getAll()) {
       rewriteResponse.cookies.set(cookie);

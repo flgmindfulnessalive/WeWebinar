@@ -1,9 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { LeadForm } from "./lead-form";
 import { CountVisit } from "@/components/wefunnels/count-visit";
 import { HeroGrid } from "@/components/wefunnels/hero-grid";
@@ -170,12 +170,12 @@ export default async function WeFunnelSitePage({
               </p>
             </div>
             {!site.suspended_at && (
-              <a
-                href={wefunnelAppUrl("/panel")}
+              <Link
+                href="/panel/pagina"
                 className="wf-cta rounded-xl bg-gradient-to-br from-[#1E5BF5] to-[#9333EA] px-5 py-3 text-[length:var(--wf-body)] font-semibold text-white no-underline"
               >
                 Publicar
-              </a>
+              </Link>
             )}
           </div>
         )}
