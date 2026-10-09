@@ -20,9 +20,15 @@ export default async function PanelPageEditor() {
   // worst place to tell them.
   if (!viewer.site) {
     const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
-    let invited = false;
 
-    if (touch) {
+    // The same two exceptions claim_wefunnel_site makes to the invitation
+    // rule (20261007000014): a platform admin, so the first page in the
+    // system can exist at all, and an account that already paid for the
+    // licence. Without them this screen would turn somebody the database
+    // would accept away at the door.
+    let invited = viewer.isPlatformAdmin || Boolean(viewer.distributor);
+
+    if (!invited && touch) {
       const supabase = await createClient();
       const { data } = await supabase.rpc("wefunnel_invitation_open", {
         p_slug: touch.slug,

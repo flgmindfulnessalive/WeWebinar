@@ -16,6 +16,24 @@ function field(data: FormData, name: string, max: number): string {
   return String(data.get(name) ?? "").trim().slice(0, max);
 }
 
+// Lo que no supimos traducir se dice igualmente. Un fallo con nombre se
+// arregla; "intenta de nuevo" se repite para siempre -- y quien lee esto es
+// el dueño de la página, no un visitante: el detalle es suyo. No lleva
+// datos de nadie, solo el motivo que levantó la base.
+function detail(message: string): string {
+  const clean = message.replace(/^wefunnel:\s*/, "").trim().slice(0, 120);
+  return clean ? ` (${clean})` : "";
+}
+
+// Un UPDATE que no encuentra fila no es un error en PostgREST: es una
+// respuesta vacía. Con RLS de por medio eso es justo el caso que hay que
+// contar -- la política de escritura está acotada a la cuenta y excluye las
+// páginas suspendidas, así que "cero filas" significa que esta página no es
+// de quien la está guardando, o que está suspendida. Devolver éxito ahí
+// sería decirle que guardamos algo que nunca se escribió.
+const NOT_WRITABLE =
+  "Esta página no admite cambios desde tu cuenta: o no está a tu nombre, o está suspendida. Vuelve a cargar la pantalla.";
+
 export async function claimWeFunnelSite(
   _prev: ClaimState,
   formData: FormData
@@ -119,7 +137,7 @@ export async function saveWeFunnelSite(
   // The slug is not in this payload on purpose. It moves through its own
   // path with its own availability check, and the database freezes it once
   // the page has been published.
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("wefunnel_sites")
     .update({
       display_name: field(formData, "displayName", 120) || undefined,
@@ -138,13 +156,16 @@ export async function saveWeFunnelSite(
       pixel_provider: pixelId ? pixelProvider : null,
       pixel_id: pixelId || null,
     })
-    .eq("id", field(formData, "siteId", 64));
+    .eq("id", field(formData, "siteId", 64))
+    .select("id");
 
   if (error) {
-    // The update policy excludes suspended pages, so a suspended owner's
-    // save matches no row rather than being rejected outright.
     console.error("[wefunnel] save failed:", error.message);
-    return { error: "No pudimos guardar los cambios. Intenta de nuevo." };
+    return { error: `No pudimos guardar los cambios.${detail(error.message)}` };
+  }
+
+  if (!data || data.length === 0) {
+    return { error: NOT_WRITABLE };
   }
 
   revalidatePath("/panel");
@@ -176,8 +197,21 @@ export async function setWeFunnelPublished(
           "Verifica tu email antes de publicar. Te mandamos el enlace al correo con el que te registraste.",
       };
     }
+    // La otra excepción que levanta wefunnel_publish_site. Se llegaba aquí
+    // con el mensaje genérico, que es el peor sitio donde dejarla: la
+    // función busca la página por la cuenta de quien llama, así que esto
+    // dice que la pantalla estaba mostrando una página que no es de esta
+    // cuenta -- lo que ocurría cuando el panel leía la fila sin filtrar.
+    if (error.message.includes("no page for this account")) {
+      return {
+        error:
+          "Tu cuenta todavía no tiene página propia. Vuelve a cargar esta pantalla para empezar la tuya.",
+      };
+    }
     console.error("[wefunnel] publish failed:", error.message);
-    return { error: "No pudimos cambiar el estado de la página." };
+    return {
+      error: `No pudimos cambiar el estado de la página.${detail(error.message)}`,
+    };
   }
 
   revalidatePath("/panel");
@@ -213,10 +247,11 @@ export async function changeWeFunnelSlug(
     return { error: "Esa dirección ya está tomada. Prueba con otra." };
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("wefunnel_sites")
     .update({ slug })
-    .eq("id", field(formData, "siteId", 64));
+    .eq("id", field(formData, "siteId", 64))
+    .select("id");
 
   if (error) {
     // wefunnel_guard_slug raises this once the page has been published.
@@ -233,7 +268,11 @@ export async function changeWeFunnelSlug(
       return { error: "Esa dirección está reservada. Prueba con otra." };
     }
     console.error("[wefunnel] slug change failed:", error.message);
-    return { error: "No pudimos cambiar tu dirección. Intenta de nuevo." };
+    return { error: `No pudimos cambiar tu dirección.${detail(error.message)}` };
+  }
+
+  if (!data || data.length === 0) {
+    return { error: NOT_WRITABLE };
   }
 
   revalidatePath("/panel");
