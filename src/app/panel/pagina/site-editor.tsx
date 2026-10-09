@@ -100,6 +100,11 @@ function Avatar({ photo, name, size }: { photo: string | null; name: string; siz
   );
 }
 
+// El mismo número que valida la acción en el servidor, repetido aquí a
+// propósito: el servidor es quien manda, pero sin esta copia el aviso
+// llegaría después de un envío que de todos modos iba a fallar.
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
 export function SiteEditor({
   site,
   steps,
@@ -133,6 +138,11 @@ export function SiteEditor({
   const [description, setDescription] = useState(site.description ?? "");
   const [slug, setSlug] = useState(site.slug);
   const [touched, setTouched] = useState(false);
+  // El aviso de tamaño se da aquí y no en el servidor: una foto demasiado
+  // grande ni siquiera llega, porque el cuerpo de una Server Action se corta
+  // antes. Avisar al elegir el archivo es además el único momento en que la
+  // persona puede hacer algo al respecto.
+  const [photoTooBig, setPhotoTooBig] = useState(false);
 
   const photo = photoState && "url" in photoState ? photoState.url : site.photo_url;
   const isPublished = site.status === "published" && !site.suspended_at;
@@ -531,8 +541,19 @@ export function SiteEditor({
             name="file"
             type="file"
             accept="image/png,image/jpeg,image/webp"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              const tooBig = Boolean(file && file.size > MAX_PHOTO_BYTES);
+              setPhotoTooBig(tooBig);
+              if (tooBig) event.currentTarget.value = "";
+            }}
             className="mt-2 w-full text-[length:var(--wf-small)] text-[#B7C7DC] file:mr-3 file:rounded-md file:border-0 file:bg-[#1C2A3F] file:px-3 file:py-2 file:text-[13px] file:font-semibold file:text-[#D2DFEF]"
           />
+          <p className={`${HELP} ${photoTooBig ? "text-[#FCA5A5]" : ""}`}>
+            {photoTooBig
+              ? "Esa imagen pasa de 5 MB. Elige una más ligera."
+              : "JPG, PNG o WebP, hasta 5 MB."}
+          </p>
         </div>
         <Submit variant="ghost">Subir</Submit>
       </form>

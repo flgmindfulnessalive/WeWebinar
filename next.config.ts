@@ -43,6 +43,22 @@ const SHORT_LINKS = [
 // una imagen que ya es pública de todos modos, y no sirve de proxy para
 // ninguna otra ruta de esos hosts.
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // Las dos subidas de imagen del producto -- el avatar del dashboard y
+      // la foto del funnel -- aceptan 5 MB y lo comprueban ellas mismas. Pero
+      // una Server Action corta el cuerpo de la petición en 1 MB por defecto,
+      // así que la acción no llegaba a ejecutarse: Next respondía 500 antes,
+      // y en pantalla salía el error genérico. Una foto de teléfono pasa de
+      // 1 MB casi siempre, de modo que el límite real era el de Next y no el
+      // que anuncia el formulario.
+      //
+      // 6 MB y no 5: el cuerpo lleva el archivo más la codificación multipart
+      // y los otros campos, así que un archivo de 5 MB justos viaja algo por
+      // encima de 5 MB.
+      bodySizeLimit: "6mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
