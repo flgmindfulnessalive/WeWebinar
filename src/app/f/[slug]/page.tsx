@@ -116,16 +116,27 @@ export default async function WeFunnelSitePage({
   // the row back when it is published and unsuspended; a member of the
   // owning account gets it in any state. So if the row came back at all
   // and isn't live, the person looking at it is the owner.
-  const { data: site } = await supabase
+  // select("*") y no una lista de columnas, por una razón aprendida de la
+  // mala manera: una columna recién añadida no existe en la base hasta que
+  // alguien aplica la migración, y el despliegue del código siempre llega
+  // antes. Pedirla por su nombre hace que PostgREST rechace la consulta
+  // ENTERA -- y entonces esta página, que no distinguía un error de una
+  // fila ausente, les decía a los visitantes de toda página publicada que
+  // no estaba publicada. Una lista de columnas aquí no compra nada: la fila
+  // es pequeña y nada de esto sale del servidor salvo lo que se dibuja.
+  const { data: site, error: siteError } = await supabase
     .from("wefunnel_sites")
-    .select(
-      // photo_url, description y kicker llevaban meses en la base y en el
-      // editor, y esta consulta no los pedía: su dueño los escribía, los veía
-      // en la vista previa y sus visitantes no llegaban a leerlos nunca.
-      "id, slug, status, display_name, location, headline, bullets, video_url, accent, question_label, suspended_at, photo_url, description, kicker"
-    )
+    .select("*")
     .eq("slug", slug)
     .maybeSingle();
+
+  // Un fallo de lectura no es "esta página no está publicada". Decir eso
+  // ante un error es mentirle al visitante sobre el estado de la página de
+  // otra persona, y perderle el contacto que iba a dejar.
+  if (siteError) {
+    console.error("[wefunnel] site read failed:", slug, siteError.message);
+    throw new Error(`No pudimos cargar esta página: ${siteError.message}`);
+  }
 
   if (!site) {
     // Nothing readable. Either the name was never claimed, or it was and
