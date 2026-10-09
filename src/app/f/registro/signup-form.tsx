@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 
 import { useTurnstile } from "@/hooks/use-turnstile";
 import { weFunnelSignUp, type WeFunnelSignUpState } from "@/lib/actions/wefunnel-signup";
-import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { proposeSlug } from "@/lib/wefunnels/slug";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -34,9 +35,12 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
   // often as they get clicked.
   const suggestion = proposeSlug(name) || "tunombre";
 
-  const loginHref = wefunnelAppUrl(
-    `/login?next=${encodeURIComponent(buying ? "/panel/distribuidor" : "/panel")}`
-  );
+  // En el mismo host y con la marca de WeFunnels. Antes salía al login de
+  // WeWebinars, que es el salto de marca que este formulario existe para
+  // no dar.
+  const loginHref = `/entrar?next=${encodeURIComponent(
+    buying ? "/panel/distribuidor" : "/panel"
+  )}`;
 
   // Ya tenía cuenta. No se manda a crear otra: se le da el enlace que
   // necesita, que es el de entrar.
@@ -204,13 +208,13 @@ export function WeFunnelSignUpForm({ intent = "regalo" }: { intent?: "regalo" | 
 
         <p className="m-0 text-xs leading-relaxed text-[#8498B4]">
           Al crear tu cuenta, aceptas los{" "}
-          <a href={wefunnelAppUrl("/terms")} className="text-[#A9C6E6] underline">
+          <Link href="/legal" className="text-[#A9C6E6] underline">
             Términos de uso
-          </a>{" "}
+          </Link>{" "}
           y confirmas que has leído la{" "}
-          <a href={wefunnelAppUrl("/privacy")} className="text-[#A9C6E6] underline">
+          <Link href="/legal#privacidad" className="text-[#A9C6E6] underline">
             Política de privacidad
-          </a>
+          </Link>
           .
         </p>
       </form>

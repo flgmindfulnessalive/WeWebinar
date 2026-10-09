@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { EmailOtpType } from "@supabase/supabase-js";
@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirectPath } from "@/lib/safe-redirect";
+import { isWeFunnelsAppPath } from "@/lib/wefunnels/host";
 import { Button } from "@/components/ui/button";
 
 const EMAIL_OTP_TYPES: EmailOtpType[] = [
@@ -80,13 +81,33 @@ export function AuthConfirmClient() {
   // ref's `.current` may not be read during render.
   const [supabase] = useState(() => createClient());
 
+  // Por qué no siempre router.replace: esta pantalla vive en el host de la
+  // app, porque su dirección es la que está dada de alta en la lista de
+  // redirecciones de Supabase, y los destinos de WeFunnels viven en el de
+  // WeFunnels. En producción el proxy responde a /panel con un 308 hacia el
+  // subdominio, y una navegación del enrutador de Next hacia una ruta que
+  // sale del origen es justo el caso que no está pensada para resolver. Una
+  // navegación del navegador sí: sigue el redirect como seguiría cualquier
+  // otro, y en una preview o en local, donde no hay segundo host y la ruta
+  // se reescribe en sitio, funciona igual.
+  const go = useCallback(
+    (path: string) => {
+      if (isWeFunnelsAppPath(path)) {
+        window.location.assign(path);
+        return;
+      }
+      router.replace(path);
+    },
+    [router]
+  );
+
   useEffect(() => {
     let redirected = false;
 
     const goNext = () => {
       if (redirected) return;
       redirected = true;
-      router.replace(next);
+      go(next);
     };
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
@@ -134,7 +155,7 @@ export function AuthConfirmClient() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [code, tokenHash, otpType, next, router, supabase]);
+  }, [code, tokenHash, otpType, next, go, supabase]);
 
   async function handleContinue() {
     if (!isEmailOtpType(otpType) || !tokenHash) return;
@@ -161,7 +182,7 @@ export function AuthConfirmClient() {
       setStatus("ready");
       return;
     }
-    router.replace(next);
+    go(next);
   }
 
   if (error) {
@@ -184,7 +205,12 @@ export function AuthConfirmClient() {
           </Button>
         ) : (
           <Button asChild variant="outline">
-            <Link href="/login">{t("backToLogin")}</Link>
+            {/* La puerta de la que venía. Un enlace a /login dejaba a
+                quien venía de WeFunnels en la pantalla de WeWebinars, que
+                es el salto de marca que esto evita en todo lo demás. */}
+            <Link href={isWeFunnelsAppPath(next) ? "/entrar" : "/login"}>
+              {t("backToLogin")}
+            </Link>
           </Button>
         )}
       </div>

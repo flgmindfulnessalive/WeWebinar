@@ -4,7 +4,12 @@ import createIntlMiddleware from "next-intl/middleware";
 import { updateSession } from "@/lib/supabase/middleware";
 import { routing } from "@/i18n/routing";
 import { lookupAccountSlugByHostname, lookupPendingDomainStatus } from "@/lib/domains/lookup";
-import { WEFUNNELS_PATH_PREFIX, isWeFunnelsHostname } from "@/lib/wefunnels/host";
+import {
+  WEFUNNELS_PATH_PREFIX,
+  isWeFunnelsAppPath,
+  isWeFunnelsHostname,
+  wefunnelUrl,
+} from "@/lib/wefunnels/host";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -89,6 +94,35 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     const suffix = url.pathname === "/" ? "" : url.pathname;
     url.pathname = `${WEFUNNELS_PATH_PREFIX}${suffix}`;
+    const rewriteResponse = NextResponse.rewrite(url);
+    for (const cookie of sessionResponse.cookies.getAll()) {
+      rewriteResponse.cookies.set(cookie);
+    }
+    return rewriteResponse;
+  }
+
+  // WeFunnels' own app paths -- the panel, the access screens, the legal
+  // pages -- asked for on a host that is not the WeFunnels one.
+  //
+  // In production that is an old bookmark (the panel used to live on the app
+  // host) or an email link, and the answer is to send them to the address
+  // the product actually has: a permanent redirect, so nothing that was ever
+  // shared breaks and nobody ends up operating WeFunnels from a URL that
+  // says WeWebinars.
+  //
+  // Anywhere else -- localhost, a preview deployment -- there is no second
+  // hostname to redirect to, so the same paths are rewritten onto /f in
+  // place. That is what keeps the whole panel reachable in development
+  // without pointing a subdomain at a laptop.
+  if (isWeFunnelsAppPath(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+    if (isOwnHostname(hostname) && hostname !== "localhost" && !hostname.endsWith(".vercel.app")) {
+      return NextResponse.redirect(
+        wefunnelUrl(`${url.pathname}${url.search}`),
+        308
+      );
+    }
+    url.pathname = `${WEFUNNELS_PATH_PREFIX}${url.pathname}`;
     const rewriteResponse = NextResponse.rewrite(url);
     for (const cookie of sessionResponse.cookies.getAll()) {
       rewriteResponse.cookies.set(cookie);

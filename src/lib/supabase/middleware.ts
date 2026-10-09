@@ -11,14 +11,42 @@ import {
 const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/admin", "/growth"];
 const AUTH_PAGES = ["/login", "/signup"];
 
+// WeFunnels has its own door. Every /panel screen already redirects on its
+// own -- the layout and all nine pages -- but the gate belongs here too: a
+// page-level check runs after a render has started, and the one place that
+// can answer "who is this" before anything is built is the proxy.
+//
+// Two separate lists rather than one with a flag, because the answer to
+// "where do I send somebody who is not signed in" is the whole point: a
+// WeFunnels user sent to /login would land on a WeWebinars screen, which is
+// exactly the confusion this is fixing.
+const WEFUNNELS_PROTECTED_PREFIXES = ["/panel"];
+const WEFUNNELS_AUTH_PAGES = ["/entrar", "/recuperar"];
+
+// Where "already signed in, asking for the login" goes, per door. WeFunnels
+// has no onboarding and no dashboard: its signed-in home is the panel.
+const WEFUNNELS_HOME = "/panel";
+
+// Por segmentos, no por prefijo de texto. startsWith("/panel") también
+// acierta con "/paneles", y en WeFunnels eso no es un detalle: el espacio
+// de nombres del subdominio es plano, así que /paneles es la página de una
+// persona que se llama así -- y la mandaba a la pantalla de entrar en vez
+// de resolver su página.
+function matchesSegment(pathname: string, prefixes: readonly string[]): boolean {
+  return prefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
-  const isAuthPage = AUTH_PAGES.some((prefix) => pathname.startsWith(prefix));
+  const isWeFunnelsProtected = matchesSegment(pathname, WEFUNNELS_PROTECTED_PREFIXES);
+  const isWeFunnelsAuthPage = matchesSegment(pathname, WEFUNNELS_AUTH_PAGES);
+  const isProtected =
+    isWeFunnelsProtected || matchesSegment(pathname, PROTECTED_PREFIXES);
+  const isAuthPage = isWeFunnelsAuthPage || matchesSegment(pathname, AUTH_PAGES);
 
   let user = null;
   // getUser() is the only thing `user` is used for below (deciding the two
@@ -88,15 +116,35 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.pathname = isWeFunnelsProtected ? "/entrar" : "/login";
+    url.search = "";
+    // Where they were going, carried across the login. Only ever a path on
+    // this host: a value read back off the query string is a redirect
+    // somebody else can write, and this one is written into a Location
+    // header after a successful sign-in.
+    url.searchParams.set("next", pathname + (request.nextUrl.search || ""));
     return withAnonymousId(NextResponse.redirect(url));
   }
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.search = "";
+    // Honour where they were headed. Dropping it was how somebody who was
+    // already signed in and clicked "Iniciar sesión" on a WeFunnels page
+    // ended up in the WeWebinars dashboard -- and from there, with no plan,
+    // in its onboarding.
+    const requested = request.nextUrl.searchParams.get("next");
+    const fallback = isWeFunnelsAuthPage ? WEFUNNELS_HOME : "/dashboard";
+    // A path on this host and nothing else. "//evil.example" is a protocol-
+    // relative URL, so the second slash has to be refused as well as the
+    // missing first one. The query comes along separately: assigning it to
+    // pathname would escape the "?" and make it part of the path.
+    const safe =
+      requested && requested.startsWith("/") && !requested.startsWith("//")
+        ? requested
+        : fallback;
+    const [safePath, safeQuery] = safe.split("?");
+    url.pathname = safePath;
+    url.search = safeQuery ? `?${safeQuery}` : "";
     return withAnonymousId(NextResponse.redirect(url));
   }
 

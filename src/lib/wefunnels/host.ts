@@ -26,10 +26,51 @@ export function wefunnelSiteUrl(slug: string): string {
   return `https://${WEFUNNELS_HOST}/${slug}`;
 }
 
-// Anything that is not a published page -- the panel, the report form, the
-// rules -- lives on the main host, because the subdomain rewrites every
-// path onto /f and those routes simply do not resolve there. They have to
-// be absolute links out of this host, never next/link navigations.
+// WeFunnels' own origin. Used for the handful of links that have to leave
+// the app host and come back here -- the canonical redirect for an old
+// /panel bookmark, and the "volver" of anything hosted on the main app.
+//
+// http for a local host so a developer who points the subdomain at
+// localhost still gets a usable link; everything else is https.
+export function wefunnelOrigin(): string {
+  const scheme = WEFUNNELS_HOST.startsWith("localhost") ? "http" : "https";
+  return `${scheme}://${WEFUNNELS_HOST}`;
+}
+
+export function wefunnelUrl(path: string): string {
+  return `${wefunnelOrigin()}${path}`;
+}
+
+// The paths that belong to WeFunnels but are not somebody's published page:
+// the panel, the access screens, the legal pages. They live under /f like
+// everything else here, and the proxy rewrites them onto it from any host,
+// so a preview deployment and local dev work without a second hostname.
+//
+// Every one of them is also in wefunnel_reserved_slugs, which is what stops
+// a person claiming the name that would shadow the route.
+export const WEFUNNELS_APP_PATHS = [
+  "/panel",
+  "/entrar",
+  "/recuperar",
+  "/nueva-clave",
+  "/registro",
+  "/comprar",
+  "/reportar",
+  "/reglas",
+  "/legal",
+] as const;
+
+export function isWeFunnelsAppPath(pathname: string): boolean {
+  return WEFUNNELS_APP_PATHS.some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`)
+  );
+}
+
+// What still lives on the main app host, and has to: /auth/confirm, because
+// that address is registered in Supabase's redirect allowlist, and the
+// course room, because the video is hosted in WeWebinars and that is where
+// the room resolves. Absolute links out of this host, never next/link
+// navigations.
 export function wefunnelAppUrl(path: string): string {
   const origin = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.wewebinars.com";
   return `${origin.replace(/\/$/, "")}${path}`;

@@ -15,6 +15,10 @@ export type PanelViewer = {
   // public address on a shared domain. Carried here so the editor can say
   // so before the button is pressed instead of only after.
   emailVerified: boolean;
+  // El nombre de la persona, no el de su página. Son dos campos distintos
+  // con dos trabajos distintos: este sale en el menú de la cuenta, y
+  // wefunnel_sites.display_name es el que leen sus visitantes.
+  displayName: string | null;
   // Which account these rows belong to. Null is the normal state of a
   // brand-new signup, before the claim creates one.
   accountId: string | null;
@@ -54,7 +58,7 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
   // /panel/empezar has always read it this way.
   const { data: profile } = await supabase
     .from("users")
-    .select("account_id")
+    .select("account_id, display_name")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -84,6 +88,10 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
     userId: user.id,
     email: user.email ?? "",
     emailVerified: Boolean(user.email_confirmed_at),
+    displayName:
+      profile?.display_name?.trim() ||
+      (user.user_metadata?.full_name as string | undefined)?.trim() ||
+      null,
     accountId,
     isPlatformAdmin,
     site: site ?? null,

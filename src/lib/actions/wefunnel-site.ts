@@ -10,6 +10,12 @@ import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
 export type ClaimState = { error: string } | { success: true; slug: string } | null;
 export type SaveState = { error: string } | { success: true } | null;
 
+// El panel se sirve desde /f/panel y el navegador lo ve en /panel: el
+// subdominio reescribe la una sobre la otra. revalidatePath habla de la
+// ruta que conoce Next, que es la interna -- pasarle "/panel" sería
+// revalidar una ruta que no existe, en silencio.
+const PANEL_ROUTE = "/f/panel";
+
 const ACCENTS = ["cyan", "blue", "violet", "pink", "green", "amber"] as const;
 
 function field(data: FormData, name: string, max: number): string {
@@ -104,7 +110,7 @@ export async function claimWeFunnelSite(
     return { error: "No pudimos crear tu página. Intenta de nuevo." };
   }
 
-  revalidatePath("/panel");
+  revalidatePath(PANEL_ROUTE);
   return { success: true, slug };
 }
 
@@ -168,7 +174,7 @@ export async function saveWeFunnelSite(
     return { error: NOT_WRITABLE };
   }
 
-  revalidatePath("/panel");
+  revalidatePath(PANEL_ROUTE);
   return { success: true };
 }
 
@@ -214,7 +220,7 @@ export async function setWeFunnelPublished(
     };
   }
 
-  revalidatePath("/panel");
+  revalidatePath(PANEL_ROUTE);
   return { success: true };
 }
 
@@ -275,7 +281,7 @@ export async function changeWeFunnelSlug(
     return { error: NOT_WRITABLE };
   }
 
-  revalidatePath("/panel");
+  revalidatePath(PANEL_ROUTE);
   return { success: true };
 }
 
@@ -327,6 +333,6 @@ export async function setLeadStatus(
     return { error: "Ese registro no es de tu página." };
   }
 
-  revalidatePath("/panel/registrados");
+  revalidatePath(`${PANEL_ROUTE}/registrados`);
   return { success: true };
 }
