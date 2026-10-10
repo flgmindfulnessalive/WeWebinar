@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createDistributorCheckoutUrl } from "@/lib/whop";
+import { createDistributorCheckout } from "@/lib/whop";
 
 // The lifetime distributor licence. Separate from /api/whop/checkout
 // because that route speaks in plan keys and billing periods, and requires
@@ -69,11 +69,13 @@ export async function POST() {
   const { data: pricing } = await supabase.rpc("wefunnel_license_price");
   const source = pricing?.[0]?.source === "invited" ? "invited" : "public";
 
-  const url = await createDistributorCheckoutUrl(accountId, source);
-  if (!url) {
+  const checkout = await createDistributorCheckout(accountId, source);
+  if (!checkout) {
     // Unset plan id or a Whop outage. Either way it is ours, not theirs.
     return NextResponse.json({ error: "checkout unavailable" }, { status: 503 });
   }
 
-  return NextResponse.json({ url });
+  // `sessionId` es lo que monta el formulario dentro de la página; `url`
+  // solo se usa si el iframe no llega a cargar.
+  return NextResponse.json({ sessionId: checkout.id, url: checkout.url });
 }

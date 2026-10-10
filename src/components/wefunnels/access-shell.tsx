@@ -40,15 +40,15 @@ export function AccessShell({
             {title}
           </h1>
           {intro && (
-            <p className="mt-3.5 mb-0 text-[length:var(--wf-lead)] leading-relaxed text-[#C1D1E6]">
+            <p className="mt-3.5 mb-0 text-[length:var(--wf-lead)] leading-relaxed text-[var(--wf-fg-3)]">
               {intro}
             </p>
           )}
-          <div className="mt-7 rounded-[15px] border border-[#2D3E57] bg-[#0B1423] p-[clamp(20px,3vw,28px)]">
+          <div className="mt-7 rounded-[15px] border border-[var(--wf-edge)] bg-[var(--wf-card-2)] p-[clamp(20px,3vw,28px)]">
             {children}
           </div>
           {footer && (
-            <div className="mt-5 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+            <div className="mt-5 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
               {footer}
             </div>
           )}
@@ -62,12 +62,12 @@ export function AccessShell({
 // repeated per form: three screens drifting apart on border colour is how
 // the product starts looking assembled instead of designed.
 export const WF_FIELD =
-  "w-full rounded-[10px] border border-[#2D3E57] bg-[#091221] px-3.5 py-3 text-[length:var(--wf-body)] text-[#F3F7FF] outline-none placeholder:text-[#5E7290] focus-visible:border-[#43E2EE] focus-visible:ring-2 focus-visible:ring-[#43E2EE]/30";
+  "w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-strip)] px-3.5 py-3 text-[length:var(--wf-body)] text-[var(--wf-fg)] outline-none placeholder:text-[var(--wf-fg-faint)] focus-visible:border-[var(--wf-accent)] focus-visible:ring-2 focus-visible:ring-[var(--wf-accent)]/30";
 export const WF_LABEL =
-  "block text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]";
+  "block text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg-2)]";
 export const WF_HELP =
-  "m-0 mt-1.5 text-[length:var(--wf-kicker)] leading-relaxed text-[#8498B4]";
+  "m-0 mt-1.5 text-[length:var(--wf-kicker)] leading-relaxed text-[var(--wf-fg-muted)]";
 export const WF_BUTTON =
-  "wf-cta inline-flex w-full items-center justify-center rounded-[11px] bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[#051521] no-underline disabled:opacity-60";
+  "wf-cta inline-flex w-full items-center justify-center rounded-[11px] bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)] no-underline disabled:opacity-60";
 export const WF_ERROR =
-  "m-0 text-[length:var(--wf-body)] leading-relaxed text-[#FF9A9A]";
+  "m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-danger)]";

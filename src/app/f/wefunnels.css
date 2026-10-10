@@ -29,6 +29,137 @@
   --wf-line-lit: #3e5f85;
 
   --wf-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+
+  /* ------------------------------------------------- superficies del panel
+
+     El panel puede verse en claro; las páginas públicas no. Una página de
+     alguien, su página de regalo y la web oficial son una familia visual
+     que ve gente de fuera, y no es del dueño decidir en qué color la ven
+     sus visitantes. Por eso estos tokens solo los consume /panel, y la
+     previsualización que el editor enseña se queda en oscuro siempre:
+     muestra lo que verá un visitante, no lo que prefiere quien edita.
+
+     El valor por defecto es el oscuro de marca, así que un panel sin
+     atributo se ve exactamente como hasta ahora. */
+  --wf-bg: #050913;
+  --wf-card: #0e192a;
+  --wf-card-2: #0b1423;
+  --wf-strip: #091221;
+  --wf-inset: #111c2e;
+  --wf-inset-2: #16263c;
+  --wf-hover: #101c2e;
+  --wf-field: #050509;
+  --wf-skeleton: #16222f;
+  --wf-skeleton-2: #131e2b;
+  --wf-track: #1c2a3f;
+
+  --wf-edge: #2d3e57;
+  --wf-edge-soft: #1b2538;
+  --wf-edge-soft-2: #1f2a3c;
+  --wf-edge-soft-3: #1a2537;
+  --wf-edge-lit: #3d4c68;
+  --wf-edge-hover: #40607f;
+  --wf-card-glow: rgba(64, 196, 232, 0.5);
+
+  --wf-fg: #f3f7ff;
+  --wf-fg-2: #d2dfef;
+  --wf-fg-3: #c1d1e6;
+  --wf-fg-body: #b7c7dc;
+  --wf-fg-muted: #8498b4;
+  --wf-fg-faint: #5e7290;
+
+  /* Acentos. En claro bajan de luminosidad porque un cian de marca sobre
+     blanco no se lee: el matiz se conserva, el contraste se gana. */
+  --wf-accent: #43e2ee;
+  --wf-accent-soft: #70e9ef;
+  --wf-accent-strong: #8eeff5;
+  --wf-on-cta: #071521;
+
+  --wf-ok: #4ed8a8;
+  --wf-status-blue: #83b9ff;
+  --wf-warn: #f5be52;
+  --wf-warn-bg: #1a1407;
+  --wf-warn-fg: #f7d79b;
+  --wf-danger: #ff8a8a;
+  --wf-danger-bg: #1c1016;
+  --wf-danger-edge: #5a3540;
+  --wf-danger-fg: #ffb4b4;
+
+  --wf-violet: #a855f7;
+  --wf-violet-soft: #d8b4fe;
+  --wf-violet-fg: #e9d5ff;
+  --wf-violet-bg-a: #0b1230;
+  --wf-violet-bg-b: #1b0c2e;
+  --wf-violet-edge: #3b2a5c;
+
+  --wf-focus: #2e63ff;
+}
+
+/* ------------------------------------------------------------ tema claro
+
+   Solo donde el panel lo pide. Los acentos no son los de marca tal cual:
+   el cian #43E2EE sobre blanco da un contraste de alrededor de 1.5:1 y es
+   ilegible como texto, así que en claro se usa su versión profunda. El
+   degradado del botón principal sí se mantiene en los dos temas, porque
+   lleva su propio texto oscuro encima y funciona sobre cualquier fondo. */
+[data-wf-theme="light"] {
+  --wf-bg: #f4f7fc;
+  --wf-card: #ffffff;
+  --wf-card-2: #f8fafd;
+  --wf-strip: #eef3fa;
+  --wf-inset: #eef3fa;
+  --wf-inset-2: #dfeaf7;
+  --wf-hover: #eef3fa;
+  --wf-field: #ffffff;
+  --wf-skeleton: #e4ebf5;
+  --wf-skeleton-2: #edf2f8;
+  --wf-track: #dfe7f1;
+
+  --wf-edge: #d2dceb;
+  --wf-edge-soft: #e4ebf5;
+  --wf-edge-soft-2: #e4ebf5;
+  --wf-edge-soft-3: #e9eff7;
+  --wf-edge-lit: #bccbe0;
+  --wf-edge-hover: #9fb4d0;
+  --wf-card-glow: rgba(12, 74, 110, 0.14);
+
+  --wf-fg: #0a1322;
+  --wf-fg-2: #1d2b40;
+  --wf-fg-3: #2b3a51;
+  --wf-fg-body: #3c4c65;
+  --wf-fg-muted: #5a6b86;
+  --wf-fg-faint: #78889f;
+
+  --wf-accent: #0a7d88;
+  --wf-accent-soft: #0a7d88;
+  --wf-accent-strong: #075a63;
+
+  --wf-ok: #0f7a56;
+  --wf-status-blue: #1d4ed8;
+  --wf-warn: #8a5a06;
+  --wf-warn-bg: #fdf4e3;
+  --wf-warn-fg: #6d4705;
+  --wf-danger: #b4292e;
+  --wf-danger-bg: #fdeced;
+  --wf-danger-edge: #f0bfc1;
+  --wf-danger-fg: #8f2025;
+
+  --wf-violet: #7c3aed;
+  --wf-violet-soft: #6d28d9;
+  --wf-violet-fg: #4c1d95;
+  --wf-violet-bg-a: #f5f1ff;
+  --wf-violet-bg-b: #faf5ff;
+  --wf-violet-edge: #ddd0f7;
+
+  --wf-focus: #1e4fd8;
+}
+
+/* El suelo de la página. El fondo lo pinta el layout de /f, que es común a
+   las páginas públicas y no sabe de sesiones; :has() deja que el panel,
+   más adentro, mande sobre él sin que ese layout tenga que leer la base de
+   datos en cada visita a la página de un desconocido. */
+.wf:has([data-wf-theme="light"]) {
+  background: #f4f7fc;
 }
 
 /* ---------------------------------------------------------------- hero grid
@@ -208,8 +339,8 @@
 @media (hover: hover) {
   .wf-card:hover {
     transform: translateY(-3px);
-    border-color: #40607f;
-    box-shadow: 0 18px 46px -22px rgba(64, 196, 232, 0.5);
+    border-color: var(--wf-edge-hover);
+    box-shadow: 0 18px 46px -22px var(--wf-card-glow);
   }
 
   .wf-cta:hover {

@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 };
 
 const H1 =
-  "m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[#F3F7FF]";
-const H2 = "m-0 text-[length:var(--wf-h3)] font-semibold text-[#F3F7FF]";
-const CARD = "rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.6vw,24px)]";
-const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]";
+  "m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[var(--wf-fg)]";
+const H2 = "m-0 text-[length:var(--wf-h3)] font-semibold text-[var(--wf-fg)]";
+const CARD = "rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.6vw,24px)]";
+const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]";
 
 // Mi perfil: los datos de la persona, no los de su página.
 //
@@ -30,9 +30,9 @@ export default async function PanelAccountPage() {
     <div className="flex flex-col gap-5">
       <div>
         <h1 className={H1}>Mi perfil</h1>
-        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           Con qué entras a WeFunnels. Lo que ven tus visitantes se edita en{" "}
-          <Link href="/panel/pagina" className="font-semibold text-[#43E2EE] no-underline">
+          <Link href="/panel/pagina" className="font-semibold text-[var(--wf-accent)] no-underline">
             Mi página
           </Link>
           .
@@ -48,18 +48,18 @@ export default async function PanelAccountPage() {
         <h2 className={H2}>Tu email</h2>
 
         {viewer.emailVerified ? (
-          <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8EEFF5]">
+          <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-accent-strong)]">
             Verificado. Puedes publicar tu página.
           </p>
         ) : (
           // El aviso donde de verdad se puede resolver. Antes esto solo se
           // decía en el editor, y sin nada que pulsar: la única salida era
           // buscar un correo que podía haber llegado días atrás.
-          <div className="flex flex-col gap-3 rounded-[12px] border border-[#F5BE52] bg-[#1A1407] p-4">
-            <strong className="text-[length:var(--wf-body)] font-semibold text-[#F7D79B]">
+          <div className="flex flex-col gap-3 rounded-[12px] border border-[var(--wf-warn)] bg-[var(--wf-warn-bg)] p-4">
+            <strong className="text-[length:var(--wf-body)] font-semibold text-[var(--wf-warn-fg)]">
               Tu email todavía no está verificado.
             </strong>
-            <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#D8C49A]">
+            <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-warn-fg)]">
               Puedes usar todo el panel y personalizar tu página. Lo único que necesita la
               verificación es publicarla, porque una página publicada es una dirección
               pública con tu nombre.
@@ -77,7 +77,7 @@ export default async function PanelAccountPage() {
           Cambiar la contraseña y cerrar la sesión en todos tus dispositivos están en{" "}
           <Link
             href="/panel/cuenta/configuracion"
-            className="font-semibold text-[#43E2EE] no-underline"
+            className="font-semibold text-[var(--wf-accent)] no-underline"
           >
             Configuración
           </Link>

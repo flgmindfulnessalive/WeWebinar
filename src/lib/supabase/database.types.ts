@@ -233,6 +233,8 @@ export interface Database {
           avatar_url: string | null;
           bio: string | null;
           password_set: boolean;
+          // 20261010000001_wefunnel_panel_theme. NULL es el oscuro de marca.
+          wefunnel_theme: "dark" | "light" | null;
           created_at: string;
           updated_at: string;
         };

@@ -18,14 +18,14 @@ export default function PanelError({
   }, [error]);
 
   return (
-    <div className="flex max-w-[560px] flex-col gap-4 rounded-[16px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(20px,3vw,28px)]">
-      <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#F5BE52] uppercase">
+    <div className="flex max-w-[560px] flex-col gap-4 rounded-[16px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(20px,3vw,28px)]">
+      <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-warn)] uppercase">
         Algo falló de nuestro lado
       </p>
-      <h1 className="m-0 text-[clamp(22px,3.4vw,28px)] leading-tight font-bold tracking-[-0.025em] text-[#F3F7FF]">
+      <h1 className="m-0 text-[clamp(22px,3.4vw,28px)] leading-tight font-bold tracking-[-0.025em] text-[var(--wf-fg)]">
         No pudimos cargar esta pantalla
       </h1>
-      <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+      <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
         Tu página, tus registros y tu licencia están intactos — esto es solo esta pantalla.
         Vuelve a intentarlo y, si sigue igual, escríbenos.
       </p>
@@ -33,19 +33,19 @@ export default function PanelError({
         <button
           type="button"
           onClick={reset}
-          className="wf-cta inline-flex min-h-[48px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[#071521]"
+          className="wf-cta inline-flex min-h-[48px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)]"
         >
           Volver a intentar
         </button>
         <Link
           href="/panel"
-          className="inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[#2D3E57] px-5 py-3.5 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF] no-underline"
+          className="inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[var(--wf-edge)] px-5 py-3.5 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] no-underline"
         >
           Ir a mi panel
         </Link>
       </div>
       {error.digest && (
-        <p className="m-0 text-[length:var(--wf-small)] text-[#5E7290]">
+        <p className="m-0 text-[length:var(--wf-small)] text-[var(--wf-fg-faint)]">
           Referencia para soporte: {error.digest}
         </p>
       )}

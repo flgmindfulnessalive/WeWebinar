@@ -7,15 +7,15 @@ export default function PanelLoading() {
     <div className="flex animate-pulse flex-col gap-7" aria-busy="true" aria-live="polite">
       <span className="sr-only">Cargando tu panel…</span>
       <div className="flex flex-col gap-3">
-        <div className="h-8 w-[min(260px,70%)] rounded-lg bg-[#16222F]" />
-        <div className="h-4 w-[min(420px,90%)] rounded bg-[#131E2B]" />
+        <div className="h-8 w-[min(260px,70%)] rounded-lg bg-[var(--wf-skeleton)]" />
+        <div className="h-4 w-[min(420px,90%)] rounded bg-[var(--wf-skeleton-2)]" />
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {[0, 1, 2].map((tile) => (
-          <div key={tile} className="h-[118px] rounded-[14px] border border-[#1F2A3C] bg-[#0E192A]" />
+          <div key={tile} className="h-[118px] rounded-[14px] border border-[var(--wf-edge-soft-2)] bg-[var(--wf-card)]" />
         ))}
       </div>
-      <div className="h-[132px] rounded-[14px] border border-[#1F2A3C] bg-[#0E192A]" />
+      <div className="h-[132px] rounded-[14px] border border-[var(--wf-edge-soft-2)] bg-[var(--wf-card)]" />
     </div>
   );
 }

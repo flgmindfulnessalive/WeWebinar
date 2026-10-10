@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 };
 
 const H1 =
-  "m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[#F3F7FF]";
-const H2 = "m-0 text-[length:var(--wf-h3)] font-semibold text-[#F3F7FF]";
-const CARD = "rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.6vw,24px)]";
-const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]";
-const SMALL = "m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]";
-const KEY = "m-0 text-[length:var(--wf-kicker)] tracking-[0.07em] text-[#8498B4] uppercase";
-const VALUE = "m-0 mt-1 text-[length:var(--wf-body)] font-semibold text-[#F3F7FF]";
+  "m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[var(--wf-fg)]";
+const H2 = "m-0 text-[length:var(--wf-h3)] font-semibold text-[var(--wf-fg)]";
+const CARD = "rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.6vw,24px)]";
+const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]";
+const SMALL = "m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]";
+const KEY = "m-0 text-[length:var(--wf-kicker)] tracking-[0.07em] text-[var(--wf-fg-muted)] uppercase";
+const VALUE = "m-0 mt-1 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg)]";
 
 const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 
@@ -60,7 +60,7 @@ export default async function PanelBillingPage() {
     <div className="flex flex-col gap-5">
       <div>
         <h1 className={H1}>Facturación y compras</h1>
-        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           Qué tienes contratado y qué has pagado.
         </p>
       </div>
@@ -70,7 +70,7 @@ export default async function PanelBillingPage() {
           <section className={`${CARD} flex flex-col gap-5`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h2 className={H2}>Licencia Distribuidor</h2>
-              <span className="rounded-full border border-[#43E2EE] px-3 py-1 text-[length:var(--wf-kicker)] font-bold tracking-[0.06em] text-[#8EEFF5] uppercase">
+              <span className="rounded-full border border-[var(--wf-accent)] px-3 py-1 text-[length:var(--wf-kicker)] font-bold tracking-[0.06em] text-[var(--wf-accent-strong)] uppercase">
                 Activa de por vida
               </span>
             </div>
@@ -157,7 +157,7 @@ export default async function PanelBillingPage() {
           </p>
           <Link
             href="/panel/distribuidor"
-            className="wf-cta inline-flex items-center justify-center self-start rounded-[11px] bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3 text-[length:var(--wf-body)] font-bold text-[#051521] no-underline"
+            className="wf-cta inline-flex items-center justify-center self-start rounded-[11px] bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)] no-underline"
           >
             Ver la licencia Distribuidor →
           </Link>
@@ -176,7 +176,7 @@ export default async function PanelBillingPage() {
           a{" "}
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Comprobante de WeFunnels")}`}
-            className="font-semibold text-[#43E2EE]"
+            className="font-semibold text-[var(--wf-accent)]"
           >
             {SUPPORT_EMAIL}
           </a>{" "}

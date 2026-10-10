@@ -77,6 +77,9 @@ const nextConfig: NextConfig = {
   // its own -- without this they'd be missing from the serverless bundle.
   outputFileTracingIncludes: {
     "/api/webinars/[id]/report/route": ["./public/fonts/report/**/*"],
+    // El curso en PDF vive fuera de public/ para que solo lo sirva una
+    // sesión; por eso tampoco lo encuentra el rastreador por su cuenta.
+    "/f/panel/curso/descargar/route": ["./assets/wefunnels/*.pdf"],
   },
 
   // Baseline security headers. No page in this app embeds itself (or

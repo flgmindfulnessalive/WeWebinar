@@ -19,6 +19,11 @@ export type PanelViewer = {
   // con dos trabajos distintos: este sale en el menú de la cuenta, y
   // wefunnel_sites.display_name es el que leen sus visitantes.
   displayName: string | null;
+  // Claro u oscuro para el panel, elegido en Configuración. Viaja en la
+  // sesión y no en el navegador para que el primer HTML ya salga con el
+  // tema puesto: el panel se dibuja en el servidor, así que así no hay
+  // parpadeo. Las páginas públicas no lo consultan.
+  theme: "dark" | "light";
   // Which account these rows belong to. Null is the normal state of a
   // brand-new signup, before the claim creates one.
   accountId: string | null;
@@ -70,7 +75,7 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
   // reclamar una, y a un distribuidor el panel de alguien que no lo es.
   // Mejor el límite de error, que dice la verdad: algo falló, vuelve a
   // intentarlo.
-  const [site, distributor, isPlatformAdmin] = await Promise.all([
+  const [site, distributor, isPlatformAdmin, theme] = await Promise.all([
     accountId
       ? supabase
           .from("wefunnel_sites")
@@ -94,6 +99,25 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
           })
       : null,
     supabase.rpc("is_platform_admin").then(({ data }) => Boolean(data)),
+    // Aparte del select de arriba y tolerante al error a propósito. La
+    // columna llega en 20261010000001, y entre que se despliega el código
+    // y corre la migración hay una ventana: si el tema viajara en aquella
+    // consulta, un fallo la tumbaría entera y el panel leería "no tienes
+    // cuenta" -- enseñándole a todo el mundo la pantalla de invitación.
+    // Aquí lo peor que pasa en esa ventana es que el panel se vea oscuro,
+    // que es como se ve hoy.
+    supabase
+      .from("users")
+      .select("wefunnel_theme")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn("[wefunnels] tema no disponible:", error.message);
+          return "dark" as const;
+        }
+        return data?.wefunnel_theme === "light" ? ("light" as const) : ("dark" as const);
+      }),
   ]);
 
   return {
@@ -104,6 +128,7 @@ export const getPanelViewer = cache(async (): Promise<PanelViewer | null> => {
       profile?.display_name?.trim() ||
       (user.user_metadata?.full_name as string | undefined)?.trim() ||
       null,
+    theme,
     accountId,
     isPlatformAdmin,
     site: site ?? null,

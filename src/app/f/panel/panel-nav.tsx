@@ -56,13 +56,13 @@ export function PanelNav({
             aria-current={active ? "page" : undefined}
             className={
               active
-                ? "rounded-[10px] border border-[#2E63FF] bg-[#0E192A] px-4 py-3 text-base font-semibold text-white no-underline"
-                : "rounded-[10px] border border-transparent px-4 py-3 text-base text-[#C1D1E6] no-underline hover:text-white"
+                ? "rounded-[10px] border border-[var(--wf-focus)] bg-[var(--wf-card)] px-4 py-3 text-base font-semibold text-white no-underline"
+                : "rounded-[10px] border border-transparent px-4 py-3 text-base text-[var(--wf-fg-3)] no-underline hover:text-white"
             }
           >
             {item.label}
             {item.countKey === "leads" && leadCount > 0 && (
-              <span className="font-normal text-[#8498B4]"> · {leadCount}</span>
+              <span className="font-normal text-[var(--wf-fg-muted)]"> · {leadCount}</span>
             )}
           </Link>
         );

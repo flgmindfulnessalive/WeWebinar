@@ -42,12 +42,12 @@ export default async function PanelPageEditor() {
           <h1 className="m-0 text-[28px] font-bold tracking-tight">
             WeFunnels es por invitación
           </h1>
-          <p className="m-0 text-[16px] leading-relaxed text-[#C1D1E6]">
+          <p className="m-0 text-[16px] leading-relaxed text-[var(--wf-fg-3)]">
             Las páginas no se piden: te las regala un distribuidor. Si conoces a la
             persona que te habló de esto, pídele su enlace de regalo — con él tu funnel
             es gratis de por vida, sin tarjeta y sin mensualidad.
           </p>
-          <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
+          <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
             Si entraste por un enlace y ves esto, puede que haya pasado demasiado tiempo
             o que ese enlace no sea el de regalo. Vuelve a abrir el que te pasaron.
           </p>

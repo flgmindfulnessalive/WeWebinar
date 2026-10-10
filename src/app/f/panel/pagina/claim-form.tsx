@@ -36,14 +36,14 @@ export function ClaimForm() {
         <h1 className="m-0 text-[32px] leading-tight font-extrabold tracking-tight">
           Crea tu página
         </h1>
-        <p className="mt-2 mb-0 text-[16px] leading-relaxed text-[#C1D1E6]">
+        <p className="mt-2 mb-0 text-[16px] leading-relaxed text-[var(--wf-fg-3)]">
           Tu nombre y tu dirección. Lo demás lo llenas después, y nada se publica hasta
           que tú lo digas.
         </p>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="claim-name" className="text-[length:var(--wf-small)] font-semibold text-[#C1D1E6]">
+        <label htmlFor="claim-name" className="text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg-3)]">
           Tu nombre
         </label>
         <input
@@ -54,19 +54,19 @@ export function ClaimForm() {
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Carlos Medina"
-          className="w-full rounded-[10px] border border-[#2D3E57] bg-[#0E192A] px-3.5 py-3.5 text-[16px] text-white outline-none focus-visible:border-[#43E2EE]"
+          className="w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-card)] px-3.5 py-3.5 text-[16px] text-white outline-none focus-visible:border-[var(--wf-accent)]"
         />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-xl border border-[#2D3E57] bg-[#0E192A] p-4">
-        <label htmlFor="claim-slug" className="text-[length:var(--wf-small)] font-semibold tracking-[0.08em] text-[#8498B4] uppercase">
+      <div className="flex flex-col gap-2 rounded-xl border border-[var(--wf-edge)] bg-[var(--wf-card)] p-4">
+        <label htmlFor="claim-slug" className="text-[length:var(--wf-small)] font-semibold tracking-[0.08em] text-[var(--wf-fg-muted)] uppercase">
           Tu dirección
         </label>
         <div
-          className="text-[length:var(--wf-body)] break-all text-[#8498B4]"
+          className="text-[length:var(--wf-body)] break-all text-[var(--wf-fg-muted)]"
           style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
         >
-          {WEFUNNELS_HOST}/<span className="font-medium text-[#43E2EE]">{effectiveSlug || "tunombre"}</span>
+          {WEFUNNELS_HOST}/<span className="font-medium text-[var(--wf-accent)]">{effectiveSlug || "tunombre"}</span>
         </div>
         <input
           id="claim-slug"
@@ -77,17 +77,17 @@ export function ClaimForm() {
             setSlugTouched(true);
             setSlug(normalizeSlug(event.target.value));
           }}
-          className="w-full rounded-[10px] border border-[#2D3E57] bg-[#050509] px-3 py-3 text-[length:var(--wf-body)] text-white outline-none focus-visible:border-[#43E2EE]"
+          className="w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-field)] px-3 py-3 text-[length:var(--wf-body)] text-white outline-none focus-visible:border-[var(--wf-accent)]"
           style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
         />
-        <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+        <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
           Puedes cambiarla hasta que publiques. Después queda fija, porque un enlace que
           ya circuló no puede llevar a otra persona.
         </p>
       </div>
 
       {state && "error" in state && (
-        <p role="alert" className="m-0 text-[length:var(--wf-body)] text-[#FF8A8A]">
+        <p role="alert" className="m-0 text-[length:var(--wf-body)] text-[var(--wf-danger)]">
           {state.error}
         </p>
       )}

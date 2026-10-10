@@ -20,7 +20,7 @@ export function CopyLink({ url }: { url: string }) {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       <code
-        className="min-w-0 flex-1 rounded-[10px] border border-[#23233A] bg-[#050509] px-3.5 py-3 text-[15px] break-all text-[#2BD7F5]"
+        className="min-w-0 flex-1 rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-field)] px-3.5 py-3 text-[15px] break-all text-[var(--wf-accent)]"
         style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
       >
         {url}

@@ -28,11 +28,11 @@ import type { WeFunnelSite, checklist } from "@/lib/wefunnels/site";
 // can carry.
 
 const FIELD =
-  "w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3 text-[length:var(--wf-body)] text-[#F3F7FF] outline-none placeholder:text-[#5E7290] focus-visible:border-[#43E2EE] focus-visible:ring-2 focus-visible:ring-[#43E2EE]/30";
-const LABEL = "block text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]";
-const HELP = "m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]";
-const PANEL = "rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.4vw,24px)]";
-const H2 = "m-0 text-[18px] font-semibold tracking-[-0.015em] text-[#F3F7FF]";
+  "w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-card-2)] px-3.5 py-3 text-[length:var(--wf-body)] text-[var(--wf-fg)] outline-none placeholder:text-[var(--wf-fg-faint)] focus-visible:border-[var(--wf-accent)] focus-visible:ring-2 focus-visible:ring-[var(--wf-accent)]/30";
+const LABEL = "block text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg-2)]";
+const HELP = "m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]";
+const PANEL = "rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.4vw,24px)]";
+const H2 = "m-0 text-[18px] font-semibold tracking-[-0.015em] text-[var(--wf-fg)]";
 
 const ACCENTS: { key: string; hex: string; label: string }[] = [
   { key: "cyan", hex: "#43E2EE", label: "Cian" },
@@ -69,8 +69,8 @@ function Submit({
       disabled={pending}
       className={
         variant === "primary"
-          ? "inline-flex min-h-[48px] items-center justify-center gap-2.5 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[#071521] disabled:opacity-60"
-          : "inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[#2D3E57] px-5 py-3.5 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF] disabled:opacity-60"
+          ? "inline-flex min-h-[48px] items-center justify-center gap-2.5 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)] disabled:opacity-60"
+          : "inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[var(--wf-edge)] px-5 py-3.5 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] disabled:opacity-60"
       }
     >
       {pending ? "Guardando…" : children}
@@ -196,13 +196,13 @@ export function SiteEditor({
   return (
     <div className="flex flex-col gap-7">
       <div>
-        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
           Tu funnel ya es tuyo
         </p>
-        <h1 className="m-0 mt-2.5 text-[clamp(26px,4vw,34px)] leading-tight font-extrabold tracking-[-0.03em] text-[#F3F7FF]">
+        <h1 className="m-0 mt-2.5 text-[clamp(26px,4vw,34px)] leading-tight font-extrabold tracking-[-0.03em] text-[var(--wf-fg)]">
           Personaliza tu funnel
         </h1>
-        <p className="m-0 mt-2.5 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-2.5 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           Ahora hagámoslo a tu medida. Cuéntale a tus visitantes qué pueden descubrir
           contigo.
         </p>
@@ -242,11 +242,11 @@ export function SiteEditor({
                     aquí y la etiqueta lo acompaña con su propio anillo. Con
                     display:none dejaría de existir para el teclado. */}
                 <label
-                  className={`mt-2 inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[#2D3E57] bg-[#111C2E] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] transition-colors hover:border-[#43E2EE] focus-within:border-[#43E2EE] focus-within:ring-2 focus-within:ring-[#43E2EE]/30 ${
+                  className={`mt-2 inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-inset)] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg)] transition-colors hover:border-[var(--wf-accent)] focus-within:border-[var(--wf-accent)] focus-within:ring-2 focus-within:ring-[var(--wf-accent)]/30 ${
                     photoPending ? "opacity-60" : ""
                   }`}
                 >
-                  <ImagePlus className="size-4 shrink-0 text-[#8EEFF5]" aria-hidden="true" />
+                  <ImagePlus className="size-4 shrink-0 text-[var(--wf-accent-strong)]" aria-hidden="true" />
                   {photoPending ? "Subiendo…" : photo ? "Cambiar mi foto" : "Subir mi foto"}
                   <input
                     type="file"
@@ -257,14 +257,14 @@ export function SiteEditor({
                   />
                 </label>
 
-                <p className={`${HELP} ${photoTooBig ? "text-[#FCA5A5]" : ""}`}>
+                <p className={`${HELP} ${photoTooBig ? "text-[var(--wf-danger)]" : ""}`}>
                   {photoTooBig
                     ? "Esa imagen pasa de 5 MB. Elige una más ligera."
                     : "JPG, PNG o WebP. Hasta 5 MB."}
                 </p>
 
                 {photoState && "error" in photoState && (
-                  <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[#FF9A9A]" role="alert">
+                  <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[var(--wf-danger)]" role="alert">
                     {photoState.error}
                   </p>
                 )}
@@ -275,7 +275,7 @@ export function SiteEditor({
                     Sin decirlo, alguien sube su foto, la ve en el avatar, se
                     va de la pantalla y la pierde. */}
                 {photoState && "url" in photoState && (
-                  <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[#8EEFF5]" role="status">
+                  <p className="m-0 mt-1.5 text-[length:var(--wf-small)] text-[var(--wf-accent-strong)]" role="status">
                     Foto lista. Guarda para que quede en tu página.
                   </p>
                 )}
@@ -358,7 +358,7 @@ export function SiteEditor({
           {/* Everything the editor had before the approved five. Kept, not
               removed: these are on pages that are already published. */}
           <details className={PANEL}>
-            <summary className="cursor-pointer text-[length:var(--wf-body)] font-semibold text-[#D2DFEF]">
+            <summary className="cursor-pointer text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)]">
               Más opciones de tu página
             </summary>
             <div className="mt-5 flex flex-col gap-5">
@@ -437,7 +437,7 @@ export function SiteEditor({
                   {ACCENTS.map((accent) => (
                     <label
                       key={accent.key}
-                      className="flex cursor-pointer items-center gap-2 rounded-[9px] border border-[#2D3E57] px-3 py-2 text-[length:var(--wf-small)] text-[#D2DFEF] has-checked:border-[#43E2EE]"
+                      className="flex cursor-pointer items-center gap-2 rounded-[9px] border border-[var(--wf-edge)] px-3 py-2 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] has-checked:border-[var(--wf-accent)]"
                     >
                       <input
                         type="radio"
@@ -499,12 +499,12 @@ export function SiteEditor({
               Tú decides cuándo publicar. Podrás editar tu página después.
             </p>
             {state && "error" in state && (
-              <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#FF9A9A]" role="alert">
+              <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-danger)]" role="alert">
                 {state.error}
               </p>
             )}
             {state && "success" in state && (
-              <p className="m-0 text-[length:var(--wf-body)] text-[#4ED8A8]" role="status">
+              <p className="m-0 text-[length:var(--wf-body)] text-[var(--wf-ok)]" role="status">
                 Guardado.
               </p>
             )}
@@ -514,14 +514,19 @@ export function SiteEditor({
         {/* ---------- la vista previa ---------- */}
         <section className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <strong className="text-[length:var(--wf-body)] font-semibold text-[#F3F7FF]">
+            <strong className="text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg)]">
               Así verán tu página
             </strong>
-            <span className="rounded-full border border-[#2D3E57] px-3 py-1 text-[length:var(--wf-kicker)] text-[#B7C7DC]">
+            <span className="rounded-full border border-[var(--wf-edge)] px-3 py-1 text-[length:var(--wf-kicker)] text-[var(--wf-fg-body)]">
               {stateLabel}
             </span>
           </div>
 
+          {/* A partir de aquí y hasta el cierre de este div, los colores van
+              fijos a propósito: esto no es panel, es la página pública tal
+              como la verá un visitante, y esa es oscura para todo el mundo.
+              Si siguiera el tema del panel, quien lo pusiera en claro vería
+              una previsualización que miente sobre lo que publica. */}
           <div className="mt-3 overflow-hidden rounded-[14px] border border-[#3D4C68] bg-[#0B1423]">
             <p
               className="m-0 bg-[#182237] px-4 py-3 text-[length:var(--wf-kicker)] break-all text-[#C1D3E7]"
@@ -572,17 +577,17 @@ export function SiteEditor({
             </p>
           </div>
 
-          <p className="m-0 mt-3 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+          <p className="m-0 mt-3 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
             Los registros de esta página aparecerán en tu panel, junto con las visitas y la
             conversión.
           </p>
 
           {!emailVerified && (
-            <div className="mt-4 rounded-[13px] border border-[#F5BE52] bg-[#1A1407] p-4">
-              <strong className="text-[length:var(--wf-body)] font-semibold text-[#F7D79B]">
+            <div className="mt-4 rounded-[13px] border border-[var(--wf-warn)] bg-[var(--wf-warn-bg)] p-4">
+              <strong className="text-[length:var(--wf-body)] font-semibold text-[var(--wf-warn-fg)]">
                 Antes de publicar, verifica tu email.
               </strong>
-              <p className="m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[#D8C49A]">
+              <p className="m-0 mt-1.5 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-warn-fg)]">
                 Puedes seguir personalizando tu página mientras completas este paso.
               </p>
             </div>
@@ -618,12 +623,12 @@ export function SiteEditor({
               <>
                 <Submit variant="ghost">Guardar mi dirección</Submit>
                 {slugState && "error" in slugState && (
-                  <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#FF9A9A]" role="alert">
+                  <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-danger)]" role="alert">
                     {slugState.error}
                   </p>
                 )}
                 {slugState && "success" in slugState && (
-                  <p className="m-0 text-[length:var(--wf-body)] text-[#4ED8A8]" role="status">
+                  <p className="m-0 text-[length:var(--wf-body)] text-[var(--wf-ok)]" role="status">
                     Tu dirección quedó guardada.
                   </p>
                 )}
@@ -634,7 +639,7 @@ export function SiteEditor({
       </div>
 
       {steps && (
-        <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+        <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
           {steps.published
             ? "Tu página está publicada. Comparte tu enlace y revisa tus registros en el panel."
             : "Cuando la publiques, tu enlace queda vivo y empieza a captar registros."}
