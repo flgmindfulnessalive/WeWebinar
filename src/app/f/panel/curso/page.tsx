@@ -10,24 +10,49 @@ import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 // Mi curso: one video, hosted in WeWebinars. No modules, no invented
 // progress, no attendee count -- the approved package is explicit that the
 // three topics belong to a single video and are not separate lessons.
+// Los cuatro bloques del curso, en el orden del vídeo. El quinto existe
+// pero solo se puede aplicar con licencia, así que se muestra apagado a
+// quien no la tiene: es lo mismo que hace la diapositiva índice, y explica
+// qué es Distribuidor antes de que la tarjeta de abajo lo ofrezca.
 const TOPICS = [
-  { n: "01", title: "Contenido que atrae" },
-  { n: "02", title: "Tráfico con anuncios" },
-  { n: "03", title: "La estrategia del regalo" },
+  { n: "01", title: "Tu funnel listo" },
+  { n: "02", title: "Contenido que atrae" },
+  { n: "03", title: "Tráfico con anuncios" },
+  { n: "04", title: "La conversación" },
 ];
+const TOPIC_LICENCIA = { n: "05", title: "Regalar funnels" };
 
-const QUESTIONS: [string, string][] = [
+// Dos públicos miran esta pantalla y hasta ahora veían las mismas tres
+// preguntas, escritas para uno solo. Quien tiene licencia leía «¿qué pasa
+// si decido no activar Distribuidor?» teniéndolo activado, y quien no la
+// tiene leía sobre los dos meses de Starter y sobre un 20% que no cobra.
+const QUESTIONS_GRATIS: [string, string][] = [
   [
     "¿Qué pasa si decido no activar Distribuidor?",
-    "Tu funnel, tu panel y este curso siguen siendo gratuitos. Activar Distribuidor es opcional y te permite regalar funnels a otras personas.",
+    "Tu funnel, tu panel y este curso siguen siendo gratuitos, de por vida. Activar Distribuidor es opcional, y lo que añade es poder regalar funnels a otras personas.",
   ],
   [
+    "¿El curso caduca?",
+    "No. Está en tu panel siempre y puedes volver a verlo las veces que quieras.",
+  ],
+  [
+    "¿Necesito pagar algo para llevarle tráfico a mi funnel?",
+    "No. El contenido y la conversación no cuestan nada, y son la mayor parte del curso. Los anuncios son opcionales y el presupuesto lo pones tú.",
+  ],
+];
+
+const QUESTIONS_DISTRIBUIDOR: [string, string][] = [
+  [
     "¿Tengo que continuar pagando Starter después de los 2 meses?",
-    "No. Continuar con Starter de WeWebinars es opcional. Tu licencia Distribuidor, tu funnel y tu sala del curso permanecen activos.",
+    "No. Continuar con Starter de WeWebinars es opcional. Tu licencia, tu página de regalo, los funnels que ya repartiste y tu 20% siguen activos igual.",
   ],
   [
     "¿Sobre qué se calcula el 20%?",
     "Sobre los planes de WeWebinars de tus referidos directos, mensuales o anuales, mientras mantengan su suscripción. No hay comisión por la licencia Distribuidor ni por un segundo nivel.",
+  ],
+  [
+    "¿Necesito un plan activo para cobrar el 20%?",
+    "No. Se te paga tengas plan o no lo tengas. La única condición está sobre la cuenta que llegó por ti, que es la que tiene que estar pagando el suyo.",
   ],
 ];
 
@@ -98,12 +123,16 @@ export default async function PanelCoursePage() {
   }
 
   const resuming = position !== null;
+  // Quien ya compró la licencia no tiene una «cuenta gratuita», y leer que
+  // su curso está incluido con una es lo que hace que la pantalla entera
+  // parezca escrita para otra persona.
+  const licensed = Boolean(viewer.distributor);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
-          Incluido con tu funnel gratuito
+          {licensed ? "Incluido con tu licencia Distribuidor" : "Incluido con tu funnel gratuito"}
         </p>
         <h1 className="m-0 mt-2.5 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[#F3F7FF] text-balance">
           Cómo NUNCA quedarte sin prospectos
@@ -123,7 +152,10 @@ export default async function PanelCoursePage() {
           </span>
           <div className="min-w-0">
             <p className="m-0 text-[length:var(--wf-kicker)] tracking-[0.1em] text-[#8498B4] uppercase">
-              Este curso te lo comparte
+              {/* «Te lo comparte» es lenguaje de regalo, y quien pagó la
+                  licencia no recibió un regalo: llegó por el enlace de
+                  alguien, que es un hecho y sigue siendo útil saberlo. */}
+              {licensed ? "Llegaste por" : "Este curso te lo comparte"}
             </p>
             <p className="m-0 text-[16px] font-semibold text-[#F3F7FF]">{sharedBy}</p>
           </div>
@@ -181,14 +213,20 @@ export default async function PanelCoursePage() {
             </>
           ) : (
             <p className="m-0 mt-6 max-w-[52ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
-              Lo estamos grabando. Te avisamos por correo en cuanto esté, y queda incluido
-              con tu cuenta gratuita.
+              Lo estamos grabando. Te avisamos por correo en cuanto esté
+              {licensed
+                ? ", y lo tendrás aquí mismo."
+                : ", y queda incluido con tu cuenta gratuita."}
             </p>
           )}
         </div>
         <p className="m-0 flex flex-wrap items-center justify-between gap-3 border-t border-[#1F2A3C] bg-[#091221] px-[clamp(22px,4vw,44px)] py-3.5 text-[length:var(--wf-kicker)] text-[#8498B4]">
           <span>Reproductor de WeWebinars</span>
-          <span>Tu curso permanece incluido con tu cuenta gratuita</span>
+          <span>
+            {licensed
+              ? "Tu curso permanece activo, de por vida"
+              : "Tu curso permanece incluido con tu cuenta gratuita"}
+          </span>
         </p>
       </section>
 
@@ -206,12 +244,30 @@ export default async function PanelCoursePage() {
             {topic.title}
           </span>
         ))}
+        <span
+          className={`flex items-center gap-2.5 text-[length:var(--wf-body)] ${
+            licensed ? "text-[#B7C7DC]" : "text-[#5E7290]"
+          }`}
+        >
+          <b
+            className={`text-[length:var(--wf-small)] font-semibold ${
+              licensed ? "text-[#76E8EE]" : "text-[#5E7290]"
+            }`}
+            style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
+          >
+            {TOPIC_LICENCIA.n}
+          </b>
+          {TOPIC_LICENCIA.title}
+          {!licensed && (
+            <span className="text-[length:var(--wf-small)] text-[#5E7290]">· con licencia</span>
+          )}
+        </span>
       </div>
 
-      {!viewer.distributor && <CourseOffer />}
+      {!licensed && <CourseOffer />}
 
       <div className="max-w-[740px]">
-        {QUESTIONS.map(([question, answer]) => (
+        {(licensed ? QUESTIONS_DISTRIBUIDOR : QUESTIONS_GRATIS).map(([question, answer]) => (
           <details key={question} className="border-b border-[#2C3B51] py-4">
             <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-[length:var(--wf-body)] font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
               {question}

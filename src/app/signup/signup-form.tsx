@@ -68,7 +68,7 @@ export function SignupForm({
   if (promo) onboardingNextParams.set("promo", promo);
   const onboardingNext =
     onboardingNextParams.size > 0 ? `/onboarding?${onboardingNextParams.toString()}` : "/onboarding";
-  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY, state);
 
   useEffect(() => {
     if (!showCheckEmail) return;

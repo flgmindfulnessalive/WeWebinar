@@ -50,21 +50,39 @@ const BENEFITS = [
   },
 ];
 
+// Los cuatro bloques del curso, en el orden del vídeo y con los mismos
+// nombres que usa /panel/curso.
+//
+// Antes eran tres y ninguna de las dos pantallas decía lo mismo: aquí se
+// anunciaba «convierte el interés en conversaciones» y en el panel «la
+// estrategia del regalo». Prometer un temario y entregar otro es la clase
+// de detalle que nadie reclama y todo el mundo nota.
+//
+// El quinto bloque del curso, regalar funnels, NO se nombra aquí a
+// propósito: esta página está dando algo, y quien la lee todavía no tiene
+// cuenta. Enseñarle en el mismo gesto que hay un nivel de pago es
+// exactamente lo que esta página existe para no hacer -- eso vive en su
+// panel y en el curso, después de que tenga su funnel.
 const LESSONS = [
   {
     n: "01",
-    title: "Atrae con contenido",
-    body: "Habla de los retos reales de construir equipo.",
+    title: "Deja tu funnel listo",
+    body: "Tu foto, tu propuesta y un formulario que abre conversaciones.",
   },
   {
     n: "02",
-    title: "Lleva tráfico con anuncios",
-    body: "Prueba tu mensaje y aprende qué genera interés.",
+    title: "Atrae con contenido",
+    body: "Tres publicaciones por semana que puedes sostener. Gratis.",
   },
   {
     n: "03",
+    title: "Lleva tráfico con anuncios",
+    body: "Opcional. Para un mensaje que ya despertó interés sin pagar.",
+  },
+  {
+    n: "04",
     title: "Convierte el interés en conversaciones",
-    body: "Revisa tus registros, identifica quién mostró interés y da el siguiente paso.",
+    body: "Qué decir cuando llega el primer registro, y cuándo parar.",
   },
 ];
 

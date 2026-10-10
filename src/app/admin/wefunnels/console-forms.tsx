@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import {
@@ -111,6 +111,11 @@ export function GrantLicenseForm() {
     grantDistributorLicense,
     null
   );
+  // Controlado porque React limpia los campos sin controlar cuando
+  // termina la acción. Sin esto, cada error borraba el email y el
+  // mensaje quedaba flotando sobre un formulario vacío -- imposible ver
+  // si el error era por esa dirección o por otra.
+  const [email, setEmail] = useState("");
 
   return (
     <form action={action} className="flex flex-wrap items-end gap-3">
@@ -122,6 +127,8 @@ export function GrantLicenseForm() {
           type="email"
           required
           placeholder="alguien@ejemplo.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
         />
       </div>
       <div className="flex w-28 flex-col gap-1.5">

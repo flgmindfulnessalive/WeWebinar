@@ -20,7 +20,7 @@ export function WeFunnelLoginForm({ next }: { next: string }) {
     weFunnelSignIn,
     null
   );
-  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY);
+  const { containerRef: turnstileRef, token: captchaToken } = useTurnstile(TURNSTILE_SITE_KEY, state);
   const [visible, setVisible] = useState(false);
 
   // El mismo candado que el login de WeWebinars: si Turnstile está
