@@ -17,10 +17,10 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
 // The four the approved panel offers, and no more: a lead list that grows a
 // status vocabulary becomes a CRM nobody asked for.
 const STATUS_STYLE: Record<LeadStatus, string> = {
-  nuevo: "border-[#43E2EE] text-[#43E2EE]",
-  contactado: "border-[#83B9FF] text-[#83B9FF]",
-  en_conversacion: "border-[#4ED8A8] text-[#4ED8A8]",
-  no_interesado: "border-[#5E7290] text-[#8498B4]",
+  nuevo: "border-[var(--wf-accent)] text-[var(--wf-accent)]",
+  contactado: "border-[var(--wf-status-blue)] text-[var(--wf-status-blue)]",
+  en_conversacion: "border-[var(--wf-ok)] text-[var(--wf-ok)]",
+  no_interesado: "border-[var(--wf-fg-faint)] text-[var(--wf-fg-muted)]",
 };
 
 export function StatusPill({ status }: { status: LeadStatus }) {
@@ -39,7 +39,7 @@ function SaveStatus() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg border border-[#2D3E57] px-4 py-2.5 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF] disabled:opacity-60"
+      className="rounded-lg border border-[var(--wf-edge)] px-4 py-2.5 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] disabled:opacity-60"
     >
       {pending ? "Guardando…" : "Guardar estado"}
     </button>
@@ -69,26 +69,26 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
   return (
     <>
       <tr>
-        <td className="border-b border-[#1A2537] px-5 py-3.5">
-          <strong className="block text-[length:var(--wf-body)] font-semibold text-[#F3F7FF]">
+        <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5">
+          <strong className="block text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg)]">
             {lead.name}
           </strong>
-          <span className="block text-[length:var(--wf-small)] break-all text-[#8498B4]">
+          <span className="block text-[length:var(--wf-small)] break-all text-[var(--wf-fg-muted)]">
             {lead.email ?? lead.whatsapp ?? "—"}
           </span>
         </td>
-        <td className="border-b border-[#1A2537] px-5 py-3.5 text-[length:var(--wf-body)] whitespace-nowrap text-[#8498B4] tabular-nums">
+        <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5 text-[length:var(--wf-body)] whitespace-nowrap text-[var(--wf-fg-muted)] tabular-nums">
           {lead.createdAt}
         </td>
-        <td className="border-b border-[#1A2537] px-5 py-3.5">
+        <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5">
           <StatusPill status={lead.status} />
         </td>
-        <td className="border-b border-[#1A2537] px-5 py-3.5">
+        <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5">
           <button
             type="button"
             onClick={() => setOpen((previous) => !previous)}
             aria-expanded={open}
-            className="rounded-lg border border-[#2D3E57] px-3.5 py-2 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF]"
+            className="rounded-lg border border-[var(--wf-edge)] px-3.5 py-2 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)]"
           >
             {open ? "Cerrar" : "Ver"}
           </button>
@@ -97,13 +97,13 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
 
       {open && (
         <tr>
-          <td colSpan={4} className="border-b border-[#1A2537] bg-[#091221] px-5 py-5">
+          <td colSpan={4} className="border-b border-[var(--wf-edge-soft-3)] bg-[var(--wf-strip)] px-5 py-5">
             <div className="flex flex-col gap-4">
               <div>
-                <h3 className="m-0 text-[17px] font-semibold text-[#F3F7FF]">
+                <h3 className="m-0 text-[17px] font-semibold text-[var(--wf-fg)]">
                   {lead.name}
                 </h3>
-                <p className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
+                <p className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
                   {lead.source === "course"
                     ? "Se registró al curso desde tu página de regalo."
                     : "Solicitó más información sobre tu propuesta desde tu funnel."}
@@ -112,27 +112,27 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
 
               <dl className="m-0 grid gap-3 sm:grid-cols-2">
                 <div className="min-w-0">
-                  <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[#8498B4] uppercase">
+                  <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[var(--wf-fg-muted)] uppercase">
                     Email
                   </dt>
-                  <dd className="m-0 mt-1 text-[length:var(--wf-body)] break-all text-[#D2DFEF]">
+                  <dd className="m-0 mt-1 text-[length:var(--wf-body)] break-all text-[var(--wf-fg-2)]">
                     {lead.email ?? "No lo dejó"}
                   </dd>
                 </div>
                 <div className="min-w-0">
-                  <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[#8498B4] uppercase">
+                  <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[var(--wf-fg-muted)] uppercase">
                     WhatsApp
                   </dt>
-                  <dd className="m-0 mt-1 text-[length:var(--wf-body)] text-[#D2DFEF]">
+                  <dd className="m-0 mt-1 text-[length:var(--wf-body)] text-[var(--wf-fg-2)]">
                     {lead.whatsapp ?? "No lo dejó"}
                   </dd>
                 </div>
                 {lead.answer && (
                   <div className="min-w-0 sm:col-span-2">
-                    <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[#8498B4] uppercase">
+                    <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[var(--wf-fg-muted)] uppercase">
                       {lead.question}
                     </dt>
-                    <dd className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[#D2DFEF]">
+                    <dd className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-2)]">
                       {lead.answer}
                     </dd>
                   </div>
@@ -142,13 +142,13 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
               <form action={action} className="flex flex-wrap items-end gap-3">
                 <input type="hidden" name="leadId" value={lead.id} />
                 <label className="min-w-0 flex-1">
-                  <span className="block text-[length:var(--wf-small)] font-semibold text-[#D2DFEF]">
+                  <span className="block text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg-2)]">
                     Estado del seguimiento
                   </span>
                   <select
                     name="status"
                     defaultValue={lead.status}
-                    className="mt-2 w-full rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-3 text-[length:var(--wf-body)] text-[#F3F7FF]"
+                    className="mt-2 w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-card-2)] px-3.5 py-3 text-[length:var(--wf-body)] text-[var(--wf-fg)]"
                   >
                     {(Object.keys(STATUS_LABEL) as LeadStatus[]).map((key) => (
                       <option key={key} value={key}>
@@ -161,7 +161,7 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
                 {lead.whatsappLink && (
                   <a
                     href={lead.whatsappLink}
-                    className="wf-cta rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-4 py-2.5 text-[length:var(--wf-body)] font-bold text-[#071521] no-underline"
+                    className="wf-cta rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-4 py-2.5 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)] no-underline"
                   >
                     WhatsApp
                   </a>
@@ -169,12 +169,12 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
               </form>
 
               {state && "error" in state && (
-                <p className="m-0 text-[length:var(--wf-body)] text-[#FF8A8A]" role="alert">
+                <p className="m-0 text-[length:var(--wf-body)] text-[var(--wf-danger)]" role="alert">
                   {state.error}
                 </p>
               )}
               {state && "success" in state && (
-                <p className="m-0 text-[length:var(--wf-body)] text-[#4ED8A8]" role="status">
+                <p className="m-0 text-[length:var(--wf-body)] text-[var(--wf-ok)]" role="status">
                   Estado guardado.
                 </p>
               )}

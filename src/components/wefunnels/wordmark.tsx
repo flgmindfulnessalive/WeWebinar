@@ -26,7 +26,7 @@ export function Wordmark({
         priority
       />
       <span className={`${text} font-bold tracking-[-0.04em] whitespace-nowrap`}>
-        <span className="text-[#43E2EE]">We</span>Funnels
+        <span className="text-[var(--wf-accent)]">We</span>Funnels
       </span>
     </div>
   );

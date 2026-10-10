@@ -35,16 +35,16 @@ export default async function PanelHomePage() {
     if (invited) redirect("/panel/pagina");
 
     return (
-      <div className="flex max-w-[620px] flex-col gap-4 rounded-2xl border border-[#2D3E57] bg-[#0E192A] p-6">
-        <h1 className="m-0 text-[26px] font-bold tracking-tight text-[#F3F7FF]">
+      <div className="flex max-w-[620px] flex-col gap-4 rounded-2xl border border-[var(--wf-edge)] bg-[var(--wf-card)] p-6">
+        <h1 className="m-0 text-[26px] font-bold tracking-tight text-[var(--wf-fg)]">
           WeFunnels es por invitación
         </h1>
-        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           Las páginas no se piden: te las regala un distribuidor. Si conoces a la persona
           que te habló de esto, pídele su enlace de regalo — con él tu funnel es gratis de
           por vida, sin tarjeta y sin mensualidad.
         </p>
-        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
+        <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
           Si entraste por un enlace y ves esto, puede que haya pasado demasiado tiempo o
           que ese enlace no sea el de regalo. Vuelve a abrir el que te pasaron.
         </p>
@@ -60,10 +60,10 @@ export default async function PanelHomePage() {
   return (
     <div className="flex flex-col gap-7">
       <div>
-        <h1 className="m-0 text-[clamp(26px,4vw,32px)] font-extrabold tracking-[-0.03em] text-[#F3F7FF]">
+        <h1 className="m-0 text-[clamp(26px,4vw,32px)] font-extrabold tracking-[-0.03em] text-[var(--wf-fg)]">
           Hola, {firstName}.
         </h1>
-        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           {isPublished
             ? "Tu página está activa. Dale seguimiento a las personas que mostraron interés."
             : "Tu página está en borrador. Publícala para que empiece a captar registros."}
@@ -75,18 +75,18 @@ export default async function PanelHomePage() {
           windows the conversion rate would be wrong at the edges. */}
       <PeriodStats />
 
-      <section className="flex flex-col gap-3.5 rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.4vw,24px)]">
+      <section className="flex flex-col gap-3.5 rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.4vw,24px)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <strong className="text-[16px] font-semibold text-[#F3F7FF]">
+          <strong className="text-[16px] font-semibold text-[var(--wf-fg)]">
             Tu funnel personal
           </strong>
           <span
             className={`rounded-full border px-3 py-1 text-[length:var(--wf-kicker)] ${
               site.suspended_at
-                ? "border-[#FF8A8A] text-[#FF8A8A]"
+                ? "border-[var(--wf-danger)] text-[var(--wf-danger)]"
                 : isPublished
-                  ? "border-[#4ED8A8] text-[#4ED8A8]"
-                  : "border-[#F5BE52] text-[#F5BE52]"
+                  ? "border-[var(--wf-ok)] text-[var(--wf-ok)]"
+                  : "border-[var(--wf-warn)] text-[var(--wf-warn)]"
             }`}
           >
             {site.suspended_at ? "Suspendida" : isPublished ? "Publicada" : "Borrador"}
@@ -94,14 +94,14 @@ export default async function PanelHomePage() {
         </div>
         <CopyLink url={siteUrl} />
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-[length:var(--wf-body)] leading-relaxed text-[#8498B4]">
+          <span className="text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
             {isPublished
               ? "Comparte tu enlace en contenido y conversaciones."
               : "Tu enlace queda vivo en cuanto publiques."}
           </span>
           <Link
             href="/panel/pagina"
-            className="rounded-lg border border-[#2D3E57] px-4 py-2.5 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF] no-underline"
+            className="rounded-lg border border-[var(--wf-edge)] px-4 py-2.5 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] no-underline"
           >
             Ver y editar mi página
           </Link>
@@ -109,19 +109,19 @@ export default async function PanelHomePage() {
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.4vw,24px)]">
-          <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+        <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.4vw,24px)]">
+          <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
             Curso incluido
           </p>
-          <h2 className="m-0 text-[20px] leading-tight font-bold tracking-[-0.02em] text-[#F3F7FF]">
+          <h2 className="m-0 text-[20px] leading-tight font-bold tracking-[-0.02em] text-[var(--wf-fg)]">
             Cómo NUNCA quedarte sin prospectos
           </h2>
-          <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+          <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
             Aprende a llevar tráfico a tu funnel. 29 páginas en PDF, y pronto en video.
           </p>
           <Link
             href="/panel/curso"
-            className="wf-cta mt-1 inline-flex min-h-[46px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3 text-[length:var(--wf-body)] font-bold text-[#071521] no-underline"
+            className="wf-cta mt-1 inline-flex min-h-[46px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)] no-underline"
           >
             Ver mi curso →
           </Link>
@@ -129,20 +129,20 @@ export default async function PanelHomePage() {
 
         {!viewer.distributor && <DistributorOffer />}
         {viewer.distributor && (
-          <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.4vw,24px)]">
-            <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+          <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.4vw,24px)]">
+            <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
               Eres Distribuidor
             </p>
-            <h2 className="m-0 text-[20px] leading-tight font-bold tracking-[-0.02em] text-[#F3F7FF]">
+            <h2 className="m-0 text-[20px] leading-tight font-bold tracking-[-0.02em] text-[var(--wf-fg)]">
               Reparte funnels sin límite.
             </h2>
-            <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+            <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
               Tu página de regalo y el embudo de lo que reparte están en Funnels
               repartidos.
             </p>
             <Link
               href="/panel/repartir"
-              className="mt-1 inline-flex min-h-[46px] items-center justify-center rounded-lg border border-[#2D3E57] px-5 py-3 text-[length:var(--wf-body)] font-semibold text-[#D2DFEF] no-underline"
+              className="mt-1 inline-flex min-h-[46px] items-center justify-center rounded-lg border border-[var(--wf-edge)] px-5 py-3 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] no-underline"
             >
               Ir a Funnels repartidos →
             </Link>
@@ -159,23 +159,23 @@ export default async function PanelHomePage() {
 // naming a figure this one would have to guess.
 function DistributorOffer() {
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[#A855F7] bg-gradient-to-br from-[#0B1230] to-[#1B0C2E] p-[clamp(18px,2.4vw,24px)]">
-      <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#D8B4FE] uppercase">
+    <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[var(--wf-violet)] bg-gradient-to-br from-[var(--wf-violet-bg-a)] to-[var(--wf-violet-bg-b)] p-[clamp(18px,2.4vw,24px)]">
+      <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-violet-soft)] uppercase">
         Tu siguiente opción
       </p>
-      <h2 className="m-0 text-[20px] leading-tight font-bold tracking-[-0.02em] text-[#F3F7FF]">
+      <h2 className="m-0 text-[20px] leading-tight font-bold tracking-[-0.02em] text-[var(--wf-fg)]">
         Ahora tú puedes regalar funnels.
       </h2>
-      <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+      <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
         Activa Distribuidor y regala funnels ilimitados de por vida.
       </p>
       <Link
         href="/panel/distribuidor"
-        className="mt-1 inline-flex min-h-[46px] items-center justify-center rounded-lg border border-[#A855F7] px-5 py-3 text-[length:var(--wf-body)] font-semibold text-[#E9D5FF] no-underline"
+        className="mt-1 inline-flex min-h-[46px] items-center justify-center rounded-lg border border-[var(--wf-violet)] px-5 py-3 text-[length:var(--wf-body)] font-semibold text-[var(--wf-violet-fg)] no-underline"
       >
         Conocer los beneficios →
       </Link>
-      <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+      <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
         Opcional. Tu cuenta gratuita sigue activa.
       </p>
     </section>

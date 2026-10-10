@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { weFunnelSignOutEverywhere } from "@/lib/actions/wefunnel-auth";
 import { PasswordForm } from "../account-forms";
+import { ThemePicker } from "./theme-picker";
 
 export const metadata: Metadata = {
   title: "Configuración · WeFunnels",
@@ -12,11 +13,11 @@ export const metadata: Metadata = {
 };
 
 const H1 =
-  "m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[#F3F7FF]";
-const H2 = "m-0 text-[length:var(--wf-h3)] font-semibold text-[#F3F7FF]";
-const CARD = "rounded-[14px] border border-[#2D3E57] bg-[#0E192A] p-[clamp(18px,2.6vw,24px)]";
-const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]";
-const SMALL = "m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]";
+  "m-0 text-[clamp(24px,3.6vw,30px)] font-extrabold tracking-[-0.03em] text-[var(--wf-fg)]";
+const H2 = "m-0 text-[length:var(--wf-h3)] font-semibold text-[var(--wf-fg)]";
+const CARD = "rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.6vw,24px)]";
+const BODY = "m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]";
+const SMALL = "m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]";
 
 const SUPPORT_EMAIL = "operaciones@wewebinars.com";
 
@@ -35,14 +36,31 @@ export default async function PanelSettingsPage() {
     <div className="flex flex-col gap-5">
       <div>
         <h1 className={H1}>Configuración</h1>
-        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
-          Tu acceso y tus sesiones. El aspecto de tu página se configura en{" "}
-          <Link href="/panel/pagina" className="font-semibold text-[#43E2EE] no-underline">
+        <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
+          Tu panel, tu acceso y tus sesiones. El aspecto de tu página pública se
+          configura en{" "}
+          <Link href="/panel/pagina" className="font-semibold text-[var(--wf-accent)] no-underline">
             Mi página
           </Link>
           .
         </p>
       </div>
+
+      <section className={`${CARD} flex flex-col gap-4`}>
+        <h2 className={H2}>Cómo se ve tu panel</h2>
+        <p className={BODY}>
+          Vale solo para tu panel y solo para ti. Tu página pública y tu página de
+          regalo las ven siempre igual tus visitantes: su color lo eliges en{" "}
+          <Link
+            href="/panel/pagina"
+            className="font-semibold text-[var(--wf-accent)] no-underline"
+          >
+            Mi página
+          </Link>
+          .
+        </p>
+        <ThemePicker current={viewer.theme} />
+      </section>
 
       <section className={`${CARD} flex flex-col gap-4`}>
         <h2 className={H2}>Cambiar mi contraseña</h2>
@@ -59,7 +77,7 @@ export default async function PanelSettingsPage() {
         <form action={weFunnelSignOutEverywhere}>
           <button
             type="submit"
-            className="wf-cta inline-flex items-center justify-center rounded-[10px] border border-[#5A3540] bg-[#1C1016] px-4 py-2.5 text-[length:var(--wf-small)] font-semibold text-[#FFB4B4]"
+            className="wf-cta inline-flex items-center justify-center rounded-[10px] border border-[var(--wf-danger-edge)] bg-[var(--wf-danger-bg)] px-4 py-2.5 text-[length:var(--wf-small)] font-semibold text-[var(--wf-danger-fg)]"
           >
             Cerrar todas mis sesiones
           </button>
@@ -75,7 +93,7 @@ export default async function PanelSettingsPage() {
             cualquiera, hoy y sin pedirlo, es despublicarla desde Mi página. */}
         <p className={BODY}>
           Puedes retirarla de internet tú mismo y cuando quieras: en{" "}
-          <Link href="/panel/pagina" className="font-semibold text-[#43E2EE] no-underline">
+          <Link href="/panel/pagina" className="font-semibold text-[var(--wf-accent)] no-underline">
             Mi página
           </Link>{" "}
           la pasas a borrador y deja de ser visible al instante. Tu dirección sigue
@@ -88,7 +106,7 @@ export default async function PanelSettingsPage() {
           sin pedirlo. Escríbenos a{" "}
           <a
             href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Baja de mi cuenta de WeFunnels")}`}
-            className="font-semibold text-[#43E2EE]"
+            className="font-semibold text-[var(--wf-accent)]"
           >
             {SUPPORT_EMAIL}
           </a>{" "}

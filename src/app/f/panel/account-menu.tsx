@@ -77,7 +77,7 @@ export function AccountMenu({
         onClick={() => setOpen((shown) => !shown)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex max-w-[260px] items-center gap-2.5 rounded-[11px] border border-[#2D3E57] bg-[#0B1423] px-2.5 py-2 text-left text-[length:var(--wf-small)] text-[#D2DFEF] transition-colors hover:border-[#43E2EE] focus-visible:border-[#43E2EE] focus-visible:ring-2 focus-visible:ring-[#43E2EE]/30 focus-visible:outline-none"
+        className="flex max-w-[260px] items-center gap-2.5 rounded-[11px] border border-[var(--wf-edge)] bg-[var(--wf-card-2)] px-2.5 py-2 text-left text-[length:var(--wf-small)] text-[var(--wf-fg-2)] transition-colors hover:border-[var(--wf-accent)] focus-visible:border-[var(--wf-accent)] focus-visible:ring-2 focus-visible:ring-[var(--wf-accent)]/30 focus-visible:outline-none"
       >
         {photoUrl ? (
           <Image
@@ -93,14 +93,14 @@ export function AccountMenu({
         ) : (
           <span
             aria-hidden="true"
-            className="grid size-7 shrink-0 place-items-center rounded-full bg-[#16263C] text-[length:var(--wf-kicker)] font-bold text-[#8EEFF5]"
+            className="grid size-7 shrink-0 place-items-center rounded-full bg-[var(--wf-inset-2)] text-[length:var(--wf-kicker)] font-bold text-[var(--wf-accent-strong)]"
           >
             {initials(label)}
           </span>
         )}
         <span className="hidden min-w-0 truncate sm:inline">{label}</span>
         <ChevronDown
-          className={`size-4 shrink-0 text-[#8498B4] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`size-4 shrink-0 text-[var(--wf-fg-muted)] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           aria-hidden="true"
         />
       </button>
@@ -109,15 +109,15 @@ export function AccountMenu({
         <div
           role="menu"
           aria-label="Mi cuenta"
-          className="absolute right-0 z-50 mt-2 w-[clamp(240px,80vw,282px)] overflow-hidden rounded-[13px] border border-[#2D3E57] bg-[#0B1423] shadow-[0_26px_60px_-24px_rgba(0,0,0,0.95)]"
+          className="absolute right-0 z-50 mt-2 w-[clamp(240px,80vw,282px)] overflow-hidden rounded-[13px] border border-[var(--wf-edge)] bg-[var(--wf-card-2)] shadow-[0_26px_60px_-24px_rgba(0,0,0,0.95)]"
         >
-          <div className="border-b border-[#1B2538] px-4 py-3">
+          <div className="border-b border-[var(--wf-edge-soft)] px-4 py-3">
             {name?.trim() && (
-              <p className="m-0 truncate text-[length:var(--wf-small)] font-semibold text-[#F3F7FF]">
+              <p className="m-0 truncate text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg)]">
                 {name}
               </p>
             )}
-            <p className="m-0 truncate text-[length:var(--wf-kicker)] text-[#8498B4]">
+            <p className="m-0 truncate text-[length:var(--wf-kicker)] text-[var(--wf-fg-muted)]">
               {email}
             </p>
           </div>
@@ -129,7 +129,7 @@ export function AccountMenu({
                 href={item.href}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="px-4 py-2.5 text-[length:var(--wf-small)] text-[#D2DFEF] no-underline hover:bg-[#101C2E] hover:text-white focus-visible:bg-[#101C2E] focus-visible:outline-none"
+                className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-white focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
               >
                 {item.label}
               </Link>
@@ -138,7 +138,7 @@ export function AccountMenu({
               href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Ayuda con WeFunnels")}`}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="px-4 py-2.5 text-[length:var(--wf-small)] text-[#D2DFEF] no-underline hover:bg-[#101C2E] hover:text-white focus-visible:bg-[#101C2E] focus-visible:outline-none"
+              className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-white focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
             >
               Ayuda y soporte
             </a>
@@ -146,11 +146,11 @@ export function AccountMenu({
 
           {/* Un POST, no un enlace: un GET que termina la sesión lo puede
               disparar cualquier cosa que haga prefetch del menú. */}
-          <form action={weFunnelSignOut} className="border-t border-[#1B2538]">
+          <form action={weFunnelSignOut} className="border-t border-[var(--wf-edge-soft)]">
             <button
               type="submit"
               role="menuitem"
-              className="w-full border-0 bg-transparent px-4 py-3 text-left text-[length:var(--wf-small)] font-semibold text-[#FF9A9A] hover:bg-[#1C1016] focus-visible:bg-[#1C1016] focus-visible:outline-none"
+              className="w-full border-0 bg-transparent px-4 py-3 text-left text-[length:var(--wf-small)] font-semibold text-[var(--wf-danger)] hover:bg-[var(--wf-danger-bg)] focus-visible:bg-[var(--wf-danger-bg)] focus-visible:outline-none"
             >
               Cerrar sesión
             </button>

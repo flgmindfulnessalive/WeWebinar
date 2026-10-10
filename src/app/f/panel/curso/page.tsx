@@ -132,13 +132,13 @@ export default async function PanelCoursePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
           {licensed ? "Incluido con tu licencia Distribuidor" : "Incluido con tu funnel gratuito"}
         </p>
-        <h1 className="m-0 mt-2.5 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[#F3F7FF] text-balance">
+        <h1 className="m-0 mt-2.5 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[var(--wf-fg)] text-balance">
           Cómo NUNCA quedarte sin prospectos
         </h1>
-        <p className="m-0 mt-3 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-3 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           Aprende a llevar tráfico a tu funnel y convertir el interés en conversaciones.
         </p>
       </div>
@@ -152,19 +152,19 @@ export default async function PanelCoursePage() {
             {initials(sharedBy)}
           </span>
           <div className="min-w-0">
-            <p className="m-0 text-[length:var(--wf-kicker)] tracking-[0.1em] text-[#8498B4] uppercase">
+            <p className="m-0 text-[length:var(--wf-kicker)] tracking-[0.1em] text-[var(--wf-fg-muted)] uppercase">
               {/* «Te lo comparte» es lenguaje de regalo, y quien pagó la
                   licencia no recibió un regalo: llegó por el enlace de
                   alguien, que es un hecho y sigue siendo útil saberlo. */}
               {licensed ? "Llegaste por" : "Este curso te lo comparte"}
             </p>
-            <p className="m-0 text-[16px] font-semibold text-[#F3F7FF]">{sharedBy}</p>
+            <p className="m-0 text-[16px] font-semibold text-[var(--wf-fg)]">{sharedBy}</p>
           </div>
         </div>
       )}
 
       <section
-        className="relative isolate overflow-hidden rounded-[16px] border border-[#2D3E57]"
+        className="relative isolate overflow-hidden rounded-[16px] border border-[var(--wf-edge)]"
         style={{
           background:
             "radial-gradient(ellipse at 90% 30%, rgba(48,32,90,0.5), transparent 60%), #0B1423",
@@ -181,10 +181,10 @@ export default async function PanelCoursePage() {
           }}
         />
         <div className="p-[clamp(22px,4vw,44px)]">
-          <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#70E9EF] uppercase">
+          <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
             Un método para network marketers constructores
           </p>
-          <p className="m-0 mt-3 text-[clamp(22px,3.6vw,34px)] leading-[1.12] font-bold tracking-[-0.03em] text-[#F3F7FF]">
+          <p className="m-0 mt-3 text-[clamp(22px,3.6vw,34px)] leading-[1.12] font-bold tracking-[-0.03em] text-[var(--wf-fg)]">
             Tu funnel está listo.
             <br />
             <span className="bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent">
@@ -201,7 +201,7 @@ export default async function PanelCoursePage() {
             {webinarId && (
               <Link
                 href="/panel/curso/ver"
-                className="wf-cta inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
+                className="wf-cta inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[var(--wf-on-cta)] no-underline"
               >
                 <Play className="h-[18px] w-[18px]" aria-hidden="true" />
                 {resuming ? "Continuar viendo" : "Ver el curso"}
@@ -215,8 +215,8 @@ export default async function PanelCoursePage() {
               download
               className={
                 webinarId
-                  ? "inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg border border-[#2D3E57] px-6 py-4 text-[16px] font-semibold text-[#D2DFEF] no-underline"
-                  : "wf-cta inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
+                  ? "inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg border border-[var(--wf-edge)] px-6 py-4 text-[16px] font-semibold text-[var(--wf-fg-2)] no-underline"
+                  : "wf-cta inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[var(--wf-on-cta)] no-underline"
               }
             >
               <Download className="h-[18px] w-[18px]" aria-hidden="true" />
@@ -227,25 +227,25 @@ export default async function PanelCoursePage() {
           {webinarId ? (
             <>
               {resuming && (
-                <p className="m-0 mt-3 text-[length:var(--wf-body)] text-[#B7C7DC]">
+                <p className="m-0 mt-3 text-[length:var(--wf-body)] text-[var(--wf-fg-body)]">
                   Lo dejaste en {clock(position!)}
                   {percent !== null ? ` · ${percent}% visto` : ""}.
                 </p>
               )}
-              <p className="m-0 mt-3 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+              <p className="m-0 mt-3 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
                 Se abre en WeWebinars con tu nombre y tu correo. No tienes que registrarte
                 otra vez.
               </p>
             </>
           ) : (
-            <p className="m-0 mt-3 max-w-[52ch] text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+            <p className="m-0 mt-3 max-w-[52ch] text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
               29 páginas con el método entero. La versión en vídeo la estamos grabando y
               te avisamos por correo en cuanto esté
               {licensed ? ", sin coste." : ", incluida con tu cuenta gratuita."}
             </p>
           )}
         </div>
-        <p className="m-0 flex flex-wrap items-center justify-between gap-3 border-t border-[#1F2A3C] bg-[#091221] px-[clamp(22px,4vw,44px)] py-3.5 text-[length:var(--wf-kicker)] text-[#8498B4]">
+        <p className="m-0 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--wf-edge-soft-2)] bg-[var(--wf-strip)] px-[clamp(22px,4vw,44px)] py-3.5 text-[length:var(--wf-kicker)] text-[var(--wf-fg-muted)]">
           <span>{webinarId ? "Reproductor de WeWebinars" : "Curso completo en PDF"}</span>
           <span>
             {licensed
@@ -259,9 +259,9 @@ export default async function PanelCoursePage() {
           lessons with their own links, because that is what they are. */}
       <div className="flex flex-wrap gap-x-6 gap-y-3">
         {TOPICS.map((topic) => (
-          <span key={topic.n} className="flex items-center gap-2.5 text-[length:var(--wf-body)] text-[#B7C7DC]">
+          <span key={topic.n} className="flex items-center gap-2.5 text-[length:var(--wf-body)] text-[var(--wf-fg-body)]">
             <b
-              className="text-[length:var(--wf-small)] font-semibold text-[#76E8EE]"
+              className="text-[length:var(--wf-small)] font-semibold text-[var(--wf-accent-soft)]"
               style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
             >
               {topic.n}
@@ -271,12 +271,12 @@ export default async function PanelCoursePage() {
         ))}
         <span
           className={`flex items-center gap-2.5 text-[length:var(--wf-body)] ${
-            licensed ? "text-[#B7C7DC]" : "text-[#5E7290]"
+            licensed ? "text-[var(--wf-fg-body)]" : "text-[var(--wf-fg-faint)]"
           }`}
         >
           <b
             className={`text-[length:var(--wf-small)] font-semibold ${
-              licensed ? "text-[#76E8EE]" : "text-[#5E7290]"
+              licensed ? "text-[var(--wf-accent-soft)]" : "text-[var(--wf-fg-faint)]"
             }`}
             style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
           >
@@ -284,7 +284,7 @@ export default async function PanelCoursePage() {
           </b>
           {TOPIC_LICENCIA.title}
           {!licensed && (
-            <span className="text-[length:var(--wf-small)] text-[#5E7290]">· con licencia</span>
+            <span className="text-[length:var(--wf-small)] text-[var(--wf-fg-faint)]">· con licencia</span>
           )}
         </span>
       </div>
@@ -293,14 +293,14 @@ export default async function PanelCoursePage() {
 
       <div className="max-w-[740px]">
         {(licensed ? QUESTIONS_DISTRIBUIDOR : QUESTIONS_GRATIS).map(([question, answer]) => (
-          <details key={question} className="border-b border-[#2C3B51] py-4">
-            <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-[length:var(--wf-body)] font-medium text-[#F3F7FF] marker:content-none [&::-webkit-details-marker]:hidden">
+          <details key={question} className="border-b border-[var(--wf-edge-soft-2)] py-4">
+            <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-[length:var(--wf-body)] font-medium text-[var(--wf-fg)] marker:content-none [&::-webkit-details-marker]:hidden">
               {question}
-              <span className="shrink-0 text-[#77DFE9]" aria-hidden="true">
+              <span className="shrink-0 text-[var(--wf-accent-soft)]" aria-hidden="true">
                 +
               </span>
             </summary>
-            <p className="m-0 mt-2.5 text-[length:var(--wf-small)] leading-relaxed text-[#B7C7DC]">{answer}</p>
+            <p className="m-0 mt-2.5 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-body)]">{answer}</p>
           </details>
         ))}
       </div>
@@ -315,19 +315,19 @@ export default async function PanelCoursePage() {
 // own referral rows.
 function CourseOffer() {
   return (
-    <section className="grid gap-6 rounded-[16px] border border-[#A855F7] bg-gradient-to-br from-[#0B1230] to-[#1B0C2E] p-[clamp(20px,3vw,30px)] lg:grid-cols-[1.1fr_1fr]">
+    <section className="grid gap-6 rounded-[16px] border border-[var(--wf-violet)] bg-gradient-to-br from-[var(--wf-violet-bg-a)] to-[var(--wf-violet-bg-b)] p-[clamp(20px,3vw,30px)] lg:grid-cols-[1.1fr_1fr]">
       <div className="min-w-0">
-        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[#D8B4FE] uppercase">
+        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-violet-soft)] uppercase">
           El siguiente paso es opcional
         </p>
-        <h2 className="m-0 mt-2.5 text-[clamp(22px,3.2vw,28px)] leading-[1.14] font-bold tracking-[-0.03em] text-[#F3F7FF]">
+        <h2 className="m-0 mt-2.5 text-[clamp(22px,3.2vw,28px)] leading-[1.14] font-bold tracking-[-0.03em] text-[var(--wf-fg)]">
           Tú también puedes decir:
           <br />
           <span className="bg-gradient-to-r from-[#41E5EC] via-[#83B5FF] to-[#BD8BFF] bg-clip-text text-transparent">
             «Te regalo tu funnel».
           </span>
         </h2>
-        <p className="m-0 mt-3 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
+        <p className="m-0 mt-3 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           Activa Distribuidor y ofrece a otros constructores un funnel, su panel y este
           curso. Abre la conversación dando una herramienta útil.
         </p>
@@ -340,8 +340,8 @@ function CourseOffer() {
           "2 meses de Starter de WeWebinars.",
           "20% sobre las suscripciones de tus referidos directos.",
         ].map((item) => (
-          <li key={item} className="flex gap-2.5 text-[length:var(--wf-body)] text-[#D2DFEF]">
-            <span className="text-[#6EE8E5]" aria-hidden="true">
+          <li key={item} className="flex gap-2.5 text-[length:var(--wf-body)] text-[var(--wf-fg-2)]">
+            <span className="text-[var(--wf-accent-soft)]" aria-hidden="true">
               ✓
             </span>
             <span className="min-w-0">{item}</span>
@@ -350,12 +350,12 @@ function CourseOffer() {
         <li className="mt-2 list-none">
           <Link
             href="/panel/distribuidor"
-            className="wf-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[#071521] no-underline"
+            className="wf-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-5 py-3.5 text-[length:var(--wf-body)] font-bold text-[var(--wf-on-cta)] no-underline"
           >
             Conocer los beneficios →
           </Link>
         </li>
-        <li className="list-none text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+        <li className="list-none text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
           Tu cuenta gratuita no depende de comprar. Sin comisión por la licencia. Sin
           segundo nivel.
         </li>

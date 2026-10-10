@@ -17,7 +17,7 @@ import {
 } from "@/components/wefunnels/access-shell";
 
 const BUTTON =
-  "wf-cta inline-flex items-center justify-center self-start rounded-[10px] border border-[#2D3E57] bg-[#111C2E] px-4 py-2.5 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] disabled:opacity-60";
+  "wf-cta inline-flex items-center justify-center self-start rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-inset)] px-4 py-2.5 text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg)] disabled:opacity-60";
 
 function Result({ state }: { state: WeFunnelSavedState }) {
   if (!state) return null;
@@ -28,7 +28,7 @@ function Result({ state }: { state: WeFunnelSavedState }) {
       className={
         bad
           ? WF_ERROR
-          : "m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8EEFF5]"
+          : "m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-accent-strong)]"
       }
     >
       {bad ? state.error : state.success}

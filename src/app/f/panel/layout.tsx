@@ -41,8 +41,20 @@ export default async function PanelLayout({ children }: { children: ReactNode })
   const leadCount = viewer.site ? await countLeads(viewer.site.id) : 0;
 
   return (
-    <div className="min-h-svh text-[#F3F7FF]">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#1B2538] px-5 py-4 sm:px-7">
+    // El tema se pinta aquí, en el servidor, con el valor que ya viene en
+    // la sesión: el primer HTML sale con el color puesto y no hay el
+    // parpadeo de oscuro-a-claro que deja cualquier preferencia guardada
+    // en el navegador, que solo puede leerse cuando la página ya existe.
+    //
+    // Y se pone aquí y no en el layout de /f porque aquel es común a las
+    // páginas públicas y tendría que leer la sesión en cada visita de un
+    // desconocido. El suelo de la página lo resuelve wefunnels.css con
+    // :has(), sin que ese layout tenga que saber nada.
+    <div
+      data-wf-theme={viewer.theme}
+      className="min-h-svh bg-[var(--wf-bg)] text-[var(--wf-fg)]"
+    >
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--wf-edge-soft)] px-5 py-4 sm:px-7">
         <Link href="/panel" className="wf-home no-underline">
           <Wordmark size="sm" />
         </Link>

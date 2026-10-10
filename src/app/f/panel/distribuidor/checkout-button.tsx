@@ -55,12 +55,12 @@ export function DistributorCheckoutButton({ price }: { price: string }) {
   if (started) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="overflow-hidden rounded-[14px] border border-[#2D3E57] bg-[#0B1423]">
+        <div className="overflow-hidden rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card-2)]">
           <WhopCheckoutEmbed
             sessionId={started.sessionId}
             theme="dark"
             fallback={
-              <p className="m-0 p-6 text-[length:var(--wf-body)] text-[#B7C7DC]">
+              <p className="m-0 p-6 text-[length:var(--wf-body)] text-[var(--wf-fg-body)]">
                 Cargando el pago…
               </p>
             }
@@ -83,9 +83,9 @@ export function DistributorCheckoutButton({ price }: { price: string }) {
           // Un iframe de terceros no siempre carga: hay extensiones que lo
           // bloquean y navegadores sin cookies de terceros. Quien se quede
           // mirando un hueco tiene por dónde salir.
-          <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+          <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
             ¿No ves el formulario?{" "}
-            <a href={started.url} className="font-semibold text-[#43E2EE]">
+            <a href={started.url} className="font-semibold text-[var(--wf-accent)]">
               Abre el pago en una pestaña nueva
             </a>
             .
@@ -101,12 +101,12 @@ export function DistributorCheckoutButton({ price }: { price: string }) {
         type="button"
         onClick={start}
         disabled={busy}
-        className="wf-cta inline-flex min-h-[52px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] disabled:opacity-60"
+        className="wf-cta inline-flex min-h-[52px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[var(--wf-on-cta)] disabled:opacity-60"
       >
         {busy ? "Abriendo…" : `Activar Distribuidor · ${price} →`}
       </button>
       {error && (
-        <p role="alert" className="m-0 text-[length:var(--wf-body)] text-[#FF8A8A]">
+        <p role="alert" className="m-0 text-[length:var(--wf-body)] text-[var(--wf-danger)]">
           {error}
         </p>
       )}
