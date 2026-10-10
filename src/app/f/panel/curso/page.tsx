@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Play } from "lucide-react";
+import { Download, Play } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 
-// Mi curso: one video, hosted in WeWebinars. No modules, no invented
-// progress, no attendee count -- the approved package is explicit that the
-// three topics belong to a single video and are not separate lessons.
+// Mi curso: el método entero, hoy en PDF y después también en vídeo
+// alojado en WeWebinars. Sin módulos, sin progreso inventado y sin
+// recuento de asistentes -- el paquete aprobado es explícito en que los
+// bloques pertenecen a un solo curso y no son lecciones sueltas.
 // Los cuatro bloques del curso, en el orden del vídeo. El quinto existe
 // pero solo se puede aplicar con licencia, así que se muestra apagado a
 // quien no la tiene: es lo mismo que hace la diapositiva índice, y explica
@@ -191,15 +192,40 @@ export default async function PanelCoursePage() {
             </span>
           </p>
 
-          {webinarId ? (
-            <>
+          {/* El curso completo ya existe en PDF, así que esta pantalla no
+              espera al vídeo para entregar algo: el PDF es la acción
+              principal mientras no hay grabación, y pasa a segunda cuando
+              la haya. Antes, sin vídeo, aquí solo había un aviso de que
+              lo estábamos grabando. */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {webinarId && (
               <Link
                 href="/panel/curso/ver"
-                className="wf-cta mt-6 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
+                className="wf-cta inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
               >
                 <Play className="h-[18px] w-[18px]" aria-hidden="true" />
                 {resuming ? "Continuar viendo" : "Ver el curso"}
               </Link>
+            )}
+            {/* <a download> y no next/link: esto no es una página sino un
+                route handler que responde un PDF, y el router no sabe
+                pintar una respuesta de descarga. */}
+            <a
+              href="/panel/curso/descargar"
+              download
+              className={
+                webinarId
+                  ? "inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg border border-[#2D3E57] px-6 py-4 text-[16px] font-semibold text-[#D2DFEF] no-underline"
+                  : "wf-cta inline-flex min-h-[52px] items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[#071521] no-underline"
+              }
+            >
+              <Download className="h-[18px] w-[18px]" aria-hidden="true" />
+              Descargar el curso en PDF
+            </a>
+          </div>
+
+          {webinarId ? (
+            <>
               {resuming && (
                 <p className="m-0 mt-3 text-[length:var(--wf-body)] text-[#B7C7DC]">
                   Lo dejaste en {clock(position!)}
@@ -212,16 +238,15 @@ export default async function PanelCoursePage() {
               </p>
             </>
           ) : (
-            <p className="m-0 mt-6 max-w-[52ch] text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
-              Lo estamos grabando. Te avisamos por correo en cuanto esté
-              {licensed
-                ? ", y lo tendrás aquí mismo."
-                : ", y queda incluido con tu cuenta gratuita."}
+            <p className="m-0 mt-3 max-w-[52ch] text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
+              29 páginas con el método entero. La versión en vídeo la estamos grabando y
+              te avisamos por correo en cuanto esté
+              {licensed ? ", sin coste." : ", incluida con tu cuenta gratuita."}
             </p>
           )}
         </div>
         <p className="m-0 flex flex-wrap items-center justify-between gap-3 border-t border-[#1F2A3C] bg-[#091221] px-[clamp(22px,4vw,44px)] py-3.5 text-[length:var(--wf-kicker)] text-[#8498B4]">
-          <span>Reproductor de WeWebinars</span>
+          <span>{webinarId ? "Reproductor de WeWebinars" : "Curso completo en PDF"}</span>
           <span>
             {licensed
               ? "Tu curso permanece activo, de por vida"

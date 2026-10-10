@@ -65,9 +65,11 @@ export default function WeFunnelsLegalPage() {
         <h2 className={H2}>Qué es WeFunnels</h2>
         <p className={BODY}>
           Una página personal en {WEFUNNELS_HOST}, un panel con tus visitas y tus
-          registros, y un curso grabado. WeFunnels es un producto de WeWebinars, y el
-          video del curso está alojado en WeWebinars: por eso, al abrirlo, la dirección
-          cambia a la de WeWebinars. Es el mismo producto y la misma cuenta.
+          registros, y el curso. Hoy el curso se descarga en PDF desde tu panel. La
+          versión en video está en preparación y, cuando esté, se alojará en
+          WeWebinars: al abrirla la dirección cambiará a la de WeWebinars, porque
+          WeFunnels es un producto de WeWebinars. Es el mismo producto y la misma
+          cuenta.
         </p>
 
         <h2 className={H2}>Qué cuesta</h2>

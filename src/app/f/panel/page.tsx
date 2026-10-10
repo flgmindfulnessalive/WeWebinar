@@ -117,7 +117,7 @@ export default async function PanelHomePage() {
             Cómo NUNCA quedarte sin prospectos
           </h2>
           <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[#B7C7DC]">
-            Aprende a llevar tráfico a tu funnel. Un video, en WeWebinars.
+            Aprende a llevar tráfico a tu funnel. 29 páginas en PDF, y pronto en video.
           </p>
           <Link
             href="/panel/curso"
