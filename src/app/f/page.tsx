@@ -8,6 +8,7 @@ import { HeroGrid } from "@/components/wefunnels/hero-grid";
 import { Reveal } from "@/components/wefunnels/reveal";
 import { BackToTop } from "@/components/wefunnels/back-to-top";
 import { Wordmark } from "@/components/wefunnels/wordmark";
+import { MobileNav, type NavLink } from "@/components/wefunnels/mobile-nav";
 
 // The official web. One job: sell the distributor licence at $199.
 //
@@ -21,11 +22,52 @@ import { Wordmark } from "@/components/wefunnels/wordmark";
 // for the whole tree because thousands of personal funnels under one
 // registrable domain is how that domain earns a spam reputation; this page
 // is the exception, because it is the only one meant to be found.
+const META_TITLE = "WeFunnels — regala funnels a otros constructores";
+const META_DESCRIPTION =
+  "Licencia Distribuidor de WeFunnels: regala funnels profesionales de por vida y abre conversaciones con otros network marketers. 199 dólares, un solo pago.";
+
+// La imagen se nombra entera, no como ruta relativa. Dos motivos.
+//
+// Next no fusiona la imagen del convenio de archivo (opengraph-image.tsx)
+// dentro del openGraph de una ruta en cuanto esa ruta declara el suyo, ni
+// siquiera parcial: el objeto del segmento más profundo sustituye al del
+// padre, imágenes incluidas. Está documentado en la portada de la app, que
+// llegó a publicarse sin og:image por esto mismo.
+//
+// Y una ruta relativa se resolvería contra metadataBase, que es el host de
+// la app. Aquí la imagen vive bajo /f, y en el host de WeFunnels el proxy
+// antepone /f a todo lo que llega, así que la dirección buena en ese host
+// es /opengraph-image sin más: misma máquina que la página compartida y
+// sin el salto de dominio.
+const OG_IMAGE = {
+  url: `https://${WEFUNNELS_HOST}/opengraph-image`,
+  width: 1200,
+  height: 630,
+  alt: "WeFunnels — Abre la conversación con un regalo. Regala funnels profesionales a otros constructores.",
+};
+
 export const metadata: Metadata = {
-  title: "WeFunnels — regala funnels a otros constructores",
-  description:
-    "Licencia Distribuidor de WeFunnels: regala funnels profesionales de por vida y abre conversaciones con otros network marketers. 199 dólares, un solo pago.",
+  title: META_TITLE,
+  description: META_DESCRIPTION,
   robots: { index: true, follow: true },
+  // Sin esto la tarjeta al compartir era la del layout raíz: decía
+  // "WeWebinars", describía la plataforma de webinars y enseñaba su
+  // imagen. Otra marca y ningún rastro de lo que se estaba compartiendo.
+  openGraph: {
+    title: META_TITLE,
+    description: META_DESCRIPTION,
+    url: `https://${WEFUNNELS_HOST}/`,
+    siteName: "WeFunnels",
+    locale: "es_ES",
+    type: "website",
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: META_TITLE,
+    description: META_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 // El botón de compra no decide a dónde va: lo decide /comprar, que mira
@@ -34,11 +76,25 @@ export const metadata: Metadata = {
 // nadie llegaba nunca a la licencia que había pulsado para comprar.
 const BUY_URL = "/comprar";
 
+// Los dos menús de la cabecera -- el de escritorio y el desplegable de
+// móvil -- se dibujan desde esta lista, para que no haya una versión con
+// un enlace que la otra no tiene.
+//
+// "Entrar" es la puerta de vuelta: no existía en ninguna parte de la web
+// pública, así que quien compraba y cerraba la pestaña no tenía forma de
+// volver a su panel desde aquí.
+const NAV_LINKS: NavLink[] = [
+  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#precio", label: "Precio" },
+  { href: "#preguntas", label: "Preguntas" },
+  { href: "/entrar", label: "Entrar", cta: true },
+];
+
 const STEPS = [
   {
     n: "01 · COMPARTE",
-    title: "Ofrece tu regalo",
-    body: "Usa tu página de Distribuidor en contenido, anuncios y conversaciones con otros network marketers.",
+    title: "Ofrece embudos gratis",
+    body: "Usa tu enlace de regalo en contenidos, anuncios y conversaciones con otros network marketers.",
   },
   {
     n: "02 · ENTREGA",
@@ -147,26 +203,29 @@ export default function WeFunnelsOfficialPage() {
           <a href="#top" className="wf-home" aria-label="WeFunnels, volver arriba">
             <Wordmark />
           </a>
-          <nav aria-label="Navegación principal" className="flex flex-wrap gap-[18px]">
-            <a href="#como-funciona" className={NAV}>
-              Cómo funciona
-            </a>
-            <a href="#precio" className={NAV}>
-              Precio
-            </a>
-            <a href="#preguntas" className={NAV}>
-              Preguntas
-            </a>
-            {/* La puerta de vuelta. No existía en ninguna parte de la web
-                pública: quien compraba y cerraba la pestaña no tenía forma
-                de volver a entrar a su panel desde aquí. */}
-            <Link
-              href="/entrar"
-              className="wf-cta ml-1 inline-flex items-center rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] no-underline"
-            >
-              Entrar
-            </Link>
+          {/* Por debajo de md esta fila se parte y los cuatro enlaces quedan
+              sueltos bajo el logo, sin jerarquía y sin parecer un menú, así
+              que a partir de ahí manda MobileNav. */}
+          <nav aria-label="Navegación principal" className="hidden flex-wrap gap-[18px] md:flex">
+            {NAV_LINKS.map((link) =>
+              // Un ancla de la misma página no pasa por el router.
+              link.href.startsWith("#") ? (
+                <a key={link.href} href={link.href} className={NAV}>
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="wf-cta ml-1 inline-flex items-center rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] no-underline"
+                >
+                  {link.label}
+                </Link>
+              ),
+            )}
           </nav>
+
+          <MobileNav links={NAV_LINKS} />
         </div>
       </header>
 
