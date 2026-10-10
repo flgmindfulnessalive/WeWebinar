@@ -22,11 +22,52 @@ import { MobileNav, type NavLink } from "@/components/wefunnels/mobile-nav";
 // for the whole tree because thousands of personal funnels under one
 // registrable domain is how that domain earns a spam reputation; this page
 // is the exception, because it is the only one meant to be found.
+const META_TITLE = "WeFunnels — regala funnels a otros constructores";
+const META_DESCRIPTION =
+  "Licencia Distribuidor de WeFunnels: regala funnels profesionales de por vida y abre conversaciones con otros network marketers. 199 dólares, un solo pago.";
+
+// La imagen se nombra entera, no como ruta relativa. Dos motivos.
+//
+// Next no fusiona la imagen del convenio de archivo (opengraph-image.tsx)
+// dentro del openGraph de una ruta en cuanto esa ruta declara el suyo, ni
+// siquiera parcial: el objeto del segmento más profundo sustituye al del
+// padre, imágenes incluidas. Está documentado en la portada de la app, que
+// llegó a publicarse sin og:image por esto mismo.
+//
+// Y una ruta relativa se resolvería contra metadataBase, que es el host de
+// la app. Aquí la imagen vive bajo /f, y en el host de WeFunnels el proxy
+// antepone /f a todo lo que llega, así que la dirección buena en ese host
+// es /opengraph-image sin más: misma máquina que la página compartida y
+// sin el salto de dominio.
+const OG_IMAGE = {
+  url: `https://${WEFUNNELS_HOST}/opengraph-image`,
+  width: 1200,
+  height: 630,
+  alt: "WeFunnels — Abre la conversación con un regalo. Regala funnels profesionales a otros constructores.",
+};
+
 export const metadata: Metadata = {
-  title: "WeFunnels — regala funnels a otros constructores",
-  description:
-    "Licencia Distribuidor de WeFunnels: regala funnels profesionales de por vida y abre conversaciones con otros network marketers. 199 dólares, un solo pago.",
+  title: META_TITLE,
+  description: META_DESCRIPTION,
   robots: { index: true, follow: true },
+  // Sin esto la tarjeta al compartir era la del layout raíz: decía
+  // "WeWebinars", describía la plataforma de webinars y enseñaba su
+  // imagen. Otra marca y ningún rastro de lo que se estaba compartiendo.
+  openGraph: {
+    title: META_TITLE,
+    description: META_DESCRIPTION,
+    url: `https://${WEFUNNELS_HOST}/`,
+    siteName: "WeFunnels",
+    locale: "es_ES",
+    type: "website",
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: META_TITLE,
+    description: META_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 // El botón de compra no decide a dónde va: lo decide /comprar, que mira
