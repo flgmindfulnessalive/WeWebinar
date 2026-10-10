@@ -8,6 +8,7 @@ import { HeroGrid } from "@/components/wefunnels/hero-grid";
 import { Reveal } from "@/components/wefunnels/reveal";
 import { BackToTop } from "@/components/wefunnels/back-to-top";
 import { Wordmark } from "@/components/wefunnels/wordmark";
+import { MobileNav, type NavLink } from "@/components/wefunnels/mobile-nav";
 
 // The official web. One job: sell the distributor licence at $199.
 //
@@ -34,11 +35,25 @@ export const metadata: Metadata = {
 // nadie llegaba nunca a la licencia que había pulsado para comprar.
 const BUY_URL = "/comprar";
 
+// Los dos menús de la cabecera -- el de escritorio y el desplegable de
+// móvil -- se dibujan desde esta lista, para que no haya una versión con
+// un enlace que la otra no tiene.
+//
+// "Entrar" es la puerta de vuelta: no existía en ninguna parte de la web
+// pública, así que quien compraba y cerraba la pestaña no tenía forma de
+// volver a su panel desde aquí.
+const NAV_LINKS: NavLink[] = [
+  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#precio", label: "Precio" },
+  { href: "#preguntas", label: "Preguntas" },
+  { href: "/entrar", label: "Entrar", cta: true },
+];
+
 const STEPS = [
   {
     n: "01 · COMPARTE",
-    title: "Ofrece tu regalo",
-    body: "Usa tu página de Distribuidor en contenido, anuncios y conversaciones con otros network marketers.",
+    title: "Ofrece embudos gratis",
+    body: "Usa tu enlace de regalo en contenidos, anuncios y conversaciones con otros network marketers.",
   },
   {
     n: "02 · ENTREGA",
@@ -147,26 +162,29 @@ export default function WeFunnelsOfficialPage() {
           <a href="#top" className="wf-home" aria-label="WeFunnels, volver arriba">
             <Wordmark />
           </a>
-          <nav aria-label="Navegación principal" className="flex flex-wrap gap-[18px]">
-            <a href="#como-funciona" className={NAV}>
-              Cómo funciona
-            </a>
-            <a href="#precio" className={NAV}>
-              Precio
-            </a>
-            <a href="#preguntas" className={NAV}>
-              Preguntas
-            </a>
-            {/* La puerta de vuelta. No existía en ninguna parte de la web
-                pública: quien compraba y cerraba la pestaña no tenía forma
-                de volver a entrar a su panel desde aquí. */}
-            <Link
-              href="/entrar"
-              className="wf-cta ml-1 inline-flex items-center rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] no-underline"
-            >
-              Entrar
-            </Link>
+          {/* Por debajo de md esta fila se parte y los cuatro enlaces quedan
+              sueltos bajo el logo, sin jerarquía y sin parecer un menú, así
+              que a partir de ahí manda MobileNav. */}
+          <nav aria-label="Navegación principal" className="hidden flex-wrap gap-[18px] md:flex">
+            {NAV_LINKS.map((link) =>
+              // Un ancla de la misma página no pasa por el router.
+              link.href.startsWith("#") ? (
+                <a key={link.href} href={link.href} className={NAV}>
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="wf-cta ml-1 inline-flex items-center rounded-[10px] border border-[#2D3E57] bg-[#0B1423] px-3.5 py-2 text-[length:var(--wf-small)] font-semibold text-[#E6EFFA] no-underline"
+                >
+                  {link.label}
+                </Link>
+              ),
+            )}
           </nav>
+
+          <MobileNav links={NAV_LINKS} />
         </div>
       </header>
 
