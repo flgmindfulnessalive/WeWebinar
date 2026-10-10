@@ -218,10 +218,17 @@ export const WEFUNNELS_DISTRIBUTOR_METADATA = "wefunnels_distributor";
 // metadata so the webhook can record which price was actually charged, and
 // the activation function checks it again against those same rows before
 // granting anything.
-export async function createDistributorCheckoutUrl(
+// Devuelve el id de la configuración y su URL alojada. El id es lo que
+// consume el checkout incrustado (sessionId en @whop/checkout), y la URL
+// queda como salida de emergencia: si el iframe no carga -- extensión que
+// bloquea terceros, navegador sin cookies de terceros -- hay a dónde
+// mandar a quien quiere pagar, en vez de un hueco en blanco.
+export type DistributorCheckout = { id: string; url: string | null };
+
+export async function createDistributorCheckout(
   accountId: string,
   source: LicenseSource
-): Promise<string | null> {
+): Promise<DistributorCheckout | null> {
   const planId = wefunnelsDistributorPlanId(source);
   if (!whopConfigured() || !planId) {
     console.error(
@@ -247,9 +254,13 @@ export async function createDistributorCheckoutUrl(
       // acaba de pagar no es sitio para un salto de más.
       redirect_url: wefunnelUrl("/panel/distribuidor/listo"),
     });
-    return config.purchase_url ?? null;
+    if (!config.id) {
+      console.error("[whop] checkout configuration created without an id");
+      return null;
+    }
+    return { id: config.id, url: config.purchase_url ?? null };
   } catch (err) {
-    console.error("[whop] createDistributorCheckoutUrl failed:", err);
+    console.error("[whop] createDistributorCheckout failed:", err);
     return null;
   }
 }
