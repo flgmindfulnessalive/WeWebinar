@@ -8,7 +8,7 @@ export function Catalog({ state, set }: { state: AppState; set: (p: Partial<AppS
   const upd = (i: number, patch: Partial<Product>) => set({ products: state.products.map((p, j) => (j === i ? { ...p, ...patch } : p)), exampleValues: false });
   return (
     <Card title="Catálogo de productos y volúmenes">
-      <Notice tone="warn">Las fuentes no publican cuánto volumen genera cada producto. Copia los valores de tu back office: <b>no confundas precio con volumen</b>, y ten en cuenta que productos distintos pueden generar volúmenes distintos.</Notice>
+      <Notice tone="warn">El sobre viene con 77 PV (dato que indicaste) y el mismo valor como volumen comisionable. Las fuentes no publican cuánto volumen genera cada producto. Copia los valores de tu back office: <b>no confundas precio con volumen</b>, y ten en cuenta que productos distintos pueden generar volúmenes distintos.</Notice>
       {state.exampleValues && <Notice tone="hypo">{EXAMPLE_NOTE}</Notice>}
       {state.products.map((p, i) => (
         <div className="prod" key={p.id}>

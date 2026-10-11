@@ -4,7 +4,8 @@
 
 | Área | Comprobación | Resultado |
 |---|---|---|
-| Motor | 75 pruebas (Vitest): umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 75/75 |
+| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV): 2★ Director · 10 % $77 · clientes $77 · binario estimado $635,27 · Mentor Match estimado $107,90 · total $897,17 · bono de rango $1 850 | ✅ |
+| Motor | 79 pruebas (Vitest): umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 79/79 |
 | Solver inverso | Metas de US$250, 500, 1 000, 2 000 y 5 000: cada solución se vuelve a pasar por el motor directo, alcanza la meta y con N−1 compradores no | ✅ |
 | Escenarios | Los 9 casos se calculan en vivo; la prueba comprueba que el rango y las cifras citadas en el texto coinciden con el motor | ✅ (la prueba detectó y se corrigió un texto: el caso concentrado queda en 1★ Manager, no en 2★) |
 | Fichas «Entender» | Cada ejemplo numérico se calcula con el motor y se comprueba su importe | ✅ |

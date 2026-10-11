@@ -6,7 +6,11 @@ Aplicación web educativa para que un Brand Partner entienda y simule las formas
 
 > **No es una herramienta oficial de LifeWave.** Las cifras son simulaciones: dependen de los supuestos elegidos y del cumplimiento de los requisitos del plan. No garantizan ingresos.
 
-## Cuatro accesos
+## Inicio: calculadora simple
+
+Seis datos (socios, directos, clientes preferentes, sobres por persona, tus sobres y PV por sobre, 77 por defecto) y el resultado: rango, cada forma de ganar con su total mensual (binario y Mentor Match marcados como **estimados**), bono por subir de rango aparte y lo que falta para el siguiente rango. Supuestos fijos y declarados: volumen comisionable = PV, organización equilibrada, todos compran cada mes. Cálculo en `src/engine/simple.ts` sobre el mismo motor.
+
+## Modo avanzado: cuatro accesos
 
 | | Acceso | Qué hace |
 |---|---|---|

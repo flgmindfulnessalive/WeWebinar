@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { usd } from "../engine/decimal";
 import type { SimulationInput } from "../engine/model";
 import { simulate, type SimulationResult } from "../engine/simulate";
-import { PLAN } from "../plan/plan-10-10-20";
 import { EXAMPLE_NOTE, SCENARIOS, type Scenario } from "../scenarios/scenarios";
 import { newId, planVersion, type AppState, type SavedScenario } from "../state";
 import { Card, Notice, Segmented } from "../ui/primitives";
@@ -19,7 +18,8 @@ export function SimulateView({ state, set, input, onPrint }: { state: AppState; 
   return (
     <div className="view">
       <header className="view__head">
-        <h1>Simular mi organización</h1>
+        <h1>Modo avanzado · Simular mi organización</h1>
+        <p><a href="#/catalogo">Catálogo y supuestos</a> · <a href="#/fuentes">Fuentes y matriz de reglas</a></p>
         <p>Describe una organización hipotética. El resultado muestra qué forma de ganar se calcula, cuál no es elegible y por qué, y cuál está pendiente por falta de reglas o datos.</p>
       </header>
       {state.exampleValues && <Notice tone="hypo">{EXAMPLE_NOTE}</Notice>}
@@ -156,32 +156,5 @@ function ScenarioCard({ s, onOpen }: { s: Scenario; onOpen: (s: Scenario, which:
         {s.compare && <button type="button" className="btn btn--ghost" onClick={() => onOpen(s, "compare")}>Abrir «{s.compare.label}»</button>}
       </div>
     </Card>
-  );
-}
-
-export function HomeView() {
-  const tiles = [
-    { href: "#/entender", k: "A", t: "Entender el plan", d: "Cada forma de ganar: qué la genera, requisitos, fórmula, ejemplo y fuente." },
-    { href: "#/simular", k: "B", t: "Simular mi organización", d: "Describe una organización y mira qué cobra, qué no y por qué." },
-    { href: "#/meta", k: "C", t: "Calcular mi meta", d: "Convierte un ingreso mensual en compradores, volumen y requisitos." },
-    { href: "#/escenarios", k: "D", t: "Explorar escenarios", d: "Casos precargados: equilibrio, concentración, pérdida de compradores…" },
-  ];
-  return (
-    <div className="view home">
-      <header className="hero">
-        <p className="hero__kicker">Plan de compensación LifeWave</p>
-        <h1>10 · 10 · 20</h1>
-        <p className="hero__lead">Aprende, simula y planifica con las reglas publicadas, separando lo confirmado de lo que todavía falta en la guía oficial.</p>
-      </header>
-      <div className="tiles">{tiles.map((x) => <a key={x.k} className="tile" href={x.href}><span className="tile__k">{x.k}</span><b>{x.t}</b><span>{x.d}</span></a>)}</div>
-      <Card title="Antes de empezar">
-        <ul className="todo">
-          <li>Introduce el <b>volumen por producto</b> de tu back office en <a href="#/catalogo">Catálogo</a>: las fuentes no lo publican. También puedes usar valores de ejemplo hipotéticos.</li>
-          <li>El <b>binario</b> y el <b>Mentor Match</b> no se calculan con las fuentes: falta su base de cálculo. Puedes explorarlos activando supuestos marcados como hipotéticos.</li>
-          <li>Los bonos <b>puntuales</b> (PIB, bono por subir de rango) nunca cuentan para una meta recurrente.</li>
-        </ul>
-        <p className="muted">Versión de reglas: {PLAN.version}. Herramienta independiente: no es un documento oficial de LifeWave.</p>
-      </Card>
-    </div>
   );
 }

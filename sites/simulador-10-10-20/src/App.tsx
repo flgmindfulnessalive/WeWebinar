@@ -10,17 +10,19 @@ import { paidRankLabel } from "./ui/Results";
 import { GoalView } from "./views/Goal";
 import { LearnView, SourcesView } from "./views/Learn";
 import { AssumptionsCard, Catalog } from "./views/Setup";
-import { HomeView, ScenariosView, SimulateView } from "./views/Simulate";
+import { ScenariosView, SimulateView } from "./views/Simulate";
+import { SimpleView } from "./views/Simple";
 
 type Route = "inicio" | "entender" | "simular" | "meta" | "escenarios" | "fuentes" | "catalogo";
 const ROUTES: Route[] = ["inicio", "entender", "simular", "meta", "escenarios", "fuentes", "catalogo"];
 const readRoute = (): Route => { const r = location.hash.replace(/^#\/?/, "") as Route; return ROUTES.includes(r) ? r : "inicio"; };
 
 const NAV: { r: Route; k: string; label: string }[] = [
-  { r: "entender", k: "A", label: t("navLearn") },
-  { r: "simular", k: "B", label: t("navSimulate") },
-  { r: "meta", k: "C", label: t("navGoal") },
-  { r: "escenarios", k: "D", label: t("navScenarios") },
+  { r: "inicio", k: "$", label: "Calcular" },
+  { r: "entender", k: "?", label: t("navLearn") },
+  { r: "meta", k: "◎", label: t("navGoal") },
+  { r: "escenarios", k: "▤", label: t("navScenarios") },
+  { r: "simular", k: "⚙", label: "Avanzado" },
 ];
 
 export function App() {
@@ -31,7 +33,7 @@ export function App() {
     addEventListener("hashchange", on);
     return () => removeEventListener("hashchange", on);
   }, []);
-  useEffect(() => { document.title = `${t("appName")} · ${route === "inicio" ? "Simulador independiente" : NAV.find((n) => n.r === route)?.label ?? (route === "fuentes" ? t("navSources") : t("navSetup"))}`; }, [route]);
+  useEffect(() => { document.title = `${t("appName")} · ${route === "inicio" ? "Calcula tus ganancias" : NAV.find((n) => n.r === route)?.label ?? (route === "fuentes" ? t("navSources") : t("navSetup"))}`; }, [route]);
   const go = (r: Route) => { location.hash = `#/${r}`; };
 
   const openQuick = (q: QuickOrg) => { set({ mode: "rapido", quick: q }); go("simular"); };
@@ -53,7 +55,7 @@ export function App() {
         </nav>
       </header>
       <main id="main" tabIndex={-1}>
-        {route === "inicio" && <HomeView />}
+        {route === "inicio" && <SimpleView value={state.simple} onChange={(simple) => set({ simple })} />}
         {route === "entender" && <LearnView />}
         {route === "simular" && <SimulateView state={state} set={set} input={input} onPrint={() => print()} />}
         {route === "meta" && <GoalView goal={state.goal} products={state.products} assumptions={state.assumptions} onGoal={(goal) => set({ goal })} onOpen={openQuick} />}
@@ -74,7 +76,6 @@ export function App() {
       </main>
       <nav className="tabbar" aria-label="Accesos principales">
         {NAV.map((n) => <a key={n.r} href={`#/${n.r}`} aria-current={route === n.r ? "page" : undefined}><span className="nav__k">{n.k}</span><span>{n.label}</span></a>)}
-        <a href="#/catalogo" aria-current={route === "catalogo" || route === "fuentes" ? "page" : undefined}><span className="nav__k">⚙</span><span>Ajustes</span></a>
       </nav>
       <PrintSummary input={input} />
     </>
