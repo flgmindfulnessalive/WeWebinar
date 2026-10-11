@@ -1,0 +1,7 @@
+# Simulador 10·10·20 en workers.dev (sin dominio propio).
+# Uso: npm run deploy
+name = "simulador-10-10-20"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+preview_urls = false

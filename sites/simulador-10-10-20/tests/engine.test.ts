@@ -285,3 +285,21 @@ describe("Tope semanal del binario", () => {
     expect(c.capsHit.length).toBe(1);
   });
 });
+
+describe("Tope por BP del Mentor Match (supuesto)", () => {
+  it("20 % de un binario de 2 500 = 500 → se paga el tope de 250 de 1★ Director", () => {
+    const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
+    const big = [{ ...SOBRE, id: "x", name: "x", qv: 0, cv: 30000, retailMargin: null }, ...unit];
+    const people = [
+      bp("tu", null, null, 110), bp("a", "tu", ["tu", "L"], 110), bp("b", "tu", ["tu", "R"], 2500),
+      bp("a1", "a", ["a", "L"], 2500), bp("a2", "a", ["a", "R"], 2500),
+      { ...bp("a1x", "a1", ["a1", "L"]), orders: [{ productId: "x", qty: 1 }] }, { ...bp("a2x", "a2", ["a2", "L"]), orders: [{ productId: "x", qty: 1 }] },
+    ];
+    const r = simulate(din(people, { assumeBinary: true, assumeMentor: true, orderTiming: "semana1" }, big));
+    expect(r.paidRank).toBe("d1");
+    const m = comp(r, "mentor");
+    // a: 1★ Director, binario 11 % × 32 500 = 3 575 → tope 2 500; 20 % = 500 → tope por BP 250
+    expect(money(m.weekly![0])).toBe("250.00");
+    expect(m.capsHit.join()).toMatch(/topado/);
+  });
+});

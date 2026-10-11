@@ -47,7 +47,7 @@ export interface GoalInput {
 }
 
 export const DEFAULT_GOAL: GoalInput = {
-  target: 500, measure: "promedio", productId: "sobre", personalQty: 1, pctOne: 50, customerPct: 50,
+  target: 500, measure: "promedio", productId: "sobre", personalQty: 2, pctOne: 50, customerPct: 50,
   customerKind: "cliente_preferente", sponsoredPct: 30, leftPct: 50, includeAssumptions: false, maxBuyers: 20000,
 };
 
@@ -184,6 +184,10 @@ export function solve(g: GoalInput, products: Product[], base: Assumptions): Goa
 function unreachableReason(s: Structure, r: SimulationResult, g: GoalInput): string {
   if (!r.ok) return r.errors[0] ?? r.missing.join(", ");
   const get = (id: string) => r.components.find((c) => c.id === id)!;
+  if (!r.paidRank) {
+    const pv = r.qualificationMonth?.evaluations[0]?.checks.find((c) => c.key === "pv");
+    return `No llegas a BP Activo: tu PV es ${pv ? pv.actual.toString() : "0"} y se necesitan 55. Sin rango, el 10 % Personal Team no se paga aunque tengas compradores. Sube tus unidades personales o suma clientes propios.`;
+  }
   if (s === "clientes") {
     const retail = get("retail");
     return `Con solo clientes, el ingreso recurrente calculable es el Bono para el cliente (máx. 20 %)${retail.status === "pendiente" ? "; el margen minorista está pendiente porque no has introducido tu margen por unidad" : " y tu margen minorista"}. Con ${g.maxBuyers.toLocaleString("es-419")} compradores no alcanza la meta.`;

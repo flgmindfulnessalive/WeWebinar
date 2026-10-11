@@ -9,7 +9,10 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "inline": "node scripts/inline.mjs",
+    "deploy": "npm run build && npm test && node scripts/inline.mjs && npx wrangler deploy -c deploy/wrangler.toml",
+    "matrix": "vite-node scripts/matrix.ts"
   },
   "dependencies": {
     "decimal.js-light": "^2.5.1",

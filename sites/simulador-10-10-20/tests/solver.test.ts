@@ -45,6 +45,7 @@ describe("Calculadora de meta (búsqueda inversa)", () => {
     const r = solve({ ...goal, personalQty: 0, target: 250 }, products, DEFAULT_ASSUMPTIONS);
     expect(r.solutions.filter((s) => s.structure === "socios")).toEqual([]);
     expect(r.unreachable.some((u) => u.structure === "socios")).toBe(true);
+    expect(r.unreachable.find((u) => u.structure === "socios")!.reason).toMatch(/BP Activo/);
   });
 
   it("bloquea si el producto no tiene volumen", () => {
