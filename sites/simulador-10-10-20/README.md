@@ -2,6 +2,8 @@
 
 Aplicación web educativa para que un Brand Partner entienda y simule las formas de ganar del plan de compensación **10·10·20** de LifeWave, explore casos y convierta una meta de ingreso recurrente en requisitos concretos de organización, volumen y actividad.
 
+**Publicado (vista independiente, sin indexar):** https://simulador-10-10-20.activatuvida-x39.workers.dev
+
 > **No es una herramienta oficial de LifeWave.** Las cifras son simulaciones: dependen de los supuestos elegidos y del cumplimiento de los requisitos del plan. No garantizan ingresos.
 
 ## Cuatro accesos
