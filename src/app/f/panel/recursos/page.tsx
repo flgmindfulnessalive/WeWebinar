@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { TemplateList } from "./templates";
 
 export const metadata: Metadata = {
   title: "Recursos · WeFunnels",
@@ -33,7 +35,14 @@ export default async function PanelResourcesPage() {
   // Dos lecturas y no un join anidado: RLS ya esconde lo no publicado en
   // las dos tablas, y agrupar aquí deja el orden explícito en vez de
   // depender del que devuelva el planificador para las filas hijas.
-  const [{ data: sections }, { data: resources }] = await Promise.all([
+  const licensed = Boolean(viewer.distributor);
+  // El de regalo y no el de su página: es el único que acredita quién dio
+  // el funnel (ver giftPageSlug en lib/wefunnels/referral).
+  const giftLink = viewer.site
+    ? `https://${WEFUNNELS_HOST}/${viewer.site.slug}/regalo`
+    : "";
+
+  const [{ data: sections }, { data: resources }, { data: templates }] = await Promise.all([
     supabase
       .from("wefunnel_resource_sections")
       .select("id, title, description")
@@ -44,6 +53,17 @@ export default async function PanelResourcesPage() {
       .select("id, section_id, title, description, youtube_id, duration_label")
       .order("position")
       .order("created_at"),
+    // Solo se pide si hay licencia. La política de lectura ya las
+    // escondería igual, pero una consulta que se sabe vacía es una
+    // consulta que no hay que hacer.
+    licensed
+      ? supabase
+          .from("wefunnel_templates")
+          .select("id, kind, title, format_label, art_text, body, notes")
+          .order("kind")
+          .order("position")
+          .order("created_at")
+      : Promise.resolve({ data: null }),
   ]);
 
   const bySection = new Map<string, NonNullable<typeof resources>>();
@@ -134,6 +154,40 @@ export default async function PanelResourcesPage() {
             </div>
           </section>
         ))
+      )}
+
+      {/* Solo con licencia, y es lo único de esta pantalla que lo es. Los
+          vídeos enseñan a llevar tráfico a tu propio funnel y eso le sirve
+          a cualquiera; esto es material para repartir funnels, que es lo
+          que compra la licencia. */}
+      {licensed && (templates?.length ?? 0) > 0 && (
+        <>
+          {(["post", "reel"] as const).map((kind) => {
+            const group = (templates ?? []).filter((t) => t.kind === kind);
+            if (group.length === 0) return null;
+            return (
+              <section key={kind} className="flex flex-col gap-4">
+                <div>
+                  <h2 className="m-0 text-[clamp(19px,2.6vw,23px)] leading-tight font-bold tracking-[-0.02em] text-[var(--wf-fg)]">
+                    {kind === "post"
+                      ? "Plantillas de publicaciones"
+                      : "Guiones para reels"}
+                  </h2>
+                  <p className="m-0 mt-1.5 max-w-[62ch] text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
+                    {kind === "post"
+                      ? "Para contar que regalas funnels. Copia, cambia lo que quieras y publica. Tu enlace ya va puesto."
+                      : "Para grabar en vertical. Las acotaciones entre corchetes no se leen en voz alta."}
+                  </p>
+                </div>
+                <TemplateList
+                  templates={group}
+                  giftLink={giftLink}
+                  ownerName={viewer.site?.display_name ?? viewer.displayName ?? ""}
+                />
+              </section>
+            );
+          })}
+        </>
       )}
     </div>
   );

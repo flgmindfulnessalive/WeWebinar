@@ -51,11 +51,13 @@ export type LeadCard = {
   name: string;
   email: string | null;
   whatsapp: string | null;
+  // Pares pregunta/respuesta tal como se contestaron. Las filas de antes
+  // de 20261015000001 no tienen ninguno y traen su texto en `answer`.
+  answers: { q: string; a: string }[];
   answer: string | null;
   source: "form" | "course";
   status: LeadStatus;
   createdAt: string;
-  question: string;
   whatsappLink: string | null;
 };
 
@@ -127,10 +129,24 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
                     {lead.whatsapp ?? "No lo dejó"}
                   </dd>
                 </div>
-                {lead.answer && (
+                {lead.answers.map((pair, index) => (
+                  <div key={index} className="min-w-0 sm:col-span-2">
+                    <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[var(--wf-fg-muted)] uppercase">
+                      {pair.q}
+                    </dt>
+                    <dd className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-2)]">
+                      {pair.a}
+                    </dd>
+                  </div>
+                ))}
+
+                {/* Las filas anteriores a las preguntas múltiples, y la
+                    frase que registra a quien entra al curso: ninguna
+                    tiene pares, pero sí texto que el dueño quiere leer. */}
+                {lead.answers.length === 0 && lead.answer && (
                   <div className="min-w-0 sm:col-span-2">
                     <dt className="text-[length:var(--wf-kicker)] tracking-[0.1em] text-[var(--wf-fg-muted)] uppercase">
-                      {lead.question}
+                      Su respuesta
                     </dt>
                     <dd className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-2)]">
                       {lead.answer}

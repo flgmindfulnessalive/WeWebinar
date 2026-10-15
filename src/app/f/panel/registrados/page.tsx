@@ -34,22 +34,21 @@ export default async function PanelLeadsPage() {
   const supabase = await createClient();
   const { data: leads } = await supabase
     .from("wefunnel_leads")
-    .select("id, name, whatsapp, email, answer, source, status, created_at")
+    .select("id, name, whatsapp, email, answer, answers, source, status, created_at")
     .eq("site_id", viewer.site.id)
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const question = viewer.site.question_label ?? "Su respuesta";
   const rows: LeadCard[] = (leads ?? []).map((lead) => ({
     id: lead.id,
     name: lead.name,
     email: lead.email,
     whatsapp: lead.whatsapp,
+    answers: Array.isArray(lead.answers) ? lead.answers : [],
     answer: lead.answer,
     source: lead.source,
     status: lead.status as LeadStatus,
     createdAt: DATE.format(new Date(lead.created_at)),
-    question,
     whatsappLink: lead.whatsapp
       ? whatsappLink(lead.whatsapp, viewer.site!.display_name, lead.name)
       : null,

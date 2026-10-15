@@ -352,3 +352,64 @@ export async function deleteResource(
   revalidatePath("/f/panel/recursos");
   return { success: true };
 }
+
+// =========================================================================
+// Plantillas de contenido para distribuidores.
+// =========================================================================
+
+export async function saveTemplate(
+  _prev: ModerationState,
+  formData: FormData
+): Promise<ModerationState> {
+  const id = String(formData.get("id") ?? "").trim() || null;
+  const kind = String(formData.get("kind") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  const position = Number(formData.get("position") ?? 0);
+
+  if (kind !== "post" && kind !== "reel") return { error: "Elige publicación o reel." };
+  if (!title) return { error: "La plantilla necesita un título." };
+  if (!body) return { error: "La plantilla necesita su texto." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_template_upsert", {
+    p_id: id,
+    p_kind: kind,
+    p_title: title,
+    p_format_label: String(formData.get("formatLabel") ?? "").trim() || null,
+    p_art_text: String(formData.get("artText") ?? "").trim() || null,
+    p_body: body,
+    p_notes: String(formData.get("notes") ?? "").trim() || null,
+    p_position: Number.isFinite(position) ? position : 0,
+    p_published: formData.get("published") === "on",
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] template upsert failed:", error.message);
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/wefunnels");
+  revalidatePath("/f/panel/recursos");
+  return { success: true };
+}
+
+export async function deleteTemplate(
+  _prev: ModerationState,
+  formData: FormData
+): Promise<ModerationState> {
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return { error: "Falta qué borrar." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_template_delete", { p_id: id });
+
+  if (error) {
+    console.error("[wefunnel/admin] template delete failed:", error.message);
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/wefunnels");
+  revalidatePath("/f/panel/recursos");
+  return { success: true };
+}

@@ -1726,7 +1726,9 @@ export interface Database {
           video_url: string | null;
           accent: string;
           contact_whatsapp: string | null;
+          // OBSOLETA desde 20261015000001: la sustituye `questions`.
           question_label: string | null;
+          questions: string[];
           description: string | null;
           photo_url: string | null;
           kicker: string | null;
@@ -1828,6 +1830,43 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      wefunnel_templates: {
+        Row: {
+          id: string;
+          kind: "post" | "reel";
+          title: string;
+          format_label: string | null;
+          art_text: string | null;
+          body: string;
+          notes: string | null;
+          position: number;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: "post" | "reel";
+          title: string;
+          format_label?: string | null;
+          art_text?: string | null;
+          body: string;
+          notes?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Update: {
+          kind?: "post" | "reel";
+          title?: string;
+          format_label?: string | null;
+          art_text?: string | null;
+          body?: string;
+          notes?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Relationships: [];
       };
       wefunnel_resource_sections: {
         Row: {
@@ -2021,6 +2060,7 @@ export interface Database {
           whatsapp: string | null;
           email: string | null;
           answer: string | null;
+          answers: { q: string; a: string }[];
           source: "form" | "course";
           status: "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
           created_at: string;
@@ -2258,6 +2298,28 @@ export interface Database {
       wefunnel_invitation_open: {
         Args: { p_slug: string };
         Returns: boolean;
+      };
+      wefunnel_is_distributor: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      wefunnel_template_upsert: {
+        Args: {
+          p_id: string | null;
+          p_kind: string;
+          p_title: string;
+          p_format_label: string | null;
+          p_art_text: string | null;
+          p_body: string;
+          p_notes: string | null;
+          p_position: number;
+          p_published: boolean;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_templates"]["Row"];
+      };
+      wefunnel_template_delete: {
+        Args: { p_id: string };
+        Returns: undefined;
       };
       wefunnel_resource_section_upsert: {
         Args: {

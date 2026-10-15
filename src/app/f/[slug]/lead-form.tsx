@@ -25,12 +25,12 @@ function SubmitButton() {
 export function LeadForm({
   siteId,
   ownerName,
-  questionLabel,
+  questions,
   disabled,
 }: {
   siteId: string;
   ownerName: string;
-  questionLabel: string | null;
+  questions: string[];
   disabled: boolean;
 }) {
   const [state, formAction] = useActionState<WeFunnelLeadState, FormData>(
@@ -117,14 +117,24 @@ export function LeadForm({
         <input id="wf-email" name="email" type="email" className={FIELD} />
       </div>
 
-      {questionLabel && (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="wf-answer" className={LABEL}>
-            {questionLabel}
+      {/* La pregunta viaja junto a la respuesta, en un campo oculto, para
+          que la fila del registro guarde lo que de verdad se preguntó. Si
+          mañana el dueño reescribe sus preguntas, lo ya contestado no
+          cambia de enunciado. */}
+      {questions.map((question, index) => (
+        <div key={index} className="flex flex-col gap-1.5">
+          <label htmlFor={`wf-answer-${index}`} className={LABEL}>
+            {question}
           </label>
-          <input id="wf-answer" name="answer" type="text" className={FIELD} />
+          <input type="hidden" name="question" value={question} />
+          <input
+            id={`wf-answer-${index}`}
+            name="answer"
+            type="text"
+            className={FIELD}
+          />
         </div>
-      )}
+      ))}
 
       {state && "error" in state && (
         <p role="alert" className="m-0 text-sm leading-relaxed text-[#FF8A8A]">

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ClearButton, SuspendButton } from "./moderation-actions";
 import { CreateAccountForm, GrantLicenseForm } from "./console-forms";
 import { ResourceManager } from "./resource-forms";
+import { TemplateManager } from "./template-forms";
 import { createClient } from "@/lib/supabase/server";
 
 // Spanish only, unlike the rest of the admin: WeFunnels ships in Spanish,
@@ -42,6 +43,7 @@ export default async function AdminWeFunnelsPage() {
     { data: slugs },
     { data: resourceSections },
     { data: resourceItems },
+    { data: templates },
   ] = await Promise.all([
     supabase
       .from("wefunnel_reviews")
@@ -73,6 +75,12 @@ export default async function AdminWeFunnelsPage() {
       .select("id, section_id, title, description, youtube_id, duration_label, position, published")
       .order("position")
       .order("created_at"),
+    supabase
+      .from("wefunnel_templates")
+      .select("id, kind, title, format_label, art_text, body, notes, position, published")
+      .order("kind")
+      .order("position")
+      .order("created_at")
   ]);
 
   const openReviews = reviews ?? [];
@@ -322,6 +330,21 @@ export default async function AdminWeFunnelsPage() {
           sections={resourceSections ?? []}
           resources={resourceItems ?? []}
         />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Plantillas de contenido{" "}
+          <span className="text-muted-foreground">({templates?.length ?? 0})</span>
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Textos para que un distribuidor cuente que regala funnels: publicaciones y
+          guiones de reel. Solo las ve quien tiene licencia, porque son material para
+          repartir funnels y eso es lo que compra el nivel. Nada de lo que se escriba
+          aquí debería prometer ingresos ni mencionar ganar por traer gente: las normas
+          de Meta sobre fraude lo prohíben y el modelo tampoco paga por eso.
+        </p>
+        <TemplateManager templates={templates ?? []} />
       </section>
 
       <section className="flex flex-col gap-3">
