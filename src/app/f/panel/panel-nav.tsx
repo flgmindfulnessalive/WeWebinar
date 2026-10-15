@@ -10,6 +10,7 @@ const ITEMS: NavItem[] = [
   { href: "/panel/pagina", label: "Mi página" },
   { href: "/panel/registrados", label: "Mis registros", countKey: "leads" },
   { href: "/panel/curso", label: "Mi curso" },
+  { href: "/panel/recursos", label: "Recursos" },
 ];
 
 // The two a distributor gets on top. Not shown to anyone else: a free user
