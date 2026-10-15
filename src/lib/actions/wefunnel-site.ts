@@ -158,6 +158,19 @@ export async function saveWeFunnelSite(
     field(formData, "bullet3", 160),
   ].filter(Boolean);
 
+  // Hasta tres, y cero es un estado legítimo. Se filtran las vacías en vez
+  // de rechazar el formulario: borrar una pregunta es dejar su campo en
+  // blanco, y eso no es un error que haya que contarle a nadie.
+  //
+  // getAll y no campos numerados como los bullets: el editor las añade y
+  // las quita con un (+) y una papelera, así que cuántas llegan y en qué
+  // orden lo decide quien edita, no el nombre del campo.
+  const questions = formData
+    .getAll("question")
+    .map((value) => String(value).trim().slice(0, 160))
+    .filter(Boolean)
+    .slice(0, 3);
+
   // The slug is not in this payload on purpose. It moves through its own
   // path with its own availability check, and the database freezes it once
   // the page has been published.
@@ -179,7 +192,7 @@ export async function saveWeFunnelSite(
       video_url: field(formData, "videoUrl", 500) || null,
       accent: accent || "cyan",
       contact_whatsapp: field(formData, "whatsapp", 32).replace(/[^\d+]/g, "") || null,
-      question_label: field(formData, "questionLabel", 160) || null,
+      questions,
       pixel_provider: pixelId ? pixelProvider : null,
       pixel_id: pixelId || null,
     })

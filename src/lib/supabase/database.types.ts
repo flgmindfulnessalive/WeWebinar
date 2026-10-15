@@ -1726,7 +1726,9 @@ export interface Database {
           video_url: string | null;
           accent: string;
           contact_whatsapp: string | null;
+          // OBSOLETA desde 20261015000001: la sustituye `questions`.
           question_label: string | null;
+          questions: string[];
           description: string | null;
           photo_url: string | null;
           kicker: string | null;
@@ -2021,6 +2023,7 @@ export interface Database {
           whatsapp: string | null;
           email: string | null;
           answer: string | null;
+          answers: { q: string; a: string }[];
           source: "form" | "course";
           status: "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
           created_at: string;

@@ -278,7 +278,7 @@ export default async function WeFunnelSitePage({
           <LeadForm
             siteId={site.id}
             ownerName={site.display_name}
-            questionLabel={site.question_label}
+            questions={site.questions ?? []}
             disabled={!isLive}
           />
         </div>

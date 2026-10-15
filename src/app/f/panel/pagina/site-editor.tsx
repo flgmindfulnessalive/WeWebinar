@@ -3,7 +3,7 @@
 import { startTransition, useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Image from "next/image";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Plus, Trash2 } from "lucide-react";
 
 import {
   saveWeFunnelSite,
@@ -21,7 +21,7 @@ import type { WeFunnelSite, checklist } from "@/lib/wefunnels/site";
 //
 // The five are the ones that make a page somebody's -- photo, name,
 // headline, description, address. Everything the previous editor had
-// (location, the three bullets, a video, WhatsApp, the form's own question,
+// (location, the three bullets, a video, WhatsApp, las preguntas del formulario,
 // the accent colour, a pixel) is still here, moved into a section below:
 // those are rights people already have on pages that are already published,
 // and the approved set is the opening screen, not the whole of what a page
@@ -147,6 +147,11 @@ export function SiteEditor({
   // antes. Avisar al elegir el archivo es además el único momento en que la
   // persona puede hacer algo al respecto.
   const [photoTooBig, setPhotoTooBig] = useState(false);
+  // Esta sí es la fuente de verdad mientras se edita: las preguntas se
+  // añaden y se borran, y un defaultValue no sobrevive a que desaparezca
+  // el campo de en medio. Al guardar viajan como tres inputs con el mismo
+  // name, que la acción recoge con getAll.
+  const [questions, setQuestions] = useState<string[]>(site.questions ?? []);
 
   const photo = photoState && "url" in photoState ? photoState.url : site.photo_url;
 
@@ -417,18 +422,59 @@ export function SiteEditor({
                 </p>
               </div>
               <div>
-                <label className={LABEL} htmlFor="wf-question">
-                  Una pregunta para tu formulario
-                </label>
-                <input
-                  id="wf-question"
-                  name="questionLabel"
-                  maxLength={160}
-                  defaultValue={site.question_label ?? ""}
-                  className={`${FIELD} mt-2`}
-                />
+                <span className={LABEL}>Preguntas de tu formulario</span>
+                <div className="mt-2 flex flex-col gap-2">
+                  {questions.map((question, index) => (
+                    // La clave es la posición y no el texto: dos preguntas
+                    // pueden llegar a decir lo mismo mientras se escriben, y
+                    // con el texto como clave React fundiría los dos campos.
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        name="question"
+                        aria-label={`Pregunta ${index + 1}`}
+                        maxLength={160}
+                        value={question}
+                        onChange={(event) =>
+                          setQuestions((current) =>
+                            current.map((value, i) =>
+                              i === index ? event.target.value : value
+                            )
+                          )
+                        }
+                        placeholder="¿En qué negocio estás?"
+                        className={`${FIELD} min-w-0 flex-1`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setQuestions((current) =>
+                            current.filter((_, i) => i !== index)
+                          )
+                        }
+                        aria-label={`Borrar la pregunta ${index + 1}`}
+                        className="inline-flex size-[42px] shrink-0 items-center justify-center rounded-[10px] border border-[var(--wf-edge)] text-[var(--wf-fg-muted)]"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {questions.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setQuestions((current) => [...current, ""])}
+                    className="mt-2 inline-flex min-h-[42px] items-center gap-2 rounded-[10px] border border-[var(--wf-edge)] px-3.5 text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg-2)]"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    {questions.length === 0 ? "Añadir una pregunta" : "Añadir otra"}
+                  </button>
+                )}
+
                 <p className={HELP}>
-                  Lo que quieras saber de cada persona antes de escribirle.
+                  {questions.length === 0
+                    ? "Sin preguntas, el formulario pide solo nombre y contacto. Es una opción válida: cuantos menos campos, más gente lo completa."
+                    : `Lo que quieras saber de cada persona antes de escribirle. ${questions.length} de 3.`}
                 </p>
               </div>
               <fieldset className="border-0 p-0">

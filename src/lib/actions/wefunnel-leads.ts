@@ -33,7 +33,16 @@ export async function submitWeFunnelLead(
   const name = clean(formData.get("name"), MAX_NAME);
   const rawWhatsapp = clean(formData.get("whatsapp"), 64);
   const email = clean(formData.get("email"), 320);
-  const answer = clean(formData.get("answer"), MAX_ANSWER);
+  // Los dos arrays llegan emparejados por posición porque el formulario
+  // pinta un oculto y un campo por pregunta, en el mismo orden. Se cortan
+  // a tres y se tiran los pares sin respuesta: dejar una en blanco es no
+  // contestarla, no un error.
+  const askedQuestions = formData.getAll("question").map((v) => String(v).trim().slice(0, 160));
+  const givenAnswers = formData.getAll("answer").map((v) => String(v).trim().slice(0, MAX_ANSWER));
+  const answers = askedQuestions
+    .map((q, index) => ({ q, a: givenAnswers[index] ?? "" }))
+    .filter((pair) => pair.q && pair.a)
+    .slice(0, 3);
 
   if (!siteId) {
     return { error: "No pudimos identificar la página. Recarga e intenta de nuevo." };
@@ -61,7 +70,11 @@ export async function submitWeFunnelLead(
     name,
     whatsapp,
     email: email || null,
-    answer: answer || null,
+    answers,
+    // La columna vieja se sigue rellenando con la primera respuesta: la
+    // pantalla de registros tiene filas de antes que solo tienen esto, y
+    // las estadísticas del curso leen esta columna.
+    answer: answers[0]?.a || null,
   });
 
   if (error) {
