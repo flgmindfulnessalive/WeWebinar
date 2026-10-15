@@ -1831,6 +1831,43 @@ export interface Database {
           },
         ];
       };
+      wefunnel_templates: {
+        Row: {
+          id: string;
+          kind: "post" | "reel";
+          title: string;
+          format_label: string | null;
+          art_text: string | null;
+          body: string;
+          notes: string | null;
+          position: number;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: "post" | "reel";
+          title: string;
+          format_label?: string | null;
+          art_text?: string | null;
+          body: string;
+          notes?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Update: {
+          kind?: "post" | "reel";
+          title?: string;
+          format_label?: string | null;
+          art_text?: string | null;
+          body?: string;
+          notes?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Relationships: [];
+      };
       wefunnel_resource_sections: {
         Row: {
           id: string;
@@ -2261,6 +2298,28 @@ export interface Database {
       wefunnel_invitation_open: {
         Args: { p_slug: string };
         Returns: boolean;
+      };
+      wefunnel_is_distributor: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      wefunnel_template_upsert: {
+        Args: {
+          p_id: string | null;
+          p_kind: string;
+          p_title: string;
+          p_format_label: string | null;
+          p_art_text: string | null;
+          p_body: string;
+          p_notes: string | null;
+          p_position: number;
+          p_published: boolean;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_templates"]["Row"];
+      };
+      wefunnel_template_delete: {
+        Args: { p_id: string };
+        Returns: undefined;
       };
       wefunnel_resource_section_upsert: {
         Args: {
