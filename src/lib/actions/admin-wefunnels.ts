@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { normalizeSlug, proposeSlug } from "@/lib/wefunnels/slug";
+import { extractYouTubeVideoId } from "@/lib/youtube";
 
 export type ModerationState = { error: string } | { success: true } | null;
 
@@ -238,4 +239,116 @@ export async function grantDistributorLicense(
 
   revalidatePath("/admin/wefunnels");
   return { success: `Licencia concedida a ${email}.` };
+}
+
+// =========================================================================
+// Recursos: los cursos de anuncios y de contenido en redes.
+//
+// Las tres RPC comprueban is_platform_admin() por su cuenta, igual que las
+// de moderación: quien puede publicar formación en todos los paneles no
+// debería depender de qué ruta hizo la llamada.
+// =========================================================================
+
+export async function saveResourceSection(
+  _prev: ModerationState,
+  formData: FormData
+): Promise<ModerationState> {
+  const id = String(formData.get("id") ?? "").trim() || null;
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const position = Number(formData.get("position") ?? 0);
+
+  if (!title) return { error: "El curso necesita un nombre." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_resource_section_upsert", {
+    p_id: id,
+    p_title: title,
+    p_description: description || null,
+    p_position: Number.isFinite(position) ? position : 0,
+    p_published: formData.get("published") === "on",
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] section upsert failed:", error.message);
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/wefunnels");
+  revalidatePath("/f/panel/recursos");
+  return { success: true };
+}
+
+export async function saveResource(
+  _prev: ModerationState,
+  formData: FormData
+): Promise<ModerationState> {
+  const id = String(formData.get("id") ?? "").trim() || null;
+  const sectionId = String(formData.get("sectionId") ?? "").trim();
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const duration = String(formData.get("duration") ?? "").trim();
+  const position = Number(formData.get("position") ?? 0);
+
+  if (!sectionId) return { error: "Falta el curso al que pertenece." };
+  if (!title) return { error: "El vídeo necesita un título." };
+
+  // Se pega la dirección entera y aquí se queda solo el identificador. El
+  // parseo es del servidor y no del navegador: lo que llega del formulario
+  // es texto de alguien, y la columna solo admite los once caracteres del
+  // alfabeto de YouTube.
+  const youtubeId = extractYouTubeVideoId(String(formData.get("youtube") ?? ""));
+  if (!youtubeId) {
+    return {
+      error:
+        "No reconocimos ese enlace de YouTube. Pega la dirección del vídeo, o su identificador de once caracteres.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_resource_upsert", {
+    p_id: id,
+    p_section_id: sectionId,
+    p_title: title,
+    p_description: description || null,
+    p_youtube_id: youtubeId,
+    p_duration_label: duration || null,
+    p_position: Number.isFinite(position) ? position : 0,
+    p_published: formData.get("published") === "on",
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] resource upsert failed:", error.message);
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/wefunnels");
+  revalidatePath("/f/panel/recursos");
+  return { success: true };
+}
+
+export async function deleteResource(
+  _prev: ModerationState,
+  formData: FormData
+): Promise<ModerationState> {
+  const id = String(formData.get("id") ?? "").trim();
+  const kind = String(formData.get("kind") ?? "");
+
+  if (!id) return { error: "Falta qué borrar." };
+  if (kind !== "section" && kind !== "resource") return { error: "Tipo desconocido." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_resource_delete", {
+    p_id: id,
+    p_kind: kind,
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] resource delete failed:", error.message);
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/wefunnels");
+  revalidatePath("/f/panel/recursos");
+  return { success: true };
 }

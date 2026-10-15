@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClearButton, SuspendButton } from "./moderation-actions";
 import { CreateAccountForm, GrantLicenseForm } from "./console-forms";
+import { ResourceManager } from "./resource-forms";
 import { createClient } from "@/lib/supabase/server";
 
 // Spanish only, unlike the rest of the admin: WeFunnels ships in Spanish,
@@ -39,6 +40,8 @@ export default async function AdminWeFunnelsPage() {
     { data: distributors, error: consoleError },
     { data: licensed },
     { data: slugs },
+    { data: resourceSections },
+    { data: resourceItems },
   ] = await Promise.all([
     supabase
       .from("wefunnel_reviews")
@@ -60,6 +63,16 @@ export default async function AdminWeFunnelsPage() {
     // Para resolver quién invitó a quién. Va aparte de la lista de arriba
     // porque el que invitó puede no estar entre las últimas cien páginas.
     supabase.from("wefunnel_sites").select("id, slug"),
+    supabase
+      .from("wefunnel_resource_sections")
+      .select("id, title, description, position, published")
+      .order("position")
+      .order("created_at"),
+    supabase
+      .from("wefunnel_resources")
+      .select("id, section_id, title, description, youtube_id, duration_label, position, published")
+      .order("position")
+      .order("created_at"),
   ]);
 
   const openReviews = reviews ?? [];
@@ -290,6 +303,25 @@ export default async function AdminWeFunnelsPage() {
             })}
           </div>
         )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Recursos{" "}
+          <span className="text-muted-foreground">
+            ({resourceSections?.length ?? 0} cursos · {resourceItems?.length ?? 0} vídeos)
+          </span>
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Los cursos de anuncios y de contenido en redes que ve todo el mundo en su
+          panel, gratuito o distribuidor. Van aparte del curso de WeFunnels y de su PDF:
+          esto se añade y se reordena sin tocar código. Un curso sin publicar no se ve, y
+          uno publicado sin vídeos visibles tampoco se dibuja.
+        </p>
+        <ResourceManager
+          sections={resourceSections ?? []}
+          resources={resourceItems ?? []}
+        />
       </section>
 
       <section className="flex flex-col gap-3">

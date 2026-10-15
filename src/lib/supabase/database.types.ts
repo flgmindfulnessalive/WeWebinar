@@ -1829,6 +1829,73 @@ export interface Database {
           },
         ];
       };
+      wefunnel_resource_sections: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          position: number;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Update: {
+          title?: string;
+          description?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Relationships: [];
+      };
+      wefunnel_resources: {
+        Row: {
+          id: string;
+          section_id: string;
+          title: string;
+          description: string | null;
+          youtube_id: string;
+          duration_label: string | null;
+          position: number;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          section_id: string;
+          title: string;
+          description?: string | null;
+          youtube_id: string;
+          duration_label?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Update: {
+          section_id?: string;
+          title?: string;
+          description?: string | null;
+          youtube_id?: string;
+          duration_label?: string | null;
+          position?: number;
+          published?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wefunnel_resources_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "wefunnel_resource_sections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wefunnel_referrals: {
         Row: {
           id: string;
@@ -2191,6 +2258,33 @@ export interface Database {
       wefunnel_invitation_open: {
         Args: { p_slug: string };
         Returns: boolean;
+      };
+      wefunnel_resource_section_upsert: {
+        Args: {
+          p_id: string | null;
+          p_title: string;
+          p_description: string | null;
+          p_position: number;
+          p_published: boolean;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_resource_sections"]["Row"];
+      };
+      wefunnel_resource_upsert: {
+        Args: {
+          p_id: string | null;
+          p_section_id: string;
+          p_title: string;
+          p_description: string | null;
+          p_youtube_id: string;
+          p_duration_label: string | null;
+          p_position: number;
+          p_published: boolean;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_resources"]["Row"];
+      };
+      wefunnel_resource_delete: {
+        Args: { p_id: string; p_kind: string };
+        Returns: undefined;
       };
       wefunnel_grant_distributor: {
         Args: { p_account_id: string; p_included_months?: number };
