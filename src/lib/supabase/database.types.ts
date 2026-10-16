@@ -1840,6 +1840,7 @@ export interface Database {
           art_text: string | null;
           body: string;
           notes: string | null;
+          image_url: string | null;
           position: number;
           published: boolean;
           created_at: string;
@@ -1853,6 +1854,7 @@ export interface Database {
           art_text?: string | null;
           body: string;
           notes?: string | null;
+          image_url?: string | null;
           position?: number;
           published?: boolean;
         };
@@ -1863,6 +1865,7 @@ export interface Database {
           art_text?: string | null;
           body?: string;
           notes?: string | null;
+          image_url?: string | null;
           position?: number;
           published?: boolean;
         };
@@ -2314,6 +2317,7 @@ export interface Database {
           p_notes: string | null;
           p_position: number;
           p_published: boolean;
+          p_image_url: string | null;
         };
         Returns: Database["public"]["Tables"]["wefunnel_templates"]["Row"];
       };

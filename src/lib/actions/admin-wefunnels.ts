@@ -1,5 +1,7 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
@@ -413,6 +415,9 @@ export async function saveTemplate(
     p_notes: String(formData.get("notes") ?? "").trim() || null,
     p_position: Number.isFinite(position) ? position : 0,
     p_published: formData.get("published") === "on",
+    // Ya subido: el formulario manda la dirección que devolvió la subida,
+    // o la que ya tenía la fila. Vacío significa quitar el diseño.
+    p_image_url: String(formData.get("imageUrl") ?? "").trim() || null,
   });
 
   if (error) {
@@ -443,4 +448,53 @@ export async function deleteTemplate(
   revalidatePath("/admin/wefunnels");
   revalidatePath("/f/panel/recursos");
   return { success: true };
+}
+
+export type UploadState = { error: string } | { url: string } | null;
+
+const DESIGN_TYPES: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+};
+const DESIGN_MAX_BYTES = 8 * 1024 * 1024;
+
+// Sube un diseño y devuelve su dirección. Va aparte del guardado de la
+// plantilla porque un fichero y un formulario de texto no viajan igual:
+// así se ve la imagen antes de guardar, y un fallo al subir no se lleva
+// por delante el texto que ya estaba escrito.
+export async function uploadTemplateDesign(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const supabase = await createClient();
+  const { data: isAdmin } = await supabase.rpc("is_platform_admin");
+  if (!isAdmin) return { error: "No autorizado." };
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Elige una imagen." };
+
+  const ext = DESIGN_TYPES[file.type];
+  if (!ext) return { error: "El diseño tiene que ser PNG, JPG o WebP." };
+  if (file.size > DESIGN_MAX_BYTES) {
+    return { error: "El diseño no puede pasar de 8 MB." };
+  }
+
+  // Bucket propio y no el de avatars: aquello son fotos de personas y esto
+  // material de marketing. Mezclarlos haría imposible vaciar uno sin
+  // mirar el otro.
+  const admin = createAdminClient();
+  const path = `plantillas/${randomUUID()}.${ext}`;
+  const { error } = await admin.storage.from("wefunnels").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] design upload failed:", error.message);
+    return { error: "No pudimos subir el diseño. Intenta de nuevo." };
+  }
+
+  const { data } = admin.storage.from("wefunnels").getPublicUrl(path);
+  return { url: data.publicUrl };
 }

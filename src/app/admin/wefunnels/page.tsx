@@ -77,7 +77,7 @@ export default async function AdminWeFunnelsPage() {
       .order("created_at"),
     supabase
       .from("wefunnel_templates")
-      .select("id, kind, title, format_label, art_text, body, notes, position, published")
+      .select("id, kind, title, format_label, art_text, body, notes, image_url, position, published")
       .order("kind")
       .order("position")
       .order("created_at")
