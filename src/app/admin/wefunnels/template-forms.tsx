@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import {
   deleteTemplate,
   saveTemplate,
+  uploadTemplateDesign,
   type ModerationState,
 } from "@/lib/actions/admin-wefunnels";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ export type AdminTemplate = {
   art_text: string | null;
   body: string;
   notes: string | null;
+  image_url: string | null;
   position: number;
   published: boolean;
 };
@@ -51,6 +53,74 @@ function Result({ state }: { state: ModerationState }) {
 // Cada plantilla es su propio formulario con los valores puestos, igual que
 // los recursos: editar es cambiar un campo y pulsar Guardar, y la misma
 // acción crea o actualiza según lleve id.
+// La subida vive en su propio formulario anidado lógicamente -- no dentro
+// del <form> de la plantilla -- porque un <form> dentro de otro no existe
+// en HTML, y porque subir y guardar son dos momentos distintos: primero se
+// ve el diseño, después se guarda la plantilla entera.
+function DesignField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const [state, action] = useActionState(uploadTemplateDesign, null);
+  const uploaded = state && "url" in state ? state.url : null;
+
+  // El resultado de la subida solo se conoce tras renderizar; se adopta
+  // durante el render, como en use-form-values, para no encadenar efectos.
+  const [lastSeen, setLastSeen] = useState<string | null>(null);
+  if (uploaded && uploaded !== lastSeen) {
+    setLastSeen(uploaded);
+    onChange(uploaded);
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-md border p-3">
+      <Label htmlFor="design">Diseño descargable</Label>
+      {/* El valor que se guarda. Visible y editable: a veces el diseño ya
+          está en otro sitio y lo único que hace falta es apuntar ahí. */}
+      <Input
+        id="design"
+        name="imageUrl"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="/wefunnels/plantillas/… o una dirección completa"
+      />
+      {/* next/image exige declarar de antemano cada dominio, y esto puede
+          venir del almacenamiento, de public/ o de donde lo pongan. */}
+      {value && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={value}
+          alt="Vista previa del diseño"
+          className="max-h-48 w-auto rounded-md border object-contain"
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="text-sm"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const data = new FormData();
+            data.set("file", file);
+            startTransition(() => action(data));
+          }}
+        />
+        {state && "error" in state && (
+          <span className="text-sm text-destructive">{state.error}</span>
+        )}
+      </div>
+      <p className="m-0 text-xs text-muted-foreground">
+        PNG, JPG o WebP, hasta 8 MB. Para Instagram y Facebook, 1080 × 1350.
+      </p>
+    </div>
+  );
+}
+
 function TemplateForm({ template }: { template?: AdminTemplate }) {
   const [state, action] = useActionState(saveTemplate, null);
   const key = template?.id ?? "new";
@@ -66,6 +136,7 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
       artText: template?.art_text ?? "",
       body: template?.body ?? "",
       notes: template?.notes ?? "",
+      imageUrl: template?.image_url ?? "",
       published: template?.published ?? true,
     },
     { clearOnSuccess: !template, state }
@@ -145,6 +216,11 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
           maxLength={1200}
         />
       </div>
+
+      <DesignField
+        value={f.text("imageUrl").value}
+        onChange={(url) => f.text("imageUrl").onChange({ target: { value: url } })}
+      />
 
       <p className="m-0 text-sm text-muted-foreground">
         {"{TU_ENLACE}"} y {"{TU_NOMBRE}"} se sustituyen por los de cada distribuidor al

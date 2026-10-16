@@ -59,7 +59,7 @@ export default async function PanelResourcesPage() {
     licensed
       ? supabase
           .from("wefunnel_templates")
-          .select("id, kind, title, format_label, art_text, body, notes")
+          .select("id, kind, title, format_label, art_text, body, notes, image_url")
           .order("kind")
           .order("position")
           .order("created_at")

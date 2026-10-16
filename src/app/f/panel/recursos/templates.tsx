@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Download } from "lucide-react";
 
 export type Template = {
   id: string;
@@ -11,6 +11,7 @@ export type Template = {
   art_text: string | null;
   body: string;
   notes: string | null;
+  image_url: string | null;
 };
 
 // {TU_ENLACE} y {TU_NOMBRE} se sustituyen aquí y no al guardar la
@@ -105,9 +106,38 @@ export function TemplateList({
             )}
           </div>
 
+          {template.image_url && (
+            <div className="flex flex-col gap-3">
+              {/* next/image pediría declarar de antemano cada dominio, y
+                  esto puede venir del almacenamiento o de public/. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={template.image_url}
+                alt={`Diseño para «${template.title}»`}
+                loading="lazy"
+                className="w-full max-w-[380px] rounded-[12px] border border-[var(--wf-edge)]"
+              />
+              {/* download sin más: el navegador le pone el nombre del
+                  fichero, y lo que importa es que baje en vez de abrirse
+                  en una pestaña para que luego haya que guardarla a mano. */}
+              <a
+                href={template.image_url}
+                download
+                className="inline-flex min-h-[44px] w-fit items-center gap-2 rounded-[10px] border border-[var(--wf-edge)] px-4 text-[length:var(--wf-small)] font-semibold text-[var(--wf-fg-2)] no-underline"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Descargar el diseño
+              </a>
+            </div>
+          )}
+
           {template.art_text && (
             <Block
-              heading="Texto para la imagen"
+              heading={
+                template.image_url
+                  ? "Texto de la imagen, por si la rehaces"
+                  : "Texto para la imagen"
+              }
               text={fill(template.art_text, giftLink, ownerName)}
               copyLabel="Copiar"
             />
