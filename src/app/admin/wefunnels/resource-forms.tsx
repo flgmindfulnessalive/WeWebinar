@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useFormValues } from "./use-form-values";
 
 export type ResourceSection = {
   id: string;
@@ -57,15 +58,14 @@ function Result({ state }: { state: ModerationState }) {
 
 // Una casilla y no un Switch: esto vive dentro de un <form> que se envía
 // al servidor, y el Switch de la librería no publica un valor en FormData.
-function Published({ defaultChecked }: { defaultChecked: boolean }) {
+function Published(props: {
+  name: string;
+  checked: boolean;
+  onChange: (event: { target: { checked: boolean } }) => void;
+}) {
   return (
     <label className="flex items-center gap-2 text-sm">
-      <input
-        type="checkbox"
-        name="published"
-        defaultChecked={defaultChecked}
-        className="size-4"
-      />
+      <input type="checkbox" {...props} className="size-4" />
       Publicado
     </label>
   );
@@ -77,6 +77,15 @@ function Published({ defaultChecked }: { defaultChecked: boolean }) {
 // servidor sirve para crear y para actualizar, según lleve id o no.
 function SectionForm({ section }: { section?: ResourceSection }) {
   const [state, action] = useActionState(saveResourceSection, null);
+  const f = useFormValues(
+    {
+      title: section?.title ?? "",
+      description: section?.description ?? "",
+      position: String(section?.position ?? 0),
+      published: section?.published ?? false,
+    },
+    { clearOnSuccess: !section, state }
+  );
   return (
     <form action={action} className="flex flex-col gap-3">
       {section && <input type="hidden" name="id" value={section.id} />}
@@ -85,8 +94,8 @@ function SectionForm({ section }: { section?: ResourceSection }) {
           <Label htmlFor={`sec-title-${section?.id ?? "new"}`}>Nombre del curso</Label>
           <Input
             id={`sec-title-${section?.id ?? "new"}`}
-            name="title"
-            defaultValue={section?.title ?? ""}
+            {...f.text("title")}
+            maxLength={120}
             placeholder="Anuncios en Meta"
             required
           />
@@ -95,9 +104,8 @@ function SectionForm({ section }: { section?: ResourceSection }) {
           <Label htmlFor={`sec-pos-${section?.id ?? "new"}`}>Orden</Label>
           <Input
             id={`sec-pos-${section?.id ?? "new"}`}
-            name="position"
+            {...f.text("position")}
             type="number"
-            defaultValue={section?.position ?? 0}
           />
         </div>
       </div>
@@ -105,14 +113,14 @@ function SectionForm({ section }: { section?: ResourceSection }) {
         <Label htmlFor={`sec-desc-${section?.id ?? "new"}`}>Descripción</Label>
         <Textarea
           id={`sec-desc-${section?.id ?? "new"}`}
-          name="description"
+          {...f.text("description")}
           rows={2}
-          defaultValue={section?.description ?? ""}
+          maxLength={600}
           placeholder="Qué aprende quien lo haga."
         />
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <Published defaultChecked={section?.published ?? false} />
+        <Published {...f.check("published")} />
         <Submit>{section ? "Guardar curso" : "Crear curso"}</Submit>
         <Result state={state} />
       </div>
@@ -129,6 +137,17 @@ function ResourceForm({
 }) {
   const [state, action] = useActionState(saveResource, null);
   const key = item?.id ?? `new-${sectionId}`;
+  const f = useFormValues(
+    {
+      title: item?.title ?? "",
+      youtube: item ? `https://youtu.be/${item.youtube_id}` : "",
+      description: item?.description ?? "",
+      duration: item?.duration_label ?? "",
+      position: String(item?.position ?? 0),
+      published: item?.published ?? true,
+    },
+    { clearOnSuccess: !item, state }
+  );
   return (
     <form action={action} className="flex flex-col gap-3 rounded-md border p-3">
       <input type="hidden" name="sectionId" value={sectionId} />
@@ -138,8 +157,8 @@ function ResourceForm({
           <Label htmlFor={`res-title-${key}`}>Título del vídeo</Label>
           <Input
             id={`res-title-${key}`}
-            name="title"
-            defaultValue={item?.title ?? ""}
+            {...f.text("title")}
+            maxLength={160}
             placeholder="Cómo estructurar tu primera campaña"
             required
           />
@@ -148,8 +167,7 @@ function ResourceForm({
           <Label htmlFor={`res-yt-${key}`}>Enlace de YouTube</Label>
           <Input
             id={`res-yt-${key}`}
-            name="youtube"
-            defaultValue={item ? `https://youtu.be/${item.youtube_id}` : ""}
+            {...f.text("youtube")}
             placeholder="https://youtu.be/… o el <iframe> de Insertar"
             required
           />
@@ -163,9 +181,9 @@ function ResourceForm({
         <Label htmlFor={`res-desc-${key}`}>Descripción</Label>
         <Textarea
           id={`res-desc-${key}`}
-          name="description"
+          {...f.text("description")}
           rows={2}
-          defaultValue={item?.description ?? ""}
+          maxLength={600}
         />
       </div>
       <div className="grid gap-3 sm:grid-cols-[1fr_7rem]">
@@ -173,8 +191,8 @@ function ResourceForm({
           <Label htmlFor={`res-dur-${key}`}>Duración</Label>
           <Input
             id={`res-dur-${key}`}
-            name="duration"
-            defaultValue={item?.duration_label ?? ""}
+            {...f.text("duration")}
+            maxLength={24}
             placeholder="12 min"
           />
         </div>
@@ -182,14 +200,13 @@ function ResourceForm({
           <Label htmlFor={`res-pos-${key}`}>Orden</Label>
           <Input
             id={`res-pos-${key}`}
-            name="position"
+            {...f.text("position")}
             type="number"
-            defaultValue={item?.position ?? 0}
           />
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <Published defaultChecked={item?.published ?? true} />
+        <Published {...f.check("published")} />
         <Submit>{item ? "Guardar vídeo" : "Añadir vídeo"}</Submit>
         <Result state={state} />
       </div>
