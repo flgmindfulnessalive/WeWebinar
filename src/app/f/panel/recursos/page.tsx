@@ -29,6 +29,11 @@ export const metadata: Metadata = {
 export default async function PanelResourcesPage() {
   const viewer = await getPanelViewer();
   if (!viewer) redirect("/entrar?next=/panel/recursos");
+  // Igual que Mi curso, Mi página y Mis registros. El menú ya esconde esta
+  // entrada mientras no hay funnel, pero esconder no es cerrar: la
+  // dirección escrita a mano llegaba igual, y lo que esto enseña es cómo
+  // llevar tráfico a un funnel que todavía no existe.
+  if (!viewer.site) redirect("/panel");
 
   const supabase = await createClient();
 
