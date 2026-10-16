@@ -54,7 +54,7 @@ export function ClaimForm() {
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Carlos Medina"
-          className="w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-card)] px-3.5 py-3.5 text-[16px] text-white outline-none focus-visible:border-[var(--wf-accent)]"
+          className="w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-card)] px-3.5 py-3.5 text-[16px] text-[var(--wf-fg)] outline-none focus-visible:border-[var(--wf-accent)]"
         />
       </div>
 
@@ -77,7 +77,7 @@ export function ClaimForm() {
             setSlugTouched(true);
             setSlug(normalizeSlug(event.target.value));
           }}
-          className="w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-field)] px-3 py-3 text-[length:var(--wf-body)] text-white outline-none focus-visible:border-[var(--wf-accent)]"
+          className="w-full rounded-[10px] border border-[var(--wf-edge)] bg-[var(--wf-field)] px-3 py-3 text-[length:var(--wf-body)] text-[var(--wf-fg)] outline-none focus-visible:border-[var(--wf-accent)]"
           style={{ fontFamily: "var(--font-wefunnels-mono), ui-monospace, monospace" }}
         />
         <p className="m-0 text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">

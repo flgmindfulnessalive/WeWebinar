@@ -57,8 +57,8 @@ export function PanelNav({
             aria-current={active ? "page" : undefined}
             className={
               active
-                ? "rounded-[10px] border border-[var(--wf-focus)] bg-[var(--wf-card)] px-4 py-3 text-base font-semibold text-white no-underline"
-                : "rounded-[10px] border border-transparent px-4 py-3 text-base text-[var(--wf-fg-3)] no-underline hover:text-white"
+                ? "rounded-[10px] border border-[var(--wf-focus)] bg-[var(--wf-card)] px-4 py-3 text-base font-semibold text-[var(--wf-fg)] no-underline"
+                : "rounded-[10px] border border-transparent px-4 py-3 text-base text-[var(--wf-fg-3)] no-underline hover:text-[var(--wf-fg)]"
             }
           >
             {item.label}
