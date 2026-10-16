@@ -129,7 +129,7 @@ export function AccountMenu({
                 href={item.href}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-white focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
+                className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-[var(--wf-fg)] focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
               >
                 {item.label}
               </Link>
@@ -138,7 +138,7 @@ export function AccountMenu({
               href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Ayuda con WeFunnels")}`}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-white focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
+              className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-[var(--wf-fg)] focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
             >
               Ayuda y soporte
             </a>
