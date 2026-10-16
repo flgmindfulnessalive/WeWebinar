@@ -12,6 +12,36 @@ import { extractYouTubeVideoId } from "@/lib/youtube";
 
 export type ModerationState = { error: string } | { success: true } | null;
 
+// Una acción que lanza no deja un mensaje: deja la pantalla de error en
+// lugar de la página, y con ella se va todo lo que hubiera escrito sin
+// guardar. En el Superadmin eso es caro, porque aquí se escriben
+// descripciones largas y guiones enteros. Así que cualquier fallo que no
+// hayamos previsto vuelve como texto dentro del propio formulario, con lo
+// que diga el error, y el detalle completo se queda en el log del
+// servidor.
+//
+// No atrapa el caso contrario --- que el servidor no encuentre la acción
+// porque la página es de antes del último despliegue ---, que ocurre antes
+// de llegar aquí. De ese se encarga app/admin/error.tsx.
+function guarded(
+  label: string,
+  run: (prev: ModerationState, formData: FormData) => Promise<ModerationState>
+) {
+  return async function (
+    prev: ModerationState,
+    formData: FormData
+  ): Promise<ModerationState> {
+    try {
+      return await run(prev, formData);
+    } catch (err) {
+      console.error(`[wefunnel/admin] ${label} threw:`, err);
+      const detail = err instanceof Error ? err.message : String(err);
+      return { error: `No se pudo guardar: ${detail}` };
+    }
+  };
+}
+
+
 // Both RPCs check is_platform_admin() themselves. That check lives in the
 // database rather than only here because these are the calls that take a
 // stranger's page off the internet: the authority to make them should not
@@ -266,7 +296,7 @@ function tooLong(
   };
 }
 
-export async function saveResourceSection(
+async function saveResourceSectionImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -300,7 +330,7 @@ export async function saveResourceSection(
   return { success: true };
 }
 
-export async function saveResource(
+async function saveResourceImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -353,7 +383,7 @@ export async function saveResource(
   return { success: true };
 }
 
-export async function deleteResource(
+async function deleteResourceImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -383,7 +413,7 @@ export async function deleteResource(
 // Plantillas de contenido para distribuidores.
 // =========================================================================
 
-export async function saveTemplate(
+async function saveTemplateImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -430,7 +460,7 @@ export async function saveTemplate(
   return { success: true };
 }
 
-export async function deleteTemplate(
+async function deleteTemplateImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -498,3 +528,10 @@ export async function uploadTemplateDesign(
   const { data } = admin.storage.from("wefunnels").getPublicUrl(path);
   return { url: data.publicUrl };
 }
+
+// Las cinco del Superadmin de WeFunnels, envueltas: ver guarded().
+export const saveResourceSection = guarded("section upsert", saveResourceSectionImpl);
+export const saveResource = guarded("resource upsert", saveResourceImpl);
+export const deleteResource = guarded("resource delete", deleteResourceImpl);
+export const saveTemplate = guarded("template upsert", saveTemplateImpl);
+export const deleteTemplate = guarded("template delete", deleteTemplateImpl);
