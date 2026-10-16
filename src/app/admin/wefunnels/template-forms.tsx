@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useFormValues } from "./use-form-values";
 
 export type AdminTemplate = {
   id: string;
@@ -53,6 +54,22 @@ function Result({ state }: { state: ModerationState }) {
 function TemplateForm({ template }: { template?: AdminTemplate }) {
   const [state, action] = useActionState(saveTemplate, null);
   const key = template?.id ?? "new";
+  // Aquí es donde más dolía: un guion de reel son miles de caracteres, y
+  // perderlos porque sobraban veinte en otro campo no tiene arreglo para
+  // quien los escribió.
+  const f = useFormValues(
+    {
+      title: template?.title ?? "",
+      kind: template?.kind ?? "post",
+      position: String(template?.position ?? 0),
+      formatLabel: template?.format_label ?? "",
+      artText: template?.art_text ?? "",
+      body: template?.body ?? "",
+      notes: template?.notes ?? "",
+      published: template?.published ?? true,
+    },
+    { clearOnSuccess: !template, state }
+  );
   return (
     <form action={action} className="flex flex-col gap-3 rounded-md border p-3">
       {template && <input type="hidden" name="id" value={template.id} />}
@@ -61,8 +78,8 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
           <Label htmlFor={`t-title-${key}`}>Título</Label>
           <Input
             id={`t-title-${key}`}
-            name="title"
-            defaultValue={template?.title ?? ""}
+            {...f.text("title")}
+            maxLength={160}
             required
           />
         </div>
@@ -70,8 +87,7 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
           <Label htmlFor={`t-kind-${key}`}>Tipo</Label>
           <select
             id={`t-kind-${key}`}
-            name="kind"
-            defaultValue={template?.kind ?? "post"}
+            {...f.text("kind")}
             className="h-9 rounded-md border bg-transparent px-3 text-sm"
           >
             <option value="post">Publicación</option>
@@ -82,9 +98,8 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
           <Label htmlFor={`t-pos-${key}`}>Orden</Label>
           <Input
             id={`t-pos-${key}`}
-            name="position"
+            {...f.text("position")}
             type="number"
-            defaultValue={template?.position ?? 0}
           />
         </div>
       </div>
@@ -93,8 +108,8 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
         <Label htmlFor={`t-format-${key}`}>Formato</Label>
         <Input
           id={`t-format-${key}`}
-          name="formatLabel"
-          defaultValue={template?.format_label ?? ""}
+          {...f.text("formatLabel")}
+          maxLength={60}
           placeholder="Carrusel · Reel de 30 segundos · Imagen única"
         />
       </div>
@@ -103,9 +118,9 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
         <Label htmlFor={`t-art-${key}`}>Texto para la imagen</Label>
         <Textarea
           id={`t-art-${key}`}
-          name="artText"
+          {...f.text("artText")}
           rows={4}
-          defaultValue={template?.art_text ?? ""}
+          maxLength={2000}
           placeholder="Vacío en los reels."
         />
       </div>
@@ -114,9 +129,9 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
         <Label htmlFor={`t-body-${key}`}>Texto del post o guion</Label>
         <Textarea
           id={`t-body-${key}`}
-          name="body"
+          {...f.text("body")}
           rows={10}
-          defaultValue={template?.body ?? ""}
+          maxLength={6000}
           required
         />
       </div>
@@ -125,9 +140,9 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
         <Label htmlFor={`t-notes-${key}`}>Cómo usarla</Label>
         <Textarea
           id={`t-notes-${key}`}
-          name="notes"
+          {...f.text("notes")}
           rows={2}
-          defaultValue={template?.notes ?? ""}
+          maxLength={1200}
         />
       </div>
 
@@ -138,12 +153,7 @@ function TemplateForm({ template }: { template?: AdminTemplate }) {
 
       <div className="flex flex-wrap items-center gap-4">
         <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            name="published"
-            defaultChecked={template?.published ?? true}
-            className="size-4"
-          />
+          <input type="checkbox" {...f.check("published")} className="size-4" />
           Publicada
         </label>
         <Submit>{template ? "Guardar" : "Crear plantilla"}</Submit>

@@ -249,6 +249,21 @@ export async function grantDistributorLicense(
 // debería depender de qué ruta hizo la llamada.
 // =========================================================================
 
+// Los límites de las columnas, dichos en español antes de que lo diga
+// Postgres. Sin esto, pasarse de largo devolvía el texto crudo de la
+// restricción -- «violates check constraint ..._desc_len» -- que no dice
+// ni qué campo es, ni cuánto sobra, ni está en el idioma de quien lo lee.
+function tooLong(
+  label: string,
+  value: string,
+  max: number
+): { error: string } | null {
+  if (value.length <= max) return null;
+  return {
+    error: `${label} no puede pasar de ${max} caracteres. Tiene ${value.length}: sobran ${value.length - max}.`,
+  };
+}
+
 export async function saveResourceSection(
   _prev: ModerationState,
   formData: FormData
@@ -259,6 +274,10 @@ export async function saveResourceSection(
   const position = Number(formData.get("position") ?? 0);
 
   if (!title) return { error: "El curso necesita un nombre." };
+  const long =
+    tooLong("El nombre del curso", title, 120) ??
+    tooLong("La descripción", description, 600);
+  if (long) return long;
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("wefunnel_resource_section_upsert", {
@@ -292,6 +311,11 @@ export async function saveResource(
 
   if (!sectionId) return { error: "Falta el curso al que pertenece." };
   if (!title) return { error: "El vídeo necesita un título." };
+  const longVideo =
+    tooLong("El título", title, 160) ??
+    tooLong("La descripción", description, 600) ??
+    tooLong("La duración", duration, 24);
+  if (longVideo) return longVideo;
 
   // Se pega la dirección entera y aquí se queda solo el identificador. El
   // parseo es del servidor y no del navegador: lo que llega del formulario
@@ -370,6 +394,13 @@ export async function saveTemplate(
   if (kind !== "post" && kind !== "reel") return { error: "Elige publicación o reel." };
   if (!title) return { error: "La plantilla necesita un título." };
   if (!body) return { error: "La plantilla necesita su texto." };
+  const longTemplate =
+    tooLong("El título", title, 160) ??
+    tooLong("El formato", String(formData.get("formatLabel") ?? "").trim(), 60) ??
+    tooLong("El texto para la imagen", String(formData.get("artText") ?? "").trim(), 2000) ??
+    tooLong("El texto del post o guion", body, 6000) ??
+    tooLong("El «cómo usarla»", String(formData.get("notes") ?? "").trim(), 1200);
+  if (longTemplate) return longTemplate;
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("wefunnel_template_upsert", {
