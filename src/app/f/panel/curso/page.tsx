@@ -16,9 +16,9 @@ import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
 // quien no la tiene: es lo mismo que hace la diapositiva índice, y explica
 // qué es Distribuidor antes de que la tarjeta de abajo lo ofrezca.
 const TOPICS = [
-  { n: "01", title: "Tu funnel listo" },
+  { n: "01", title: "Tu base: página y panel" },
   { n: "02", title: "Contenido que atrae" },
-  { n: "03", title: "Tráfico con anuncios" },
+  { n: "03", title: "Anuncios: las dos rutas" },
   { n: "04", title: "La conversación" },
 ];
 const TOPIC_LICENCIA = { n: "05", title: "Regalar funnels" };
@@ -239,7 +239,7 @@ export default async function PanelCoursePage() {
             </>
           ) : (
             <p className="m-0 mt-3 max-w-[52ch] text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
-              29 páginas con el método entero. La versión en vídeo la estamos grabando y
+              44 páginas con el método entero. La versión en vídeo la estamos grabando y
               te avisamos por correo en cuanto esté
               {licensed ? ", sin coste." : ", incluida con tu cuenta gratuita."}
             </p>
