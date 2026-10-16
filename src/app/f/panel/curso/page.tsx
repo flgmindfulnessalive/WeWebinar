@@ -23,14 +23,16 @@ const TOPICS = [
 ];
 const TOPIC_LICENCIA = { n: "05", title: "Regalar funnels" };
 
-// Dos públicos miran esta pantalla y hasta ahora veían las mismas tres
-// preguntas, escritas para uno solo. Quien tiene licencia leía «¿qué pasa
-// si decido no activar Distribuidor?» teniéndolo activado, y quien no la
-// tiene leía sobre los dos meses de Starter y sobre un 20% que no cobra.
-const QUESTIONS_GRATIS: [string, string][] = [
+// Las preguntas son sobre el curso, no sobre la licencia. Aquí llega
+// gente que acaba de recibir su funnel: un acordeón que abre hablando
+// del 20%, de Starter o de referidos obliga a entender tres cosas que
+// esta pantalla no ha explicado todavía. Esas condiciones viven donde
+// se explican enteras y en orden -- el propio curso, y la pantalla de
+// Distribuidor -- y no se asoman aquí a media frase.
+const QUESTIONS_CURSO: [string, string][] = [
   [
-    "¿Qué pasa si decido no activar Distribuidor?",
-    "Tu funnel, tu panel y este curso siguen siendo gratuitos, de por vida. Activar Distribuidor es opcional, y lo que añade es poder regalar funnels a otras personas.",
+    "¿Por dónde empiezo?",
+    "Por publicar tu página. Después, tres publicaciones en tu primera semana y contestar el mismo día a quien se registre. Lo demás del curso viene encima de eso.",
   ],
   [
     "¿El curso caduca?",
@@ -42,19 +44,11 @@ const QUESTIONS_GRATIS: [string, string][] = [
   ],
 ];
 
-const QUESTIONS_DISTRIBUIDOR: [string, string][] = [
-  [
-    "¿Tengo que continuar pagando Starter después de los 2 meses?",
-    "No. Continuar con Starter de WeWebinars es opcional. Tu licencia, tu página de regalo, los funnels que ya repartiste y tu 20% siguen activos igual.",
-  ],
-  [
-    "¿Sobre qué se calcula el 20%?",
-    "Sobre los planes de WeWebinars de tus referidos directos, mensuales o anuales, mientras mantengan su suscripción. No hay comisión por la licencia Distribuidor ni por un segundo nivel.",
-  ],
-  [
-    "¿Necesito un plan activo para cobrar el 20%?",
-    "No. Se te paga tengas plan o no lo tengas. La única condición está sobre la cuenta que llegó por ti, que es la que tiene que estar pagando el suyo.",
-  ],
+// La única que depende de quién mira: a quien todavía no tiene licencia
+// le acaba de aparecer la tarjeta de Distribuidor justo encima.
+const QUESTION_GRATIS: [string, string] = [
+  "¿Qué pasa si decido no activar Distribuidor?",
+  "Tu funnel, tu panel y este curso siguen siendo gratuitos, de por vida. Activar Distribuidor es opcional, y lo que añade es poder regalar funnels a otras personas.",
 ];
 
 function clock(seconds: number): string {
@@ -292,7 +286,7 @@ export default async function PanelCoursePage() {
       {!licensed && <CourseOffer />}
 
       <div className="max-w-[740px]">
-        {(licensed ? QUESTIONS_DISTRIBUIDOR : QUESTIONS_GRATIS).map(([question, answer]) => (
+        {(licensed ? QUESTIONS_CURSO : [QUESTION_GRATIS, ...QUESTIONS_CURSO]).map(([question, answer]) => (
           <details key={question} className="border-b border-[var(--wf-edge-soft-2)] py-4">
             <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-4 text-[length:var(--wf-body)] font-medium text-[var(--wf-fg)] marker:content-none [&::-webkit-details-marker]:hidden">
               {question}
