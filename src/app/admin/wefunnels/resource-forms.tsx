@@ -150,9 +150,13 @@ function ResourceForm({
             id={`res-yt-${key}`}
             name="youtube"
             defaultValue={item ? `https://youtu.be/${item.youtube_id}` : ""}
-            placeholder="https://youtu.be/…"
+            placeholder="https://youtu.be/… o el <iframe> de Insertar"
             required
           />
+          <p className="m-0 text-xs text-muted-foreground">
+            Vale el enlace, o el bloque entero que da Compartir → Insertar. De cualquiera
+            de los dos se guarda solo el identificador del vídeo.
+          </p>
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
