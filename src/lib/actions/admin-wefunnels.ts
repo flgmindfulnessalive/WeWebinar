@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -11,6 +12,66 @@ import { normalizeSlug, proposeSlug } from "@/lib/wefunnels/slug";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 
 export type ModerationState = { error: string } | { success: true } | null;
+
+// Invalidar la caché pasa DESPUÉS de escribir, así que un fallo aquí no
+// debería convertir un guardado bueno en un error en pantalla: la fila ya
+// está, y lo único que se pierde es que una ruta tarde un poco más en
+// enterarse.
+function refresh(...paths: string[]) {
+  for (const path of paths) {
+    try {
+      revalidatePath(path);
+    } catch (err) {
+      console.error(`[wefunnel/admin] revalidatePath(${path}) failed:`, err);
+    }
+  }
+}
+
+// Una acción que lanza no deja un mensaje: deja la pantalla de error en
+// lugar de la página, y con ella se va todo lo que hubiera escrito sin
+// guardar. En el Superadmin eso es caro, porque aquí se escriben
+// descripciones largas y guiones enteros. Así que cualquier fallo que no
+// hayamos previsto vuelve como texto dentro del propio formulario, con lo
+// que diga el error, y el detalle completo se queda en el log del
+// servidor.
+//
+// No atrapa el caso contrario --- que el servidor no encuentre la acción
+// porque la página es de antes del último despliegue ---, que ocurre antes
+// de llegar aquí. De ese se encarga app/admin/error.tsx.
+function guarded(
+  label: string,
+  run: (prev: ModerationState, formData: FormData) => Promise<ModerationState>
+) {
+  return async function (
+    prev: ModerationState,
+    formData: FormData
+  ): Promise<ModerationState> {
+    // Una línea al entrar y otra al salir. Con esto el log del servidor
+    // distingue el caso que no se puede ver desde la pantalla: si no
+    // aparece ni el "start", la petición no llegó nunca a la acción --
+    // se quedó antes, en el proxy o en el propio Next -- y entonces el
+    // fallo no está aquí dentro.
+    console.info(`[wefunnel/admin] ${label}: start`);
+    try {
+      const result = await run(prev, formData);
+      console.info(
+        `[wefunnel/admin] ${label}: ${result && "error" in result ? "rejected" : "ok"}`
+      );
+      return result;
+    } catch (err) {
+      // redirect() y notFound() lanzan a propósito: son control de flujo
+      // de Next y atraparlos los rompería en silencio.
+      unstable_rethrow(err);
+      console.error(`[wefunnel/admin] ${label} threw:`, err);
+      const digest = (err as { digest?: string })?.digest;
+      const detail = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      return {
+        error: `No se pudo guardar — ${detail}${digest ? ` · ref ${digest}` : ""}`,
+      };
+    }
+  };
+}
+
 
 // Both RPCs check is_platform_admin() themselves. That check lives in the
 // database rather than only here because these are the calls that take a
@@ -41,7 +102,7 @@ export async function setSiteSuspended(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return { success: true };
 }
 
@@ -62,7 +123,7 @@ export async function clearReview(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return { success: true };
 }
 
@@ -203,7 +264,7 @@ export async function createWeFunnelAccount(
     return { error: readable(error) };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return {
     success: `${name}: ${WEFUNNELS_HOST}/${slug}${grant ? " · con licencia" : ""}${
       created ? "" : " · se reutilizó su usuario"
@@ -239,7 +300,7 @@ export async function grantDistributorLicense(
     return { error: readable(error) };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return { success: `Licencia concedida a ${email}.` };
 }
 
@@ -266,7 +327,7 @@ function tooLong(
   };
 }
 
-export async function saveResourceSection(
+async function saveResourceSectionImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -295,12 +356,11 @@ export async function saveResourceSection(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
-export async function saveResource(
+async function saveResourceImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -348,12 +408,11 @@ export async function saveResource(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
-export async function deleteResource(
+async function deleteResourceImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -374,8 +433,7 @@ export async function deleteResource(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
@@ -383,7 +441,7 @@ export async function deleteResource(
 // Plantillas de contenido para distribuidores.
 // =========================================================================
 
-export async function saveTemplate(
+async function saveTemplateImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -425,12 +483,11 @@ export async function saveTemplate(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
-export async function deleteTemplate(
+async function deleteTemplateImpl(
   _prev: ModerationState,
   formData: FormData
 ): Promise<ModerationState> {
@@ -445,8 +502,7 @@ export async function deleteTemplate(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
@@ -498,3 +554,10 @@ export async function uploadTemplateDesign(
   const { data } = admin.storage.from("wefunnels").getPublicUrl(path);
   return { url: data.publicUrl };
 }
+
+// Las cinco del Superadmin de WeFunnels, envueltas: ver guarded().
+export const saveResourceSection = guarded("section upsert", saveResourceSectionImpl);
+export const saveResource = guarded("resource upsert", saveResourceImpl);
+export const deleteResource = guarded("resource delete", deleteResourceImpl);
+export const saveTemplate = guarded("template upsert", saveTemplateImpl);
+export const deleteTemplate = guarded("template delete", deleteTemplateImpl);
