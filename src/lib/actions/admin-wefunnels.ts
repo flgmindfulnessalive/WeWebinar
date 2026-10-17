@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -11,6 +12,20 @@ import { normalizeSlug, proposeSlug } from "@/lib/wefunnels/slug";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 
 export type ModerationState = { error: string } | { success: true } | null;
+
+// Invalidar la caché pasa DESPUÉS de escribir, así que un fallo aquí no
+// debería convertir un guardado bueno en un error en pantalla: la fila ya
+// está, y lo único que se pierde es que una ruta tarde un poco más en
+// enterarse.
+function refresh(...paths: string[]) {
+  for (const path of paths) {
+    try {
+      revalidatePath(path);
+    } catch (err) {
+      console.error(`[wefunnel/admin] revalidatePath(${path}) failed:`, err);
+    }
+  }
+}
 
 // Una acción que lanza no deja un mensaje: deja la pantalla de error en
 // lugar de la página, y con ella se va todo lo que hubiera escrito sin
@@ -31,12 +46,28 @@ function guarded(
     prev: ModerationState,
     formData: FormData
   ): Promise<ModerationState> {
+    // Una línea al entrar y otra al salir. Con esto el log del servidor
+    // distingue el caso que no se puede ver desde la pantalla: si no
+    // aparece ni el "start", la petición no llegó nunca a la acción --
+    // se quedó antes, en el proxy o en el propio Next -- y entonces el
+    // fallo no está aquí dentro.
+    console.info(`[wefunnel/admin] ${label}: start`);
     try {
-      return await run(prev, formData);
+      const result = await run(prev, formData);
+      console.info(
+        `[wefunnel/admin] ${label}: ${result && "error" in result ? "rejected" : "ok"}`
+      );
+      return result;
     } catch (err) {
+      // redirect() y notFound() lanzan a propósito: son control de flujo
+      // de Next y atraparlos los rompería en silencio.
+      unstable_rethrow(err);
       console.error(`[wefunnel/admin] ${label} threw:`, err);
-      const detail = err instanceof Error ? err.message : String(err);
-      return { error: `No se pudo guardar: ${detail}` };
+      const digest = (err as { digest?: string })?.digest;
+      const detail = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      return {
+        error: `No se pudo guardar — ${detail}${digest ? ` · ref ${digest}` : ""}`,
+      };
     }
   };
 }
@@ -71,7 +102,7 @@ export async function setSiteSuspended(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return { success: true };
 }
 
@@ -92,7 +123,7 @@ export async function clearReview(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return { success: true };
 }
 
@@ -233,7 +264,7 @@ export async function createWeFunnelAccount(
     return { error: readable(error) };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return {
     success: `${name}: ${WEFUNNELS_HOST}/${slug}${grant ? " · con licencia" : ""}${
       created ? "" : " · se reutilizó su usuario"
@@ -269,7 +300,7 @@ export async function grantDistributorLicense(
     return { error: readable(error) };
   }
 
-  revalidatePath("/admin/wefunnels");
+  refresh("/admin/wefunnels");
   return { success: `Licencia concedida a ${email}.` };
 }
 
@@ -325,8 +356,7 @@ async function saveResourceSectionImpl(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
@@ -378,8 +408,7 @@ async function saveResourceImpl(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
@@ -404,8 +433,7 @@ async function deleteResourceImpl(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
@@ -455,8 +483,7 @@ async function saveTemplateImpl(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
@@ -475,8 +502,7 @@ async function deleteTemplateImpl(
     return { error: error.message };
   }
 
-  revalidatePath("/admin/wefunnels");
-  revalidatePath("/f/panel/recursos");
+  refresh("/admin/wefunnels", "/f/panel/recursos");
   return { success: true };
 }
 
