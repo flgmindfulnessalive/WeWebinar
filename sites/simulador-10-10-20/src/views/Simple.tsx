@@ -119,8 +119,12 @@ function LeadersByGen({ value, onChange, gens }: { value: SimpleInput; onChange:
   const setGen = (i: number, v: number | null) => { const next = [0, 1, 2, 3, 4, 5].map((j) => limits[j] ?? null); next[i] = v; onChange(next); };
   const manual = limits.some((x) => x != null);
   return (
-    <fieldset className="sgens">
-      <legend>Líderes por generación <small>Mentor Match · 1★ Director o más</small></legend>
+    <details className={`sgens${newFrom != null ? " is-new" : ""}`}>
+      <summary className="sgens__sum">
+        <span className="sgens__title">Líderes por generación <small>Mentor Match · 1★ Director o más</small></span>
+        <span className="sgens__peek">{open ? gens.filter((g) => g.unlocked).map((g) => `Gen ${g.gen}: ${fmt(g.used)}`).join(" · ") : "Se abre en 1★ Director"}{open && open < 6 ? ` · ${6 - open} por abrir` : ""}</span>
+      </summary>
+      <div className="sgens__body">
       {gens.map((g, i) => g.unlocked ? (
         <div key={g.gen} className={`sgen-row${newFrom != null && g.gen > newFrom ? " is-new" : ""}`}>
           <Stepper label={`Gen ${g.gen} · ${g.pct} %`} hint={g.max ? `caben ${fmt(g.max)}${g.picks.length ? `: ${g.picks.map((x) => `${fmt(x.count)} × ${rankById[x.rank].short}`).join(" · ")}` : ""}` : "no caben líderes con este volumen"}
@@ -134,7 +138,8 @@ function LeadersByGen({ value, onChange, gens }: { value: SimpleInput; onChange:
       {manual
         ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange([null, null, null, null, null, null])}>Usar la propuesta automática</button>
         : <p className="sdir__note">Propuesta automática: los líderes que caben con tu volumen, de todos los rangos. Los de cada generación están dentro de las organizaciones de la generación de arriba.</p>}
-    </fieldset>
+      </div>
+    </details>
   );
 }
 
@@ -202,8 +207,8 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
             onChange={(v) => set({ activeDirects: v, buildingDirects: Math.min(value.buildingDirects, v) })} />
           <Stepper label="De ellos, construyendo" hint="Tienen equipo debajo: tu organización se reparte entre ellos" value={value.buildingDirects} max={value.activeDirects} onChange={(v) => set({ buildingDirects: v })} />
           <Stepper label="Clientes de tu organización" hint={`De los socios de toda tu organización (no los tuyos) · equipo del patrocinador − organización binaria · activos: ${fmt(o.activeCustomers)} (≈ ${o.customersPerSocio.toFixed(2)} por socio activo)`} value={value.orgCustomers} onChange={(v) => set({ orgCustomers: v })} />
-          <Stepper label="Clientes minoristas" hint="Retail" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
-          <Stepper label="Clientes preferentes" value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
+          <Stepper label="Tus clientes minoristas" hint="Retail · los inscribiste tú" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
+          <Stepper label="Tus clientes preferentes" hint="Los inscribiste tú" value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
           <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />
           <Stepper label="Tus sobres al mes" value={value.ownSachets} onChange={(v) => set({ ownSachets: v })} />
           <Stepper label="PV por sobre" value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />

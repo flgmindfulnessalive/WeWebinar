@@ -128,7 +128,8 @@
 [data-theme="light"] .snext__bar span { background: linear-gradient(90deg, #8b6cff, #2ec4b6); box-shadow: 0 4px 14px rgba(139, 108, 255, .3); }
 [data-theme="light"] .sonce strong { color: var(--money); }
 [data-theme="light"] .sgens { background: linear-gradient(180deg, rgba(243, 239, 255, .7), rgba(255, 255, 255, .4)); border-color: #e4dcff; }
-[data-theme="light"] .sgens legend { color: #5b45c9; }
+[data-theme="light"] .sgens__title, [data-theme="light"] .sgens__sum::after { color: #5b45c9; }
+[data-theme="light"] .sgens__sum:hover { background: rgba(139, 108, 255, .06); }
 [data-theme="light"] .sgen-row__lock { border-color: #d9d4ee; color: var(--text-3); background: rgba(255, 255, 255, .6); }
 [data-theme="light"] .sbar { background: linear-gradient(135deg, #6b4fe0, #0f8f87); color: #fff; box-shadow: 0 16px 40px rgba(91, 69, 201, .28); }
 [data-theme="light"] .sbar small { color: rgba(255, 255, 255, .9); }
