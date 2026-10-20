@@ -1,6 +1,6 @@
 import { useId, useMemo } from "react";
 import { usd } from "../engine/decimal";
-import { simpleCalc, type SimpleInput } from "../engine/simple";
+import { activeDirects, simpleCalc, type SimpleInput } from "../engine/simple";
 import { rankById } from "../plan/plan-10-10-20";
 import { t } from "../i18n";
 import { NumberInput } from "../ui/primitives";
@@ -35,7 +35,7 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
         <p className="sform__note">Cuenta a tu organización como <b>activa</b> (todos compran cada mes). El % de inactivos solo se aplica a tus directos.</p>
         <Stepper label="Socios en tu organización" hint="Activos · incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
         <Stepper label="De ellos, tus directos" hint="Los que inscribiste tú" value={value.directs} onChange={(v) => set({ directs: v })} />
-        <Stepper label="% de tus directos activos" hint="Los que compran cada mes" value={value.activeDirectsPct} step={5} max={100} onChange={(v) => set({ activeDirectsPct: v })} />
+        <Stepper label="% de tus directos activos" hint={`= ${activeDirects(value).toLocaleString("es-419")} de ${value.directs.toLocaleString("es-419")} directos compran cada mes`} value={value.activeDirectsPct} step={5} max={100} onChange={(v) => set({ activeDirectsPct: v })} />
         <Stepper label="Clientes minoristas" hint="Retail" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
         <Stepper label="Clientes preferentes" value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
         <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />

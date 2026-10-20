@@ -142,7 +142,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const pt = comp("personal-team");
   lines.push({
     id: "personal-team", name: "10 % de tus directos", monthly: pt.monthly ?? ZERO, estimated: false,
-    how: [`${fmt(active)} directos activos × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(active * sx * pv)} PV${inactive ? ` (${fmt(inactive)} inactivos no suman)` : ""}`, `10 % de ese volumen al mes (Bono de Nivel Comprimido, desde 1★ Gerente).`],
+    how: [`${fmt(active)} directos activos (${fmt(s.activeDirectsPct)} % de ${fmt(s.directs)}) × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(active * sx * pv)} PV${inactive ? ` (${fmt(inactive)} inactivos no suman)` : ""}`, `10 % de ese volumen al mes (Bono de Nivel Comprimido, desde 1★ Gerente).`],
     why: pt.status === "no_elegible" ? pt.reasons[0] : undefined,
   });
 
