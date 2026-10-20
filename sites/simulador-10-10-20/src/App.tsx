@@ -93,7 +93,6 @@ function PrintSummary({ input }: { input: ReturnType<typeof useAppState>["input"
       <h2>Supuestos</h2>
       <ul>
         <li>Calificación: {a.qualificationPeriod}; compras: {a.orderTiming}; región: {a.region}; líneas: {a.linesTree}; PV propio en QDV: {a.includeOwnPvInQdv ? "sí" : "no"}.</li>
-        <li>Binario hipotético: {a.assumeBinary ? "activado" : "no"}; Mentor Match hipotético: {a.assumeMentor ? "activado" : "no"}.</li>
         {input.products.map((p) => <li key={p.id}>{p.name}: calificación {vol(p.qv)}, comisionable {vol(p.cv)}, margen {p.retailMargin == null ? "—" : usd(p.retailMargin)}.</li>)}
       </ul>
       {r.ok ? (

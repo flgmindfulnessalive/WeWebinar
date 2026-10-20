@@ -152,52 +152,55 @@ describe("Patrocinio frente a colocación", () => {
   });
 });
 
-describe("Binario y Mentor Match: pendientes salvo supuesto explícito", () => {
+describe("Bono Binario: pierna débil acumulada (indicación del propietario)", () => {
   const org = quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 20, productId: "sobre", qty: 1 }], distribution: { lines: 20, largestPct: 5, secondPct: 5, leftPct: 50 } });
-  it("por defecto el binario está pendiente (sin importe, no 0)", () => {
-    const c = comp(simulate(qin(org)), "binary");
-    expect(c.status).toBe("pendiente");
-    expect(c.monthly).toBeNull();
-  });
-  it("con el supuesto: 10 % de la pierna menor, tope semanal de 1★ Gerente", () => {
-    const r = simulate(qin(org, { assumeBinary: true, orderTiming: "semana1" }));
+  it("10 % de la pierna débil con el rango 1★ Gerente", () => {
+    const r = simulate(qin(org, { orderTiming: "semana1" }));
     expect(r.paidRank).toBe("m1"); // QDV 1000 ≥ 750
     const c = comp(r, "binary");
-    expect(c.status).toBe("hipotetico");
-    // pierna menor 400 cv × 10 % = 40 (bajo el tope de 100)
-    expect(money(c.monthly)).toBe("40.00");
-    expect(money(r.totals.recurring)).toBe(money(comp(r, "personal-team").monthly!.plus(comp(r, "retail").monthly ?? 0).plus(comp(r, "customer").monthly ?? 0)));
+    expect(c.status).toBe("calculado");
+    expect(money(c.monthly)).toBe("40.00"); // pierna débil 400 × 10 %
   });
   it("tope semanal aplicado", () => {
     const big = quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 60, productId: "sobre", qty: 1 }], distribution: { lines: 60, largestPct: 2, secondPct: 2, leftPct: 50 } });
-    const r = simulate(qin(big, { assumeBinary: true, orderTiming: "semana1" }));
+    const r = simulate(qin(big, { orderTiming: "semana1" }));
     expect(r.paidRank).toBe("m3"); // 60 × 50 = 3 000 QDV
+    expect(money(comp(r, "binary").monthly)).toBe("120.00"); // 1 200 × 10 % = 120 < tope 1 500
+  });
+  it("el sobrante de la pierna fuerte se acumula a la semana siguiente", () => {
+    const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
+    // Escalonado: tú compras en la semana 1, a en la 2 y b en la 3.
+    const people = [bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 1000), bp("b", "tu", ["tu", "R"], 1000)];
+    const r = simulate(din(people, { orderTiming: "escalonado" }, unit));
+    expect(r.paidRank).toBe("m2");
     const c = comp(r, "binary");
-    expect(money(c.monthly)).toBe("120.00"); // pierna menor 1 200 × 10 % = 120 < tope 1 500
+    // Semana 2: izq. 1 000, der. 0 → débil 0 (se acumula). Semana 3: 1 000 / 1 000 → 10 % = 100.
+    expect(c.weekly!.map(money)).toEqual(["0.00", "0.00", "100.00", "0.00"]);
+    expect(money(c.monthly)).toBe("100.00");
   });
   it("Mentor Match en modo rápido: información insuficiente", () => {
-    const c = comp(simulate(qin(org, { assumeBinary: true, assumeMentor: true })), "mentor");
+    const c = comp(simulate(qin(org)), "mentor");
     expect(c.status).toBe("pendiente");
     expect(c.reasons.join(" ")).toMatch(/Información insuficiente/);
   });
 });
 
-describe("Mentor Match con supuestos (modo detallado)", () => {
+describe("Mentor Match: % × (Nivel + Binario) de tus generaciones", () => {
   const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
-  it("20 % del binario de la Gen 1 con tope por BP", () => {
+  it("20 % de lo que gana cada directo en Nivel + Binario", () => {
     const people = [
       bp("tu", null, null, 110), bp("a", "tu", ["tu", "L"], 110), bp("b", "tu", ["tu", "R"], 110),
       bp("a1", "a", ["a", "L"], 2500), bp("a2", "a", ["a", "R"], 2500),
       bp("b1", "b", ["b", "L"], 2500), bp("b2", "b", ["b", "R"], 2500),
     ];
-    const r = simulate(din(people, { assumeBinary: true, assumeMentor: true, orderTiming: "semana1" }, unit));
+    const r = simulate(din(people, { orderTiming: "semana1" }, unit));
     // Tus líneas: 110 + 2 500 + 2 500 = 5 110 cada una → QDV 10 000 tras el 50 % → 2★ Director
     expect(r.paidRank).toBe("d2");
     // a: piernas 2 500 / 2 500 → rango 1★ Director (QDV 5 000, equilibrio ok) → binario 11 % × 2 500 = 275
     const m = comp(r, "mentor");
-    expect(m.status).toBe("hipotetico");
-    // 20 % × 275 = 55 por persona → 2 × 55 = 110 (tope 250 por BP no se alcanza)
-    expect(money(m.monthly)).toBe("110.00");
+    expect(m.status).toBe("calculado");
+    // a y b: Nivel 10 % × 5 000 = 500 + Binario 11 % × 2 500 = 275 → 775 × 20 % = 155 cada uno → 310
+    expect(money(m.monthly)).toBe("310.00");
   });
 });
 
@@ -293,7 +296,7 @@ describe("Entradas inválidas y datos faltantes", () => {
 describe("Totales separados", () => {
   it("lo puntual no suma a lo recurrente", () => {
     const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 15, productId: "sobre", qty: 1 }], distribution: { lines: 15, largestPct: 100 / 15, secondPct: 100 / 15, leftPct: 50 }, enrollments: [{ packageId: "premium", count: 1 }] }), { orderTiming: "semana1" }, products));
-    expect(money(r.totals.recurring)).toBe("60.00");
+    expect(money(r.totals.recurring)).toBe("90.00"); // 10 % 60 + binario 30
     expect(money(r.totals.oneTime)).toBe("405.00");
   });
 });
@@ -305,7 +308,7 @@ describe("Tope semanal del binario", () => {
     const p = [{ ...SOBRE, id: "x", name: "x", qv: 0, cv: 2000, retailMargin: null }, ...unit];
     const people = [bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 750), bp("b", "tu", ["tu", "R"], 749),
       { ...bp("a2", "a", ["a", "L"]), orders: [{ productId: "x", qty: 1 }] }, { ...bp("b2", "b", ["b", "L"]), orders: [{ productId: "x", qty: 1 }] }];
-    const r = simulate(din(people, { assumeBinary: true, orderTiming: "semana1" }, p));
+    const r = simulate(din(people, { orderTiming: "semana1" }, p));
     expect(r.paidRank).toBe("m1");
     const c = comp(r, "binary");
     expect(money(c.weekly![0])).toBe("100.00");
@@ -313,7 +316,7 @@ describe("Tope semanal del binario", () => {
   });
 });
 
-describe("Tope por BP del Mentor Match (supuesto)", () => {
+describe("Tope por socio del Mentor Match", () => {
   it("20 % de un binario de 2 500 = 500 → se paga el tope de 250 de 1★ Director", () => {
     const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
     const big = [{ ...SOBRE, id: "x", name: "x", qv: 0, cv: 30000, retailMargin: null }, ...unit];
@@ -322,7 +325,7 @@ describe("Tope por BP del Mentor Match (supuesto)", () => {
       bp("a1", "a", ["a", "L"], 2500), bp("a2", "a", ["a", "R"], 2500),
       { ...bp("a1x", "a1", ["a1", "L"]), orders: [{ productId: "x", qty: 1 }] }, { ...bp("a2x", "a2", ["a2", "L"]), orders: [{ productId: "x", qty: 1 }] },
     ];
-    const r = simulate(din(people, { assumeBinary: true, assumeMentor: true, orderTiming: "semana1" }, big));
+    const r = simulate(din(people, { orderTiming: "semana1" }, big));
     expect(r.paidRank).toBe("d1");
     const m = comp(r, "mentor");
     // a: 1★ Director, binario 11 % × 32 500 = 3 575 → tope 2 500; 20 % = 500 → tope por BP 250

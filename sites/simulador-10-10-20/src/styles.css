@@ -143,7 +143,7 @@ main:focus { outline: none; }
 /* Chips de estado */
 .chip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700; letter-spacing: .01em; background: var(--pending-bg); color: var(--pending); white-space: nowrap; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
-.st-calculado, .rs-confirmada, .rs-oficial { background: var(--money-bg); color: var(--ok); }
+.st-calculado, .rs-confirmada, .rs-oficial, .rs-propietario { background: var(--money-bg); color: var(--ok); }
 .st-no_elegible { background: #fdf1e7; color: #8a4b12; }
 .st-pendiente, .rs-pendiente { background: var(--pending-bg); color: var(--pending); }
 .st-hipotetico, .rs-interpretacion { background: var(--hypo-bg); color: var(--hypo); }
@@ -170,7 +170,7 @@ td.u-people, dd.u-people, b.u-people { color: var(--people); }
 .group > .btn { margin-bottom: 10px; }
 .results { display: grid; gap: 14px; min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .totals { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 640px) { .totals { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 640px) { .totals { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); grid-auto-flow: column; } }
 .total { border-radius: var(--radius); padding: 14px; border: 1px solid var(--line); background: var(--surface); display: grid; gap: 4px; align-content: start; }
 .total--rec { border-color: #a6dcc4; background: linear-gradient(180deg, #f2fbf7, #fff); }
 .total--hypo { border-style: dashed; border-color: #f0b989; }
@@ -304,7 +304,8 @@ td.u-people, dd.u-people, b.u-people { color: var(--people); }
 .qsum small { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
 .qsum .qsum__go { margin-left: auto; color: #1550b8; font-weight: 700; font-size: .85rem; }
 @media (min-width: 1040px) { .qsum { display: none; } }
-.tabbar { grid-template-columns: repeat(5, 1fr); }
+.tabbar { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tabbar a { font-size: .68rem; letter-spacing: -.01em; overflow-wrap: anywhere; text-align: center; }
 
 /* Calculadora simple */
 .simple { max-width: 640px; margin: 0 auto; }

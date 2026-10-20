@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { d, usd, vol } from "../engine/decimal";
 import type { Assumptions, Product, QuickOrg } from "../engine/model";
 import { solve, STRUCTURE_LABEL, type GoalInput, type Solution } from "../engine/solver";
-import { Card, Disclosure, Notice, NumberField, Segmented, Toggle, UnitTag } from "../ui/primitives";
+import { Card, Disclosure, Notice, NumberField, Segmented, UnitTag } from "../ui/primitives";
 import { paidRankLabel } from "../ui/Results";
 
 const QUICK_TARGETS = [250, 500, 1000, 2000, 5000];
@@ -40,14 +40,11 @@ export function GoalView(p: { goal: GoalInput; products: Product[]; assumptions:
           </span></label>
         </div>
         <Segmented label="Medida mensual" value={g.measure} onChange={(v) => set({ measure: v })} options={[{ value: "promedio", label: "Promedio anual (52/12)" }, { value: "4semanas", label: "Mes de 4 semanas" }]} />
-        <Toggle tone="hypo" label="Incluir el binario con supuesto (pierna menor)" checked={g.includeAssumptions} onChange={(v) => set({ includeAssumptions: v })}
-          hint="Añade la estructura con profundidad. El resultado dependerá de una regla no confirmada por las fuentes." />
-        {g.includeAssumptions && (
-          <div className="row2">
+        <h3>Estructura con profundidad (binario)</h3>
+        <div className="row2">
             <NumberField label="% de compradores patrocinados por ti (resto: más profundos)" suffix="%" max={100} value={g.sponsoredPct} onChange={(v) => set({ sponsoredPct: Math.min(100, Math.max(1, v ?? 1)) })} />
             <NumberField label="% del volumen en la pierna izquierda" suffix="%" max={100} value={g.leftPct} hint="50 = equilibrado; 80 = desequilibrado" onChange={(v) => set({ leftPct: Math.min(100, Math.max(0, v ?? 0)) })} />
           </div>
-        )}
         <Segmented label="Ordenar alternativas por" value={objective} onChange={setObjective} options={[{ value: "compradores", label: "Menos compradores" }, { value: "unidades", label: "Menos unidades" }, { value: "patrocinados", label: "Menos patrocinados" }]} />
       </Card>
 
@@ -92,13 +89,13 @@ function SolutionCard({ s, best, target, onOpen }: { s: Solution; best: boolean;
         <div><dt>Ingreso recurrente estimado</dt><dd className="u-money"><b>{usd(s.income)}</b> / mes</dd></div>
         <div><dt>Diferencia con la meta</dt><dd className="u-money">+{usd(diff)}</dd></div>
       </dl>
-      <p className="muted">Composición: {comps.map((c) => `${c.name} ${usd(c.monthly)}${c.status === "hipotetico" ? " (hipotético)" : ""}`).join(" · ")}</p>
+      <p className="muted">Composición: {comps.map((c) => `${c.name} ${usd(c.monthly)}`).join(" · ")}</p>
       <Disclosure summary="Condiciones que deben mantenerse y qué pasa si bajan las compras">
         <ul className="todo">
           <li>Tus {s.org.personal[0]?.qty ?? 0} unidades personales al mes (PV del rango {paidRankLabel(s.rank)}).</li>
           {s.sponsored > 0 && <li>Que tus {s.sponsored.toLocaleString("es-419")} patrocinados compren cada mes: el 10 % se calcula sobre lo que compran en el periodo.</li>}
           {s.customers > 0 && <li>Que tus {s.customers.toLocaleString("es-419")} clientes compren dentro de cada ventana de 31 días y se mantenga el tramo del Bono para el cliente.</li>}
-          {s.structure === "profundidad" && <li>Mantener el reparto de piernas y las líneas: el binario hipotético solo paga sobre la pierna menor.</li>}
+          {s.structure === "profundidad" && <li>Mantener el reparto de piernas y las líneas: el binario paga sobre la pierna débil.</li>}
         </ul>
         <table className="tbl"><thead><tr><th>Si…</th><th>Ingreso recurrente</th><th>Frente a la meta</th></tr></thead><tbody>
           {s.sensitivity.map((x) => <tr key={x.label}><td>{x.label}</td><td className="u-money">{usd(x.income)}</td><td>{x.income.gte(target) ? "La alcanza" : `Faltan ${usd(d(target).minus(x.income))}`}</td></tr>)}

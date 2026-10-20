@@ -41,14 +41,12 @@ export interface GoalInput {
   sponsoredPct: number;
   /** % del volumen del equipo en la pierna izquierda (50 = equilibrado). */
   leftPct: number;
-  /** Si se cuentan los componentes que solo existen con supuestos (binario). */
-  includeAssumptions: boolean;
   maxBuyers: number;
 }
 
 export const DEFAULT_GOAL: GoalInput = {
   target: 500, measure: "promedio", productId: "sobre", personalQty: 2, pctOne: 50, customerPct: 50,
-  customerKind: "cliente_preferente", sponsoredPct: 30, leftPct: 50, includeAssumptions: false, maxBuyers: 20000,
+  customerKind: "cliente_preferente", sponsoredPct: 30, leftPct: 50, maxBuyers: 20000,
 };
 
 export interface Solution {
@@ -120,7 +118,7 @@ export function buildOrg(s: Structure, n: number, g: GoalInput): QuickOrg {
 
 const incomeOf = (r: SimulationResult, g: GoalInput): D => {
   if (!r.ok) return ZERO;
-  const rec = r.components.filter((c) => c.classification === "potencialmente_recurrente" && (c.status === "calculado" || (g.includeAssumptions && c.status === "hipotetico")));
+  const rec = r.components.filter((c) => c.classification === "potencialmente_recurrente" && c.status === "calculado");
   return cents(rec.reduce((a, c) => a.plus(g.measure === "4semanas" ? c.monthly4w ?? c.monthly ?? ZERO : c.monthly ?? ZERO), ZERO));
 };
 
@@ -134,8 +132,8 @@ export function solve(g: GoalInput, products: Product[], base: Assumptions): Goa
   const out: GoalResult = { solutions: [], unreachable: [], blocked, evaluated: "" };
   if (blocked.length) return out;
 
-  const a: Assumptions = { ...base, assumeBinary: g.includeAssumptions ? true : base.assumeBinary };
-  const structures: Structure[] = ["socios", "clientes", "mixta", ...(g.includeAssumptions ? (["profundidad"] as Structure[]) : [])];
+  const a: Assumptions = base;
+  const structures: Structure[] = ["socios", "clientes", "mixta", "profundidad"];
   const patterns = [
     { label: "Todos compran 1 unidad", pctOne: 100 },
     { label: "Todos compran 2 unidades", pctOne: 0 },

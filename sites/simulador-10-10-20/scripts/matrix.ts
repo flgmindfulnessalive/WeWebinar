@@ -2,9 +2,9 @@
 import { writeFileSync } from "node:fs";
 import { PLAN } from "../src/plan/plan-10-10-20";
 
-const STATUS: Record<string, string> = { oficial: "✅ Tabla oficial", confirmada: "✅ Confirmada (PDF y web)", pdf: "🟦 Solo PDF", web: "🟨 Solo web", interpretacion: "🟧 Interpretación", contradiccion: "🟥 Contradicción", pendiente: "⬜ Pendiente" };
+const STATUS: Record<string, string> = { propietario: "🟩 Indicada por el propietario", oficial: "✅ Tabla oficial", confirmada: "✅ Confirmada (PDF y web)", pdf: "🟦 Solo PDF", web: "🟨 Solo web", interpretacion: "🟧 Interpretación", contradiccion: "🟥 Contradicción", pendiente: "⬜ Pendiente" };
 const esc = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
-const src = (r: (typeof PLAN.rules)[number]) => r.sources.map((s) => `${s.doc === "oficial" ? "Oficial" : s.doc === "pdf" ? "Presentación" : "Web"} ${s.where}${s.quote ? ` («${s.quote}»)` : ""}`).join("<br>");
+const src = (r: (typeof PLAN.rules)[number]) => r.sources.map((s) => `${s.doc === "propietario" ? "Propietario" : s.doc === "oficial" ? "Oficial" : s.doc === "pdf" ? "Presentación" : "Web"} ${s.where}${s.quote ? ` («${s.quote}»)` : ""}`).join("<br>");
 
 let md = `# Matriz de reglas · ${PLAN.name}
 

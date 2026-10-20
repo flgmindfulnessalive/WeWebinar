@@ -9,6 +9,7 @@
 import type { PlanRules, RankRule } from "./types";
 
 const O = (where: string, quote?: string) => ({ doc: "oficial" as const, where, quote });
+const OWN = (quote: string) => ({ doc: "propietario" as const, where: "Indicación del propietario, 20-oct-2026", quote });
 const P = (where: string, quote?: string) => ({ doc: "pdf" as const, where, quote });
 const W = (where: string, quote?: string) => ({ doc: "web" as const, where, quote });
 
@@ -120,18 +121,18 @@ export const PLAN: PlanRules = {
     {
       id: "binary", concept: "Bono Binario",
       rule: "Tasa semanal: Gerentes 10 % · Directores 11 % · Ejecutivos 12 % · Presidenciales 13 %. Máximo semanal de $100 (1★ Gerente) a $25 000 (2★ y 3★ Presidencial).",
-      formula: "PENDIENTE: la tabla no dice sobre qué volumen se aplica la tasa (pierna menor u otra), ni si hay arrastre.",
+      formula: "Tasa del rango × volumen acumulado de la pierna débil de la semana, con el máximo semanal. Lo pagado se descuenta de ambas piernas; el sobrante de la pierna fuerte pasa a la semana siguiente.",
       requirements: "Rango pagado desde 1★ Gerente.", period: "Semanal.", limits: "Máximo semanal por rango.",
-      sources: [O("p.2 · Bono Binario"), P("p.9")], status: "pendiente",
-      note: "Tasas y topes oficiales. El simulador lo calcula solo como estimado (pierna menor, sin arrastre).",
+      sources: [O("p.2 · Bono Binario"), OWN("El Bono Binario paga un % del volumen acumulado de la pierna débil, con tope semanal según rango.")], status: "propietario",
+      note: "Tasas y topes: tabla oficial. Base (pierna débil acumulada): indicación del propietario. Supuesto del simulador: si se alcanza el tope, el volumen de la pierna débil se consume igualmente; no se publica vencimiento del volumen acumulado.",
     },
     {
       id: "mentor", concept: "Bono de Igualación de Mentor (Mentor Match)",
       rule: "1★D G1 20 % · 2★D G1–2 (20/15) · 3★D G1–3 (20/15/10) · 1★E +G4 7 % · 2★E +G5 7 % · 3★E y 1★P +G6 5 % · 2★P y 3★P G6 7 %. Igualación máxima por socio $250 a $5 000.",
-      formula: "PENDIENTE: no se indica qué ganancias se igualan ni cómo se cuentan las generaciones.",
-      requirements: "Desde 1★ Director.", period: "No indicado.", limits: "Igualación máxima por socio.",
-      sources: [O("p.2 · Bono de Igualación de Mentor"), P("p.10")], status: "pendiente",
-      note: "Porcentajes y topes oficiales. Solo se calcula como estimado (sobre el binario de tus generaciones).",
+      formula: "Cada semana: % de la generación × (Bono por Nivel + Bono Binario) de cada socio de tus generaciones, con la igualación máxima por socio.",
+      requirements: "Desde 1★ Director.", period: "Semanal.", limits: "Igualación máxima por socio (aplicada por semana).",
+      sources: [O("p.2 · Bono de Igualación de Mentor"), OWN("El Mentor Match se gana de la suma semanal de lo que el socio, a partir de Director, genera en su Bono por Nivel (10 % de sus directos) + Bono Binario.")], status: "propietario",
+      note: "Porcentajes y topes: tabla oficial. Base (Nivel + Binario, semanal): indicación del propietario. Generación = niveles de patrocinio de Socios de Marca (supuesto del simulador).",
     },
     {
       id: "customer", concept: "Bono por Cliente (Customer Premium)",
@@ -144,10 +145,10 @@ export const PLAN: PlanRules = {
     {
       id: "retail", concept: "Ganancia Minorista",
       rule: "Una comisión por cada compra de un Cliente inscrito personalmente (Minorista, Preferente o Preferente Plus).",
-      formula: "Importe por compra no publicado: lo introduces tú (ganancia por sobre).",
+      formula: "$50 por cada sobre de X39 que compran tus clientes (editable por producto en Catálogo).",
       requirements: "Clientes inscritos personalmente.", period: "Por compra.", limits: "—",
-      sources: [O("p.1 · 1. Ganancia Minorista")], status: "pendiente",
-      note: "La tabla no da el importe ni el porcentaje.",
+      sources: [O("p.1 · 1. Ganancia Minorista"), OWN("La ganancia minorista es 50 dólares por 1 sobre de X39.")], status: "propietario",
+      note: "El importe lo indica el propietario; la tabla oficial no lo publica.",
     },
     {
       id: "rank-bonus", concept: "Bonos por Avance de Rango",

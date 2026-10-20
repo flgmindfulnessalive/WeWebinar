@@ -60,7 +60,7 @@ const STATUS_TEXT: Record<ComponentStatus, string> = {
 export const StatusChip = ({ status }: { status: ComponentStatus }) => <span className={`chip st-${status}`}>{STATUS_TEXT[status]}</span>;
 
 const RULE_TEXT: Record<RuleStatus, string> = {
-  oficial: "Tabla oficial", confirmada: "Confirmada (PDF y web)", pdf: "Solo en el PDF", web: "Solo en la web", interpretacion: "Interpretación", contradiccion: "Contradicción", pendiente: "Pendiente",
+  propietario: "Indicada por el propietario", oficial: "Tabla oficial", confirmada: "Confirmada (PDF y web)", pdf: "Solo en el PDF", web: "Solo en la web", interpretacion: "Interpretación", contradiccion: "Contradicción", pendiente: "Pendiente",
 };
 export const RuleChip = ({ status }: { status: RuleStatus }) => <span className={`chip rs-${status}`}>{RULE_TEXT[status]}</span>;
 

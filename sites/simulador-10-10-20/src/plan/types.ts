@@ -11,6 +11,7 @@ export type RankId =
 
 /**
  * Estado de validación de una regla.
+ * - propietario: regla aclarada por el propietario (Brand Partner) donde la tabla oficial no la detalla.
  * - oficial: dato explícito en la tabla oficial del plan (EE. UU.).
  * - confirmada: dato explícito en el PDF y coherente con la web.
  * - pdf: dato explícito solo en el PDF (la web no lo detalla o lo deja «por confirmar»).
@@ -20,14 +21,14 @@ export type RankId =
  * - contradiccion: las fuentes dicen cosas distintas; se muestran ambas.
  * - pendiente: falta un dato crítico; no se calcula importe.
  */
-export type RuleStatus = "oficial" | "confirmada" | "pdf" | "web" | "interpretacion" | "contradiccion" | "pendiente";
+export type RuleStatus = "propietario" | "oficial" | "confirmada" | "pdf" | "web" | "interpretacion" | "contradiccion" | "pendiente";
 
 export interface SourceRef {
   /**
    * "oficial" = «Plan de Compensación LifeWave 10-10-20 (EE. UU.)», 2 págs. (fuente principal).
    * "pdf" = presentación «10-10-20 This Is It» (13 págs.); "web" = vivralux.com/nuevo-plan-compensacion-lifewave.
    */
-  doc: "oficial" | "pdf" | "web";
+  doc: "propietario" | "oficial" | "pdf" | "web";
   /** Página del PDF o sección de la web. */
   where: string;
   /** Texto o dato tal como aparece. */

@@ -126,7 +126,7 @@ export function SourcesView() {
               <div><dt>Requisitos</dt><dd>{r.requirements}</dd></div>
               <div><dt>Periodicidad</dt><dd>{r.period}</dd></div>
               <div><dt>Límites</dt><dd>{r.limits}</dd></div>
-              <div><dt>Fuente exacta</dt><dd><ul>{r.sources.map((s, i) => <li key={i}>{s.doc === "oficial" ? "Oficial" : s.doc === "pdf" ? "Presentación" : "Web"} · {s.where}{s.quote && <q> {s.quote}</q>}</li>)}</ul></dd></div>
+              <div><dt>Fuente exacta</dt><dd><ul>{r.sources.map((s, i) => <li key={i}>{s.doc === "propietario" ? "Propietario" : s.doc === "oficial" ? "Oficial" : s.doc === "pdf" ? "Presentación" : "Web"} · {s.where}{s.quote && <q> {s.quote}</q>}</li>)}</ul></dd></div>
               {r.note && <div><dt>Validación</dt><dd>{r.note}</dd></div>}
             </dl>
           </article>

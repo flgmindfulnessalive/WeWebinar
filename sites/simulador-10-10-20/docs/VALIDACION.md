@@ -4,9 +4,9 @@
 
 | Área | Comprobación | Resultado |
 |---|---|---|
-| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV): 2★ Director · 10 % $77 · clientes $77 · binario estimado $635,25 · Mentor Match estimado $107,80 · total $897,05 · bono de rango $1 850 | ✅ |
+| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV): 2★ Director · minorista $500 · 10 % $77 · clientes $77 · binario $635,25 · Mentor Match estimado $323,40 · total $1 612,65 (sin estimados $1 289,25) · bono de rango $1 850 | ✅ |
 | Tabla oficial | Datos de los 13 rangos comparados con la tabla oficial (PV, QDV, MVR, OL2L, balance, Nivel Comprimido, binario, Mentor Match, bonos de rango); MVR solo desde 1★ Director; 10 % desde 1★ Gerente; PIB con 55 PV; duplicación por partes | ✅ |
-| Motor | 84 pruebas (Vitest): umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 84/84 |
+| Motor | 85 pruebas (Vitest): binario con pierna débil acumulada y arrastre, Mentor Match sobre Nivel + Binario, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 85/85 |
 | Solver inverso | Metas de US$250, 500, 1 000, 2 000 y 5 000: cada solución se vuelve a pasar por el motor directo, alcanza la meta y con N−1 compradores no | ✅ |
 | Escenarios | Los 9 casos se calculan en vivo; la prueba comprueba que el rango y las cifras citadas en el texto coinciden con el motor | ✅ (la prueba detectó y se corrigió un texto: el caso concentrado queda en 1★ Manager, no en 2★) |
 | Fichas «Entender» | Cada ejemplo numérico se calcula con el motor y se comprueba su importe | ✅ |
@@ -19,43 +19,67 @@
 
 - **Datos del plan:** la prueba «Reglas del plan (datos)» fija los 13 rangos tal como figuran en la tabla oficial (p.1 y p.2). Si alguien cambia una cifra, falla.
 - **Ejemplos oficiales:** las fuentes no incluyen ejemplos numéricos resueltos (solo tablas); por eso las pruebas usan casos construidos con volúmenes de prueba y comprueban cada regla por separado.
-- **Pendientes:** el binario, el Mentor Match, el margen sin precio y el grupo trimestral deben devolver **Pendiente** (importe `null`), nunca 0; está probado.
+- **Reglas del propietario:** binario = % de la pierna débil acumulada (con arrastre) y tope semanal; Mentor Match = % de la suma semanal de Bono por Nivel + Binario de cada socio de tus generaciones (desde 1★ Director); ganancia minorista $50 por sobre.
+- **Pendientes:** el Mentor Match en modo rápido (sin árbol), el margen sin precio y los viajes/fondo presidencial devuelven **Pendiente** (importe `null`), nunca 0; está probado.
 
 ## Inventario de pruebas
 
-- engine.test.ts > Reglas del plan (datos) > tiene 13 rangos en orden con los valores del PDF p.4, p.9 y p.10
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono de Nivel Comprimido (10 % Personal Team)
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono Binario
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono de Igualación de Mentor (Mentor Match)
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono por Cliente (Customer Premium)
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono por Introducción de Producto (PIB)
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Bonos por Avance de Rango
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Viajes y Fondo Global Presidencial
+- content.test.ts > Fichas «Entender»: ejemplos verificables > Ganancia Minorista
+- engine.test.ts > Reglas del plan (datos) > tiene 13 rangos en orden con los valores de la tabla oficial (p.1 y p.2)
 - engine.test.ts > Reglas del plan (datos) > cada regla cita al menos una fuente
-- engine.test.ts > BP Activo (55 PV): umbral exacto > PV 54 → sin rango
-- engine.test.ts > BP Activo (55 PV): umbral exacto > PV 55 → abp
-- engine.test.ts > BP Activo (55 PV): umbral exacto > PV 56 → abp
-- engine.test.ts > BP Activo (55 PV): umbral exacto > el PV suma compras de clientes personales
-- engine.test.ts > 10 % Personal Team > 10 % del volumen comisionable de los patrocinados (semana 1: 3 × 40 × 10 % = 12,00)
-- engine.test.ts > 10 % Personal Team > uniforme: redondeo semanal y conversión 52/12 declarados
-- engine.test.ts > 10 % Personal Team > no elegible (0 y causa) si no tienes BP Activo
-- engine.test.ts > Bono para el cliente: tramos (fuente web) > 299 QV de clientes → 0.00
-- engine.test.ts > Bono para el cliente: tramos (fuente web) > 300 QV de clientes → 15.00
-- engine.test.ts > Bono para el cliente: tramos (fuente web) > 599 QV de clientes → 29.95
-- engine.test.ts > Bono para el cliente: tramos (fuente web) > 600 QV de clientes → 60.00
-- engine.test.ts > Bono para el cliente: tramos (fuente web) > 1199 QV de clientes → 119.90
-- engine.test.ts > Bono para el cliente: tramos (fuente web) > 1200 QV de clientes → 240.00
+- engine.test.ts > Socio Activo (55 PV): umbral exacto > PV 54 → sin rango
+- engine.test.ts > Socio Activo (55 PV): umbral exacto > PV 55 → abp
+- engine.test.ts > Socio Activo (55 PV): umbral exacto > PV 56 → abp
+- engine.test.ts > Socio Activo (55 PV): umbral exacto > el PV suma compras de clientes personales
+- engine.test.ts > Bono de Nivel Comprimido (10 %): desde 1★ Gerente > 10 % del volumen comisionable de los patrocinados (semana 1: 600 × 10 % = 60,00)
+- engine.test.ts > Bono de Nivel Comprimido (10 %): desde 1★ Gerente > uniforme: conversión 52/12 con un solo redondeo al final
+- engine.test.ts > Bono de Nivel Comprimido (10 %): desde 1★ Gerente > Socio Activo cobra 0 % (tabla oficial)
+- engine.test.ts > Bono de Nivel Comprimido (10 %): desde 1★ Gerente > sin rango tampoco cobra
+- engine.test.ts > Bono por Cliente: tramos (tabla oficial) > 299 QV de clientes → 0.00
+- engine.test.ts > Bono por Cliente: tramos (tabla oficial) > 300 QV de clientes → 15.00
+- engine.test.ts > Bono por Cliente: tramos (tabla oficial) > 599 QV de clientes → 29.95
+- engine.test.ts > Bono por Cliente: tramos (tabla oficial) > 600 QV de clientes → 60.00
+- engine.test.ts > Bono por Cliente: tramos (tabla oficial) > 1199 QV de clientes → 119.90
+- engine.test.ts > Bono por Cliente: tramos (tabla oficial) > 1200 QV de clientes → 240.00
 - engine.test.ts > Regla del 50 % (MVR), OL2L, equilibrio y PV 200 > 5 000 con 3 000 + 2 000: la línea grande cuenta 2 500 → no llega a 1★ Director
 - engine.test.ts > Regla del 50 % (MVR), OL2L, equilibrio y PV 200 > 2 500 + 2 500 → 1★ Director (umbral exacto)
 - engine.test.ts > Regla del 50 % (MVR), OL2L, equilibrio y PV 200 > 2 500 + 2 499 → falta 1 de QDV
 - engine.test.ts > Regla del 50 % (MVR), OL2L, equilibrio y PV 200 > PV 200: máximo 110 de compras personales (salvo APAC)
 - engine.test.ts > Regla del 50 % (MVR), OL2L, equilibrio y PV 200 > OL2L exige volumen fuera de las 2 líneas más grandes
+- engine.test.ts > MVR solo desde 1★ Director (tabla oficial) > 3★ Gerente con una sola línea de 2 500: sin MVR, califica
 - engine.test.ts > Patrocinio frente a colocación > equilibradas en el binario → 1★ Director
 - engine.test.ts > Patrocinio frente a colocación > b colocado debajo de a: mismo QDV por patrocinio, pierna derecha vacía → falla el equilibrio
 - engine.test.ts > Patrocinio frente a colocación > contar líneas por colocación cambia el QDV contable
-- engine.test.ts > Binario y Mentor Match: pendientes salvo supuesto explícito > por defecto el binario está pendiente (sin importe, no 0)
-- engine.test.ts > Binario y Mentor Match: pendientes salvo supuesto explícito > con el supuesto: 10 % de la pierna menor, tope semanal de 1★ Manager
-- engine.test.ts > Binario y Mentor Match: pendientes salvo supuesto explícito > tope semanal aplicado
-- engine.test.ts > Binario y Mentor Match: pendientes salvo supuesto explícito > Mentor Match en modo rápido: información insuficiente
-- engine.test.ts > Mentor Match con supuestos (modo detallado) > 20 % del binario de la Gen 1 con tope por BP
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > 10 % de la pierna débil con el rango 1★ Gerente
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > tope semanal aplicado
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > el sobrante de la pierna fuerte se acumula a la semana siguiente
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > Mentor Match en modo rápido: información insuficiente
+- engine.test.ts > Mentor Match: % × (Nivel + Binario) de tus generaciones > 20 % de lo que gana cada directo en Nivel + Binario
 - engine.test.ts > Bonos puntuales > PIB por paquete: 2 Básico + 1 Premium = 475
+- engine.test.ts > Bonos puntuales > PIB: hay que estar Activo (55 PV)
 - engine.test.ts > Bonos puntuales > Bono por subir de rango: mitad en la 1.ª calificación; acumulativo
-- engine.test.ts > Bonos puntuales > nuevo BP: las fuentes se contradicen → rango, sin importe único
+- engine.test.ts > Bonos puntuales > nuevo socio con 30 días: Parte 1 de 2★ Gerente = 100.00 (se duplica en las primeras 8 semanas)
+- engine.test.ts > Bonos puntuales > nuevo socio con 56 días: Parte 1 de 2★ Gerente = 100.00 (se duplica en las primeras 8 semanas)
+- engine.test.ts > Bonos puntuales > nuevo socio con 57 días: Parte 1 de 2★ Gerente = 50.00 (se duplica en las primeras 8 semanas)
 - engine.test.ts > Bonos puntuales > Grupo trimestral: participaciones, nunca dinero
 - engine.test.ts > Periodos > calificación semanal con compras uniformes: 1 sobre al mes no da 55 PV en ninguna semana
+- engine.test.ts > Periodos > calificación semanal con compra en la semana 1: activo solo esa semana
+- engine.test.ts > Entradas inválidas y datos faltantes > volumen de producto sin definir → pendiente, no 0
+- engine.test.ts > Entradas inválidas y datos faltantes > unidades negativas
+- engine.test.ts > Entradas inválidas y datos faltantes > más líneas que patrocinados
+- engine.test.ts > Entradas inválidas y datos faltantes > pierna ocupada dos veces y ciclos
+- engine.test.ts > Entradas inválidas y datos faltantes > un cliente no puede patrocinar
+- engine.test.ts > Entradas inválidas y datos faltantes > margen minorista sin definir → pendiente
+- engine.test.ts > Totales separados > lo puntual no suma a lo recurrente
+- engine.test.ts > Tope semanal del binario > 1★ Gerente: 10 % de 2 000 = 200 → se paga el tope de 100
+- engine.test.ts > Tope por socio del Mentor Match > 20 % de un binario de 2 500 = 500 → se paga el tope de 250 de 1★ Director
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > hay al menos 8 escenarios y una comparación
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > 1 · Socio nuevo con pocos clientes
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > 2 · Compradores de un sobre al mes
@@ -66,35 +90,22 @@
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > 7 · Volumen suficiente, requisitos incompletos
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > 8 · La organización pierde compradores
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > Comparación · Mismas personas, distinta distribución
-- engine.test.ts > Periodos > calificación semanal con compra en la semana 1: activo solo esa semana
-- engine.test.ts > Entradas inválidas y datos faltantes > volumen de producto sin definir → pendiente, no 0
-- engine.test.ts > Entradas inválidas y datos faltantes > unidades negativas
-- engine.test.ts > Entradas inválidas y datos faltantes > más líneas que patrocinados
-- engine.test.ts > Entradas inválidas y datos faltantes > pierna ocupada dos veces y ciclos
-- engine.test.ts > Entradas inválidas y datos faltantes > un cliente no puede patrocinar
-- engine.test.ts > Entradas inválidas y datos faltantes > margen minorista sin definir → pendiente
-- engine.test.ts > Totales separados > lo puntual no suma a lo recurrente
-- engine.test.ts > Tope semanal del binario > 1★ Manager: 10 % de 2 000 = 200 → se paga el tope de 100
-- engine.test.ts > Tope por BP del Mentor Match (supuesto) > 20 % de un binario de 2 500 = 500 → se paga el tope de 250 de 1★ Director
-- scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 5 y 6: mismo número de personas y mismo volumen total
+- scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 5 y 6: mismo número de personas y mismo volumen total; la MVR recorta la línea grande
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 1: clientes por debajo del primer tramo y PIB puntual
-- scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 8: el volumen cae de 2 000 a 1 250
+- scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 7: PV 77 no llega a los 110 de 1★ Director
+- scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 8: el volumen cae de 3 080 a 1 925
+- simple.test.ts > Calculadora simple > ejemplo del propietario: 150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV
+- simple.test.ts > Calculadora simple > Mentor Match es 0 por debajo de 1★ Director
+- simple.test.ts > Calculadora simple > sin compra propia no hay rango ni 10 %
+- simple.test.ts > Calculadora simple > valida entradas
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$250: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$500: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$1000: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono por nivel alcanzado (10 % Personal Team)
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono Binario
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono de Igualación de Mentores (Mentor Match)
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono para el cliente (Customer Premium)
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono de Introducción de Producto (PIB)
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Bono por subir de rango
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Grupo de Liderazgo Trimestral
-- content.test.ts > Fichas «Entender»: ejemplos verificables > Margen de venta minorista
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$2000: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$5000: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
-- solver.test.ts > Calculadora de meta (búsqueda inversa) > socios que compran 1 sobre: 10 % × 40 = 4 USD por persona y mes → 63 para 250 (con redondeo semanal)
+- solver.test.ts > Calculadora de meta (búsqueda inversa) > socios que compran 1 sobre: 10 % de 40 + binario 10 % de 20 = 6 USD por persona y mes → 42 para 250
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > dos sobres reducen a la mitad los compradores necesarios (mismo volumen)
-- solver.test.ts > Calculadora de meta (búsqueda inversa) > sin compras personales no hay BP Activo: la meta no es alcanzable y se explica
+- solver.test.ts > Calculadora de meta (búsqueda inversa) > sin compras personales no hay Socio Activo: la meta no es alcanzable y se explica
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > bloquea si el producto no tiene volumen
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > con supuestos, la estructura con profundidad también se verifica
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > una estructura desequilibrada necesita más compradores que una equilibrada (binario supuesto)

@@ -7,8 +7,9 @@ import { DEFAULT_SIMPLE, type SimpleInput } from "./engine/simple";
 import { PLAN } from "./plan/plan-10-10-20";
 
 // 77 PV por sobre: dato indicado por el propietario (las fuentes no lo publican).
-// El volumen comisionable se toma igual al PV (decisión del propietario).
-export const EMPTY_PRODUCTS: Product[] = [{ id: "sobre", name: "Sobre X39 (30 parches)", qv: 77, cv: 77, retailMargin: null }];
+// El volumen comisionable se toma igual al PV y la ganancia minorista es $50
+// por sobre (indicaciones del propietario).
+export const EMPTY_PRODUCTS: Product[] = [{ id: "sobre", name: "Sobre X39 (30 parches)", qv: 77, cv: 77, retailMargin: 50 }];
 
 export const EMPTY_QUICK: QuickOrg = {
   personal: [{ productId: "sobre", qty: 1 }], customers: [], sponsored: [], sponsoredInactive: 0, team: [], teamInactive: 0,
@@ -36,7 +37,7 @@ export const INITIAL: AppState = {
   goal: DEFAULT_GOAL, simple: DEFAULT_SIMPLE, saved: [], exampleValues: false,
 };
 
-const KEY = "sim101020:v2";
+const KEY = "sim101020:v3";
 
 function load(): AppState {
   try {

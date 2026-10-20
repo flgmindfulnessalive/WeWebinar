@@ -5,9 +5,9 @@ import { DEFAULT_ASSUMPTIONS, ROOT_ID, type Assumptions, type Person, type Produ
 import type { RankId } from "../plan/types";
 
 export const EXAMPLE_PRODUCTS: Product[] = [
-  { id: "sobre", name: "Sobre X39 (30 parches)", qv: 77, cv: 77, retailMargin: null },
+  { id: "sobre", name: "Sobre X39 (30 parches)", qv: 77, cv: 77, retailMargin: 50 },
 ];
-export const EXAMPLE_NOTE = "Ejemplos con 1 sobre = 77 PV y el mismo valor como volumen comisionable. Puedes cambiarlo en Catálogo.";
+export const EXAMPLE_NOTE = "Ejemplos con 1 sobre = 77 PV (mismo valor como volumen comisionable) y $50 de ganancia minorista por sobre. Puedes cambiarlo en Catálogo.";
 
 export interface Scenario {
   id: string;

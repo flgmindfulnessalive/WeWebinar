@@ -38,6 +38,7 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
         <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />
         <Stepper label="Tus sobres al mes" value={value.ownSachets} onChange={(v) => set({ ownSachets: v })} />
         <Stepper label="PV por sobre" value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />
+        <Stepper label="Ganancia por sobre a clientes ($)" hint="Ganancia minorista" value={value.retailPerSachet ?? 50} step={5} onChange={(v) => set({ retailPerSachet: v })} />
       </section>
 
       {r.errors.length > 0 ? (

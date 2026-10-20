@@ -270,97 +270,104 @@ function retail(ctx: Ctx): ComponentResult {
   return c;
 }
 
-/** Bono binario de un BP en una semana (solo con el supuesto activado). */
-function binaryWeek(s: Snapshot, rank: RankId | null): { amount: D; capped: boolean; base: D } {
-  if (!atLeast(rank, "m1")) return { amount: ZERO, capped: false, base: ZERO };
-  const r = rankById[rank!];
-  const b = min(s.legs.Lcv, s.legs.Rcv);
-  const raw = pct(b, r.binaryPct!);
-  const capped = raw.gt(r.binaryWeeklyCap!);
-  return { amount: capped ? d(r.binaryWeeklyCap!) : raw, capped, base: b };
+/**
+ * Bono binario semana a semana (regla indicada por el propietario): se paga
+ * el % del rango sobre el volumen ACUMULADO de la pierna débil, con el tope
+ * semanal del rango. El volumen pagado se descuenta de ambas piernas y el
+ * sobrante de la pierna fuerte pasa a la semana siguiente.
+ */
+export function binarySeries(snap: (w: WindowId) => Snapshot, ranks: (RankId | null)[]) {
+  let carryL = ZERO, carryR = ZERO;
+  return WEEKS.map((w) => {
+    const s = snap(w);
+    const L = carryL.plus(s.legs.Lcv), R = carryR.plus(s.legs.Rcv);
+    const weak = min(L, R);
+    const rank = ranks[w as number];
+    carryL = L.minus(weak); carryR = R.minus(weak);
+    if (!atLeast(rank, "m1")) return { amount: ZERO, capped: false, L, R, weak };
+    const r = rankById[rank!];
+    const raw = pct(weak, r.binaryPct!);
+    const capped = raw.gt(r.binaryWeeklyCap!);
+    return { amount: capped ? d(r.binaryWeeklyCap!) : raw, capped, L, R, weak };
+  });
+}
+
+/** Bono por Nivel (10 %) de un BP en una semana. */
+function levelWeek(s: Snapshot, rank: RankId | null, a: Assumptions): D {
+  if (!rank) return ZERO;
+  const rate = rankById[rank].levelPct ?? PLAN.personalTeamPct;
+  return rate ? pct(s.sponsoredCv.plus(a.personalTeamIncludesCustomers ? s.sponsoredCustomersCv : ZERO), rate) : ZERO;
 }
 
 function binary(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
-  const c = base("binary", "Bono Binario", "binary", "potencialmente_recurrente", "Semanal (PDF p.9).", "supuesto");
-  if (!ctx.a.assumeBinary) {
-    c.status = "pendiente"; c.monthly = null;
-    c.reasons.push("Las fuentes dan el % y el tope semanal por rango, pero no sobre qué volumen se aplica, ni si hay arrastre o mínimo por pierna.");
-    c.missing.push("Base de cálculo del binario (p. ej. pierna menor)", "Regla de arrastre de volumen");
-    c.steps.push("Activa el supuesto «Binario sobre la pierna menor» para ver una estimación hipotética.");
-    return c;
-  }
-  const weekly: D[] = [];
-  for (const w of WEEKS) {
-    const s = ctx.snap(w as WindowId);
-    const r = binaryWeek(s, ranks[w as number]);
-    weekly.push(r.amount);
-    if (r.capped) c.capsHit.push(`Semana ${(w as number) + 1}: tope de ${usd(rankById[ranks[w as number]!].binaryWeeklyCap!)} alcanzado.`);
-  }
+  const c = base("binary", "Bono Binario", "binary", "potencialmente_recurrente", "Semanal.");
+  const series = binarySeries(ctx.snap, ranks);
+  const weekly = series.map((x) => x.amount);
+  series.forEach((x, w) => { if (x.capped) c.capsHit.push(`Semana ${w + 1}: tope de ${usd(rankById[ranks[w]!].binaryWeeklyCap!)} alcanzado.`); });
   const m = monthlyFromWeeks(weekly, ctx.a);
-  c.status = "hipotetico"; c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
-  c.steps.push("SUPUESTO no confirmado: % del rango pagado × volumen comisionable de la pierna menor de cada semana, sin arrastre, con el tope semanal del PDF.");
-  c.steps.push(...WEEKS.map((w) => {
-    const s = ctx.snap(w as WindowId); const r = ranks[w as number];
-    return `Semana ${(w as number) + 1}: piernas ${vol(s.legs.Lcv)} / ${vol(s.legs.Rcv)} · rango ${r ? rankById[r].short : "sin rango"}${atLeast(r, "m1") ? ` · ${rankById[r!].binaryPct} % → ${usd(weekly[w as number])}` : " · no califica (requiere 1★ Gerente)"}`;
+  c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
+  c.steps.push("% del rango pagado × volumen acumulado de la pierna débil de cada semana, con el tope semanal del rango. Lo pagado se descuenta de ambas piernas; el sobrante de la pierna fuerte pasa a la semana siguiente.");
+  c.steps.push(...series.map((x, w) => {
+    const r = ranks[w];
+    return `Semana ${w + 1}: piernas acumuladas ${vol(x.L)} / ${vol(x.R)} · débil ${vol(x.weak)} · ${r ? rankById[r].short : "sin rango"}${atLeast(r, "m1") ? ` · ${rankById[r!].binaryPct} % → ${usd(cents(x.amount))}` : " · no califica (requiere 1★ Gerente)"}`;
   }));
   c.steps.push(m.note);
   if (weekly.every((x) => x.isZero())) {
     c.status = "no_elegible";
     if (!ranks.some((r) => atLeast(r, "m1"))) { c.reasons.push("Requiere rango pagado 1★ Gerente o superior."); c.missing.push("Rango 1★ Gerente"); }
-    else c.reasons.push("Una de tus piernas no tiene volumen: la pierna menor es 0.");
+    else c.reasons.push("Una de tus piernas no tiene volumen: la pierna débil es 0.");
   }
   return c;
 }
 
 function mentor(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
-  const c = base("mentor", "Bono de Igualación de Mentores (Mentor Match)", "mentor", "potencialmente_recurrente", "Calculado por semana (supuesto).", "supuesto");
+  const c = base("mentor", "Bono de Igualación de Mentor (Mentor Match)", "mentor", "potencialmente_recurrente", "Semanal.");
   if (ctx.mode === "rapido") {
     c.status = "pendiente"; c.monthly = null;
-    c.reasons.push("Información insuficiente: depende de las generaciones y del bono de cada persona. Usa el modo detallado.");
+    c.reasons.push("Información insuficiente: depende de lo que gana cada persona de tus generaciones. Usa el modo detallado o la calculadora de inicio (que lo estima).");
     c.missing.push("Genealogía (modo detallado)");
     return c;
   }
-  if (!ctx.a.assumeMentor || !ctx.a.assumeBinary) {
-    c.status = "pendiente"; c.monthly = null;
-    c.reasons.push("Las fuentes dan % por generación y tope por BP, pero no qué ganancias se igualan ni cómo se cuentan las generaciones.");
-    c.missing.push("Base del Mentor Match", "Definición de generación");
-    c.steps.push("Requiere activar los supuestos «Binario sobre la pierna menor» y «Mentor Match sobre el binario de tus generaciones».");
-    return c;
-  }
   const v = ctx.vols!;
+  const maxGens = Math.max(0, ...ranks.map((r) => (r ? rankById[r].mentorGens.length : 0)));
+  const generations = v.generations(ROOT_ID, maxGens);
+  // Ganancias semanales (Nivel + Binario) de cada persona de tus generaciones.
+  const earnings = generations.map((people) => people.map((p) => {
+    const pRanks = ctx.a.qualificationPeriod === "mensual" ? WEEKS.map(() => qualify(v.snapshot(p.id, "m"), ctx.a).paidRank) : WEEKS.map((w) => qualify(v.snapshot(p.id, w), ctx.a).paidRank);
+    const bin = binarySeries((w) => v.snapshot(p.id, w), pRanks);
+    return { p, weeks: WEEKS.map((w, i) => ({ level: levelWeek(v.snapshot(p.id, w), pRanks[i], ctx.a), binary: bin[i].amount })) };
+  }));
   const weekly: D[] = [];
-  const detailLines: string[] = [];
-  for (const w of WEEKS) {
-    const r = ranks[w as number];
-    if (!atLeast(r, "d1")) { weekly.push(ZERO); continue; }
+  const detail: string[] = [];
+  WEEKS.forEach((_w, wi) => {
+    const r = ranks[wi];
+    if (!atLeast(r, "d1")) { weekly.push(ZERO); return; }
     const gens = rankById[r!].mentorGens;
     const cap = d(rankById[r!].mentorCapPerBp!);
-    const generations = v.generations(ROOT_ID, gens.length);
     let total = ZERO;
-    generations.forEach((people, gi) => {
-      for (const p of people) {
-        const ps = v.snapshot(p.id, w as WindowId);
-        const pRank = ctx.a.qualificationPeriod === "mensual" ? qualify(v.snapshot(p.id, "m"), ctx.a).paidRank : qualify(ps, ctx.a).paidRank;
-        const b = binaryWeek(ps, pRank).amount;
-        if (b.isZero()) continue;
-        const raw = pct(b, gens[gi]);
+    earnings.slice(0, gens.length).forEach((people, gi) => {
+      for (const { p, weeks } of people) {
+        const base = weeks[wi].level.plus(weeks[wi].binary);
+        if (base.isZero()) continue;
+        const raw = pct(base, gens[gi]);
         const amt = raw.gt(cap) ? cap : raw;
-        if (raw.gt(cap)) c.capsHit.push(`Semana ${(w as number) + 1}: ${p.label} topado en ${usd(cap)}.`);
+        if (raw.gt(cap)) c.capsHit.push(`Semana ${wi + 1}: ${p.label} topado en ${usd(cap)}.`);
         total = total.plus(amt);
-        if (w === 0 || ctx.a.orderTiming !== "uniforme") detailLines.push(`Sem. ${(w as number) + 1} · Gen ${gi + 1} · ${p.label}: ${gens[gi]} % × binario ${usd(b)} = ${usd(amt)}`);
+        if (wi === 0 || ctx.a.orderTiming !== "uniforme") detail.push(`Sem. ${wi + 1} · Gen ${gi + 1} · ${p.label}: ${gens[gi]} % × (Nivel ${usd(cents(weeks[wi].level))} + Binario ${usd(cents(weeks[wi].binary))}) = ${usd(cents(amt))}`);
       }
     });
     weekly.push(total);
-  }
+  });
   const m = monthlyFromWeeks(weekly, ctx.a);
-  c.status = "hipotetico"; c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
-  c.steps.push("SUPUESTO no confirmado: % de la generación × bono binario semanal de cada Brand Partner de esa generación de patrocinio; tope por BP y semana.");
-  c.steps.push(...(detailLines.length ? detailLines.slice(0, 40) : ["Ninguna persona de tus generaciones cobra binario con estos datos."]));
+  c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
+  c.steps.push("Cada semana: % de la generación × (Bono por Nivel + Bono Binario) de cada socio de tus generaciones de patrocinio, con la igualación máxima por socio de tu rango.");
+  c.steps.push(...(detail.length ? detail.slice(0, 40) : ["Nadie en tus generaciones cobra Nivel ni Binario con estos datos."]));
+  if (detail.length > 40) c.steps.push(`… y ${detail.length - 40} líneas más.`);
   c.steps.push(m.note);
   if (weekly.every((x) => x.isZero())) {
     c.status = "no_elegible";
     if (!ranks.some((r) => atLeast(r, "d1"))) { c.reasons.push("Requiere rango pagado 1★ Director o superior."); c.missing.push("Rango 1★ Director"); }
-    else c.reasons.push("Nadie en tus generaciones cobra binario con estos datos.");
+    else c.reasons.push("Nadie en tus generaciones cobra Nivel ni Binario con estos datos.");
   }
   return c;
 }

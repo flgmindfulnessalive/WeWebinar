@@ -46,11 +46,7 @@ export function AssumptionsCard({ a, onChange }: { a: Assumptions; onChange: (a:
         options={[{ value: "patrocinio", label: "Árbol de patrocinio" }, { value: "colocacion", label: "Árbol de colocación" }]} hint="Solo afecta al modo detallado." />
       <Toggle label="Tu propio PV suma a tu QDV" checked={a.includeOwnPvInQdv} onChange={(v) => set({ includeOwnPvInQdv: v })} hint="Por defecto no (lectura conservadora)." />
       <Toggle label="El 10 % Personal Team incluye a los clientes de tus patrocinados" checked={a.personalTeamIncludesCustomers} onChange={(v) => set({ personalTeamIncludesCustomers: v })} hint="Solo modo detallado. Por defecto no." />
-      <h3>Supuestos para explorar bonos pendientes</h3>
-      <Toggle tone="hypo" label="Binario sobre la pierna menor (hipotético)" checked={a.assumeBinary} onChange={(v) => set({ assumeBinary: v, assumeMentor: v ? a.assumeMentor : false })}
-        hint="% del rango × volumen comisionable de la pierna menor de cada semana, sin arrastre, con el tope del PDF. Se muestra aparte del total confirmado." />
-      <Toggle tone="hypo" label="Mentor Match sobre el binario de tus generaciones (hipotético)" checked={a.assumeMentor} onChange={(v) => set({ assumeMentor: v, assumeBinary: v ? true : a.assumeBinary })}
-        hint="Generación = niveles de patrocinio de Brand Partners. Tope por BP y semana. Solo modo detallado." />
+      <p className="muted">Binario: pierna débil acumulada, con arrastre de la pierna fuerte. Mentor Match: % × (Nivel + Binario) semanal de tus generaciones. Ambos según indicación del propietario.</p>
       <h3>Tu historial</h3>
       <div className="row2">
         <label className="field"><span className="field__label">Rango más alto alcanzado antes</span>

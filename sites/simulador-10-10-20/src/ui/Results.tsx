@@ -12,13 +12,15 @@ export function Totals({ r }: { r: SimulationResult }) {
       <div className="total total--rec">
         <span className="total__k">Potencialmente recurrente</span>
         <strong className="total__v u-money">{usd(r.totals.recurring)}<small> / mes</small></strong>
-        <span className="total__n">Solo componentes calculables con las fuentes, si se mantienen compras y requisitos.</span>
+        <span className="total__n">Si se mantienen las compras y los requisitos de rango.</span>
       </div>
-      <div className={`total total--hypo ${hypo.isZero() ? "is-empty" : ""}`}>
-        <span className="total__k">Con supuestos no confirmados</span>
-        <strong className="total__v u-money">{hypo.isZero() ? "—" : `+ ${usd(hypo)}`}<small>{hypo.isZero() ? "" : " / mes"}</small></strong>
-        <span className="total__n">{hypo.isZero() ? "Binario y Mentor Match no se suman si no activas sus supuestos." : "Binario y/o Mentor Match con tu lectura hipotética. No es una regla confirmada."}</span>
-      </div>
+      {!hypo.isZero() && (
+        <div className="total total--hypo">
+          <span className="total__k">Con supuestos no confirmados</span>
+          <strong className="total__v u-money">+ {usd(hypo)}<small> / mes</small></strong>
+          <span className="total__n">Componentes calculados con una lectura hipotética.</span>
+        </div>
+      )}
       <div className="total total--one">
         <span className="total__k">Puntual (no recurrente)</span>
         <strong className="total__v u-money">{r.totals.oneTimeRange ? `${usd(r.totals.oneTimeRange.low)} – ${usd(r.totals.oneTimeRange.high)}` : usd(r.totals.oneTime)}</strong>

@@ -26,11 +26,11 @@ describe("Calculadora de meta (búsqueda inversa)", () => {
     });
   }
 
-  it("socios que compran 1 sobre: 10 % × 40 = 4 USD por persona y mes → 63 para 250 (con redondeo semanal)", () => {
+  it("socios que compran 1 sobre: 10 % de 40 + binario 10 % de 20 = 6 USD por persona y mes → 42 para 250", () => {
     const r = solve({ ...goal, target: 250 }, products, DEFAULT_ASSUMPTIONS);
     const s = r.solutions.find((x) => x.structure === "socios" && x.pctOne === 100)!;
-    expect(s.buyers).toBe(63);
-    expect(s.sponsored).toBe(63);
+    expect(s.buyers).toBe(42);
+    expect(s.sponsored).toBe(42);
   });
 
   it("dos sobres reducen a la mitad los compradores necesarios (mismo volumen)", () => {
@@ -54,15 +54,15 @@ describe("Calculadora de meta (búsqueda inversa)", () => {
   });
 
   it("con supuestos, la estructura con profundidad también se verifica", () => {
-    const r = solve({ ...goal, target: 500, includeAssumptions: true }, products, DEFAULT_ASSUMPTIONS);
+    const r = solve({ ...goal, target: 500 }, products, DEFAULT_ASSUMPTIONS);
     const deep = r.solutions.filter((s) => s.structure === "profundidad");
     expect(deep.length).toBeGreaterThan(0);
     for (const s of deep) expect(s.verified).toBe(true);
   });
 
   it("una estructura desequilibrada necesita más compradores que una equilibrada (binario supuesto)", () => {
-    const bal = solve({ ...goal, target: 1000, includeAssumptions: true, leftPct: 50 }, products, DEFAULT_ASSUMPTIONS).solutions.find((s) => s.structure === "profundidad" && s.pctOne === 100)!;
-    const unb = solve({ ...goal, target: 1000, includeAssumptions: true, leftPct: 85 }, products, DEFAULT_ASSUMPTIONS).solutions.find((s) => s.structure === "profundidad" && s.pctOne === 100)!;
+    const bal = solve({ ...goal, target: 1000, leftPct: 50 }, products, DEFAULT_ASSUMPTIONS).solutions.find((s) => s.structure === "profundidad" && s.pctOne === 100)!;
+    const unb = solve({ ...goal, target: 1000, leftPct: 85 }, products, DEFAULT_ASSUMPTIONS).solutions.find((s) => s.structure === "profundidad" && s.pctOne === 100)!;
     expect(unb.buyers).toBeGreaterThan(bal.buyers);
   });
 });
