@@ -109,8 +109,9 @@ export function pvForRank(s: Snapshot, r: RankRule, a: Assumptions): { value: D;
   return { value: v, detail: `Compras personales ${vol(s.ownQv)} + clientes ${vol(s.customersQv)} = ${vol(v)}` };
 }
 
-export function qdvCounted(s: Snapshot, required: D, a: Assumptions): { value: D; capped: string[]; excess: D } {
-  const cap = required.times(PLAN.maxVolumeRule);
+/** QDV contable: cada línea cuenta como máximo la MVR del rango (si el rango la tiene). */
+export function qdvCounted(s: Snapshot, mvr: D | null, a: Assumptions): { value: D; capped: string[]; excess: D } {
+  const cap = mvr ?? d("1e30");
   const capped: string[] = [];
   let excess = ZERO;
   let total = ZERO;
@@ -118,7 +119,7 @@ export function qdvCounted(s: Snapshot, required: D, a: Assumptions): { value: D
     if (l.qv.gt(cap)) {
       capped.push(`${l.label}: ${vol(l.qv)} → cuenta ${vol(cap)}${l.count > 1 ? ` (×${l.count})` : ""}`);
       excess = excess.plus(l.qv.minus(cap).times(l.count)); total = total.plus(cap.times(l.count));
-    } else total = total.plus(l.qv.times(l.count));
+    } else total = total.plus(l.total);
   }
   if (a.includeOwnPvInQdv) total = total.plus(s.ownQv.plus(s.customersQv));
   return { value: total, capped, excess };
@@ -131,7 +132,7 @@ export function ol2l(s: Snapshot): D {
   for (const l of sorted) {
     const drop = Math.min(skip, l.count);
     skip -= drop;
-    total = total.plus(l.qv.times(l.count - drop));
+    total = total.plus(drop ? l.total.minus(l.qv.times(drop)) : l.total);
   }
   return total;
 }
@@ -146,9 +147,9 @@ export function evaluateRank(s: Snapshot, r: RankRule, a: Assumptions): RankEval
   };
   req("pv", "PV", r.pv, pv.value, pv.detail);
   if (r.qdv != null) {
-    const q = qdvCounted(s, d(r.qdv), a);
-    req("qdv", "QDV (máx. 50 % por línea)", r.qdv, q.value,
-      `${linesCount(s)} línea(s); tope por línea ${vol(d(r.qdv).times(PLAN.maxVolumeRule))}` + (q.capped.length ? `. Recortadas: ${q.capped.join("; ")}` : "") + (a.includeOwnPvInQdv ? ". Incluye tu PV." : ""));
+    const q = qdvCounted(s, r.mvr != null ? d(r.mvr) : null, a);
+    req("qdv", r.mvr != null ? `QDV (MVR: máx. ${vol(r.mvr)} por línea)` : "QDV", r.qdv, q.value,
+      `${linesCount(s)} línea(s)` + (r.mvr != null ? `; cada línea cuenta como máximo ${vol(r.mvr)}` : "; este rango no tiene regla de volumen máximo") + (q.capped.length ? `. Recortadas: ${q.capped.join("; ")}` : "") + (a.includeOwnPvInQdv ? ". Incluye tu PV." : ""));
   }
   if (r.ol2l != null) req("ol2l", "OL2L", r.ol2l, ol2l(s), "Volumen fuera de tus 2 líneas más grandes.");
   if (r.binaryBalance != null) {
@@ -202,36 +203,41 @@ function paidRanks(ctx: Ctx, qMonth: Qualification): (RankId | null)[] {
 }
 
 function personalTeam(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
-  const c = base("personal-team", "Bono por nivel alcanzado · 10 % Personal Team", "personal-team", "potencialmente_recurrente", "Calculado por semana (periodo de pago no indicado).");
+  const c = base("personal-team", "Bono de Nivel Comprimido · 10 % Personal Team", "personal-team", "potencialmente_recurrente", "Calculado por semana (periodo de pago no indicado).");
   const weekly: D[] = [];
   let ineligibleWeeks = 0;
+  let presidential = false;
   for (const w of WEEKS) {
     const s = ctx.snap(w as WindowId);
     const baseCv = s.sponsoredCv.plus(ctx.a.personalTeamIncludesCustomers ? s.sponsoredCustomersCv : ZERO);
-    const ok = atLeast(ranks[w as number], "abp");
-    if (!ok && baseCv.gt(0)) ineligibleWeeks++;
-    weekly.push(ok ? cents(pct(baseCv, PLAN.personalTeamPct)) : ZERO);
+    const r = ranks[w as number];
+    // Tabla oficial: 0 % Socio Activo, 10 % de 1★ Gerente a 3★ Ejecutivo; Presidenciales sin dato (se aplica 10 %).
+    const rate = r ? (rankById[r].levelPct ?? PLAN.personalTeamPct) : 0;
+    if (r && rankById[r].levelPct == null) presidential = true;
+    if (!rate && baseCv.gt(0)) ineligibleWeeks++;
+    weekly.push(rate ? pct(baseCv, rate) : ZERO);
   }
   const m = monthlyFromWeeks(weekly, ctx.a);
   const monthCv = ctx.snap("m").sponsoredCv.plus(ctx.a.personalTeamIncludesCustomers ? ctx.snap("m").sponsoredCustomersCv : ZERO);
-  c.weekly = weekly; c.monthly = m.monthly; c.monthly4w = m.monthly4w;
+  c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
   c.steps.push(`Volumen comisionable de tus Brand Partners patrocinados personalmente en el mes: ${vol(monthCv)}` + (ctx.a.personalTeamIncludesCustomers ? " (incluye a sus clientes)" : " (sin sus clientes)") + ".");
-  c.steps.push(`Por semana: 10 % × volumen de la semana, solo si esa semana tienes al menos rango BP Activo (55 PV).`);
-  c.steps.push(`Semanas: ${weekly.map((x) => usd(x)).join(" · ")}.`);
+  c.steps.push(`Por semana: 10 % × volumen de la semana, solo si esa semana tienes rango 1★ Gerente o superior (el Socio Activo cobra 0 %).`);
+  c.steps.push(`Semanas: ${weekly.map((x) => usd(cents(x))).join(" · ")} (el redondeo a centavos se aplica una vez, al total).`);
   c.steps.push(m.note);
-  if (monthCv.isZero()) { c.status = "no_elegible"; c.reasons.push("No tienes Brand Partners patrocinados personalmente con compras en el periodo."); }
-  else if (ineligibleWeeks === 4) { c.status = "no_elegible"; c.reasons.push(`No alcanzas BP Activo (${PLAN.ranks[0].pv} PV) en ninguna semana pagada.`); c.missing.push(`PV de BP Activo: ${PLAN.ranks[0].pv}`); }
-  else if (ineligibleWeeks > 0) c.reasons.push(`En ${ineligibleWeeks} de 4 semanas no tienes BP Activo y ese 10 % no se paga.`);
+  if (presidential) c.reasons.push("La tabla oficial deja vacía la celda de los Presidenciales; se aplica 10 % («en todos los rangos», según la presentación).");
+  if (monthCv.isZero()) { c.status = "no_elegible"; c.reasons.push("No tienes Socios de Marca patrocinados personalmente con compras en el periodo."); }
+  else if (ineligibleWeeks === 4) { c.status = "no_elegible"; c.reasons.push("Empieza en 1★ Gerente (75 PV y 750 de QDV): el Socio Activo cobra 0 %."); c.missing.push("Rango 1★ Gerente"); }
+  else if (ineligibleWeeks > 0) c.reasons.push(`En ${ineligibleWeeks} de 4 semanas no tienes 1★ Gerente y ese 10 % no se paga.`);
   return c;
 }
 
 function customerBonus(ctx: Ctx): ComponentResult {
-  const c = base("customer", "Bono para el cliente (Customer Premium)", "customer", "potencialmente_recurrente", "Ventana de 31 días (≈ el mes).", "web");
+  const c = base("customer", "Bono por Cliente (Customer Premium)", "customer", "potencialmente_recurrente", "Ventana de 31 días (≈ el mes).");
   const s = ctx.snap("m");
   const tier = [...PLAN.customerBonusTiers].reverse().find((t) => s.customersQv.gte(t.minQv));
   c.monthly4w = null;
   c.steps.push(`Volumen de calificación de tus clientes personales en 31 días: ${vol(s.customersQv)}.`);
-  c.steps.push(`Tramos (fuente: web): ${PLAN.customerBonusTiers.map((t) => `${vol(t.minQv)}${t.maxQv ? `–${vol(t.maxQv)}` : "+"} → ${t.pct} %`).join(" · ")}.`);
+  c.steps.push(`Tramos (tabla oficial): ${PLAN.customerBonusTiers.map((t) => `${vol(t.minQv)}${t.maxQv ? `–${vol(t.maxQv)}` : "+"} → ${t.pct} %`).join(" · ")}.`);
   if (s.customersQv.isZero()) { c.status = "no_elegible"; c.monthly = ZERO; c.reasons.push("No tienes compras de clientes personales en el periodo."); return c; }
   if (!tier) {
     c.status = "no_elegible"; c.monthly = ZERO;
@@ -269,7 +275,7 @@ function binaryWeek(s: Snapshot, rank: RankId | null): { amount: D; capped: bool
   if (!atLeast(rank, "m1")) return { amount: ZERO, capped: false, base: ZERO };
   const r = rankById[rank!];
   const b = min(s.legs.Lcv, s.legs.Rcv);
-  const raw = cents(pct(b, r.binaryPct!));
+  const raw = pct(b, r.binaryPct!);
   const capped = raw.gt(r.binaryWeeklyCap!);
   return { amount: capped ? d(r.binaryWeeklyCap!) : raw, capped, base: b };
 }
@@ -291,16 +297,16 @@ function binary(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
     if (r.capped) c.capsHit.push(`Semana ${(w as number) + 1}: tope de ${usd(rankById[ranks[w as number]!].binaryWeeklyCap!)} alcanzado.`);
   }
   const m = monthlyFromWeeks(weekly, ctx.a);
-  c.status = "hipotetico"; c.weekly = weekly; c.monthly = m.monthly; c.monthly4w = m.monthly4w;
+  c.status = "hipotetico"; c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
   c.steps.push("SUPUESTO no confirmado: % del rango pagado × volumen comisionable de la pierna menor de cada semana, sin arrastre, con el tope semanal del PDF.");
   c.steps.push(...WEEKS.map((w) => {
     const s = ctx.snap(w as WindowId); const r = ranks[w as number];
-    return `Semana ${(w as number) + 1}: piernas ${vol(s.legs.Lcv)} / ${vol(s.legs.Rcv)} · rango ${r ? rankById[r].short : "sin rango"}${atLeast(r, "m1") ? ` · ${rankById[r!].binaryPct} % → ${usd(weekly[w as number])}` : " · no califica (requiere 1★ Manager)"}`;
+    return `Semana ${(w as number) + 1}: piernas ${vol(s.legs.Lcv)} / ${vol(s.legs.Rcv)} · rango ${r ? rankById[r].short : "sin rango"}${atLeast(r, "m1") ? ` · ${rankById[r!].binaryPct} % → ${usd(weekly[w as number])}` : " · no califica (requiere 1★ Gerente)"}`;
   }));
   c.steps.push(m.note);
   if (weekly.every((x) => x.isZero())) {
     c.status = "no_elegible";
-    if (!ranks.some((r) => atLeast(r, "m1"))) { c.reasons.push("Requiere rango pagado 1★ Manager o superior."); c.missing.push("Rango 1★ Manager"); }
+    if (!ranks.some((r) => atLeast(r, "m1"))) { c.reasons.push("Requiere rango pagado 1★ Gerente o superior."); c.missing.push("Rango 1★ Gerente"); }
     else c.reasons.push("Una de tus piernas no tiene volumen: la pierna menor es 0.");
   }
   return c;
@@ -337,17 +343,17 @@ function mentor(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
         const pRank = ctx.a.qualificationPeriod === "mensual" ? qualify(v.snapshot(p.id, "m"), ctx.a).paidRank : qualify(ps, ctx.a).paidRank;
         const b = binaryWeek(ps, pRank).amount;
         if (b.isZero()) continue;
-        const raw = cents(pct(b, gens[gi]));
+        const raw = pct(b, gens[gi]);
         const amt = raw.gt(cap) ? cap : raw;
         if (raw.gt(cap)) c.capsHit.push(`Semana ${(w as number) + 1}: ${p.label} topado en ${usd(cap)}.`);
         total = total.plus(amt);
         if (w === 0 || ctx.a.orderTiming !== "uniforme") detailLines.push(`Sem. ${(w as number) + 1} · Gen ${gi + 1} · ${p.label}: ${gens[gi]} % × binario ${usd(b)} = ${usd(amt)}`);
       }
     });
-    weekly.push(cents(total));
+    weekly.push(total);
   }
   const m = monthlyFromWeeks(weekly, ctx.a);
-  c.status = "hipotetico"; c.weekly = weekly; c.monthly = m.monthly; c.monthly4w = m.monthly4w;
+  c.status = "hipotetico"; c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
   c.steps.push("SUPUESTO no confirmado: % de la generación × bono binario semanal de cada Brand Partner de esa generación de patrocinio; tope por BP y semana.");
   c.steps.push(...(detailLines.length ? detailLines.slice(0, 40) : ["Ninguna persona de tus generaciones cobra binario con estos datos."]));
   c.steps.push(m.note);
@@ -363,6 +369,14 @@ function pib(ctx: Ctx): ComponentResult {
   const c = base("pib", "Bono de Introducción de Producto (PIB)", "pib", "puntual", "Por inscripción.");
   const lines = ctx.enrollments.filter((e) => e.count > 0);
   if (!lines.length) { c.status = "no_elegible"; c.reasons.push("Sin inscripciones con paquete en el periodo."); return c; }
+  const m = ctx.snap("m");
+  const pv = m.ownQv.plus(m.customersQv);
+  if (pv.lt(PLAN.pibMinPv)) {
+    c.status = "no_elegible";
+    c.reasons.push(`Debes estar Activo (mín. ${PLAN.pibMinPv} PV) para ganarlo: tu PV es ${vol(pv)}.`);
+    c.missing.push(`${vol(d(PLAN.pibMinPv).minus(pv))} PV para estar Activo`);
+    return c;
+  }
   let total = ZERO;
   for (const e of lines) {
     const p = PLAN.pib.find((x) => x.id === e.packageId);
@@ -371,7 +385,7 @@ function pib(ctx: Ctx): ComponentResult {
     c.steps.push(`${e.count} × ${p.name} × ${usd(p.bonus)} = ${usd(d(p.bonus).times(e.count))}`);
   }
   c.monthly = cents(total);
-  c.reasons.push("Puntual: se genera con cada nueva inscripción, no se repite cada mes por sí solo. Requisitos de elegibilidad no indicados en las fuentes.");
+  c.reasons.push("Puntual: se genera con cada nueva inscripción, no se repite cada mes por sí solo.");
   return c;
 }
 
@@ -386,38 +400,34 @@ function rankBonus(ctx: Ctx, highest: RankId | null): ComponentResult {
     if (next) c.missing.push(`Alcanzar ${next.short} (bono ${usd(next.rankBonus)})`);
     return c;
   }
-  const total = sum(newly.map((r) => d(r.rankBonus!)));
-  const half = cents(total.dividedBy(2));
-  c.steps.push(...newly.map((r) => `${r.short}: ${usd(r.rankBonus)} (acumulativo)`));
-  c.steps.push(`Total ${usd(total)}. Según la web se paga en dos mitades: ${usd(half)} al calificar por 1.ª vez y ${usd(half)} al calificar por 4.ª vez.`);
-  c.monthly = half;
   const days = ctx.a.daysSinceEnrollment;
-  if (days != null && days <= PLAN.rankBonusDoubling.pdf.days) {
-    const dbl = newly.filter((r) => PLAN.rankBonusDoubling.pdf.ranks.includes(r.id));
-    if (dbl.length) {
-      const pdfTotal = total.plus(sum(dbl.map((r) => d(r.rankBonus!))));
-      const inWebWindow = days <= PLAN.rankBonusDoubling.web.weeks * 7;
-      c.status = "contradiccion";
-      c.monthly = null;
-      c.range = { low: half, high: cents(pdfTotal), lowLabel: "Sin duplicar: ½ en la 1.ª calificación", highLabel: `Lectura PDF p.7: total duplicado en ${dbl.map((r) => r.short).join(", ")}` };
-      c.steps.push(`Nuevo Brand Partner (${days} días): PDF p.7 duplica el bono de ${dbl.map((r) => r.short).join(", ")} si se alcanza en los primeros 60 días → total ${usd(pdfTotal)}.`);
-      c.steps.push(inWebWindow
-        ? `Web (arranque rápido): en las primeras 8 semanas se cobra el bono completo en la 1.ª calificación en lugar de la mitad → ${usd(total)} ahora; la segunda mitad, por confirmar.`
-        : `Web: el doble aplica en las primeras 8 semanas (56 días); con ${days} días quedaría fuera.`);
-      c.reasons.push("Las fuentes se contradicen sobre en qué consiste el «doble»: se muestra el rango, sin elegir una lectura.");
-    }
+  const dbl = PLAN.rankBonusDoubling;
+  const early = days != null && days <= dbl.part1Weeks * 7;
+  let part1 = ZERO, part2 = ZERO, part2Doubled = ZERO;
+  for (const r of newly) {
+    const half = d(r.rankBonus!).dividedBy(2);
+    const doubles = dbl.ranks.includes(r.id);
+    part1 = part1.plus(early && doubles ? half.times(2) : half);
+    part2 = part2.plus(half);
+    part2Doubled = part2Doubled.plus(doubles ? half.times(2) : half);
+    c.steps.push(`${r.short}: ${usd(r.rankBonus)}${doubles ? ` (nuevos socios: hasta ${usd(r.rankBonus! * 2)})` : ""}`);
   }
+  c.monthly = cents(part1);
+  c.steps.push(`Parte 1 (al alcanzar el rango): ${usd(part1)}${early ? ` — duplicada en ${newly.filter((r) => dbl.ranks.includes(r.id)).map((r) => r.short).join(", ") || "ningún rango elegible"} porque lo alcanzas en tus primeras ${dbl.part1Weeks} semanas` : ""}.`);
+  c.steps.push(`Parte 2 (tras ${dbl.part2RequalWeeks} semanas de recalificación): ${usd(part2)}; se duplica (${usd(part2Doubled)}) si las completas dentro de las ${dbl.part2WithinWeeks} semanas del logro del rango (solo 2★ Gerente, 3★ Gerente y 1★ Director).`);
+  const rewards = PLAN.ranks.filter((r) => r.rankReward && highest && rankIndex(r.id) > prev && rankIndex(r.id) <= rankIndex(highest));
+  if (rewards.length) c.steps.push(`Premios no monetarios: ${[...new Set(rewards.map((r) => r.rankReward))].join(" · ")}.`);
   return c;
 }
 
 function quarterly(highest: RankId | null): ComponentResult {
-  const c = base("quarterly", "Grupo de Liderazgo Trimestral", "quarterly", "temporal", "Trimestral.");
+  const c = base("quarterly", "Viajes y Fondo Global Presidencial", "quarterly", "temporal", "No indicado.");
   const r = highest ? rankById[highest] : null;
   if (!r || r.quarterlyShares == null) {
     c.status = "no_elegible"; c.reasons.push("Solo para rangos Presidenciales (1★, 2★ o 3★ Presidencial)."); return c;
   }
   c.status = "pendiente"; c.monthly = null;
-  c.steps.push(`${r.short}: ${r.quarterlyShares} participación(es) según el PDF p.11 (la web habla de participaciones por semana pagada).`);
+  c.steps.push(`${r.short}: viajes y Fondo Global Presidencial (tabla oficial p.2). La presentación (p.11) habla de ${r.quarterlyShares} participación(es).`);
   c.reasons.push("Las fuentes no publican el tamaño del fondo ni el valor por participación: no se calcula dinero.");
   c.missing.push("Valor de la participación");
   return c;
@@ -493,8 +503,9 @@ export function simulate(input: SimulationInput): SimulationResult {
   const rangeC = components.find((c) => c.classification === "puntual" && c.range);
   const s = ctx.snap("m");
   const teamQv = s.legs.L.plus(s.legs.R);
-  const nextQdv = nextRank && rankById[nextRank].qdv != null ? qdvCounted(s, d(rankById[nextRank].qdv!), a) : null;
-  const paidQdv = qMonth.paidRank && rankById[qMonth.paidRank].qdv != null ? qdvCounted(s, d(rankById[qMonth.paidRank].qdv!), a).value : sum(s.lines.map((l) => l.qv.times(l.count)));
+  const mvrOf = (r: RankId) => (rankById[r].mvr != null ? d(rankById[r].mvr!) : null);
+  const nextQdv = nextRank && rankById[nextRank].qdv != null ? qdvCounted(s, mvrOf(nextRank), a) : null;
+  const paidQdv = qMonth.paidRank && rankById[qMonth.paidRank].qdv != null ? qdvCounted(s, mvrOf(qMonth.paidRank), a).value : sum(s.lines.map((l) => l.total));
 
   return {
     ok: true, errors: [], missing: [],

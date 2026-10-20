@@ -66,7 +66,7 @@ export function QuickForm({ q, products, onChange }: { q: QuickOrg; products: Pr
       <NumberField unit="people" label="Integrantes registrados que no compran" value={q.teamInactive} onChange={(v) => set({ teamInactive: Math.max(0, Math.round(v ?? 0)) })} />
       <div className="groups">
         <h3>Distribución del volumen del equipo</h3>
-        <p className="muted">Necesaria para la regla del 50 %, el OL2L y el equilibrio binario. Tienes {sponsoredTotal} patrocinado(s): cada línea empieza en uno de ellos.</p>
+        <p className="muted">Necesaria para la Regla de Volumen Máximo (desde 1★ Director), el OL2L y el balance binario. Tienes {sponsoredTotal} patrocinado(s): cada línea empieza en uno de ellos.</p>
         <div className="row2">
           <NumberField unit="people" label="Número de líneas" value={dist.lines} onChange={(v) => set({ distribution: { ...dist, lines: Math.max(0, Math.round(v ?? 0)) } })} />
           <NumberField label="% del volumen en la línea más grande" suffix="%" max={100} step={0.1} value={dist.largestPct} onChange={(v) => set({ distribution: { ...dist, largestPct: v ?? 0 } })} />

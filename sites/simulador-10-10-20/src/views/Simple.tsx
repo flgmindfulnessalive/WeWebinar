@@ -28,7 +28,7 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
     <div className="view simple">
       <header className="view__head">
         <h1>Calcula tus ganancias</h1>
-        <p>Plan 10·10·20 de LifeWave. Cambia los números y mira cuánto suma cada forma de ganar.</p>
+        <p>Plan 10·10·20 de LifeWave (tabla oficial EE. UU.). Cambia los números y mira cuánto suma cada forma de ganar.</p>
       </header>
 
       <section className="card sform" aria-label="Tus datos">

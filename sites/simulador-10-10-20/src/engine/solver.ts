@@ -186,7 +186,7 @@ function unreachableReason(s: Structure, r: SimulationResult, g: GoalInput): str
   const get = (id: string) => r.components.find((c) => c.id === id)!;
   if (!r.paidRank) {
     const pv = r.qualificationMonth?.evaluations[0]?.checks.find((c) => c.key === "pv");
-    return `No llegas a BP Activo: tu PV es ${pv ? pv.actual.toString() : "0"} y se necesitan 55. Sin rango, el 10 % Personal Team no se paga aunque tengas compradores. Sube tus unidades personales o suma clientes propios.`;
+    return `No llegas a Socio Activo: tu PV es ${pv ? pv.actual.toString() : "0"} y se necesitan 55. Sin rango, el 10 % Personal Team no se paga aunque tengas compradores. Sube tus unidades personales o suma clientes propios.`;
   }
   if (s === "clientes") {
     const retail = get("retail");

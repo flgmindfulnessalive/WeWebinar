@@ -24,7 +24,7 @@ export function LearnView() {
     <div className="view">
       <header className="view__head">
         <h1>Entender el plan 10·10·20</h1>
-        <p><b>10 %</b> Personal Team · <b>10 %</b> Binario desde 1★ Manager · <b>20 %</b> Mentor Match desde 1★ Director, más el Bono para el cliente de hasta 20 %, el PIB y los bonos de rango.</p>
+        <p><b>10 %</b> Personal Team · <b>10 %</b> Binario desde 1★ Gerente · <b>20 %</b> Mentor Match desde 1★ Director, más el Bono para el cliente de hasta 20 %, el PIB y los bonos de rango.</p>
       </header>
       <Notice tone="warn">{PLAN.sourcesNote} Fecha de vigencia: <b>no publicada</b>. Mercado: {PLAN.market}</Notice>
       <Notice tone="hypo">Los ejemplos usan valores hipotéticos. {EXAMPLE_NOTE}</Notice>
@@ -52,33 +52,34 @@ export function LearnView() {
         ))}
       </div>
 
-      <h2 className="sec">Camino al éxito (PDF p.4, p.9 y p.10)</h2>
+      <h2 className="sec">Tabla del plan (oficial, EE. UU.)</h2>
       <Card>
         <div className="tbl-wrap" tabIndex={0} role="region" aria-label="Tabla desplazable">
           <table className="tbl tbl--ranks">
-            <thead><tr><th>Rango</th><th>PV</th><th>QDV</th><th>OL2L</th><th>Equilibrio</th><th>Binario</th><th>Tope semanal</th><th>Mentor Match</th><th>Bono de rango</th></tr></thead>
+            <thead><tr><th>Rango</th><th>PV</th><th>QDV</th><th>MVR</th><th>OL2L</th><th>Balance binario</th><th>Nivel Comprimido</th><th>Binario</th><th>Máx. semanal</th><th>Mentor Match</th><th>Bono de rango</th></tr></thead>
             <tbody>{PLAN.ranks.map((r) => (
               <tr key={r.id}>
                 <th scope="row">{r.short}</th>
                 <td className="u-volume">{r.pv}{r.pv === 200 ? "*" : ""}</td>
-                <td className="u-volume">{vol(r.qdv)}</td><td className="u-volume">{vol(r.ol2l)}</td><td className="u-volume">{vol(r.binaryBalance)}</td>
+                <td className="u-volume">{vol(r.qdv)}</td><td className="u-volume">{vol(r.mvr)}</td><td className="u-volume">{vol(r.ol2l)}</td><td className="u-volume">{vol(r.binaryBalance)}</td>
+                <td>{r.levelPct == null ? "(vacío)" : `${r.levelPct} %`}</td>
                 <td>{r.binaryPct ? `${r.binaryPct} %` : "—"}</td><td className="u-money">{r.binaryWeeklyCap ? usd(r.binaryWeeklyCap) : "—"}</td>
                 <td>{r.mentorGens.length ? `${r.mentorGens.map((g, i) => `G${i + 1} ${g} %`).join(" · ")} (máx. ${usd(r.mentorCapPerBp)} por BP)` : "—"}</td>
-                <td className="u-money">{r.rankBonus ? usd(r.rankBonus) : "—"}</td>
+                <td className="u-money">{r.rankBonus ? usd(r.rankBonus) : r.rankReward ?? "—"}</td>
               </tr>
             ))}</tbody>
           </table>
         </div>
-        <p className="muted">* En rangos de 200 PV, máximo 110 pueden venir de compras personales (no aplica en APAC). Regla de volumen máximo: hasta el 50 % del QDV requerido puede venir de una sola línea. Las líneas de volumen del plan anterior se eliminan (web 06).</p>
+        <p className="muted">Fuente: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)», p.1 y p.2. * PV 200**: según la presentación, máximo 110 de compras personales (no aplica en APAC); la nota no aparece en la tabla oficial. MVR: lo máximo que cuenta de una sola línea (desde 1★ Director, el 50 % del QDV). Los Gerentes no tienen MVR. Nuevos socios: el bono de 2★G, 3★G y 1★D puede duplicarse (Parte 1 en las primeras 8 semanas; Parte 2 si recalificas 4 semanas dentro de 16).</p>
       </Card>
 
       <h2 className="sec">Definiciones</h2>
       <div className="learn">
         <Card title="Cliente y cliente preferente"><p>Las fuentes los mencionan («clientes», «clientes preferenciales que compren productos cada mes», PDF p.2) pero no los definen. En el simulador, sus compras suman a tu PV y al Bono para el cliente.</p></Card>
         <Card title="Brand Partner activo"><p>{ruleOf("active").rule}</p></Card>
-        <Card title="Patrocinio y colocación"><p>El <b>patrocinador</b> es quien te inscribió (árbol de inscripción: Personal Team, generaciones, «líneas»). La <b>colocación</b> es tu posición en el binario (pierna izquierda o derecha de alguien). Pueden no coincidir. Las fuentes no definen qué árbol usan la regla del 50 % y el OL2L: el simulador te deja elegir.</p></Card>
+        <Card title="Patrocinio y colocación"><p>El <b>patrocinador</b> es quien te inscribió (árbol de inscripción: Nivel Comprimido, generaciones, «líneas»). La <b>colocación</b> es tu posición en el binario (pierna izquierda o derecha de alguien). Pueden no coincidir. La tabla no define qué árbol usan la MVR y el OL2L («piernas mayores»): el simulador te deja elegir.</p></Card>
         <Card title="Rango pagado y rango histórico"><p>El binario se paga según el <b>rango pagado</b> (PDF p.9), el que cumples en el periodo. El <b>rango histórico</b> (el más alto alcanzado) importa para el bono por subir de rango, que se cobra al alcanzar un rango por primera vez.</p></Card>
-        <Card title="Tipos de volumen"><p><b>PV</b>: tu volumen personal (incluye clientes, con el límite de 110 en rangos de 200). <b>QDV</b>: volumen de calificación de tu organización, con la regla del 50 %. <b>OL2L</b>: volumen fuera de tus 2 líneas más grandes. <b>Equilibrio binario</b>: volumen mínimo en las piernas. El simulador distingue <b>volumen de calificación</b> y <b>volumen comisionable</b> por producto porque las fuentes no dicen si son el mismo; ninguno es el precio.</p></Card>
+        <Card title="Tipos de volumen"><p><b>PV</b>: tu volumen personal (incluye clientes, con el límite de 110 en rangos de 200). <b>QDV</b>: volumen calificable de tu red. <b>MVR</b>: lo máximo que cuenta de una sola línea (desde 1★ Director). <b>OL2L</b>: volumen fuera de tus 2 piernas mayores. <b>Balance binario</b>: volumen mínimo en las piernas. El simulador distingue <b>volumen de calificación</b> y <b>volumen comisionable</b> por producto porque la tabla no dice si son el mismo; ninguno es el precio.</p></Card>
         <Card title="Arrastre, vencimiento y reinicio de volumen"><p>Las fuentes no lo mencionan. El simulador no arrastra volumen de un periodo a otro y lo indica en cada resultado.</p></Card>
       </div>
 
@@ -107,7 +108,8 @@ export function SourcesView() {
       </header>
       <Card title="Fuentes">
         <ul className="todo">
-          <li><b>PDF</b> «10-10-20 This Is It» (13 páginas; creado con Canva el 08-oct-2026). Presentación del plan en español con tablas de rangos, binario, Mentor Match, PIB, bonos de rango y grupo trimestral, más la divulgación de ganancias de EE. UU. 2024.</li>
+          <li><b>Tabla oficial</b> «Plan de Compensación LifeWave 10-10-20 (EE. UU.)» (2 páginas, Adobe InDesign; modificado el 16-oct-2026). Fuente principal: requisitos de rango, MVR, OL2L, balance binario, Nivel Comprimido, Ganancia Minorista, Bono por Cliente, PIB, binario, Mentor Match y bonos por avance de rango.</li>
+          <li><b>Presentación</b> «10-10-20 This Is It» (13 páginas; creado con Canva el 08-oct-2026). Presentación del plan en español con tablas de rangos, binario, Mentor Match, PIB, bonos de rango y grupo trimestral, más la divulgación de ganancias de EE. UU. 2024.</li>
           <li><b>Web</b> vivralux.com/nuevo-plan-compensacion-lifewave («Ten · Ten · Twenty»), material educativo independiente que compara el Plan 2.0 con lo anunciado en el webinar de líderes.</li>
         </ul>
       </Card>
@@ -124,7 +126,7 @@ export function SourcesView() {
               <div><dt>Requisitos</dt><dd>{r.requirements}</dd></div>
               <div><dt>Periodicidad</dt><dd>{r.period}</dd></div>
               <div><dt>Límites</dt><dd>{r.limits}</dd></div>
-              <div><dt>Fuente exacta</dt><dd><ul>{r.sources.map((s, i) => <li key={i}>{s.doc === "pdf" ? "PDF" : "Web"} · {s.where}{s.quote && <q> {s.quote}</q>}</li>)}</ul></dd></div>
+              <div><dt>Fuente exacta</dt><dd><ul>{r.sources.map((s, i) => <li key={i}>{s.doc === "oficial" ? "Oficial" : s.doc === "pdf" ? "Presentación" : "Web"} · {s.where}{s.quote && <q> {s.quote}</q>}</li>)}</ul></dd></div>
               {r.note && <div><dt>Validación</dt><dd>{r.note}</dd></div>}
             </dl>
           </article>

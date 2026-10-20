@@ -41,11 +41,11 @@ describe("Calculadora de meta (búsqueda inversa)", () => {
     expect(two.units).toBe(one.units + (two.units - one.units)); // misma métrica de unidades informada
   });
 
-  it("sin compras personales no hay BP Activo: la meta no es alcanzable y se explica", () => {
+  it("sin compras personales no hay Socio Activo: la meta no es alcanzable y se explica", () => {
     const r = solve({ ...goal, personalQty: 0, target: 250 }, products, DEFAULT_ASSUMPTIONS);
     expect(r.solutions.filter((s) => s.structure === "socios")).toEqual([]);
     expect(r.unreachable.some((u) => u.structure === "socios")).toBe(true);
-    expect(r.unreachable.find((u) => u.structure === "socios")!.reason).toMatch(/BP Activo/);
+    expect(r.unreachable.find((u) => u.structure === "socios")!.reason).toMatch(/Socio Activo/);
   });
 
   it("bloquea si el producto no tiene volumen", () => {

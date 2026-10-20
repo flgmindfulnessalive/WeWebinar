@@ -11,6 +11,7 @@ export type RankId =
 
 /**
  * Estado de validación de una regla.
+ * - oficial: dato explícito en la tabla oficial del plan (EE. UU.).
  * - confirmada: dato explícito en el PDF y coherente con la web.
  * - pdf: dato explícito solo en el PDF (la web no lo detalla o lo deja «por confirmar»).
  * - web: dato que solo aparece en la web (fuente secundaria).
@@ -19,11 +20,14 @@ export type RankId =
  * - contradiccion: las fuentes dicen cosas distintas; se muestran ambas.
  * - pendiente: falta un dato crítico; no se calcula importe.
  */
-export type RuleStatus = "confirmada" | "pdf" | "web" | "interpretacion" | "contradiccion" | "pendiente";
+export type RuleStatus = "oficial" | "confirmada" | "pdf" | "web" | "interpretacion" | "contradiccion" | "pendiente";
 
 export interface SourceRef {
-  /** "pdf" = «10-10-20 This Is It» (13 págs.); "web" = vivralux.com/nuevo-plan-compensacion-lifewave */
-  doc: "pdf" | "web";
+  /**
+   * "oficial" = «Plan de Compensación LifeWave 10-10-20 (EE. UU.)», 2 págs. (fuente principal).
+   * "pdf" = presentación «10-10-20 This Is It» (13 págs.); "web" = vivralux.com/nuevo-plan-compensacion-lifewave.
+   */
+  doc: "oficial" | "pdf" | "web";
   /** Página del PDF o sección de la web. */
   where: string;
   /** Texto o dato tal como aparece. */
@@ -50,12 +54,16 @@ export interface RankRule {
   short: string;
   /** Volumen personal requerido (PV). */
   pv: number;
-  /** Volumen de calificación de la organización (QDV), con la regla del 50 % por línea. */
+  /** Volumen de calificación de la organización (QDV). */
   qdv: number | null;
+  /** Regla de volumen máximo: lo máximo que cuenta de una sola línea (null = no aplica). */
+  mvr: number | null;
   /** Volumen fuera de las dos líneas más grandes (OL2L). */
   ol2l: number | null;
   /** Equilibrio binario: volumen mínimo en cada pierna (lectura literal; ver regla). */
   binaryBalance: number | null;
+  /** Bono de Nivel Comprimido (10 % Personal Team) por rango; null = celda vacía en la tabla oficial. */
+  levelPct: number | null;
   /** Porcentaje del bono binario por rango pagado. */
   binaryPct: number | null;
   /** Tope semanal del bono binario en USD. */
@@ -66,6 +74,8 @@ export interface RankRule {
   mentorCapPerBp: number | null;
   /** Bono por subir de rango (USD). */
   rankBonus: number | null;
+  /** Premio no monetario por rango (viajes, fondo global). */
+  rankReward: string | null;
   /** Participaciones del Grupo de Liderazgo Trimestral. */
   quarterlyShares: number | null;
 }
@@ -79,17 +89,23 @@ export interface PlanRules {
   currency: "USD";
   sourcesNote: string;
   ranks: RankRule[];
-  /** Máximo del volumen requerido de QDV que puede venir de una sola línea. */
+  /** Fracción del QDV que representa la MVR (las cifras exactas están en cada rango). */
   maxVolumeRule: number;
   /** En rangos con PV 200, máximo que puede venir de compras personales (no aplica en APAC). */
   personalPvCapForPv200: number;
   personalTeamPct: number;
   customerBonusTiers: { minQv: number; maxQv: number | null; pct: number }[];
   customerBonusWindowDays: number;
-  pib: { id: string; name: string; altName?: string; bonus: number; price: number | null }[];
+  pib: { id: string; name: string; altName?: string; bonus: number; price: number | null; qv: number | null; sleeves: string | null }[];
+  /** PV mínimo para cobrar el PIB (estar Activo). */
+  pibMinPv: number;
   rankBonusDoubling: {
-    pdf: { ranks: RankId[]; days: number; factor: number };
-    web: { weeks: number; extraWeeksForFourth: number };
+    ranks: RankId[];
+    /** Parte 1 se duplica si el rango se alcanza dentro de estas semanas desde la inscripción. */
+    part1Weeks: number;
+    /** Parte 2 se duplica si las semanas de recalificación se completan dentro de este plazo. */
+    part2RequalWeeks: number;
+    part2WithinWeeks: number;
   };
   rules: Rule[];
 }

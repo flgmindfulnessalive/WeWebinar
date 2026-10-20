@@ -93,7 +93,7 @@ export function ComponentCard({ c }: { c: ComponentResult }) {
       <header className="comp__head">
         <div>
           <h3>{c.name}</h3>
-          <div className="chips"><StatusChip status={c.status} /><ClassChip c={c.classification} />{c.basis === "web" && <span className="chip rs-web">Fuente: web</span>}{c.basis === "supuesto" && c.status !== "calculado" && <span className="chip rs-interpretacion">Supuesto</span>}</div>
+          <div className="chips"><StatusChip status={c.status} /><ClassChip c={c.classification} />{c.basis === "web" && <span className="chip rs-web">Fuente secundaria</span>}{c.basis === "supuesto" && c.status !== "calculado" && <span className="chip rs-interpretacion">Supuesto</span>}</div>
         </div>
         <strong className={`comp__amt ${c.status === "pendiente" ? "is-pending" : "u-money"}`}>{amount}{c.status !== "pendiente" && !c.range && <small>{c.classification === "puntual" ? " este periodo" : " / mes"}</small>}</strong>
       </header>
@@ -123,7 +123,7 @@ export function VolumesCard({ r }: { r: SimulationResult }) {
         <div><dt>Tu organización</dt><dd className="u-volume">{vol(v.teamQv)}</dd></div>
         <div><dt>Total generado</dt><dd className="u-volume"><b>{vol(v.totalQv)}</b></dd></div>
         <div><dt>QDV que cuenta para tu rango</dt><dd className="u-volume">{vol(v.qdvCounted)}</dd></div>
-        {v.mvrExcessNext.gt(0) && <div><dt>Volumen que no cuenta para el siguiente rango (regla del 50 %)</dt><dd className="u-volume">{vol(v.mvrExcessNext)}</dd></div>}
+        {v.mvrExcessNext.gt(0) && <div><dt>Volumen que no cuenta para el siguiente rango (Regla de Volumen Máximo)</dt><dd className="u-volume">{vol(v.mvrExcessNext)}</dd></div>}
       </dl>
       <figure className="legs">
         <figcaption>Piernas del binario</figcaption>

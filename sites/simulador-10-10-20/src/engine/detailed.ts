@@ -128,9 +128,9 @@ export class DetailedVolumes {
       Lcv: this.placeSubtree(kids.L, w, "cv"), Rcv: this.placeSubtree(kids.R, w, "cv"),
     };
     if (this.a.linesTree === "patrocinio") {
-      s.lines = this.sponsoredBps(bpId).map((c) => ({ label: `Línea de ${c.label}`, qv: this.sponsorSubtree(c, w, "qv"), count: 1 }));
+      s.lines = this.sponsoredBps(bpId).map((c) => { const qv = this.sponsorSubtree(c, w, "qv"); return { label: `Línea de ${c.label}`, qv, count: 1, total: qv }; });
     } else {
-      s.lines = (["L", "R"] as const).filter((sd) => kids[sd]).map((sd) => ({ label: `Pierna ${sd === "L" ? "izquierda" : "derecha"}`, qv: this.placeSubtree(kids[sd], w, "qv"), count: 1 }));
+      s.lines = (["L", "R"] as const).filter((sd) => kids[sd]).map((sd) => { const qv = this.placeSubtree(kids[sd], w, "qv"); return { label: `Pierna ${sd === "L" ? "izquierda" : "derecha"}`, qv, count: 1, total: qv }; });
     }
     const spons = this.sponsoredBps(bpId);
     s.sponsoredCv = spons.reduce((a, c) => a.plus(this.ownCv(c, w)), ZERO);

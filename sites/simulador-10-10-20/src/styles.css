@@ -143,7 +143,7 @@ main:focus { outline: none; }
 /* Chips de estado */
 .chip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700; letter-spacing: .01em; background: var(--pending-bg); color: var(--pending); white-space: nowrap; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
-.st-calculado, .rs-confirmada { background: var(--money-bg); color: var(--ok); }
+.st-calculado, .rs-confirmada, .rs-oficial { background: var(--money-bg); color: var(--ok); }
 .st-no_elegible { background: #fdf1e7; color: #8a4b12; }
 .st-pendiente, .rs-pendiente { background: var(--pending-bg); color: var(--pending); }
 .st-hipotetico, .rs-interpretacion { background: var(--hypo-bg); color: var(--hypo); }

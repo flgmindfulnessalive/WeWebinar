@@ -72,11 +72,14 @@ export function quickSnapshot(q: QuickOrg, w: WindowId, a: Assumptions, idx: Pro
 
   const { lines, largestPct, secondPct, leftPct } = q.distribution;
   if (lines >= 1) {
-    const out = [{ label: "Línea 1 (la más grande)", qv: teamQv.times(lines === 1 ? 100 : largestPct).dividedBy(100), count: 1 }];
-    if (lines >= 2) out.push({ label: "Línea 2", qv: teamQv.times(secondPct).dividedBy(100), count: 1 });
+    const l1 = lines === 1 ? teamQv : teamQv.times(largestPct).dividedBy(100);
+    const l2 = lines >= 2 ? (lines === 2 ? teamQv.minus(l1) : teamQv.times(secondPct).dividedBy(100)) : ZERO;
+    const out = [{ label: "Línea 1 (la más grande)", qv: l1, count: 1, total: l1 }];
+    if (lines >= 2) out.push({ label: "Línea 2", qv: l2, count: 1, total: l2 });
     if (lines > 2) {
-      const each = teamQv.times(100 - largestPct - secondPct).dividedBy(100).dividedBy(lines - 2);
-      out.push({ label: lines === 3 ? "Línea 3" : `Líneas 3 a ${lines} (cada una)`, qv: each, count: lines - 2 });
+      // El resto se calcula por diferencia para que la suma sea exacta.
+      const rest = teamQv.minus(l1).minus(l2);
+      out.push({ label: lines === 3 ? "Línea 3" : `Líneas 3 a ${lines} (cada una)`, qv: rest.dividedBy(lines - 2), count: lines - 2, total: rest });
     }
     s.lines = out;
   }

@@ -10,11 +10,11 @@ describe("Calculadora simple", () => {
     expect(r.rank).toBe("d2");
     expect(line(r, "personal-team")).toBe("77.00"); // 10 × 77 × 10 %
     expect(line(r, "customer")).toBe("77.00"); // 770 PV → 10 %
-    expect(line(r, "binary")).toBe("635.27"); // 11 % × 5 775 (semanal, 52/12)
-    // cada directo: 14 en su equipo → 1★ Manager, binario 10 % × 7×77×12/52 = 12,44/sem → 20 % = 2,49 → ×10 = 24,90/sem
-    expect(line(r, "mentor")).toBe("107.90");
+    expect(line(r, "binary")).toBe("635.25"); // 11 % × 5 775 (semanal → 52/12, un solo redondeo)
+    // cada directo: 14 en su equipo → 1★ Gerente, binario 10 % × 7×77×12/52 = 12,44/sem → 20 % = 2,49 → ×10 = 24,90/sem
+    expect(line(r, "mentor")).toBe("107.80");
     expect(r.confirmed.toFixed(2)).toBe("154.00");
-    expect(r.total.toFixed(2)).toBe("897.17");
+    expect(r.total.toFixed(2)).toBe("897.05");
     expect(r.rankBonusTotal.toString()).toBe("1850"); // 100 + 250 + 500 + 1000
     expect(r.next!.rank).toBe("d3");
     expect(r.next!.gaps.join()).toMatch(/8,450|8.450/);

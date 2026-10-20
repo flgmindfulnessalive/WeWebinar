@@ -42,7 +42,7 @@ export function AssumptionsCard({ a, onChange }: { a: Assumptions; onChange: (a:
         hint="Afecta a los bonos semanales y sus topes. «Uniforme» reparte el mes en semanas de promedio anual (×12/52) y convierte con 52/12." />
       <Segmented label="Región" value={a.region} onChange={(v) => set({ region: v })} options={[{ value: "general", label: "General" }, { value: "apac", label: "APAC" }]}
         hint={`La regla de máx. ${PLAN.personalPvCapForPv200} PV de compras personales en rangos de 200 PV excluye APAC (PDF p.4).`} />
-      <Segmented label="«Líneas de negocio» para la regla del 50 % y OL2L" value={a.linesTree} onChange={(v) => set({ linesTree: v })}
+      <Segmented label="«Líneas» para la Regla de Volumen Máximo y el OL2L" value={a.linesTree} onChange={(v) => set({ linesTree: v })}
         options={[{ value: "patrocinio", label: "Árbol de patrocinio" }, { value: "colocacion", label: "Árbol de colocación" }]} hint="Solo afecta al modo detallado." />
       <Toggle label="Tu propio PV suma a tu QDV" checked={a.includeOwnPvInQdv} onChange={(v) => set({ includeOwnPvInQdv: v })} hint="Por defecto no (lectura conservadora)." />
       <Toggle label="El 10 % Personal Team incluye a los clientes de tus patrocinados" checked={a.personalTeamIncludesCustomers} onChange={(v) => set({ personalTeamIncludesCustomers: v })} hint="Solo modo detallado. Por defecto no." />

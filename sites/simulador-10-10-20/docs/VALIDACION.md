@@ -1,11 +1,12 @@
-# Validación (11-oct-2026)
+# Validación (20-oct-2026 · tabla oficial)
 
 ## Resumen
 
 | Área | Comprobación | Resultado |
 |---|---|---|
-| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV): 2★ Director · 10 % $77 · clientes $77 · binario estimado $635,27 · Mentor Match estimado $107,90 · total $897,17 · bono de rango $1 850 | ✅ |
-| Motor | 79 pruebas (Vitest): umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 79/79 |
+| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV): 2★ Director · 10 % $77 · clientes $77 · binario estimado $635,25 · Mentor Match estimado $107,80 · total $897,05 · bono de rango $1 850 | ✅ |
+| Tabla oficial | Datos de los 13 rangos comparados con la tabla oficial (PV, QDV, MVR, OL2L, balance, Nivel Comprimido, binario, Mentor Match, bonos de rango); MVR solo desde 1★ Director; 10 % desde 1★ Gerente; PIB con 55 PV; duplicación por partes | ✅ |
+| Motor | 84 pruebas (Vitest): umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 84/84 |
 | Solver inverso | Metas de US$250, 500, 1 000, 2 000 y 5 000: cada solución se vuelve a pasar por el motor directo, alcanza la meta y con N−1 compradores no | ✅ |
 | Escenarios | Los 9 casos se calculan en vivo; la prueba comprueba que el rango y las cifras citadas en el texto coinciden con el motor | ✅ (la prueba detectó y se corrigió un texto: el caso concentrado queda en 1★ Manager, no en 2★) |
 | Fichas «Entender» | Cada ejemplo numérico se calcula con el motor y se comprueba su importe | ✅ |
@@ -16,7 +17,7 @@
 
 ## Qué se valida contra el plan (no solo la pantalla)
 
-- **Datos del plan:** la prueba «Reglas del plan (datos)» fija los 13 rangos con PV, QDV, % y topes del binario, y Mentor Match tal como figuran en el PDF (p.4, p.9, p.10). Si alguien cambia una cifra, falla.
+- **Datos del plan:** la prueba «Reglas del plan (datos)» fija los 13 rangos tal como figuran en la tabla oficial (p.1 y p.2). Si alguien cambia una cifra, falla.
 - **Ejemplos oficiales:** las fuentes no incluyen ejemplos numéricos resueltos (solo tablas); por eso las pruebas usan casos construidos con volúmenes de prueba y comprueban cada regla por separado.
 - **Pendientes:** el binario, el Mentor Match, el margen sin precio y el grupo trimestral deben devolver **Pendiente** (importe `null`), nunca 0; está probado.
 

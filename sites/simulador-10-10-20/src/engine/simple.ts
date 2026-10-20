@@ -92,7 +92,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const pt = comp("personal-team");
   lines.push({
     id: "personal-team", name: "10 % de tus directos", monthly: pt.monthly ?? ZERO, estimated: false,
-    how: [`${fmt(s.directs)} directos × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(s.directs * sx * pv)} PV`, `10 % de ese volumen al mes.`],
+    how: [`${fmt(s.directs)} directos × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(s.directs * sx * pv)} PV`, `10 % de ese volumen al mes (Bono de Nivel Comprimido, desde 1★ Gerente).`],
     why: pt.status === "no_elegible" ? pt.reasons[0] : undefined,
   });
 
@@ -100,7 +100,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const cqv = s.customers * sx * pv;
   const tier = [...PLAN.customerBonusTiers].reverse().find((t) => cqv >= t.minQv);
   lines.push({
-    id: "customer", name: "Bono para el cliente", monthly: cu.monthly ?? ZERO, estimated: false,
+    id: "customer", name: "Bono por Cliente", monthly: cu.monthly ?? ZERO, estimated: false,
     how: [`${fmt(s.customers)} clientes × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(cqv)} PV`, tier ? `Tramo del ${tier.pct} % (300+ PV → 5 %, 600+ → 10 %, 1 200+ → 20 %).` : "Por debajo de 300 PV no hay bono (300+ → 5 %, 600+ → 10 %, 1 200+ → 20 %)."],
     why: cu.status === "no_elegible" ? cu.reasons[0] : undefined,
   });
@@ -109,7 +109,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const leg = ((team + s.directs) * sx * pv) / 2;
   lines.push({
     id: "binary", name: "Bono binario", monthly: bi.monthly ?? ZERO, estimated: true,
-    how: [`Tu organización repartida mitad y mitad: pierna menor ≈ ${fmt(leg)} PV al mes.`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Manager."],
+    how: [`Tu organización repartida mitad y mitad: pierna menor ≈ ${fmt(leg)} PV al mes.`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Gerente."],
     why: bi.status === "no_elegible" ? bi.reasons[0] : undefined,
   });
 
@@ -122,11 +122,13 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
     const cap = d(rankById[r.paidRank!].mentorCapPerBp!);
     for (const g of splitTeams(team, s.directs)) {
       const dr = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg(s.sachets, 0, g.size, 0, s.sachets) });
-      const bw = dr.ok ? dr.components.find((c) => c.id === "binary")!.weekly?.[0] ?? ZERO : ZERO;
-      const each = cents(pct(bw, gens[0]));
+      // Binario semanal del directo sin redondear: mensual × 12/52.
+      const bm = dr.ok ? dr.components.find((c) => c.id === "binary")!.monthly ?? ZERO : ZERO;
+      const bw = bm.dividedBy(WEEKS_PER_MONTH);
+      const each = pct(bw, gens[0]);
       const paid = each.gt(cap) ? cap : each;
       mentorWeekly = mentorWeekly.plus(paid.times(g.count));
-      mHow.push(`${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${dr.paidRank ? rankById[dr.paidRank].short : "sin rango"}, binario ≈ $${bw.toFixed(2)}/semana → 20 % = $${paid.toFixed(2)}/semana cada uno.`);
+      mHow.push(`${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${dr.paidRank ? rankById[dr.paidRank].short : "sin rango"}, binario ≈ $${bw.toFixed(2)}/semana → 20 % ≈ $${paid.toFixed(2)}/semana cada uno.`);
     }
     mHow.push("Generaciones 2 y siguientes: 0, porque se supone que los equipos de tus directos aún no tienen equipo propio.");
   }
@@ -157,7 +159,8 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
       `Cada sobre suma ${fmt(pv)} PV y los porcentajes se calculan sobre ese mismo volumen.`,
       "Tu organización está equilibrada: mitad en cada pierna y repartida por igual entre tus directos.",
       "Todos compran cada mes; cálculo mensual.",
-      "Binario y Mentor Match son estimados: las fuentes no dicen sobre qué volumen se pagan (aquí: pierna menor y binario de tus directos).",
+      "Binario y Mentor Match son estimados: la tabla oficial da sus tasas y topes, pero no sobre qué volumen se pagan (aquí: pierna menor y binario de tus directos).",
+      "Reglas: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)».",
     ],
     base: r,
   };

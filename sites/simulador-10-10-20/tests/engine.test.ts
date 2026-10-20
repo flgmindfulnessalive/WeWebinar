@@ -8,7 +8,7 @@ const money = (x: { toFixed: (n: number) => string } | null | undefined) => (x =
 const prod = (qv: number, cv = qv) => [{ ...SOBRE, qv, cv }];
 
 describe("Reglas del plan (datos)", () => {
-  it("tiene 13 rangos en orden con los valores del PDF p.4, p.9 y p.10", () => {
+  it("tiene 13 rangos en orden con los valores de la tabla oficial (p.1 y p.2)", () => {
     expect(PLAN.ranks.map((r) => r.id)).toEqual(["abp", "m1", "m2", "m3", "d1", "d2", "d3", "e1", "e2", "e3", "p1", "p2", "p3"]);
     expect(PLAN.ranks.map((r) => r.pv)).toEqual([55, 75, 75, 75, 110, 110, 110, 200, 200, 200, 200, 200, 200]);
     expect(PLAN.ranks.map((r) => r.qdv)).toEqual([null, 750, 1500, 2500, 5000, 10000, 20000, 40000, 100000, 200000, 400000, 1000000, 2500000]);
@@ -16,13 +16,20 @@ describe("Reglas del plan (datos)", () => {
     expect(PLAN.ranks.map((r) => r.binaryWeeklyCap)).toEqual([null, 100, 500, 1500, 2500, 3500, 5000, 7500, 10000, 15000, 20000, 25000, 25000]);
     expect(PLAN.ranks.find((r) => r.id === "e3")!.mentorGens).toEqual([20, 15, 10, 7, 7, 5]);
     expect(PLAN.ranks.find((r) => r.id === "p2")!.mentorGens).toEqual([20, 15, 10, 7, 7, 7]);
+    expect(PLAN.ranks.map((r) => r.mvr)).toEqual([null, null, null, null, 2500, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1250000]);
+    expect(PLAN.ranks.map((r) => r.ol2l)).toEqual([null, null, null, null, null, null, null, 5000, 10000, 15000, 50000, 100000, 200000]);
+    expect(PLAN.ranks.map((r) => r.binaryBalance)).toEqual([null, null, null, null, 1000, 2000, 3000, 5000, 10000, 15000, 20000, 25000, 30000]);
+    expect(PLAN.ranks.map((r) => r.levelPct)).toEqual([0, 10, 10, 10, 10, 10, 10, 10, 10, 10, null, null, null]);
+    expect(PLAN.ranks.map((r) => r.mentorCapPerBp)).toEqual([null, null, null, null, 250, 500, 1000, 2000, 3000, 4000, 5000, 5000, 5000]);
+    expect(PLAN.ranks.map((r) => r.rankBonus)).toEqual([null, null, 100, 250, 500, 1000, 2000, 5000, null, null, null, null, null]);
+    expect(PLAN.pib.map((p) => [p.id, p.bonus, p.qv])).toEqual([["starter", 0, 0], ["basico", 35, 180], ["avanzado", 75, 300], ["avanzado-plus", 165, 500], ["premium", 405, 775]]);
   });
   it("cada regla cita al menos una fuente", () => {
     for (const r of PLAN.rules) expect(r.sources.length, r.id).toBeGreaterThan(0);
   });
 });
 
-describe("BP Activo (55 PV): umbral exacto", () => {
+describe("Socio Activo (55 PV): umbral exacto", () => {
   for (const [qv, expected] of [[54, null], [55, "abp"], [56, "abp"]] as const) {
     it(`PV ${qv} → ${expected ?? "sin rango"}`, () => {
       const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 1 }] }), {}, prod(qv)));
@@ -35,31 +42,36 @@ describe("BP Activo (55 PV): umbral exacto", () => {
   });
 });
 
-describe("10 % Personal Team", () => {
-  const org = quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 3, productId: "sobre", qty: 1 }], distribution: { lines: 3, largestPct: 34, secondPct: 33, leftPct: 50 } });
-  it("10 % del volumen comisionable de los patrocinados (semana 1: 3 × 40 × 10 % = 12,00)", () => {
+describe("Bono de Nivel Comprimido (10 %): desde 1★ Gerente", () => {
+  // 15 patrocinados × 50 = 750 de QDV → 1★ Gerente; volumen comisionable 15 × 40 = 600
+  const org = quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 15, productId: "sobre", qty: 1 }], distribution: { lines: 15, largestPct: 100 / 15, secondPct: 100 / 15, leftPct: 50 } });
+  it("10 % del volumen comisionable de los patrocinados (semana 1: 600 × 10 % = 60,00)", () => {
     const r = simulate(qin(org, { orderTiming: "semana1" }));
-    expect(money(comp(r, "personal-team").monthly)).toBe("12.00");
+    expect(r.paidRank).toBe("m1");
+    expect(money(comp(r, "personal-team").monthly)).toBe("60.00");
     expect(comp(r, "personal-team").status).toBe("calculado");
   });
-  it("uniforme: redondeo semanal y conversión 52/12 declarados", () => {
-    const r = simulate(qin(org, { orderTiming: "uniforme" }));
-    const c = comp(r, "personal-team");
-    // 120 × 12/52 = 27,6923 → 10 % = 2,7692 → 2,77 por semana
-    expect(c.weekly!.map((x) => money(x))).toEqual(["2.77", "2.77", "2.77", "2.77"]);
-    expect(money(c.monthly4w)).toBe("11.08");
-    expect(money(c.monthly)).toBe("12.00"); // 2,77 × 52/12 = 12,0033 → 12,00
+  it("uniforme: conversión 52/12 con un solo redondeo al final", () => {
+    const c = comp(simulate(qin(org, { orderTiming: "uniforme" })), "personal-team");
+    // 600 × 12/52 × 10 % = 13,846… por semana
+    expect(c.weekly!.map((x) => money(x))).toEqual(["13.85", "13.85", "13.85", "13.85"]);
+    expect(money(c.monthly4w)).toBe("55.38");
+    expect(money(c.monthly)).toBe("60.00");
   });
-  it("no elegible (0 y causa) si no tienes BP Activo", () => {
-    const r = simulate(qin({ ...org, personal: [] }));
+  it("Socio Activo cobra 0 % (tabla oficial)", () => {
+    const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 14, productId: "sobre", qty: 1 }], distribution: { lines: 14, largestPct: 100 / 14, secondPct: 100 / 14, leftPct: 50 } })));
+    expect(r.paidRank).toBe("abp"); // 700 < 750
     const c = comp(r, "personal-team");
     expect(c.status).toBe("no_elegible");
     expect(money(c.monthly)).toBe("0.00");
-    expect(c.reasons.join(" ")).toMatch(/BP Activo/);
+    expect(c.reasons.join(" ")).toMatch(/1★ Gerente/);
+  });
+  it("sin rango tampoco cobra", () => {
+    expect(comp(simulate(qin({ ...org, personal: [] })), "personal-team").status).toBe("no_elegible");
   });
 });
 
-describe("Bono para el cliente: tramos (fuente web)", () => {
+describe("Bono por Cliente: tramos (tabla oficial)", () => {
   const cases: [number, string, string][] = [[299, "no_elegible", "0.00"], [300, "calculado", "15.00"], [599, "calculado", "29.95"], [600, "calculado", "60.00"], [1199, "calculado", "119.90"], [1200, "calculado", "240.00"]];
   for (const [qv, st, amt] of cases) {
     it(`${qv} QV de clientes → ${amt}`, () => {
@@ -67,7 +79,7 @@ describe("Bono para el cliente: tramos (fuente web)", () => {
       const c = comp(r, "customer");
       expect(c.status).toBe(st);
       expect(money(c.monthly)).toBe(amt);
-      expect(c.basis).toBe("web");
+      expect(c.basis).toBe("fuentes");
     });
   }
 });
@@ -111,6 +123,14 @@ describe("Regla del 50 % (MVR), OL2L, equilibrio y PV 200", () => {
   });
 });
 
+describe("MVR solo desde 1★ Director (tabla oficial)", () => {
+  it("3★ Gerente con una sola línea de 2 500: sin MVR, califica", () => {
+    const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
+    const r = simulate(din([bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 2500)], {}, unit));
+    expect(r.paidRank).toBe("m3");
+  });
+});
+
 describe("Patrocinio frente a colocación", () => {
   const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
   // Mismas 3 personas y compras; solo cambia la colocación.
@@ -139,7 +159,7 @@ describe("Binario y Mentor Match: pendientes salvo supuesto explícito", () => {
     expect(c.status).toBe("pendiente");
     expect(c.monthly).toBeNull();
   });
-  it("con el supuesto: 10 % de la pierna menor, tope semanal de 1★ Manager", () => {
+  it("con el supuesto: 10 % de la pierna menor, tope semanal de 1★ Gerente", () => {
     const r = simulate(qin(org, { assumeBinary: true, orderTiming: "semana1" }));
     expect(r.paidRank).toBe("m1"); // QDV 1000 ≥ 750
     const c = comp(r, "binary");
@@ -183,10 +203,17 @@ describe("Mentor Match con supuestos (modo detallado)", () => {
 
 describe("Bonos puntuales", () => {
   it("PIB por paquete: 2 Básico + 1 Premium = 475", () => {
-    const r = simulate(qin(quick({ enrollments: [{ packageId: "basico", count: 2 }, { packageId: "premium", count: 1 }] })));
+    const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 2 }], enrollments: [{ packageId: "basico", count: 2 }, { packageId: "premium", count: 1 }] })));
     expect(money(comp(r, "pib").monthly)).toBe("475.00");
     expect(comp(r, "pib").classification).toBe("puntual");
     expect(money(r.totals.recurring)).toBe("0.00");
+  });
+  it("PIB: hay que estar Activo (55 PV)", () => {
+    const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 1 }], enrollments: [{ packageId: "premium", count: 1 }] }), {}, prod(54)));
+    expect(comp(r, "pib").status).toBe("no_elegible");
+    expect(comp(r, "pib").reasons.join()).toMatch(/55 PV/);
+    const ok = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 1 }], enrollments: [{ packageId: "premium", count: 1 }] }), {}, prod(55)));
+    expect(money(comp(ok, "pib").monthly)).toBe("405.00");
   });
   it("Bono por subir de rango: mitad en la 1.ª calificación; acumulativo", () => {
     const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
@@ -197,16 +224,16 @@ describe("Bonos puntuales", () => {
     const again = simulate(din([bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 1250), bp("b", "tu", ["tu", "R"], 1250)], { previousHighestRank: "m2" }, unit));
     expect(money(comp(again, "rank-bonus").monthly)).toBe("125.00");
   });
-  it("nuevo BP: las fuentes se contradicen → rango, sin importe único", () => {
-    const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
-    const r = simulate(din([bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 750), bp("b", "tu", ["tu", "R"], 750)], { daysSinceEnrollment: 30 }, unit));
-    const c = comp(r, "rank-bonus");
-    expect(r.paidRank).toBe("m2");
-    expect(c.status).toBe("contradiccion");
-    expect(c.monthly).toBeNull();
-    expect(money(c.range!.low)).toBe("50.00");
-    expect(money(c.range!.high)).toBe("200.00");
-  });
+  for (const [days, part1] of [[30, "100.00"], [56, "100.00"], [57, "50.00"]] as const) {
+    it(`nuevo socio con ${days} días: Parte 1 de 2★ Gerente = ${part1} (se duplica en las primeras 8 semanas)`, () => {
+      const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
+      const r = simulate(din([bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 750), bp("b", "tu", ["tu", "R"], 750)], { daysSinceEnrollment: days }, unit));
+      expect(r.paidRank).toBe("m2");
+      const c = comp(r, "rank-bonus");
+      expect(c.status).toBe("calculado");
+      expect(money(c.monthly)).toBe(part1);
+    });
+  }
   it("Grupo trimestral: participaciones, nunca dinero", () => {
     const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
     const people = [bp("tu", null, null, 200), bp("a", "tu", ["tu", "L"], 200000), bp("b", "tu", ["tu", "R"], 200000), bp("c", "tu", ["a", "L"], 50000)];
@@ -226,10 +253,10 @@ describe("Periodos", () => {
     expect(w.paidRankByWeek).toEqual([null, null, null, null]);
   });
   it("calificación semanal con compra en la semana 1: activo solo esa semana", () => {
-    const org = quick({ personal: [{ productId: "sobre", qty: 1 }], sponsored: [{ count: 1, productId: "sobre", qty: 1 }], distribution: { lines: 1, largestPct: 100, secondPct: 0, leftPct: 50 } });
+    const org = quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 13, productId: "sobre", qty: 1 }], distribution: { lines: 13, largestPct: 100 / 13, secondPct: 100 / 13, leftPct: 50 } });
     const r = simulate(qin(org, { qualificationPeriod: "semanal", orderTiming: "semana1" }, prod(60)));
-    expect(r.paidRankByWeek).toEqual(["abp", null, null, null]);
-    expect(comp(r, "personal-team").weekly!.map(money)).toEqual(["6.00", "0.00", "0.00", "0.00"]);
+    expect(r.paidRankByWeek).toEqual(["m1", null, null, null]);
+    expect(comp(r, "personal-team").weekly!.map(money)).toEqual(["78.00", "0.00", "0.00", "0.00"]);
   });
 });
 
@@ -265,16 +292,16 @@ describe("Entradas inválidas y datos faltantes", () => {
 
 describe("Totales separados", () => {
   it("lo puntual no suma a lo recurrente", () => {
-    const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 2, productId: "sobre", qty: 1 }], distribution: { lines: 2, largestPct: 50, secondPct: 50, leftPct: 50 }, enrollments: [{ packageId: "premium", count: 1 }] }), { orderTiming: "semana1" }, products));
-    expect(money(r.totals.recurring)).toBe("8.00");
+    const r = simulate(qin(quick({ personal: [{ productId: "sobre", qty: 2 }], sponsored: [{ count: 15, productId: "sobre", qty: 1 }], distribution: { lines: 15, largestPct: 100 / 15, secondPct: 100 / 15, leftPct: 50 }, enrollments: [{ packageId: "premium", count: 1 }] }), { orderTiming: "semana1" }, products));
+    expect(money(r.totals.recurring)).toBe("60.00");
     expect(money(r.totals.oneTime)).toBe("405.00");
   });
 });
 
 describe("Tope semanal del binario", () => {
-  it("1★ Manager: 10 % de 2 000 = 200 → se paga el tope de 100", () => {
+  it("1★ Gerente: 10 % de 2 000 = 200 → se paga el tope de 100", () => {
     const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
-    // QDV 1 499 (< 1 500 de 2★M) pero piernas grandes en volumen comisionable
+    // QDV 1 499 (< 1 500 de 2★G) pero piernas grandes en volumen comisionable
     const p = [{ ...SOBRE, id: "x", name: "x", qv: 0, cv: 2000, retailMargin: null }, ...unit];
     const people = [bp("tu", null, null, 75), bp("a", "tu", ["tu", "L"], 750), bp("b", "tu", ["tu", "R"], 749),
       { ...bp("a2", "a", ["a", "L"]), orders: [{ productId: "x", qty: 1 }] }, { ...bp("b2", "b", ["b", "L"]), orders: [{ productId: "x", qty: 1 }] }];
