@@ -33,6 +33,11 @@ export function validateQuick(q: QuickOrg): string[] {
   if (!Number.isInteger(lines) || lines < 0) errs.push("El número de líneas debe ser un entero ≥ 0.");
   if (lines > sponsoredTotal) errs.push(`No puede haber más líneas (${lines}) que Brand Partners patrocinados personalmente (${sponsoredTotal}): cada línea empieza en un patrocinado.`);
   if (teamBuyers > 0 && sponsoredTotal === 0) errs.push("Hay compradores en tu organización pero ningún Brand Partner patrocinado personalmente: alguien tiene que encabezar cada línea.");
+  const groups = q.distribution.groups?.filter((g) => g.count > 0 && g.weight > 0);
+  if (groups?.length) {
+    if (!(leftPct >= 0 && leftPct <= 100)) errs.push("% de la pierna izquierda debe estar entre 0 y 100.");
+    return errs;
+  }
   for (const [v, w] of [[largestPct, "% de la línea más grande"], [secondPct, "% de la segunda línea"], [leftPct, "% de la pierna izquierda"]] as const) {
     if (!(v >= 0 && v <= 100)) errs.push(`${w} debe estar entre 0 y 100.`);
   }
@@ -71,7 +76,17 @@ export function quickSnapshot(q: QuickOrg, w: WindowId, a: Assumptions, idx: Pro
   s.sponsoredCustomersCv = ZERO;
 
   const { lines, largestPct, secondPct, leftPct } = q.distribution;
-  if (lines >= 1) {
+  const groups = q.distribution.groups?.filter((g) => g.count > 0 && g.weight > 0);
+  if (groups?.length) {
+    // Reparto por grupos: el último se calcula por diferencia para que la suma sea exacta.
+    const totalW = groups.reduce((a, g) => a + g.count * g.weight, 0);
+    let used = ZERO;
+    s.lines = groups.map((g, i) => {
+      const total = i === groups.length - 1 ? teamQv.minus(used) : teamQv.times(g.count * g.weight).dividedBy(totalW);
+      used = used.plus(total);
+      return { label: g.label, qv: total.dividedBy(g.count), count: g.count, total };
+    });
+  } else if (lines >= 1) {
     const l1 = lines === 1 ? teamQv : teamQv.times(largestPct).dividedBy(100);
     const l2 = lines >= 2 ? (lines === 2 ? teamQv.minus(l1) : teamQv.times(secondPct).dividedBy(100)) : ZERO;
     const out = [{ label: "Línea 1 (la más grande)", qv: l1, count: 1, total: l1 }];

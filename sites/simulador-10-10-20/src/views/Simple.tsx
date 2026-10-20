@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { usd } from "../engine/decimal";
-import { activeDirects, inPeriod, simpleCalc, type GenInfo, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
+import { inPeriod, orgShape, simpleCalc, type GenInfo, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
 import { rankById, rankIndex } from "../plan/plan-10-10-20";
 import type { RankId } from "../plan/types";
 import { t } from "../i18n";
@@ -140,6 +140,7 @@ function LeadersByGen({ value, onChange, gens }: { value: SimpleInput; onChange:
 
 export function SimpleView({ value, onChange, links = true }: { value: SimpleInput; onChange: (v: SimpleInput) => void; links?: boolean }) {
   const r = useMemo(() => simpleCalc(value), [value]);
+  const o = orgShape(value);
   const set = (patch: Partial<SimpleInput>) => onChange({ ...value, ...patch });
   const [period, setPeriodState] = useState<Period>(() => { try { return localStorage.getItem("sim101020:periodo") === "semana" ? "semana" : "mes"; } catch { return "mes"; } });
   const setPeriod = (p: Period) => { setPeriodState(p); try { localStorage.setItem("sim101020:periodo", p); } catch { /* sin almacenamiento */ } };
@@ -193,10 +194,14 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
 
       <div className="slay">
         <section className="card sform" aria-label="Tus datos">
-          <p className="sform__note">Cuenta a tu organización como <b>activa</b> (todos compran cada mes). El % de inactivos solo se aplica a tus directos.</p>
-          <Stepper label="Socios en tu organización" hint="Activos · incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
-          <Stepper label="De ellos, tus directos" hint="Los que inscribiste tú" value={value.directs} onChange={(v) => set({ directs: v })} />
-          <Stepper label="% de tus directos activos" hint={`= ${fmt(activeDirects(value))} de ${fmt(value.directs)} directos compran cada mes`} value={value.activeDirectsPct} step={5} max={100} onChange={(v) => set({ activeDirectsPct: v })} />
+          <p className="sform__note">Usa los recuentos de tu back office y estima tú cuántos están activos (compran cada mes).</p>
+          <Stepper label="Socios en tu organización" hint="Total de tu organización binaria · incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
+          <Stepper label="% de actividad de tu organización" hint={`= ${fmt(o.activeTeam)} de ${fmt(o.team)} socios (sin tus directos) compran cada mes`} value={value.orgActivePct} step={5} max={100} onChange={(v) => set({ orgActivePct: v })} />
+          <Stepper label="De ellos, tus directos" hint="Inscritos personalmente" value={value.directs} onChange={(v) => set({ directs: v, activeDirects: Math.min(value.activeDirects, v), buildingDirects: Math.min(value.buildingDirects, v) })} />
+          <Stepper label="Directos activos" hint={`Compran cada mes · = ${value.directs ? Math.round((Math.min(value.activeDirects, value.directs) / value.directs) * 100) : 0} % de tus directos`} value={value.activeDirects} max={value.directs}
+            onChange={(v) => set({ activeDirects: v, buildingDirects: Math.min(value.buildingDirects, v) })} />
+          <Stepper label="De ellos, construyendo" hint="Tienen equipo debajo: tu organización se reparte entre ellos" value={value.buildingDirects} max={value.activeDirects} onChange={(v) => set({ buildingDirects: v })} />
+          <Stepper label="Clientes de tu organización" hint={`De los socios de toda tu organización (no los tuyos) · equipo del patrocinador − organización binaria · activos: ${fmt(o.activeCustomers)} (≈ ${o.customersPerSocio.toFixed(2)} por socio activo)`} value={value.orgCustomers} onChange={(v) => set({ orgCustomers: v })} />
           <Stepper label="Clientes minoristas" hint="Retail" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
           <Stepper label="Clientes preferentes" value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
           <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />

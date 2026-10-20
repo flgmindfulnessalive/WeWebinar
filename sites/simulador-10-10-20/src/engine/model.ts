@@ -106,6 +106,12 @@ export interface QuickOrg {
     secondPct: number;
     /** % del volumen del equipo colocado en la pierna izquierda del binario. */
     leftPct: number;
+    /**
+     * Opcional: reparto exacto por grupos de líneas iguales (p. ej., 5 líneas
+     * con equipo y 3 de una sola persona). `weight` es el peso relativo de cada
+     * línea del grupo. Si está, sustituye a largestPct y secondPct.
+     */
+    groups?: { label: string; count: number; weight: number }[];
   };
   /** Inscripciones del periodo por paquete (PIB). */
   enrollments: { packageId: string; count: number }[];

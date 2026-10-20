@@ -9,16 +9,22 @@ import { atLeast } from "./simulate";
 import { simulate, type SimulationResult } from "./simulate";
 
 export interface SimpleInput {
-  /** Socios (Brand Partners) en toda tu organización, incluidos tus directos. */
+  /** Socios (Brand Partners) en toda tu organización, incluidos tus directos (recuento total del back office). */
   partners: number;
+  /** % de tu organización (sin contar a tus directos) que compra cada mes. */
+  orgActivePct: number;
   /** Cuántos de ellos inscribiste tú. */
   directs: number;
   /** Clientes minoristas (retail) tuyos. */
   retailCustomers: number;
   /** Clientes preferentes tuyos. */
   preferredCustomers: number;
-  /** % de tus directos que compran cada mes (el resto está inactivo). */
-  activeDirectsPct: number;
+  /** Cuántos de tus directos compran cada mes. */
+  activeDirects: number;
+  /** Cuántos de tus directos activos están construyendo (tienen equipo debajo). */
+  buildingDirects: number;
+  /** Clientes de los socios de toda tu organización (no los tuyos). */
+  orgCustomers: number;
   /** Sobres que compra cada socio y cada cliente al mes. */
   sachets: number;
   /** Sobres que compras tú al mes. */
@@ -36,7 +42,7 @@ export interface SimpleInput {
 }
 
 export const DEFAULT_SIMPLE: SimpleInput = {
-  partners: 150, directs: 10, activeDirectsPct: 100, retailCustomers: 0, preferredCustomers: 10,
+  partners: 150, orgActivePct: 100, directs: 10, activeDirects: 10, buildingDirects: 10, orgCustomers: 0, retailCustomers: 0, preferredCustomers: 10,
   sachets: 1, ownSachets: 1, pvPerSachet: 77, retailPerSachet: 50, preferredPerSachet: 20, genLeaders: [null, null, null, null, null, null], strongLegPct: 60,
 };
 
@@ -87,30 +93,53 @@ const fmt = (n: number) => n.toLocaleString("es-419");
 
 export function validateSimple(s: SimpleInput): string[] {
   const e: string[] = [];
-  for (const [v, w] of [[s.partners, "Socios"], [s.directs, "Directos"], [s.retailCustomers, "Clientes minoristas"], [s.preferredCustomers, "Clientes preferentes"]] as const) if (!Number.isInteger(v) || v < 0) e.push(`${w}: escribe un número entero de 0 o más.`);
+  for (const [v, w] of [[s.partners, "Socios"], [s.directs, "Directos"], [s.activeDirects, "Directos activos"], [s.buildingDirects, "Directos construyendo"], [s.orgCustomers, "Clientes de tu organización"], [s.retailCustomers, "Clientes minoristas"], [s.preferredCustomers, "Clientes preferentes"]] as const) if (!Number.isInteger(v) || v < 0) e.push(`${w}: escribe un número entero de 0 o más.`);
   for (const [v, w] of [[s.sachets, "Sobres por persona"], [s.ownSachets, "Tus sobres"], [s.pvPerSachet, "PV por sobre"], [s.retailPerSachet, "Ganancia por sobre (minorista)"], [s.preferredPerSachet, "Ganancia por sobre (preferente)"]] as const) if (!(v >= 0) || !Number.isFinite(v)) e.push(`${w}: escribe un número de 0 o más.`);
   (s.genLeaders ?? []).forEach((v, i) => { if (v != null && (!Number.isInteger(v) || v < 0)) e.push(`Líderes de la Gen ${i + 1}: escribe un número entero de 0 o más.`); });
   if (!(s.strongLegPct >= 50 && s.strongLegPct <= 100)) e.push("Pierna fuerte del binario: escribe un % entre 50 y 100.");
-  if (!(s.activeDirectsPct >= 0 && s.activeDirectsPct <= 100)) e.push("Directos activos: escribe un % entre 0 y 100.");
+  if (!(s.orgActivePct >= 0 && s.orgActivePct <= 100)) e.push("Actividad de tu organización: escribe un % entre 0 y 100.");
+  if (orgShape(s).activeTeam > 0 && Math.min(s.buildingDirects, s.activeDirects) === 0) e.push("Tienes socios activos debajo de tus directos: indica cuántos de tus directos activos están construyendo (al menos 1).");
   if (s.directs > s.partners) e.push("Los directos forman parte de tus socios: no pueden ser más que el total de socios.");
   if (s.partners > s.directs && s.directs === 0) e.push("Para tener socios en tu organización necesitas al menos un directo.");
   return e;
 }
 
-/** Directos que compran: el % redondeado al entero más cercano. */
-export const activeDirects = (s: SimpleInput) => Math.round((s.directs * s.activeDirectsPct) / 100);
+/** Cómo queda tu organización: activos, inactivos y media de clientes por socio activo. */
+export function orgShape(s: SimpleInput) {
+  const team = Math.max(0, s.partners - s.directs);
+  const activeTeam = Math.round((team * s.orgActivePct) / 100);
+  const active = Math.min(s.activeDirects, s.directs);
+  const building = Math.min(s.buildingDirects, active);
+  const activeSocios = activeTeam + active;
+  // Los clientes del recuento también pueden estar inactivos: se aplica el mismo % de actividad.
+  const activeCustomers = Math.round((s.orgCustomers * s.orgActivePct) / 100);
+  return { team, activeTeam, inactiveTeam: team - activeTeam, active, inactive: s.directs - active, building, activeSocios, activeCustomers,
+    customersPerSocio: activeSocios ? activeCustomers / activeSocios : 0 };
+}
 
-const quickOrg = (own: number, retailC: number, preferredC: number, directs: number, inactive: number, team: number, sachets: number, strongPct = 50): QuickOrg => ({
-  personal: own > 0 ? [{ productId: "sobre", qty: own }] : [],
+/**
+ * Organización del modo rápido: tus directos que construyen encabezan las
+ * líneas con equipo; los demás directos activos son líneas de una persona.
+ * Los clientes de tu organización compran como los socios y su volumen va con
+ * el de sus socios (proporcional en cada línea y pierna).
+ */
+const quickOrg = (o: { own: number; retailC?: number; preferredC?: number; active: number; inactive?: number; building: number; activeTeam: number; inactiveTeam?: number; orgCustomers?: number; sachets: number; strongPct: number }): QuickOrg => ({
+  personal: o.own > 0 ? [{ productId: "sobre", qty: o.own }] : [],
   customers: [
-    ...(retailC > 0 ? [{ count: retailC, productId: "sobre", qty: sachets, kind: "cliente" as const }] : []),
-    ...(preferredC > 0 ? [{ count: preferredC, productId: "sobre", qty: sachets, kind: "cliente_preferente" as const }] : []),
+    ...((o.retailC ?? 0) > 0 ? [{ count: o.retailC!, productId: "sobre", qty: o.sachets, kind: "cliente" as const }] : []),
+    ...((o.preferredC ?? 0) > 0 ? [{ count: o.preferredC!, productId: "sobre", qty: o.sachets, kind: "cliente_preferente" as const }] : []),
   ],
-  sponsored: directs > 0 ? [{ count: directs, productId: "sobre", qty: sachets }] : [],
-  sponsoredInactive: inactive,
-  team: team > 0 ? [{ count: team, productId: "sobre", qty: sachets }] : [],
-  teamInactive: 0,
-  distribution: { lines: directs + inactive, largestPct: directs + inactive ? (directs + inactive === 1 ? 100 : 100 / (directs + inactive)) : 0, secondPct: directs + inactive > 1 ? 100 / (directs + inactive) : 0, leftPct: strongPct },
+  sponsored: o.active > 0 ? [{ count: o.active, productId: "sobre", qty: o.sachets }] : [],
+  sponsoredInactive: o.inactive ?? 0,
+  team: o.activeTeam + (o.orgCustomers ?? 0) > 0 ? [{ count: o.activeTeam + (o.orgCustomers ?? 0), productId: "sobre", qty: o.sachets }] : [],
+  teamInactive: o.inactiveTeam ?? 0,
+  distribution: {
+    lines: o.active, largestPct: 0, secondPct: 0, leftPct: o.strongPct,
+    groups: [
+      { label: o.building === 1 ? "Línea de tu directo que construye" : `Líneas de tus ${o.building} directos que construyen (cada una)`, count: o.building, weight: 1 + o.activeTeam / Math.max(1, o.building) },
+      { label: "Directos activos sin equipo (cada uno)", count: o.active - o.building, weight: 1 },
+    ],
+  },
   enrollments: [],
 });
 
@@ -124,7 +153,7 @@ const LEADERS = new Map<string, Leader | null>();
  * de su rango. Busca el menor número de socios con el que el motor lo califica
  * y devuelve sus ganancias semanales de Nivel y Binario.
  */
-function leaderModel(s: SimpleInput, products: Product[], rank: RankRule): Leader | null {
+function leaderModel(s: SimpleInput, products: Product[], rank: RankRule, cps: number): Leader | null {
   const unitPv = s.sachets * s.pvPerSachet;
   if (!(unitPv > 0) || rank.qdv == null) return null;
   // Para los rangos de 200 PV solo cuentan 110 personales: el resto, con clientes.
@@ -132,11 +161,11 @@ function leaderModel(s: SimpleInput, products: Product[], rank: RankRule): Leade
   const own = Math.max(s.sachets, Math.ceil(ownPv / (s.pvPerSachet || 1)));
   const counted = Math.min(own * s.pvPerSachet, rank.pv === 200 ? PLAN.personalPvCapForPv200 : Infinity);
   const clients = Math.max(0, Math.ceil((rank.pv - counted) / unitPv));
-  let size = Math.ceil(rank.qdv / unitPv);
+  let size = Math.ceil(rank.qdv / (unitPv * (1 + cps)));
   for (let i = 0; i < 200; i++, size += Math.max(1, Math.ceil(size * 0.02))) {
     const dd = Math.max(4, Math.min(s.directs, size));
     if (dd > size) continue;
-    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg(own, 0, clients, dd, 0, size - dd, s.sachets, s.strongLegPct) });
+    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg({ own, preferredC: clients, active: dd, building: dd, activeTeam: size - dd, orgCustomers: Math.round(cps * size), sachets: s.sachets, strongPct: s.strongLegPct }) });
     if (!dr.ok || !atLeast(dr.paidRank, rank.id)) continue;
     const m = (id: string) => dr.components.find((c) => c.id === id)!.monthly ?? ZERO;
     return { rank: dr.paidRank!, size, levelWeekly: m("personal-team").dividedBy(WEEKS_PER_MONTH), binaryWeekly: m("binary").dividedBy(WEEKS_PER_MONTH) };
@@ -214,10 +243,10 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
 
   const products: Product[] = [{ id: "sobre", name: "Sobre X39", qv: s.pvPerSachet, cv: s.pvPerSachet, retailMargin: s.retailPerSachet, preferredMargin: s.preferredPerSachet }];
   const a = DEFAULT_ASSUMPTIONS;
-  const team = s.partners - s.directs;
-  const active = activeDirects(s), inactive = s.directs - active;
+  const o = orgShape(s);
+  const { active, inactive, activeTeam } = o;
   const customers = s.retailCustomers + s.preferredCustomers;
-  const r = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg(s.ownSachets, s.retailCustomers, s.preferredCustomers, active, inactive, team, s.sachets, s.strongLegPct) });
+  const r = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg({ own: s.ownSachets, retailC: s.retailCustomers, preferredC: s.preferredCustomers, active, inactive, building: o.building, activeTeam, inactiveTeam: o.inactiveTeam, orgCustomers: o.activeCustomers, sachets: s.sachets, strongPct: s.strongLegPct }) });
   if (!r.ok) return { ...empty, errors: [...r.errors, ...r.missing] };
 
   const comp = (id: string) => r.components.find((c) => c.id === id)!;
@@ -237,7 +266,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const pt = comp("personal-team");
   lines.push({
     id: "personal-team", name: "10 % de tus directos", monthly: pt.monthly ?? ZERO, estimated: false,
-    how: [`${fmt(active)} directos activos (${fmt(s.activeDirectsPct)} % de ${fmt(s.directs)}) × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(active * sx * pv)} PV${inactive ? ` (${fmt(inactive)} inactivos no suman)` : ""}`, `10 % de ese volumen al mes (Bono de Nivel Comprimido, desde 1★ Gerente).`],
+    how: [`${fmt(active)} directos activos (de ${fmt(s.directs)}) × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(active * sx * pv)} PV${inactive ? ` (${fmt(inactive)} inactivos no suman)` : ""}`, `10 % de ese volumen al mes (Bono de Nivel Comprimido, desde 1★ Gerente).`],
     why: pt.status === "no_elegible" ? pt.reasons[0] : undefined,
   });
 
@@ -251,7 +280,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   });
 
   const bi = comp("binary");
-  const leg = ((team + active) * sx * pv) * (100 - s.strongLegPct) / 100;
+  const leg = ((activeTeam + active + o.activeCustomers) * sx * pv) * (100 - s.strongLegPct) / 100;
   const bWeeks = (bi.weekly ?? []).map((w) => w ?? ZERO);
   const bCap = r.paidRank ? rankById[r.paidRank].binaryWeeklyCap : null;
   const bCapped = bi.capsHit.length > 0;
@@ -266,13 +295,14 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   // Mentor Match estimado: líderes (1★ Director o más) que caben en tus líneas,
   // de todos los rangos y en todas las generaciones que paga tu rango.
   const gens = r.paidRank ? rankById[r.paidRank].mentorGens : [];
-  const key = [s.sachets, s.pvPerSachet, s.directs, s.strongLegPct].join("|");
+  const m = Math.round(o.customersPerSocio * 100) / 100;
+  const key = [s.sachets, s.pvPerSachet, s.directs, s.strongLegPct, m].join("|");
   const get = (rk: RankRule) => {
     const k = `${key}|${rk.id}`;
-    if (!LEADERS.has(k)) { if (LEADERS.size > 500) LEADERS.clear(); LEADERS.set(k, leaderModel(s, products, rk)); }
+    if (!LEADERS.has(k)) { if (LEADERS.size > 500) LEADERS.clear(); LEADERS.set(k, leaderModel(s, products, rk, m)); }
     return LEADERS.get(k)!;
   };
-  const available = team + active;
+  const available = o.activeSocios;
   const parent: RankId = gens.length ? r.paidRank! : PLAN.mentorGenerationMinRank;
   const openGens = Math.max(1, gens.length);
   const limits = s.genLeaders ?? [];
@@ -330,8 +360,10 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
     next: nextEval ? { rank: nextEval.rank, gaps: nextEval.checks.filter((c) => !c.ok).map((c) => gapText(c.key, c.gap)) } : null,
     assumptions: [
       `Cada sobre suma ${fmt(pv)} PV (los porcentajes se calculan sobre ese mismo volumen) y deja $${fmt(s.retailPerSachet)} si lo compra un cliente minorista o $${fmt(s.preferredPerSachet)} si lo compra un cliente preferente.`,
-      `${fmt(s.activeDirectsPct)} % de tus directos activos (${fmt(active)} de ${fmt(s.directs)}): los inactivos cuentan como socios pero no compran ni suman volumen. El resto de tu organización compra cada mes.`,
-      `Binario: ${fmt(s.strongLegPct)} % de tu volumen en la pierna fuerte y ${fmt(100 - s.strongLegPct)} % en la débil; tus líneas de patrocinio, repartidas por igual entre tus directos.`,
+      `Organización: ${fmt(s.orgActivePct)} % activa (${fmt(activeTeam)} de ${fmt(o.team)} socios, sin contar a tus directos) y ${fmt(active)} de ${fmt(s.directs)} directos activos. Los inactivos cuentan como socios pero no compran ni suman volumen.`,
+      `Tu equipo está debajo de tus ${fmt(o.building)} directo(s) que construyen, repartido por igual entre ellos; tus otros directos activos son líneas de una sola persona.`,
+      `Clientes de tu organización: ${fmt(o.activeCustomers)} activos de ${fmt(s.orgCustomers)} (mismo % de actividad; ≈ ${o.customersPerSocio.toFixed(2)} por socio activo). Compran como los socios y su volumen suma a tus piernas y a tu organización, pero su ganancia y su Bono por Cliente son de sus socios. Los líderes del Mentor Match tienen esa misma media.`,
+      `Binario: ${fmt(s.strongLegPct)} % de tu volumen en la pierna fuerte y ${fmt(100 - s.strongLegPct)} % en la débil.`,
       "Cálculo mensual.",
       "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los líderes (1★ Director o más) de tus generaciones; es estimado porque supone cuántos hay y de qué rango (propuesta automática: los que caben con tu volumen) y cuánto gana cada uno.",
       "Reglas: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)».",

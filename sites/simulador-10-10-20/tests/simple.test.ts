@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SIMPLE, inPeriod, simpleCalc } from "../src/engine/simple";
+import { DEFAULT_SIMPLE, inPeriod, orgShape, simpleCalc } from "../src/engine/simple";
 
 const line = (r: ReturnType<typeof simpleCalc>, id: string) => r.lines.find((l) => l.id === id)!.monthly.toFixed(2);
 
@@ -41,13 +41,29 @@ describe("Calculadora simple", () => {
     expect(line(r, "customer")).toBe("77.00"); // los 10 clientes suman 770 PV → 10 %
   });
   it("directos inactivos: no compran ni suman volumen", () => {
-    const r = simpleCalc({ ...DEFAULT_SIMPLE, activeDirectsPct: 50 });
+    const r = simpleCalc({ ...DEFAULT_SIMPLE, activeDirects: 5 });
     expect(r.rank).toBe("d2");
     expect(line(r, "personal-team")).toBe("38.50"); // 5 activos × 77 × 10 %
     expect(line(r, "binary")).toBe("491.26"); // pierna débil 40 % × (140 + 5) × 77 × 11 %
     expect(r.confirmed.toFixed(2)).toBe("806.76");
-    const none = simpleCalc({ ...DEFAULT_SIMPLE, activeDirectsPct: 0 });
-    expect(line(none, "personal-team")).toBe("0.00");
+    // Sin directos activos que construyan no puede haber socios activos debajo.
+    expect(simpleCalc({ ...DEFAULT_SIMPLE, activeDirects: 0 }).errors.join()).toMatch(/construyendo/);
+    expect(line(simpleCalc({ ...DEFAULT_SIMPLE, activeDirects: 0, orgActivePct: 0 }), "personal-team")).toBe("0.00");
+  });
+  it("organización real: % de actividad, directos que construyen y clientes de la organización", () => {
+    // 286 socios en la binaria, 97 directos (5 activos y construyendo), 406 en el equipo del patrocinador → 120 clientes
+    const s = { ...DEFAULT_SIMPLE, partners: 286, directs: 97, activeDirects: 5, buildingDirects: 5, orgActivePct: 40, orgCustomers: 120 };
+    const o = orgShape(s);
+    expect(o).toMatchObject({ team: 189, activeTeam: 76, active: 5, activeSocios: 81, activeCustomers: 48 });
+    const r = simpleCalc(s);
+    expect(r.errors).toEqual([]);
+    expect(line(r, "personal-team")).toBe("38.50"); // solo los 5 directos activos: 5 × 77 × 10 %
+    // el equipo va en 5 líneas (una por directo que construye): cada una 1 + 76 / 5 socios
+    expect(r.base!.qualificationMonth!.snapshot.lines.map((l) => l.count)).toEqual([5]);
+    const sin = simpleCalc({ ...s, orgCustomers: 0 });
+    expect(Number(line(r, "binary"))).toBeGreaterThan(Number(line(sin, "binary"))); // los clientes de la organización suman a las piernas
+    expect(line(r, "customer")).toBe(line(sin, "customer")); // pero no a tu Bono por Cliente
+    expect(line(r, "retail")).toBe(line(sin, "retail"));
   });
   it("binario 50/50 si se elige", () => {
     expect(line(simpleCalc({ ...DEFAULT_SIMPLE, strongLegPct: 50 }), "binary")).toBe("635.25"); // 11 % × 5 775
@@ -110,7 +126,7 @@ describe("Calculadora simple", () => {
     expect(simpleCalc({ ...DEFAULT_SIMPLE, strongLegPct: 40 }).errors.length).toBeGreaterThan(0);
   });
   it("valida entradas", () => {
-    expect(simpleCalc({ ...DEFAULT_SIMPLE, activeDirectsPct: 120 }).errors.length).toBeGreaterThan(0);
+    expect(simpleCalc({ ...DEFAULT_SIMPLE, orgActivePct: 120 }).errors.length).toBeGreaterThan(0);
     expect(simpleCalc({ ...DEFAULT_SIMPLE, directs: 200 }).errors.length).toBeGreaterThan(0);
     expect(simpleCalc({ ...DEFAULT_SIMPLE, partners: 1.5 }).errors.length).toBeGreaterThan(0);
   });

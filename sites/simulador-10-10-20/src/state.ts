@@ -37,7 +37,7 @@ export const INITIAL: AppState = {
   goal: DEFAULT_GOAL, simple: DEFAULT_SIMPLE, saved: [], exampleValues: false,
 };
 
-const KEY = "sim101020:v4";
+const KEY = "sim101020:v5";
 
 function load(): AppState {
   try {

@@ -6,7 +6,7 @@
 |---|---|---|
 | Calculadora simple | Ejemplo del propietario (150 socios, 10 directos activos, 10 clientes preferentes, 1 sobre de 77 PV, binario 60/40): 2★ Director · clientes $200 · 10 % $77 · Bono por Cliente $77 · binario $508,20 · Mentor Match estimado $118,89 (2 × 1★ Director en Gen 1) · total $981,09 (sin estimados $862,20) · bono de rango $1 850. Con 50/50 el binario da $635,25. Con 1 000 socios y 2 sobres: 2★ Ejecutivo con líderes 1★ Ejecutivo, 3★/2★/1★ Director en 4 generaciones → Mentor Match estimado $3 198,94 | ✅ |
 | Tabla oficial | Datos de los 13 rangos comparados con la tabla oficial (PV, QDV, MVR, OL2L, balance, Nivel Comprimido, binario, Mentor Match, bonos de rango); MVR solo desde 1★ Director; 10 % desde 1★ Gerente; PIB con 55 PV; duplicación por partes | ✅ |
-| Motor | 97 pruebas (Vitest): binario con pierna débil acumulada, arrastre y vencimiento a 26/52 semanas, Mentor Match sobre Nivel + Binario con generaciones comprimidas desde 1★ Director, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 97/97 |
+| Motor | 98 pruebas (Vitest): binario con pierna débil acumulada, arrastre y vencimiento a 26/52 semanas, Mentor Match sobre Nivel + Binario con generaciones comprimidas desde 1★ Director, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 98/98 |
 | Solver inverso | Metas de US$250, 500, 1 000, 2 000 y 5 000: cada solución se vuelve a pasar por el motor directo, alcanza la meta y con N−1 compradores no | ✅ |
 | Escenarios | Los 9 casos se calculan en vivo; la prueba comprueba que el rango y las cifras citadas en el texto coinciden con el motor | ✅ (la prueba detectó y se corrigió un texto: el caso concentrado queda en 1★ Manager, no en 2★) |
 | Fichas «Entender» | Cada ejemplo numérico se calcula con el motor y se comprueba su importe | ✅ |
@@ -103,6 +103,7 @@
 - simple.test.ts > Calculadora simple > sin compra propia no hay rango ni 10 %
 - simple.test.ts > Calculadora simple > clientes minoristas ($50) y preferentes ($20) por separado
 - simple.test.ts > Calculadora simple > directos inactivos: no compran ni suman volumen
+- simple.test.ts > Calculadora simple > organización real: % de actividad, directos que construyen y clientes de la organización
 - simple.test.ts > Calculadora simple > binario 50/50 si se elige
 - simple.test.ts > Calculadora simple > Mentor Match: líderes de todos los rangos y en varias generaciones
 - simple.test.ts > Calculadora simple > Mentor Match: número manual por generación, con límite y en cascada
