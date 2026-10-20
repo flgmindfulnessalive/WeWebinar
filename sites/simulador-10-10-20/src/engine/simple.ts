@@ -2,7 +2,7 @@
 // Traduce los datos a una organización del modo rápido con supuestos fijos y
 // declarados, y usa el mismo motor (simulate) para todo lo que calcula.
 import { PLAN, rankById, rankIndex } from "../plan/plan-10-10-20";
-import type { RankId } from "../plan/types";
+import type { RankId, RankRule } from "../plan/types";
 import { cents, d, pct, sum, WEEKS_PER_MONTH, ZERO, type D } from "./decimal";
 import { DEFAULT_ASSUMPTIONS, type Product, type QuickOrg } from "./model";
 import { atLeast } from "./simulate";
@@ -29,13 +29,15 @@ export interface SimpleInput {
   retailPerSachet: number;
   /** Ganancia por sobre que compra un cliente preferente (USD). */
   preferredPerSachet: number;
-  /** 1★ Directores en tus líneas (Mentor Match). null = propuesta automática. */
+  /** Líderes (1★ Director o más) en tu Gen 1 para el Mentor Match. null = propuesta automática. */
   directors: number | null;
+  /** % del volumen en la pierna fuerte del binario (60 = reparto 60/40). */
+  strongLegPct: number;
 }
 
 export const DEFAULT_SIMPLE: SimpleInput = {
   partners: 150, directs: 10, activeDirectsPct: 100, retailCustomers: 0, preferredCustomers: 10,
-  sachets: 1, ownSachets: 1, pvPerSachet: 77, retailPerSachet: 50, preferredPerSachet: 20, directors: null,
+  sachets: 1, ownSachets: 1, pvPerSachet: 77, retailPerSachet: 50, preferredPerSachet: 20, directors: null, strongLegPct: 60,
 };
 
 export interface SimpleLine {
@@ -47,6 +49,8 @@ export interface SimpleLine {
   why?: string;
 }
 
+export interface LeaderTier { gen: number; rank: RankId; count: number; size: number; levelWeekly: D; binaryWeekly: D; paidWeekly: D }
+
 export interface SimpleResult {
   errors: string[];
   rank: RankId | null;
@@ -57,8 +61,8 @@ export interface SimpleResult {
   rankBonusTotal: D;
   rankBonusRanks: string[];
   next: { rank: RankId; gaps: string[] } | null;
-  /** Directores 1★ en tus líneas: cuántos caben y cuántos se usan. */
-  directors: { max: number; used: number };
+  /** Líderes del Mentor Match: cuántos caben en tu Gen 1, cuántos se usan y todos por generación. */
+  directors: { max: number; used: number; tiers: LeaderTier[] };
   assumptions: string[];
   base: SimulationResult | null;
 }
@@ -69,7 +73,8 @@ export function validateSimple(s: SimpleInput): string[] {
   const e: string[] = [];
   for (const [v, w] of [[s.partners, "Socios"], [s.directs, "Directos"], [s.retailCustomers, "Clientes minoristas"], [s.preferredCustomers, "Clientes preferentes"]] as const) if (!Number.isInteger(v) || v < 0) e.push(`${w}: escribe un número entero de 0 o más.`);
   for (const [v, w] of [[s.sachets, "Sobres por persona"], [s.ownSachets, "Tus sobres"], [s.pvPerSachet, "PV por sobre"], [s.retailPerSachet, "Ganancia por sobre (minorista)"], [s.preferredPerSachet, "Ganancia por sobre (preferente)"]] as const) if (!(v >= 0) || !Number.isFinite(v)) e.push(`${w}: escribe un número de 0 o más.`);
-  if (s.directors != null && (!Number.isInteger(s.directors) || s.directors < 0)) e.push("Directores en tus líneas: escribe un número entero de 0 o más.");
+  if (s.directors != null && (!Number.isInteger(s.directors) || s.directors < 0)) e.push("Líderes en tu Gen 1: escribe un número entero de 0 o más.");
+  if (!(s.strongLegPct >= 50 && s.strongLegPct <= 100)) e.push("Pierna fuerte del binario: escribe un % entre 50 y 100.");
   if (!(s.activeDirectsPct >= 0 && s.activeDirectsPct <= 100)) e.push("Directos activos: escribe un % entre 0 y 100.");
   if (s.directs > s.partners) e.push("Los directos forman parte de tus socios: no pueden ser más que el total de socios.");
   if (s.partners > s.directs && s.directs === 0) e.push("Para tener socios en tu organización necesitas al menos un directo.");
@@ -79,7 +84,7 @@ export function validateSimple(s: SimpleInput): string[] {
 /** Directos que compran: el % redondeado al entero más cercano. */
 export const activeDirects = (s: SimpleInput) => Math.round((s.directs * s.activeDirectsPct) / 100);
 
-const quickOrg = (own: number, retailC: number, preferredC: number, directs: number, inactive: number, team: number, sachets: number): QuickOrg => ({
+const quickOrg = (own: number, retailC: number, preferredC: number, directs: number, inactive: number, team: number, sachets: number, strongPct = 50): QuickOrg => ({
   personal: own > 0 ? [{ productId: "sobre", qty: own }] : [],
   customers: [
     ...(retailC > 0 ? [{ count: retailC, productId: "sobre", qty: sachets, kind: "cliente" as const }] : []),
@@ -89,32 +94,72 @@ const quickOrg = (own: number, retailC: number, preferredC: number, directs: num
   sponsoredInactive: inactive,
   team: team > 0 ? [{ count: team, productId: "sobre", qty: sachets }] : [],
   teamInactive: 0,
-  distribution: { lines: directs + inactive, largestPct: directs + inactive ? (directs + inactive === 1 ? 100 : 100 / (directs + inactive)) : 0, secondPct: directs + inactive > 1 ? 100 / (directs + inactive) : 0, leftPct: 50 },
+  distribution: { lines: directs + inactive, largestPct: directs + inactive ? (directs + inactive === 1 ? 100 : 100 / (directs + inactive)) : 0, secondPct: directs + inactive > 1 ? 100 / (directs + inactive) : 0, leftPct: strongPct },
   enrollments: [],
 });
 
+type Leader = { rank: RankId; size: number; levelWeekly: D; binaryWeekly: D };
+/** Los líderes solo dependen de los hábitos (no del tamaño de tu organización): se guardan. */
+const LEADERS = new Map<string, Leader | null>();
+
 /**
- * Organización mínima de un 1★ Director con tus hábitos: busca el menor número
- * de socios con el que el motor lo califica como 1★ Director y devuelve sus
- * ganancias semanales de Nivel y Binario.
+ * Organización mínima de un líder del rango indicado con tus hábitos (mismo
+ * consumo, tus directos —al menos 4— y tu reparto del binario), llegando al PV
+ * de su rango. Busca el menor número de socios con el que el motor lo califica
+ * y devuelve sus ganancias semanales de Nivel y Binario.
  */
-function directorModel(s: SimpleInput, products: Product[]) {
+function leaderModel(s: SimpleInput, products: Product[], rank: RankRule): Leader | null {
   const unitPv = s.sachets * s.pvPerSachet;
-  if (!(unitPv > 0)) return null;
-  const minRank = rankById[PLAN.mentorGenerationMinRank];
-  const own = Math.max(s.sachets, Math.ceil(minRank.pv / (s.pvPerSachet || 1)));
-  for (let size = Math.ceil(minRank.qdv! / unitPv); size <= Math.ceil(minRank.qdv! / unitPv) + 50; size++) {
-    const dd = Math.max(2, Math.min(s.directs, size));
-    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg(own, 0, 0, dd, 0, size - dd, s.sachets) });
-    if (!dr.ok || !atLeast(dr.paidRank, minRank.id)) continue;
+  if (!(unitPv > 0) || rank.qdv == null) return null;
+  // Para los rangos de 200 PV solo cuentan 110 personales: el resto, con clientes.
+  const ownPv = Math.min(rank.pv, PLAN.personalPvCapForPv200);
+  const own = Math.max(s.sachets, Math.ceil(ownPv / (s.pvPerSachet || 1)));
+  const counted = Math.min(own * s.pvPerSachet, rank.pv === 200 ? PLAN.personalPvCapForPv200 : Infinity);
+  const clients = Math.max(0, Math.ceil((rank.pv - counted) / unitPv));
+  let size = Math.ceil(rank.qdv / unitPv);
+  for (let i = 0; i < 200; i++, size += Math.max(1, Math.ceil(size * 0.02))) {
+    const dd = Math.max(4, Math.min(s.directs, size));
+    if (dd > size) continue;
+    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg(own, 0, clients, dd, 0, size - dd, s.sachets, s.strongLegPct) });
+    if (!dr.ok || !atLeast(dr.paidRank, rank.id)) continue;
     const m = (id: string) => dr.components.find((c) => c.id === id)!.monthly ?? ZERO;
-    return { size, levelWeekly: m("personal-team").dividedBy(WEEKS_PER_MONTH), binaryWeekly: m("binary").dividedBy(WEEKS_PER_MONTH) };
+    return { rank: dr.paidRank!, size, levelWeekly: m("personal-team").dividedBy(WEEKS_PER_MONTH), binaryWeekly: m("binary").dividedBy(WEEKS_PER_MONTH) };
   }
   return null;
 }
 
+/**
+ * Estructura de líderes que cabe en una organización. En cada línea cuenta como
+ * máximo la MVR del rango de arriba, así que el líder más alto que cabe en una
+ * línea es el que tiene un QDV ≤ esa MVR (p. ej., bajo un 1★ Presidencial,
+ * 3★ Ejecutivos). Se colocan tantos como quepan, el resto con rangos menores
+ * hasta 1★ Director, y dentro de cada líder se repite lo mismo para la
+ * generación siguiente, hasta las generaciones que paga tu rango.
+ */
+function planLeaders(people: number, parent: RankId, maxGen: number, gen1Limit: number | null, get: (r: RankRule) => Leader | null) {
+  const out: { gen: number; leader: Leader; count: number }[] = [];
+  const fill = (avail: number, top: RankId, gen: number, mult: number) => {
+    const cap = rankById[top].mvr;
+    if (gen > maxGen || cap == null) return;
+    let rest = avail, allow = gen === 1 && gen1Limit != null ? gen1Limit : Infinity;
+    const fits = PLAN.ranks.filter((r) => atLeast(r.id, PLAN.mentorGenerationMinRank) && r.qdv! <= cap).reverse();
+    for (const r of fits) {
+      const L = get(r);
+      if (!L) continue;
+      const fit = Math.floor(rest / (L.size + 1));
+      const n = Math.min(fit, allow);
+      if (!n) continue;
+      out.push({ gen, leader: L, count: n * mult });
+      fill(L.size, L.rank, gen + 1, n * mult);
+      rest -= n * (L.size + 1); allow -= n;
+    }
+  };
+  fill(people, parent, 1, 1);
+  return { tiers: out };
+}
+
 export function simpleCalc(s: SimpleInput): SimpleResult {
-  const empty: SimpleResult = { errors: validateSimple(s), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, directors: { max: 0, used: 0 }, assumptions: [], base: null };
+  const empty: SimpleResult = { errors: validateSimple(s), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, directors: { max: 0, used: 0, tiers: [] }, assumptions: [], base: null };
   if (empty.errors.length) return empty;
 
   const products: Product[] = [{ id: "sobre", name: "Sobre X39", qv: s.pvPerSachet, cv: s.pvPerSachet, retailMargin: s.retailPerSachet, preferredMargin: s.preferredPerSachet }];
@@ -122,7 +167,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const team = s.partners - s.directs;
   const active = activeDirects(s), inactive = s.directs - active;
   const customers = s.retailCustomers + s.preferredCustomers;
-  const r = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg(s.ownSachets, s.retailCustomers, s.preferredCustomers, active, inactive, team, s.sachets) });
+  const r = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg(s.ownSachets, s.retailCustomers, s.preferredCustomers, active, inactive, team, s.sachets, s.strongLegPct) });
   if (!r.ok) return { ...empty, errors: [...r.errors, ...r.missing] };
 
   const comp = (id: string) => r.components.find((c) => c.id === id)!;
@@ -156,43 +201,54 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   });
 
   const bi = comp("binary");
-  const leg = ((team + active) * sx * pv) / 2;
+  const leg = ((team + active) * sx * pv) * (100 - s.strongLegPct) / 100;
   lines.push({
     id: "binary", name: "Bono binario", monthly: bi.monthly ?? ZERO, estimated: false,
-    how: [`Tu organización repartida mitad y mitad: pierna débil ≈ ${fmt(leg)} PV al mes (lo de la pierna fuerte se acumula para la semana siguiente).`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Gerente."],
+    how: [`Tu organización repartida ${fmt(s.strongLegPct)}/${fmt(100 - s.strongLegPct)} entre tus piernas: pierna débil ≈ ${fmt(Math.round(leg))} PV al mes (lo que sobra en la pierna fuerte se acumula).`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Gerente."],
     why: bi.status === "no_elegible" ? bi.reasons[0] : undefined,
   });
 
-  // Mentor Match estimado. Generación = 1★ Director o superior en tus líneas.
-  // Propuesta automática: cuántos 1★ Director caben en tu organización si cada
-  // uno tiene lo mínimo para calificar (5 000 de volumen en su organización),
-  // con los mismos hábitos de compra y el mismo número de directos que tú, y
-  // llegando a sus 110 PV. Todos como Gen 1 (sin Directores anidados debajo).
+  // Mentor Match estimado: líderes (1★ Director o más) que caben en tus líneas,
+  // de todos los rangos y en todas las generaciones que paga tu rango.
   const gens = r.paidRank ? rankById[r.paidRank].mentorGens : [];
-  const leader = directorModel(s, products);
+  const key = [s.sachets, s.pvPerSachet, s.directs, s.strongLegPct].join("|");
+  const get = (rk: RankRule) => {
+    const k = `${key}|${rk.id}`;
+    if (!LEADERS.has(k)) { if (LEADERS.size > 500) LEADERS.clear(); LEADERS.set(k, leaderModel(s, products, rk)); }
+    return LEADERS.get(k)!;
+  };
   const available = team + active;
-  const maxDirectors = leader ? Math.floor(available / (leader.size + 1)) : 0;
-  const usedDirectors = Math.min(s.directors ?? maxDirectors, maxDirectors);
-  let mentorWeekly = ZERO;
+  const parent: RankId = gens.length ? r.paidRank! : PLAN.mentorGenerationMinRank;
+  const full = planLeaders(available, parent, Math.max(1, gens.length), null, get);
+  const lp = s.directors == null ? full : planLeaders(available, parent, Math.max(1, gens.length), s.directors, get);
+  const maxDirectors = full.tiers.filter((x) => x.gen === 1).reduce((a, x) => a + x.count, 0);
+  const usedDirectors = lp.tiers.filter((x) => x.gen === 1).reduce((a, x) => a + x.count, 0);
+  const cap = gens.length ? d(rankById[r.paidRank!].mentorCapPerBp!) : ZERO;
+  // Agrupado por generación y rango (mismo rango = mismo líder modelo).
+  const byKey = new Map<string, LeaderTier>();
+  if (gens.length) for (const x of lp.tiers) {
+    const k = `${x.gen}|${x.leader.rank}`, prev = byKey.get(k);
+    if (prev) { prev.count += x.count; continue; }
+    const each = pct(x.leader.levelWeekly.plus(x.leader.binaryWeekly), gens[x.gen - 1]);
+    byKey.set(k, { gen: x.gen, rank: x.leader.rank, count: x.count, size: x.leader.size, levelWeekly: x.leader.levelWeekly, binaryWeekly: x.leader.binaryWeekly, paidWeekly: each.gt(cap) ? cap : each });
+  }
+  const tiers = [...byKey.values()].sort((x, y) => x.gen - y.gen || rankIndex(y.rank) - rankIndex(x.rank));
+  const mentorWeekly = sum(tiers.map((x) => x.paidWeekly.times(x.count)));
   const mHow: string[] = [];
   if (gens.length) {
-    const cap = d(rankById[r.paidRank!].mentorCapPerBp!);
-    if (!leader) mHow.push("Con estos datos nadie en tu organización puede llegar a 1★ Director.");
+    if (!tiers.length) mHow.push("Con estos datos nadie en tu organización llega a 1★ Director.");
     else {
-      const each = pct(leader.levelWeekly.plus(leader.binaryWeekly), gens[0]);
-      const paid = each.gt(cap) ? cap : each;
-      mentorWeekly = paid.times(usedDirectors);
-      mHow.push(`Directores 1★ en tus líneas: ${fmt(usedDirectors)}${s.directors == null ? " (propuesta automática)" : ""}. Con tu volumen caben como máximo ${fmt(maxDirectors)}: cada uno necesita ${fmt(leader.size)} socios en su organización (≥ 5 000 de volumen).`);
+      mHow.push(`Líderes en tu Gen 1: ${fmt(usedDirectors)}${s.directors == null ? " (propuesta automática: los que caben)" : ""}; caben ${fmt(maxDirectors)}.`);
       if (s.directors != null && s.directors > maxDirectors) mHow.push(`Pusiste ${fmt(s.directors)}, pero solo caben ${fmt(maxDirectors)}: se usan ${fmt(maxDirectors)}.`);
-      mHow.push(`Cada Director: Nivel ≈ $${leader.levelWeekly.toFixed(2)} + Binario ≈ $${leader.binaryWeekly.toFixed(2)} por semana → Gen 1: ${gens[0]} % ≈ $${paid.toFixed(2)}/semana${each.gt(cap) ? ` (tope de $${fmt(rankById[r.paidRank!].mentorCapPerBp!)} por socio)` : ""}.`);
-      mHow.push("Supone que cada Director tiene lo mínimo para calificar, tus mismos hábitos de compra y tu número de directos, y que llega a sus 110 PV (con compras propias o clientes). No se cuentan Directores anidados (Gen 2+).");
+      for (const x of tiers) mHow.push(`Gen ${x.gen} · ${fmt(x.count)} × ${rankById[x.rank].short}: Nivel ≈ $${x.levelWeekly.toFixed(2)} + Binario ≈ $${x.binaryWeekly.toFixed(2)} por semana → ${gens[x.gen - 1]} % ≈ $${x.paidWeekly.toFixed(2)}/semana cada uno${x.paidWeekly.eq(cap) ? " (tope por socio)" : ""}.`);
+      mHow.push(`Cada línea cuenta como máximo la MVR del rango de arriba, así que bajo cada líder cabe, como mucho, el rango siguiente hacia abajo. Supone que cada líder tiene lo mínimo para calificar, tus hábitos de compra, tu número de directos (al menos 4) y el PV de su rango.`);
     }
   }
   const mentorMonthly = cents(mentorWeekly.times(WEEKS_PER_MONTH));
   lines.push({
     id: "mentor", name: "Mentor Match", monthly: mentorMonthly, estimated: true,
     how: gens.length ? mHow : [],
-    why: !gens.length ? `Empieza en 1★ Director.${maxDirectors ? ` En tus líneas caben ${fmt(maxDirectors)} Director(es) 1★ cuando llegues.` : ""}` : undefined,
+    why: !gens.length ? `Empieza en 1★ Director.${maxDirectors ? ` En tus líneas caben ${fmt(maxDirectors)} líder(es) 1★ Director cuando llegues.` : ""}` : undefined,
   });
 
   const confirmed = cents(sum(lines.filter((l) => !l.estimated).map((l) => l.monthly)));
@@ -209,15 +265,15 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
     return `${fmt(n)} PV más en tu pierna débil`;
   };
   return {
-    errors: [], rank: r.paidRank, lines, confirmed, total, directors: { max: maxDirectors, used: usedDirectors },
+    errors: [], rank: r.paidRank, lines, confirmed, total, directors: { max: maxDirectors, used: usedDirectors, tiers },
     rankBonusTotal: d(reached.reduce((x, y) => x + (y.rankBonus ?? 0), 0)), rankBonusRanks: reached.map((x) => `${x.short} $${fmt(x.rankBonus!)}`),
     next: nextEval ? { rank: nextEval.rank, gaps: nextEval.checks.filter((c) => !c.ok).map((c) => gapText(c.key, c.gap)) } : null,
     assumptions: [
       `Cada sobre suma ${fmt(pv)} PV (los porcentajes se calculan sobre ese mismo volumen) y deja $${fmt(s.retailPerSachet)} si lo compra un cliente minorista o $${fmt(s.preferredPerSachet)} si lo compra un cliente preferente.`,
       `${fmt(s.activeDirectsPct)} % de tus directos activos (${fmt(active)} de ${fmt(s.directs)}): los inactivos cuentan como socios pero no compran ni suman volumen. El resto de tu organización compra cada mes.`,
-      "Tu organización está equilibrada: mitad en cada pierna y repartida por igual entre tus directos.",
+      `Binario: ${fmt(s.strongLegPct)} % de tu volumen en la pierna fuerte y ${fmt(100 - s.strongLegPct)} % en la débil; tus líneas de patrocinio, repartidas por igual entre tus directos.`,
       "Cálculo mensual.",
-      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los 1★ Director de tus líneas; es estimado porque supone cuántos hay (propuesta automática: los que caben con tu volumen) y cuánto gana cada uno.",
+      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los líderes (1★ Director o más) de tus generaciones; es estimado porque supone cuántos hay y de qué rango (propuesta automática: los que caben con tu volumen) y cuánto gana cada uno.",
       "Reglas: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)».",
     ],
     base: r,

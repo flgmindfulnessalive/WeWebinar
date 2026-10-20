@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { usd } from "../engine/decimal";
-import { activeDirects, simpleCalc, type SimpleInput, type SimpleLine } from "../engine/simple";
+import { activeDirects, simpleCalc, type LeaderTier, type SimpleInput, type SimpleLine } from "../engine/simple";
 import { rankById, rankIndex } from "../plan/plan-10-10-20";
 import type { RankId } from "../plan/types";
 import { t } from "../i18n";
@@ -74,22 +74,31 @@ function LegsViz({ left, right }: { left: number; right: number }) {
   );
 }
 
-/** Mentor Match: constelación de tus Directores alrededor de ti. */
-function Constellation({ count }: { count: number }) {
-  const shown = Math.min(count, 36);
-  const pts = Array.from({ length: shown }, (_, i) => {
-    const ring = i < 12 ? 0 : i < 24 ? 1 : 2, idx = i % 12, n = Math.min(12, shown - ring * 12);
-    const a = (idx / n) * Math.PI * 2 + ring * 0.4, r = 46 + ring * 26;
-    return { x: 120 + Math.cos(a) * r, y: 100 + Math.sin(a) * r * 0.8 };
-  });
+const family = (r: RankId) => (r.startsWith("p") ? "p" : r.startsWith("e") ? "e" : "d");
+
+/** Mentor Match: constelación de tus líderes, un anillo por generación y un color por familia de rango. */
+function Constellation({ tiers }: { tiers: LeaderTier[] }) {
+  const maxGen = Math.max(...tiers.map((x) => x.gen));
+  const rings = Array.from({ length: maxGen }, (_, g) => tiers.filter((x) => x.gen === g + 1));
+  const R = (g: number) => 34 + g * (116 / Math.max(1, maxGen));
   return (
     <figure className="sconst">
-      <svg viewBox="0 0 240 200" role="img" aria-label={`${count} Directores 1★ en tus líneas`}>
-        {pts.map((p, i) => <line key={`l${i}`} x1="120" y1="100" x2={p.x} y2={p.y} className="sconst__ray" />)}
-        <circle cx="120" cy="100" r="9" className="sconst__you" />
-        {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4.5" className="sconst__star" style={{ animationDelay: `${(i % 12) * 0.08}s` }} />)}
+      <svg viewBox="0 0 320 320" role="img" aria-label={rings.map((ts, g) => `Gen ${g + 1}: ${ts.map((x) => `${fmt(x.count)} ${rankById[x.rank].short}`).join(", ")}`).join(". ")}>
+        {rings.map((_, g) => <circle key={`o${g}`} cx="160" cy="160" r={R(g)} className="sconst__orbit" />)}
+        {rings.map((ts, g) => {
+          const dots = ts.flatMap((x) => Array.from({ length: Math.min(x.count, 6) }, () => family(x.rank)));
+          const n = Math.min(dots.length, 10 + g * 6);
+          return dots.slice(0, n).map((f, i) => {
+            const a = (i / n) * Math.PI * 2 + g * 0.5;
+            return <circle key={`${g}-${i}`} cx={160 + Math.cos(a) * R(g)} cy={160 + Math.sin(a) * R(g)} r={f === "p" ? 6 : f === "e" ? 5 : 4} className={`sconst__star f-${f}`} style={{ animationDelay: `${(i % 10) * 0.1}s` }} />;
+          });
+        })}
+        <circle cx="160" cy="160" r="10" className="sconst__you" />
       </svg>
-      <figcaption>{fmt(count)} Director(es) 1★ como tu Gen 1{count > shown ? ` (se dibujan ${shown})` : ""}.</figcaption>
+      <figcaption><span className="f-d">● Directores</span> <span className="f-e">● Ejecutivos</span> <span className="f-p">● Presidenciales</span> · un anillo por generación</figcaption>
+      <table className="sgen">
+        <tbody>{rings.map((ts, g) => <tr key={g}><th scope="row">Gen {g + 1}</th><td>{ts.map((x) => `${fmt(x.count)} × ${rankById[x.rank].short}`).join(" · ")}</td></tr>)}</tbody>
+      </table>
     </figure>
   );
 }
@@ -153,13 +162,14 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
           <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />
           <Stepper label="Tus sobres al mes" value={value.ownSachets} onChange={(v) => set({ ownSachets: v })} />
           <Stepper label="PV por sobre" value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />
+          <Stepper label="Pierna fuerte del binario (%)" hint={`Reparto ${fmt(value.strongLegPct)}/${fmt(100 - value.strongLegPct)} entre tus piernas`} value={value.strongLegPct} step={5} min={50} max={100} onChange={(v) => set({ strongLegPct: v })} />
           <Stepper label="Ganancia por sobre: minorista ($)" value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
           <Stepper label="Ganancia por sobre: preferente ($)" value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
           <div className="sdir">
-            <Stepper label="Directores 1★ en tus líneas" hint={`Para el Mentor Match · caben ${fmt(r.directors.max)}`}
+            <Stepper label="Líderes en tu Gen 1" hint={`1★ Director o más, para el Mentor Match · caben ${fmt(r.directors.max)}`}
               value={value.directors ?? r.directors.used} max={r.directors.max} onChange={(v) => set({ directors: Math.round(v) })} />
             {value.directors == null
-              ? <p className="sdir__note">Propuesta automática: los que caben con tu volumen.</p>
+              ? <p className="sdir__note">Propuesta automática: los que caben con tu volumen, de todos los rangos, y los líderes que caben debajo de ellos en las generaciones que paga tu rango.</p>
               : <button type="button" className="btn btn--ghost btn--sm" onClick={() => set({ directors: null })}>Usar la propuesta automática ({fmt(r.directors.max)})</button>}
           </div>
         </section>
@@ -189,7 +199,7 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
                     <div className="slines__how">
                       {l.why && <p>{l.why}</p>}
                       {l.id === "binary" && legs && num(l.monthly) > 0 && <LegsViz left={num(legs.Lcv)} right={num(legs.Rcv)} />}
-                      {l.id === "mentor" && r.directors.used > 0 && num(l.monthly) > 0 && <Constellation count={r.directors.used} />}
+                      {l.id === "mentor" && r.directors.tiers.length > 0 && num(l.monthly) > 0 && <Constellation tiers={r.directors.tiers} />}
                       {l.how.length > 0 && <ul>{l.how.map((h) => <li key={h}>{h}</li>)}</ul>}
                     </div>
                   </details>

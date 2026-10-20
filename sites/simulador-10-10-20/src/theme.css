@@ -188,11 +188,18 @@ main { position: relative; z-index: 1; }
 
 /* Mentor Match: constelación */
 .sconst { margin: 4px 0 12px; display: grid; gap: 6px; }
-.sconst svg { width: 100%; max-width: 220px; height: auto; margin: 0 auto; display: block; }
-.sconst__ray { stroke: rgba(255, 194, 74, .28); stroke-width: 1; }
-.sconst__you { fill: #eaf0fa; }
-.sconst__star { fill: #ffc24a; filter: drop-shadow(0 0 4px rgba(255, 194, 74, .9)); animation: twinkle 3s ease-in-out infinite; }
+.sconst svg { width: 100%; max-width: 260px; height: auto; margin: 0 auto; display: block; }
+.sconst__orbit { fill: none; stroke: rgba(143, 183, 255, .18); stroke-width: 1; stroke-dasharray: 3 5; }
+.sconst__you { fill: #eaf0fa; filter: drop-shadow(0 0 8px rgba(234, 240, 250, .8)); }
+.sconst__star { animation: twinkle 3s ease-in-out infinite; }
+.sconst__star.f-d { fill: #ffc24a; filter: drop-shadow(0 0 4px rgba(255, 194, 74, .9)); }
+.sconst__star.f-e { fill: #3ce0ff; filter: drop-shadow(0 0 5px rgba(60, 224, 255, .9)); }
+.sconst__star.f-p { fill: #f2e9ff; filter: drop-shadow(0 0 7px rgba(199, 178, 255, 1)); }
 @keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+.sconst figcaption .f-d { color: #ffc24a; } .sconst figcaption .f-e { color: #3ce0ff; } .sconst figcaption .f-p { color: #e3d6ff; }
+.sgen { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 6px; }
+.sgen th, .sgen td { padding: 6px 8px; border-top: 1px solid rgba(143, 183, 255, .14); text-align: left; vertical-align: top; }
+.sgen th { color: var(--text-3); font-weight: 700; white-space: nowrap; width: 1%; }
 .sconst figcaption { font-size: .82rem; color: var(--text-3); text-align: center; }
 
 /* Hacia el siguiente rango */
