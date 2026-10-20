@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { usd } from "../engine/decimal";
-import { activeDirects, inPeriod, simpleCalc, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
+import { activeDirects, inPeriod, simpleCalc, type GenInfo, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
 import { rankById, rankIndex } from "../plan/plan-10-10-20";
 import type { RankId } from "../plan/types";
 import { t } from "../i18n";
@@ -69,7 +69,7 @@ function LegsViz({ left, right }: { left: number; right: number }) {
   return (
     <figure className="slegs">
       <div className="slegs__cols">{col(left, "Izquierda")}{col(right, "Derecha")}</div>
-      <figcaption>Brilla la parte que se empareja ({fmt(Math.round(weak))} PV al mes). Lo demás queda acumulado.</figcaption>
+      <figcaption>La parte que brilla ({fmt(Math.round(weak))} PV al mes) se paga y se descuenta de las dos piernas; el sobrante de la pierna fuerte ({fmt(Math.round(Math.max(left, right) - weak))} PV) pasa a la semana siguiente.</figcaption>
     </figure>
   );
 }
@@ -100,6 +100,41 @@ function Constellation({ tiers }: { tiers: LeaderTier[] }) {
         <tbody>{rings.map((ts, g) => <tr key={g}><th scope="row">Gen {g + 1}</th><td>{ts.map((x) => `${fmt(x.count)} × ${rankById[x.rank].short}`).join(" · ")}</td></tr>)}</tbody>
       </table>
     </figure>
+  );
+}
+
+/** Líderes por generación: se abren según tu rango, como en el «Camino al éxito». */
+function LeadersByGen({ value, onChange, gens }: { value: SimpleInput; onChange: (v: (number | null)[]) => void; gens: GenInfo[] }) {
+  const limits = value.genLeaders ?? [];
+  const open = gens.filter((g) => g.unlocked).length;
+  const prevOpen = useRef(open);
+  // Al subir de rango, las generaciones que se abren destellan.
+  const [newFrom, setNewFrom] = useState<number | null>(null);
+  useEffect(() => {
+    const before = prevOpen.current;
+    prevOpen.current = open;
+    if (open > before) { setNewFrom(before); const id = setTimeout(() => setNewFrom(null), 1600); return () => clearTimeout(id); }
+  }, [open]);
+  if (!gens.length) return null;
+  const setGen = (i: number, v: number | null) => { const next = [0, 1, 2, 3, 4, 5].map((j) => limits[j] ?? null); next[i] = v; onChange(next); };
+  const manual = limits.some((x) => x != null);
+  return (
+    <fieldset className="sgens">
+      <legend>Líderes por generación <small>Mentor Match · 1★ Director o más</small></legend>
+      {gens.map((g, i) => g.unlocked ? (
+        <div key={g.gen} className={`sgen-row${newFrom != null && g.gen > newFrom ? " is-new" : ""}`}>
+          <Stepper label={`Gen ${g.gen} · ${g.pct} %`} hint={g.max ? `caben ${fmt(g.max)}${g.picks.length ? `: ${g.picks.map((x) => `${fmt(x.count)} × ${rankById[x.rank].short}`).join(" · ")}` : ""}` : "no caben líderes con este volumen"}
+            value={g.used} max={g.max} onChange={(v) => setGen(i, Math.round(v))} />
+        </div>
+      ) : (
+        <div key={g.gen} className="sgen-row is-locked">
+          <p className="sgen-row__lock"><b>Gen {g.gen} · {g.pct} %</b><span>Se abre en {rankById[g.unlockRank].short}</span></p>
+        </div>
+      ))}
+      {manual
+        ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange([null, null, null, null, null, null])}>Usar la propuesta automática</button>
+        : <p className="sdir__note">Propuesta automática: los líderes que caben con tu volumen, de todos los rangos. Los de cada generación están dentro de las organizaciones de la generación de arriba.</p>}
+    </fieldset>
   );
 }
 
@@ -170,13 +205,7 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
           <Stepper label="Pierna fuerte del binario (%)" hint={`Reparto ${fmt(value.strongLegPct)}/${fmt(100 - value.strongLegPct)} entre tus piernas`} value={value.strongLegPct} step={5} min={50} max={100} onChange={(v) => set({ strongLegPct: v })} />
           <Stepper label="Ganancia por sobre: minorista ($)" value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
           <Stepper label="Ganancia por sobre: preferente ($)" value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
-          <div className="sdir">
-            <Stepper label="Líderes en tu Gen 1" hint={`1★ Director o más, para el Mentor Match · caben ${fmt(r.directors.max)}`}
-              value={value.directors ?? r.directors.used} max={r.directors.max} onChange={(v) => set({ directors: Math.round(v) })} />
-            {value.directors == null
-              ? <p className="sdir__note">Propuesta automática: los que caben con tu volumen, de todos los rangos, y los líderes que caben debajo de ellos en las generaciones que paga tu rango.</p>
-              : <button type="button" className="btn btn--ghost btn--sm" onClick={() => set({ directors: null })}>Usar la propuesta automática ({fmt(r.directors.max)})</button>}
-          </div>
+          <LeadersByGen value={value} onChange={(genLeaders) => set({ genLeaders })} gens={r.leaders.gens} />
         </section>
 
         {r.errors.length > 0 ? (
@@ -209,7 +238,7 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
                     <div className="slines__how">
                       {l.why && <p>{l.why}</p>}
                       {l.id === "binary" && legs && num(l.monthly) > 0 && <LegsViz left={num(legs.Lcv)} right={num(legs.Rcv)} />}
-                      {l.id === "mentor" && r.directors.tiers.length > 0 && num(l.monthly) > 0 && <Constellation tiers={r.directors.tiers} />}
+                      {l.id === "mentor" && r.leaders.tiers.length > 0 && num(l.monthly) > 0 && <Constellation tiers={r.leaders.tiers} />}
                       {l.how.length > 0 && <ul>{l.how.map((h) => <li key={h}>{h}</li>)}</ul>}
                     </div>
                   </details>

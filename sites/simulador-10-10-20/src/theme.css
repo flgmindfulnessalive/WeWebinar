@@ -248,3 +248,18 @@ main { position: relative; z-index: 1; }
 .slines__name { display: block; line-height: 1.35; }
 .slines__name .slines__dot { margin: 0 8px 1px 6px; vertical-align: middle; }
 .slines__name .tag-est, .slines__name .tag-cap { margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
+
+/* Líderes por generación (Camino al éxito) */
+.sgens { grid-column: 1 / -1; border: 1px solid rgba(255, 194, 74, .28); border-radius: 18px; padding: 14px; margin: 4px 0 0; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: rgba(255, 194, 74, .04); }
+.sgens legend { padding: 0 6px; font-weight: 800; color: var(--warn); display: grid; }
+.sgens legend small { font-weight: 500; color: var(--text-3); font-size: .75rem; }
+.sgens > .btn, .sgens > .sdir__note { grid-column: 1 / -1; }
+@media (max-width: 380px) { .sgens { grid-template-columns: minmax(0, 1fr); } }
+.sgen-row { min-width: 0; border-radius: 14px; }
+.sgen-row.is-new { animation: unlock 1.4s var(--ease); }
+@keyframes unlock { 0% { box-shadow: 0 0 0 0 rgba(255, 194, 74, 0); } 30% { box-shadow: 0 0 0 4px rgba(255, 194, 74, .55), 0 0 30px rgba(255, 194, 74, .5); } 100% { box-shadow: 0 0 0 0 rgba(255, 194, 74, 0); } }
+.sgen-row.is-locked { display: grid; align-content: end; }
+.sgen-row__lock { margin: 0; min-height: 48px; display: grid; gap: 2px; align-content: center; padding: 8px 12px; border-radius: 14px; border: 1px dashed rgba(143, 183, 255, .28); color: var(--text-3); font-size: .85rem; }
+.sgen-row__lock b { color: var(--text-2); }
+.sgen-row__lock span::before { content: "🔒 "; }
+@media (prefers-reduced-motion: reduce) { .sgen-row.is-new { animation: none; } }
