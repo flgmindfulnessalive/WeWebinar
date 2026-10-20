@@ -231,3 +231,7 @@ main { position: relative; z-index: 1; }
   .sbar { transition: none; }
 }
 .skip { color: var(--brand-ink); }
+
+/* Lanzamiento: sin barra de pestañas */
+.no-tabs main { padding-bottom: 32px; }
+.no-tabs .sbar { bottom: calc(12px + env(safe-area-inset-bottom)); }

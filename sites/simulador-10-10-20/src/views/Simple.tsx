@@ -103,7 +103,7 @@ function Constellation({ tiers }: { tiers: LeaderTier[] }) {
   );
 }
 
-export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: (v: SimpleInput) => void }) {
+export function SimpleView({ value, onChange, links = true }: { value: SimpleInput; onChange: (v: SimpleInput) => void; links?: boolean }) {
   const r = useMemo(() => simpleCalc(value), [value]);
   const set = (patch: Partial<SimpleInput>) => onChange({ ...value, ...patch });
   const total = r.errors.length ? 0 : num(r.total);
@@ -241,11 +241,11 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
         <p className="muted">{t("disclaimer")}</p>
       </details>
 
-      <div className="slinks">
+      {links && <div className="slinks">
         <a className="btn btn--ghost" href="#/entender">Entender cada forma de ganar</a>
         <a className="btn btn--ghost" href="#/meta">¿Cuánto necesito para mi meta?</a>
         <a className="btn btn--ghost" href="#/simular">Modo avanzado</a>
-      </div>
+      </div>}
     </div>
   );
 }

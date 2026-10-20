@@ -1,7 +1,12 @@
-# Simulador 10·10·20 en workers.dev (sin dominio propio).
+# Simulador 10·10·20: dominio propio + workers.dev.
 # Uso: npm run deploy
 name = "simulador-10-10-20"
 main = "worker.js"
 compatibility_date = "2026-09-01"
 workers_dev = true
 preview_urls = false
+
+# Dominio personalizado (wrangler crea el registro DNS y el certificado).
+routes = [
+  { pattern = "simulador-10-10-20.activatuvida.life", custom_domain = true },
+]

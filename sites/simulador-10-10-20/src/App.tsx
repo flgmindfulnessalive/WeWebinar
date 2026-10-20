@@ -15,7 +15,9 @@ import { SimpleView } from "./views/Simple";
 import { startSpotlight, startWaves } from "./ui/fx";
 
 type Route = "inicio" | "entender" | "simular" | "meta" | "escenarios" | "fuentes" | "catalogo";
-const ROUTES: Route[] = ["inicio", "entender", "simular", "meta", "escenarios", "fuentes", "catalogo"];
+/** Lanzamiento: solo la calculadora de inicio. Las demás secciones quedan en el código, ocultas. */
+export const LAUNCH_SIMPLE_ONLY = true;
+const ROUTES: Route[] = LAUNCH_SIMPLE_ONLY ? ["inicio"] : ["inicio", "entender", "simular", "meta", "escenarios", "fuentes", "catalogo"];
 const readRoute = (): Route => { const r = location.hash.replace(/^#\/?/, "") as Route; return ROUTES.includes(r) ? r : "inicio"; };
 
 const NAV: { r: Route; k: string; label: string }[] = [
@@ -36,6 +38,7 @@ export function App() {
   }, []);
   useEffect(() => { document.title = `${t("appName")} · ${route === "inicio" ? "Calcula tus ganancias" : NAV.find((n) => n.r === route)?.label ?? (route === "fuentes" ? t("navSources") : t("navSetup"))}`; }, [route]);
   const go = (r: Route) => { location.hash = `#/${r}`; };
+  useEffect(() => { document.documentElement.classList.toggle("no-tabs", LAUNCH_SIMPLE_ONLY); }, []);
   const waves = useRef<HTMLCanvasElement>(null);
   useEffect(() => { const a = waves.current ? startWaves(waves.current) : () => {}; const b = startSpotlight(); return () => { a(); b(); }; }, []);
 
@@ -53,14 +56,14 @@ export function App() {
       <a className="skip" href="#main">Saltar al contenido</a>
       <header className="top">
         <a className="brand" href="#/inicio" aria-label="Inicio"><span className="brand__mark" aria-hidden="true">10·10·20</span><span className="brand__txt"><b>Simulador</b><small>{t("appTag")}</small></span></a>
-        <nav className="nav" aria-label="Secciones">
+        {!LAUNCH_SIMPLE_ONLY && <nav className="nav" aria-label="Secciones">
           {NAV.map((n) => <a key={n.r} href={`#/${n.r}`} aria-current={route === n.r ? "page" : undefined}><span className="nav__k">{n.k}</span>{n.label}</a>)}
           <a href="#/fuentes" aria-current={route === "fuentes" ? "page" : undefined}>{t("navSources")}</a>
           <a href="#/catalogo" aria-current={route === "catalogo" ? "page" : undefined}>{t("navSetup")}</a>
-        </nav>
+        </nav>}
       </header>
       <main id="main" tabIndex={-1}>
-        {route === "inicio" && <SimpleView value={state.simple} onChange={(simple) => set({ simple })} />}
+        {route === "inicio" && <SimpleView value={state.simple} onChange={(simple) => set({ simple })} links={!LAUNCH_SIMPLE_ONLY} />}
         {route === "entender" && <LearnView />}
         {route === "simular" && <SimulateView state={state} set={set} input={input} onPrint={() => print()} />}
         {route === "meta" && <GoalView goal={state.goal} products={state.products} assumptions={state.assumptions} onGoal={(goal) => set({ goal })} onOpen={openQuick} />}
@@ -76,12 +79,12 @@ export function App() {
         )}
         <footer className="foot">
           <p><b>Aviso:</b> {t("disclaimer")}</p>
-          <p>Simulador independiente basado en las fuentes indicadas en <a href="#/fuentes">Fuentes</a>. No es un documento oficial de LifeWave ni está respaldado por LifeWave. No pide credenciales ni datos personales: trabaja con organizaciones hipotéticas.</p>
+          <p>Simulador independiente basado en la tabla oficial del plan 10·10·20 de LifeWave (EE. UU.){LAUNCH_SIMPLE_ONLY ? "" : <> y las fuentes indicadas en <a href="#/fuentes">Fuentes</a></>}. No es un documento oficial de LifeWave ni está respaldado por LifeWave. No pide credenciales ni datos personales: trabaja con organizaciones hipotéticas.</p>
         </footer>
       </main>
-      <nav className="tabbar" aria-label="Accesos principales">
+      {!LAUNCH_SIMPLE_ONLY && <nav className="tabbar" aria-label="Accesos principales">
         {NAV.map((n) => <a key={n.r} href={`#/${n.r}`} aria-current={route === n.r ? "page" : undefined}><span className="nav__k">{n.k}</span><span>{n.label}</span></a>)}
-      </nav>
+      </nav>}
       <PrintSummary input={input} />
     </>
   );
