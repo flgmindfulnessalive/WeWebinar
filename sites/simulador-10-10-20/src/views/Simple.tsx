@@ -199,7 +199,6 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
 
       <div className="slay">
         <section className="card sform" aria-label="Tus datos">
-          <p className="sform__note">Usa los recuentos de tu back office y estima tú cuántos están activos (compran cada mes).</p>
           <Stepper label="Socios en tu organización" hint="Total de tu organización binaria · incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
           <Stepper label="% de actividad de tu organización" hint={`= ${fmt(o.activeTeam)} de ${fmt(o.team)} socios (sin tus directos) compran cada mes`} value={value.orgActivePct} step={5} max={100} onChange={(v) => set({ orgActivePct: v })} />
           <Stepper label="De ellos, tus directos" hint="Inscritos personalmente" value={value.directs} onChange={(v) => set({ directs: v, activeDirects: Math.min(value.activeDirects, v), buildingDirects: Math.min(value.buildingDirects, v) })} />
