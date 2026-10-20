@@ -58,8 +58,12 @@ export function App() {
       <a className="skip" href="#main">Saltar al contenido</a>
       <header className="top">
         <a className="brand" href="#/inicio" aria-label="Inicio"><span className="brand__mark" aria-hidden="true">10·10·20</span><span className="brand__txt"><b>Simulador</b><small>{t("appTag")}</small></span></a>
-        <button type="button" className="themebtn" onClick={toggleTheme} aria-label={theme === "light" ? "Cambiar a tema oscuro" : "Cambiar a tema claro"} title={theme === "light" ? "Tema oscuro" : "Tema claro"}>
-          <span aria-hidden="true">{theme === "light" ? "🌙" : "☀️"}</span>
+        <button type="button" role="switch" aria-checked={theme === "light"} aria-label="Tema claro" className="themesw" onClick={toggleTheme} title={theme === "light" ? "Cambiar a tema oscuro" : "Cambiar a tema claro"}>
+          <span className="themesw__track" aria-hidden="true">
+            <svg className="themesw__ico themesw__ico--moon" viewBox="0 0 16 16"><path d="M10.5 2.2a6 6 0 1 0 3.3 8.9A5 5 0 0 1 10.5 2.2Z" /></svg>
+            <svg className="themesw__ico themesw__ico--sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6 13 13M3 13l1.4-1.4M11.6 4.4 13 3" /></svg>
+            <span className="themesw__knob" />
+          </span>
         </button>
         {!LAUNCH_SIMPLE_ONLY && <nav className="nav" aria-label="Secciones">
           {NAV.map((n) => <a key={n.r} href={`#/${n.r}`} aria-current={route === n.r ? "page" : undefined}><span className="nav__k">{n.k}</span>{n.label}</a>)}
