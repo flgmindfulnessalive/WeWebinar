@@ -32,6 +32,16 @@ export function startWaves(canvas: HTMLCanvasElement) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
   const LINES = 12;
+  // Colores de las ondas desde el tema (--wave: "r,g,b|r,g,b|r,g,b|intensidad").
+  let pal = { a: "60,224,255", b: "143,183,255", c: "255,194,74", k: 1 };
+  const readPal = () => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue("--wave").trim();
+    const [a, b, c, k] = v.split("|");
+    if (a && b && c) pal = { a, b, c, k: Number(k) || 1 };
+  };
+  readPal();
+  const mo = new MutationObserver(() => { readPal(); draw(); });
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   const draw = () => {
     ctx.clearRect(0, 0, w, h);
     amp += (energy - amp) * 0.035;
@@ -44,9 +54,9 @@ export function startWaves(canvas: HTMLCanvasElement) {
         if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       const g = ctx.createLinearGradient(0, 0, w, 0);
-      g.addColorStop(0, `rgba(60,224,255,${0.05 + k * 0.28})`);
-      g.addColorStop(0.6, `rgba(143,183,255,${0.04 + k * 0.18})`);
-      g.addColorStop(1, `rgba(255,194,74,${0.03 + k * 0.22})`);
+      g.addColorStop(0, `rgba(${pal.a},${(0.05 + k * 0.28) * pal.k})`);
+      g.addColorStop(0.6, `rgba(${pal.b},${(0.04 + k * 0.18) * pal.k})`);
+      g.addColorStop(1, `rgba(${pal.c},${(0.03 + k * 0.22) * pal.k})`);
       ctx.strokeStyle = g; ctx.lineWidth = 1 + k * 1.4; ctx.stroke();
     }
   };
@@ -59,7 +69,7 @@ export function startWaves(canvas: HTMLCanvasElement) {
   if (!still) loop();
   // Con movimiento reducido, se redibuja solo al cambiar la energía.
   const iv = still ? setInterval(() => { amp = energy; draw(); }, 500) : 0;
-  return () => { cancelAnimationFrame(raf); clearInterval(iv); removeEventListener("resize", resize); document.removeEventListener("visibilitychange", onVis); };
+  return () => { mo.disconnect(); cancelAnimationFrame(raf); clearInterval(iv); removeEventListener("resize", resize); document.removeEventListener("visibilitychange", onVis); };
 }
 
 /** Halo de luz que sigue al cursor (variables --mx y --my en <html>). */
