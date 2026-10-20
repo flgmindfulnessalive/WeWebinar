@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { usd } from "../engine/decimal";
 import { inPeriod, orgShape, simpleCalc, type GenInfo, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
 import { rankById, rankIndex } from "../plan/plan-10-10-20";
@@ -229,7 +229,7 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
                 </div>
               </div>
               <p className="shero__k">Total {per}</p>
-              <p className="shero__v" aria-hidden="true">{money(shownTotal)}</p>
+              <p className="shero__v" aria-hidden="true" style={{ "--chars": money(Math.max(shownTotal, r.errors.length ? 0 : num(pv.total))).length } as CSSProperties}>{money(shownTotal)}</p>
               <p className="sr" aria-live="polite">{usd(pv.total)} {per}</p>
               <p className="shero__n">Sin los estimados: {usd(pv.confirmed)} {per}.{period === "semana" && " Por semana = importe mensual × 12 / 52."}</p>
               <Composition lines={r.lines} total={total} hot={hot} />

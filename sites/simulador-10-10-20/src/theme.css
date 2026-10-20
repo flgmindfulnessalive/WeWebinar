@@ -293,3 +293,8 @@ main { position: relative; z-index: 1; }
 [data-theme="light"] .themesw:hover .themesw__track { border-color: #aeb2bd; }
 @media (prefers-reduced-motion: reduce) { .themesw__knob { transition: none; } }
 html, body, .top, .card, .shero, .slines > li.scard { transition: background-color .4s var(--ease), border-color .4s, color .3s; }
+
+/* El total se ajusta al ancho de su tarjeta según su número de caracteres */
+.shero { container-type: inline-size; }
+.shero__v { font-size: clamp(1.1rem, calc(100cqi / (var(--chars, 12) * .7)), 4.2rem); max-width: 100%; }
+.sbar strong { font-size: min(1.3rem, 5.4vw); } .sbar span { min-width: 0; }
