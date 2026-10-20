@@ -16,6 +16,8 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     if (!["GET", "HEAD"].includes(request.method)) return new Response("Método no permitido", { status: 405 });
+    // La app usa rutas relativas (./assets): /en/ se redirige a /en.
+    if (url.pathname === "/en/") return Response.redirect(`${url.origin}/en${url.search}${url.hash}`, 301);
     const path = url.pathname === "/" ? "/index.html" : url.pathname;
     const f = FILES[path];
     if (!f) return new Response("No encontrado", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8", ...SECURITY } });

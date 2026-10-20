@@ -22,6 +22,7 @@ const LANG_KEY = "sim101020:idioma";
 function initialLang(): UiLang {
   const q = new URLSearchParams(location.search).get("lang");
   if (q === "es" || q === "en") return q;
+  if (/^\/en\/?$/.test(location.pathname)) return "en";
   try { const v = localStorage.getItem(LANG_KEY); if (v === "es" || v === "en") return v; } catch { /* sin almacenamiento */ }
   return navigator.language?.toLowerCase().startsWith("en") ? "en" : "es";
 }
