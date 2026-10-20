@@ -193,7 +193,7 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
                   onPointerEnter={() => setHot(l.id)} onPointerLeave={(e) => { setHot(null); tilt.onPointerLeave(e); }}>
                   <details onToggle={(e) => setHot((e.currentTarget as HTMLDetailsElement).open ? l.id : null)}>
                     <summary>
-                      <span className="slines__name"><i className="slines__dot" aria-hidden="true" />{l.name}{l.estimated && <em className="tag-est">estimado</em>}</span>
+                      <span className="slines__name"><i className="slines__dot" aria-hidden="true" />{l.name}{l.estimated && <em className="tag-est">estimado</em>}{l.tag && <em className="tag-cap">{l.tag}</em>}</span>
                       <b className="slines__amt">{usd(l.monthly)}</b>
                     </summary>
                     <div className="slines__how">

@@ -72,6 +72,15 @@ describe("Calculadora simple", () => {
     expect(line(simpleCalc({ ...DEFAULT_SIMPLE, directors: 0 }), "mentor")).toBe("0.00");
     expect(simpleCalc({ ...DEFAULT_SIMPLE, partners: 1000, sachets: 2, directors: 1 }).directors.max).toBe(5);
   });
+  it("binario: tope de $25 000 por semana (3★ Presidencial) → $108 333,33 al mes", () => {
+    const r = simpleCalc({ ...DEFAULT_SIMPLE, partners: 20000, directs: 30, sachets: 2 });
+    expect(r.rank).toBe("p3");
+    const b = r.lines.find((l) => l.id === "binary")!;
+    expect(b.monthly.toFixed(2)).toBe("108333.33"); // 25 000 × 52 / 12
+    expect(b.tag).toBe("tope semanal");
+    expect(r.base!.components.find((c) => c.id === "binary")!.weekly!.every((w) => w?.toFixed(2) === "25000.00")).toBe(true);
+    expect(b.how[0]).toMatch(/Por semana: \$25,000/);
+  });
   it("valida el reparto del binario", () => {
     expect(simpleCalc({ ...DEFAULT_SIMPLE, strongLegPct: 40 }).errors.length).toBeGreaterThan(0);
   });

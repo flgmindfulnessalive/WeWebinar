@@ -235,3 +235,4 @@ main { position: relative; z-index: 1; }
 /* Lanzamiento: sin barra de pestañas */
 .no-tabs main { padding-bottom: 32px; }
 .no-tabs .sbar { bottom: calc(12px + env(safe-area-inset-bottom)); }
+.tag-cap { font-style: normal; font-size: .7rem; font-weight: 700; color: #c7b2ff; background: rgba(199, 178, 255, .14); padding: 2px 8px; border-radius: 999px; }

@@ -45,6 +45,8 @@ export interface SimpleLine {
   name: string;
   monthly: D;
   estimated: boolean;
+  /** Etiqueta corta junto al nombre (p. ej., «tope semanal»). */
+  tag?: string;
   how: string[];
   why?: string;
 }
@@ -202,9 +204,14 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
 
   const bi = comp("binary");
   const leg = ((team + active) * sx * pv) * (100 - s.strongLegPct) / 100;
+  const bWeeks = (bi.weekly ?? []).map((w) => w ?? ZERO);
+  const bCap = r.paidRank ? rankById[r.paidRank].binaryWeeklyCap : null;
+  const bCapped = bi.capsHit.length > 0;
+  const bWeekAvg = bWeeks.length ? sum(bWeeks).dividedBy(bWeeks.length) : ZERO;
   lines.push({
-    id: "binary", name: "Bono binario", monthly: bi.monthly ?? ZERO, estimated: false,
-    how: [`Tu organización repartida ${fmt(s.strongLegPct)}/${fmt(100 - s.strongLegPct)} entre tus piernas: pierna débil ≈ ${fmt(Math.round(leg))} PV al mes (lo que sobra en la pierna fuerte se acumula).`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Gerente."],
+    id: "binary", name: "Bono binario", monthly: bi.monthly ?? ZERO, estimated: false, tag: bCapped ? "tope semanal" : undefined,
+    how: [
+      ...(bWeeks.length && bi.monthly?.gt(0) ? [`Por semana: $${fmt(Number(bWeekAvg.toFixed(2)))}${bCapped ? ` — es el tope semanal de tu rango ($${fmt(bCap!)})` : ""}. Al mes: × 52 semanas / 12 meses = $${fmt(Number(bi.monthly!.toFixed(2)))}.`] : []),`Tu organización repartida ${fmt(s.strongLegPct)}/${fmt(100 - s.strongLegPct)} entre tus piernas: pierna débil ≈ ${fmt(Math.round(leg))} PV al mes (lo que sobra en la pierna fuerte se acumula).`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Gerente."],
     why: bi.status === "no_elegible" ? bi.reasons[0] : undefined,
   });
 
