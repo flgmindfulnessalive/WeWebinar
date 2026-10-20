@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { d, usd, vol } from "./engine/decimal";
 import type { QuickOrg } from "./engine/model";
 import { simulate } from "./engine/simulate";
@@ -12,6 +12,7 @@ import { LearnView, SourcesView } from "./views/Learn";
 import { AssumptionsCard, Catalog } from "./views/Setup";
 import { ScenariosView, SimulateView } from "./views/Simulate";
 import { SimpleView } from "./views/Simple";
+import { startSpotlight, startWaves } from "./ui/fx";
 
 type Route = "inicio" | "entender" | "simular" | "meta" | "escenarios" | "fuentes" | "catalogo";
 const ROUTES: Route[] = ["inicio", "entender", "simular", "meta", "escenarios", "fuentes", "catalogo"];
@@ -35,6 +36,8 @@ export function App() {
   }, []);
   useEffect(() => { document.title = `${t("appName")} · ${route === "inicio" ? "Calcula tus ganancias" : NAV.find((n) => n.r === route)?.label ?? (route === "fuentes" ? t("navSources") : t("navSetup"))}`; }, [route]);
   const go = (r: Route) => { location.hash = `#/${r}`; };
+  const waves = useRef<HTMLCanvasElement>(null);
+  useEffect(() => { const a = waves.current ? startWaves(waves.current) : () => {}; const b = startSpotlight(); return () => { a(); b(); }; }, []);
 
   const openQuick = (q: QuickOrg) => { set({ mode: "rapido", quick: q }); go("simular"); };
   const openScenario = (s: Scenario, which: "base" | "compare") => {
@@ -45,6 +48,8 @@ export function App() {
 
   return (
     <>
+      <canvas className="waves" ref={waves} aria-hidden="true" />
+      <div className="spot" aria-hidden="true" />
       <a className="skip" href="#main">Saltar al contenido</a>
       <header className="top">
         <a className="brand" href="#/inicio" aria-label="Inicio"><span className="brand__mark" aria-hidden="true">10·10·20</span><span className="brand__txt"><b>Simulador</b><small>{t("appTag")}</small></span></a>

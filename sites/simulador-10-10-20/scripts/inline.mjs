@@ -8,7 +8,8 @@ import { extname, join, relative } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
 const dist = join(root, "dist");
 const out = join(root, "deploy/.inline");
-const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json" };
+const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
+const BINARY = new Set([".woff2"]);
 const walk = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const entries = [];
 for (const f of walk(dist).sort()) {
@@ -16,7 +17,7 @@ for (const f of walk(dist).sort()) {
   if (!TYPES[ext]) throw new Error(`Tipo sin definir: ${f}`);
   const buf = readFileSync(f);
   const path = "/" + relative(dist, f);
-  entries.push(`  ${JSON.stringify(path)}: { type: ${JSON.stringify(TYPES[ext])}, etag: ${JSON.stringify(`"${createHash("sha256").update(buf).digest("hex").slice(0, 16)}"`)}, body: ${JSON.stringify(buf.toString("utf8"))} },`);
+  entries.push(`  ${JSON.stringify(path)}: { type: ${JSON.stringify(TYPES[ext])}, etag: ${JSON.stringify(`"${createHash("sha256").update(buf).digest("hex").slice(0, 16)}"`)}, ${BINARY.has(ext) ? `b64: ${JSON.stringify(buf.toString("base64"))}` : `body: ${JSON.stringify(buf.toString("utf8"))}`} },`);
 }
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, "manifest.mjs"), `// Generado por scripts/inline.mjs — no editar.\nexport const FILES = {\n${entries.join("\n")}\n};\n`);

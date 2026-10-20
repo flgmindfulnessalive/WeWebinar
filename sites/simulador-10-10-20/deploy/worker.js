@@ -2,11 +2,14 @@
 // incrustados. Rutas de la app con # (hash), así que todo lo demás → 404.
 import { FILES } from "./.inline/manifest.mjs";
 
+// Los binarios (tipografías) van en base64 en el manifiesto.
+for (const f of Object.values(FILES)) if (f.b64) f.body = Uint8Array.from(atob(f.b64), (c) => c.charCodeAt(0));
+
 const SECURITY = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "X-Robots-Tag": "noindex, nofollow",
-  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'",
 };
 
 export default {
