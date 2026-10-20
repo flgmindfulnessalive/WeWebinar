@@ -4,7 +4,7 @@ import { PLAN, RANK_ORDER, rankById, rankIndex } from "../plan/plan-10-10-20";
 import type { RankId, RankRule } from "../plan/types";
 import { cents, d, max, min, pct, sum, usd, vol, WEEKS_PER_MONTH, ZERO, type D } from "./decimal";
 import { buildTree, DetailedVolumes, detailedCounts, detailedMissing, validateDetailed } from "./detailed";
-import { ROOT_ID, type Assumptions, type SimulationInput } from "./model";
+import { ROOT_ID, type Assumptions, type Person, type SimulationInput } from "./model";
 import { quickCounts, quickMissing, quickSnapshot, validateQuick, type PeopleCounts } from "./quick";
 import { productIndex, WEEKS, type ProductIndex, type Snapshot, type WindowId } from "./snapshot";
 
@@ -166,7 +166,7 @@ export function qualify(s: Snapshot, a: Assumptions): Qualification {
   return { paidRank, evaluations, snapshot: s };
 }
 
-const atLeast = (r: RankId | null, target: RankId) => r != null && rankIndex(r) >= rankIndex(target);
+export const atLeast = (r: RankId | null, target: RankId) => r != null && rankIndex(r) >= rankIndex(target);
 
 // ---------------------------------------------------------------------------
 // Conversión de semanas a mes
@@ -274,26 +274,55 @@ function retail(ctx: Ctx): ComponentResult {
   return c;
 }
 
+/** Volumen acumulado de una pierna: lotes por semana de origen (para el vencimiento). */
+type Lot = { week: number; vol: D };
+const total = (lots: Lot[]) => sum(lots.map((l) => l.vol));
+/** Descuenta `amount` de los lotes más antiguos primero. */
+function consume(lots: Lot[], amount: D): Lot[] {
+  let rest = amount;
+  const out: Lot[] = [];
+  for (const l of lots) {
+    if (rest.gte(l.vol)) { rest = rest.minus(l.vol); continue; }
+    out.push(rest.isZero() ? l : { week: l.week, vol: l.vol.minus(rest) });
+    rest = ZERO;
+  }
+  return out;
+}
+
+export interface BinaryWeek { amount: D; capped: boolean; L: D; R: D; weak: D; expired: D }
+
 /**
- * Bono binario semana a semana (regla indicada por el propietario): se paga
- * el % del rango sobre el volumen ACUMULADO de la pierna débil, con el tope
- * semanal del rango. El volumen pagado se descuenta de ambas piernas y el
- * sobrante de la pierna fuerte pasa a la semana siguiente.
+ * Bono binario semana a semana (reglas indicadas por el propietario):
+ * - Se paga el % del rango sobre el volumen ACUMULADO de la pierna débil, con
+ *   el tope semanal del rango.
+ * - El volumen emparejado se gasta en ambas piernas aunque se alcance el tope.
+ * - Sin rango binario (1★ Gerente), no se empareja: el volumen sigue acumulado.
+ * - El volumen acumulado vence a las 26 semanas en la pierna débil y a las 52
+ *   en la pierna fuerte. Se gasta primero el volumen más antiguo.
  */
-export function binarySeries(snap: (w: WindowId) => Snapshot, ranks: (RankId | null)[]) {
-  let carryL = ZERO, carryR = ZERO;
-  return WEEKS.map((w) => {
-    const s = snap(w);
-    const L = carryL.plus(s.legs.Lcv), R = carryR.plus(s.legs.Rcv);
-    const weak = min(L, R);
-    const rank = ranks[w as number];
-    carryL = L.minus(weak); carryR = R.minus(weak);
-    if (!atLeast(rank, "m1")) return { amount: ZERO, capped: false, L, R, weak };
-    const r = rankById[rank!];
+export function binaryWeeks(weeks: { Lcv: D; Rcv: D; rank: RankId | null }[]): BinaryWeek[] {
+  const ex = PLAN.binaryExpiryWeeks;
+  let L: Lot[] = [], R: Lot[] = [];
+  return weeks.map((wk, w) => {
+    if (wk.Lcv.gt(0)) L = [...L, { week: w, vol: wk.Lcv }];
+    if (wk.Rcv.gt(0)) R = [...R, { week: w, vol: wk.Rcv }];
+    const leftWeak = total(L).lte(total(R));
+    const keep = (lots: Lot[], weeksAlive: number) => lots.filter((l) => w - l.week < weeksAlive);
+    const before = total(L).plus(total(R));
+    L = keep(L, leftWeak ? ex.weak : ex.strong); R = keep(R, leftWeak ? ex.strong : ex.weak);
+    const tL = total(L), tR = total(R), expired = before.minus(tL).minus(tR);
+    const weak = min(tL, tR);
+    if (!atLeast(wk.rank, "m1")) return { amount: ZERO, capped: false, L: tL, R: tR, weak, expired };
+    L = consume(L, weak); R = consume(R, weak);
+    const r = rankById[wk.rank!];
     const raw = pct(weak, r.binaryPct!);
     const capped = raw.gt(r.binaryWeeklyCap!);
-    return { amount: capped ? d(r.binaryWeeklyCap!) : raw, capped, L, R, weak };
+    return { amount: capped ? d(r.binaryWeeklyCap!) : raw, capped, L: tL, R: tR, weak, expired };
   });
+}
+
+export function binarySeries(snap: (w: WindowId) => Snapshot, ranks: (RankId | null)[]) {
+  return binaryWeeks(WEEKS.map((w) => ({ Lcv: snap(w).legs.Lcv, Rcv: snap(w).legs.Rcv, rank: ranks[w as number] })));
 }
 
 /** Bono por Nivel (10 %) de un BP en una semana. */
@@ -310,10 +339,10 @@ function binary(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
   series.forEach((x, w) => { if (x.capped) c.capsHit.push(`Semana ${w + 1}: tope de ${usd(rankById[ranks[w]!].binaryWeeklyCap!)} alcanzado.`); });
   const m = monthlyFromWeeks(weekly, ctx.a);
   c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
-  c.steps.push("% del rango pagado × volumen acumulado de la pierna débil de cada semana, con el tope semanal del rango. Lo pagado se descuenta de ambas piernas; el sobrante de la pierna fuerte pasa a la semana siguiente.");
+  c.steps.push(`% del rango pagado × volumen acumulado de la pierna débil de cada semana, con el tope semanal del rango. El volumen emparejado se gasta en ambas piernas aunque se alcance el tope; el sobrante pasa a la semana siguiente y vence a las ${PLAN.binaryExpiryWeeks.weak} semanas en la pierna débil y a las ${PLAN.binaryExpiryWeeks.strong} en la fuerte. Sin rango 1★ Gerente no se empareja: el volumen sigue acumulado.`);
   c.steps.push(...series.map((x, w) => {
     const r = ranks[w];
-    return `Semana ${w + 1}: piernas acumuladas ${vol(x.L)} / ${vol(x.R)} · débil ${vol(x.weak)} · ${r ? rankById[r].short : "sin rango"}${atLeast(r, "m1") ? ` · ${rankById[r!].binaryPct} % → ${usd(cents(x.amount))}` : " · no califica (requiere 1★ Gerente)"}`;
+    return `Semana ${w + 1}: piernas acumuladas ${vol(x.L)} / ${vol(x.R)} · débil ${vol(x.weak)} · ${r ? rankById[r].short : "sin rango"}${atLeast(r, "m1") ? ` · ${rankById[r!].binaryPct} % → ${usd(cents(x.amount))}` : " · no califica (requiere 1★ Gerente); el volumen sigue acumulado"}${x.expired.gt(0) ? ` · vencen ${vol(x.expired)}` : ""}`;
   }));
   c.steps.push(m.note);
   if (weekly.every((x) => x.isZero())) {
@@ -333,14 +362,19 @@ function mentor(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
     return c;
   }
   const v = ctx.vols!;
-  const maxGens = Math.max(0, ...ranks.map((r) => (r ? rankById[r].mentorGens.length : 0)));
-  const generations = v.generations(ROOT_ID, maxGens);
-  // Ganancias semanales (Nivel + Binario) de cada persona de tus generaciones.
-  const earnings = generations.map((people) => people.map((p) => {
-    const pRanks = ctx.a.qualificationPeriod === "mensual" ? WEEKS.map(() => qualify(v.snapshot(p.id, "m"), ctx.a).paidRank) : WEEKS.map((w) => qualify(v.snapshot(p.id, w), ctx.a).paidRank);
-    const bin = binarySeries((w) => v.snapshot(p.id, w), pRanks);
-    return { p, weeks: WEEKS.map((w, i) => ({ level: levelWeek(v.snapshot(p.id, w), pRanks[i], ctx.a), binary: bin[i].amount })) };
-  }));
+  // Rango pagado y ganancias semanales (Nivel + Binario) de cada socio, bajo demanda.
+  const cache = new Map<string, { ranks: (RankId | null)[]; weeks: { level: D; binary: D }[] }>();
+  const info = (p: Person) => {
+    let x = cache.get(p.id);
+    if (!x) {
+      const pRanks = ctx.a.qualificationPeriod === "mensual" ? WEEKS.map(() => qualify(v.snapshot(p.id, "m"), ctx.a).paidRank) : WEEKS.map((w) => qualify(v.snapshot(p.id, w), ctx.a).paidRank);
+      const bin = binarySeries((w) => v.snapshot(p.id, w), pRanks);
+      x = { ranks: pRanks, weeks: WEEKS.map((w, i) => ({ level: levelWeek(v.snapshot(p.id, w), pRanks[i], ctx.a), binary: bin[i].amount })) };
+      cache.set(p.id, x);
+    }
+    return x;
+  };
+  const minRank = PLAN.mentorGenerationMinRank;
   const weekly: D[] = [];
   const detail: string[] = [];
   WEEKS.forEach((_w, wi) => {
@@ -349,29 +383,39 @@ function mentor(ctx: Ctx, ranks: (RankId | null)[]): ComponentResult {
     const gens = rankById[r!].mentorGens;
     const cap = d(rankById[r!].mentorCapPerBp!);
     let total = ZERO;
-    earnings.slice(0, gens.length).forEach((people, gi) => {
-      for (const { p, weeks } of people) {
-        const base = weeks[wi].level.plus(weeks[wi].binary);
-        if (base.isZero()) continue;
-        const raw = pct(base, gens[gi]);
-        const amt = raw.gt(cap) ? cap : raw;
-        if (raw.gt(cap)) c.capsHit.push(`Semana ${wi + 1}: ${p.label} topado en ${usd(cap)}.`);
-        total = total.plus(amt);
-        if (wi === 0 || ctx.a.orderTiming !== "uniforme") detail.push(`Sem. ${wi + 1} · Gen ${gi + 1} · ${p.label}: ${gens[gi]} % × (Nivel ${usd(cents(weeks[wi].level))} + Binario ${usd(cents(weeks[wi].binary))}) = ${usd(cents(amt))}`);
+    // Generaciones comprimidas: en cada línea de patrocinio, a cualquier
+    // profundidad, el primer socio con rango ≥ 1★ Director es tu Gen 1, el
+    // siguiente debajo de él tu Gen 2, etc. Los demás no son generación.
+    const walk = (p: Person, above: number) => {
+      const it = info(p);
+      const isGen = atLeast(it.ranks[wi], minRank);
+      const g = isGen ? above + 1 : above;
+      if (isGen) {
+        const wk = it.weeks[wi];
+        const base = wk.level.plus(wk.binary);
+        if (base.gt(0)) {
+          const raw = pct(base, gens[g - 1]);
+          const amt = raw.gt(cap) ? cap : raw;
+          if (raw.gt(cap)) c.capsHit.push(`Semana ${wi + 1}: ${p.label} topado en ${usd(cap)}.`);
+          total = total.plus(amt);
+          if (wi === 0 || ctx.a.orderTiming !== "uniforme") detail.push(`Sem. ${wi + 1} · Gen ${g} · ${p.label} (${rankById[it.ranks[wi]!].short}): ${gens[g - 1]} % × (Nivel ${usd(cents(wk.level))} + Binario ${usd(cents(wk.binary))}) = ${usd(cents(amt))}`);
+        }
       }
-    });
+      if (g < gens.length) for (const k of v.sponsoredBps(p.id)) walk(k, g);
+    };
+    for (const k of v.sponsoredBps(ROOT_ID)) walk(k, 0);
     weekly.push(total);
   });
   const m = monthlyFromWeeks(weekly, ctx.a);
   c.weekly = weekly.map(cents); c.monthly = m.monthly; c.monthly4w = m.monthly4w;
-  c.steps.push("Cada semana: % de la generación × (Bono por Nivel + Bono Binario) de cada socio de tus generaciones de patrocinio, con la igualación máxima por socio de tu rango.");
-  c.steps.push(...(detail.length ? detail.slice(0, 40) : ["Nadie en tus generaciones cobra Nivel ni Binario con estos datos."]));
+  c.steps.push("Cada semana: % de la generación × (Bono por Nivel + Bono Binario) de cada socio de tus generaciones, con la igualación máxima por socio de tu rango. Generación 1 = el primer 1★ Director o superior de cada línea de patrocinio (a cualquier profundidad); Generación 2 = el siguiente debajo de él, etc.");
+  c.steps.push(...(detail.length ? detail.slice(0, 40) : ["Ningún socio de tus líneas de patrocinio es 1★ Director o superior con ingresos de Nivel o Binario."]));
   if (detail.length > 40) c.steps.push(`… y ${detail.length - 40} líneas más.`);
   c.steps.push(m.note);
   if (weekly.every((x) => x.isZero())) {
     c.status = "no_elegible";
     if (!ranks.some((r) => atLeast(r, "d1"))) { c.reasons.push("Requiere rango pagado 1★ Director o superior."); c.missing.push("Rango 1★ Director"); }
-    else c.reasons.push("Nadie en tus generaciones cobra Nivel ni Binario con estos datos.");
+    else c.reasons.push("Ningún socio de tus líneas de patrocinio es 1★ Director o superior (solo ellos forman generación).");
   }
   return c;
 }

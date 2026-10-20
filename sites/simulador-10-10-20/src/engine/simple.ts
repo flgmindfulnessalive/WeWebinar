@@ -5,6 +5,7 @@ import { PLAN, rankById, rankIndex } from "../plan/plan-10-10-20";
 import type { RankId } from "../plan/types";
 import { cents, d, pct, sum, WEEKS_PER_MONTH, ZERO, type D } from "./decimal";
 import { DEFAULT_ASSUMPTIONS, type Product, type QuickOrg } from "./model";
+import { atLeast } from "./simulate";
 import { simulate, type SimulationResult } from "./simulate";
 
 export interface SimpleInput {
@@ -93,6 +94,14 @@ const quickOrg = (own: number, retailC: number, preferredC: number, directs: num
   enrollments: [],
 });
 
+const GAP_LABEL = { pv: "PV personal (compras propias + clientes)", qdv: "volumen de organización", ol2l: "volumen fuera de sus 2 líneas mayores", balance: "volumen en su pierna débil" } as const;
+/** Qué le falta a un directo para 1★ Director (según la simulación de su equipo). */
+function dirGap(dr: SimulationResult): string {
+  const e = dr.ok ? dr.qualificationMonth?.evaluations.find((x) => x.rank === PLAN.mentorGenerationMinRank) : null;
+  const miss = e ? e.checks.filter((c) => !c.ok) : [];
+  return miss.length ? ` Para 1★ Director a cada uno le falta: ${miss.map((c) => `${fmt(Math.ceil(Number(c.gap.toString())))} de ${GAP_LABEL[c.key]}`).join("; ")}.` : "";
+}
+
 export function simpleCalc(s: SimpleInput): SimpleResult {
   const empty: SimpleResult = { errors: validateSimple(s), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, assumptions: [], base: null };
   if (empty.errors.length) return empty;
@@ -144,8 +153,9 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   });
 
   // Mentor Match estimado: % de la Gen 1 × (Bono por Nivel + Binario) semanal de
-  // cada directo, suponiendo que cada directo patrocinó a su propio equipo,
-  // repartido por igual y en equilibrio. Generaciones 2+: sin equipo propio.
+  // cada directo que sea 1★ Director o más, suponiendo que cada directo
+  // patrocinó a su propio equipo, repartido por igual y en equilibrio. Ese
+  // equipo no tiene equipo propio, así que no hay Directores más abajo (Gen 2+).
   // Un directo inactivo no cobra bonos, así que no genera igualación: se cuenta
   // la parte activa de cada grupo (media ponderada por el % de activos).
   const gens = r.paidRank ? rankById[r.paidRank].mentorGens : [];
@@ -157,13 +167,17 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
       const dr = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg(s.sachets, 0, 0, g.size, 0, 0, s.sachets) });
       const m = (id: string) => (dr.ok ? dr.components.find((c) => c.id === id)!.monthly ?? ZERO : ZERO);
       const lw = m("personal-team").dividedBy(WEEKS_PER_MONTH), bw = m("binary").dividedBy(WEEKS_PER_MONTH);
-      const each = pct(lw.plus(bw), gens[0]);
+      const isGen = atLeast(dr.ok ? dr.paidRank : null, PLAN.mentorGenerationMinRank);
+      const each = isGen ? pct(lw.plus(bw), gens[0]) : ZERO;
       const paid = each.gt(cap) ? cap : each;
       mentorWeekly = mentorWeekly.plus(paid.times(g.count).times(active).dividedBy(s.directs));
-      mHow.push(`${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${dr.paidRank ? rankById[dr.paidRank].short : "sin rango"}, Nivel ≈ $${lw.toFixed(2)} + Binario ≈ $${bw.toFixed(2)} por semana → ${gens[0]} % ≈ $${paid.toFixed(2)}/semana cada uno.`);
+      const rk = dr.ok && dr.paidRank ? rankById[dr.paidRank].short : "sin rango";
+      mHow.push(isGen
+        ? `${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${rk}, Nivel ≈ $${lw.toFixed(2)} + Binario ≈ $${bw.toFixed(2)} por semana → Gen 1: ${gens[0]} % ≈ $${paid.toFixed(2)}/semana cada uno.`
+        : `${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${rk}. No son generación (hace falta 1★ Director o más), así que no generan Mentor Match.${dirGap(dr)}`);
     }
     if (inactive) mHow.push(`Solo cuentan tus directos activos (${fmt(active)} de ${fmt(s.directs)}): un socio inactivo no cobra bonos y no genera igualación.`);
-    mHow.push("Se supone que cada directo patrocinó a su propio equipo y que ese equipo aún no tiene equipo propio (Generaciones 2+ = 0).");
+    mHow.push("Generación = el primer 1★ Director o superior de cada línea de patrocinio. Se supone que cada directo patrocinó a su propio equipo y que ese equipo no tiene equipo propio, así que no hay más Directores debajo.");
   }
   const mentorMonthly = cents(mentorWeekly.times(WEEKS_PER_MONTH));
   lines.push({
@@ -194,7 +208,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
       `${fmt(s.activeDirectsPct)} % de tus directos activos (${fmt(active)} de ${fmt(s.directs)}): los inactivos cuentan como socios pero no compran ni suman volumen. El resto de tu organización compra cada mes.`,
       "Tu organización está equilibrada: mitad en cada pierna y repartida por igual entre tus directos.",
       "Cálculo mensual.",
-      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de tus directos; es estimado porque supone cómo están armados sus equipos.",
+      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los socios de tus líneas que sean 1★ Director o más; es estimado porque supone cómo están armados los equipos de tus directos.",
       "Reglas: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)».",
     ],
     base: r,

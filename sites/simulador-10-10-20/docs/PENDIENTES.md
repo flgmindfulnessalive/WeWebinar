@@ -15,14 +15,16 @@ Estado al 20-oct-2026. Fuente principal: tabla oficial «Plan de Compensación L
 | Mentor Match Gen 2–6 «por confirmar» en la web | **Confirmados** en la tabla oficial. |
 | Base del binario | **Indicación del propietario:** % del volumen acumulado de la pierna débil, con tope semanal. |
 | Base del Mentor Match | **Indicación del propietario:** suma semanal de Bono por Nivel + Bono Binario de cada socio de tus generaciones (desde 1★ Director). |
+| Vencimiento del binario | **Indicación del propietario:** el volumen acumulado vence a las 26 semanas en la pierna débil y a las 52 en la fuerte. Con tope, el volumen emparejado se gasta igual en ambas piernas. |
+| Generación del Mentor Match | **Indicación del propietario:** en cada línea de patrocinio, a cualquier profundidad, la Gen 1 es el primer 1★ Director o superior; la Gen 2, el siguiente debajo de él, etc. Tope por socio y por semana. |
 | Ganancia minorista | **Indicación del propietario:** $50 por sobre de X39 si compra un cliente minorista; $20 si compra un cliente preferente. |
 
 ## Pendiente (la tabla oficial tampoco lo aclara)
 
 | # | Pregunta | Qué hace el simulador mientras tanto |
 |---|---|---|
-| 1 | **Binario:** ¿el volumen acumulado vence? Si se alcanza el tope, ¿se consume todo el volumen de la pierna débil? | No vence; el volumen de la pierna débil se consume aunque se alcance el tope. |
-| 2 | **Mentor Match:** ¿una «generación» son niveles de patrocinio? ¿La igualación máxima por socio es semanal? | Niveles de patrocinio; tope por socio y semana. En la calculadora de inicio es **estimado** porque supone cómo están armados los equipos de tus directos. |
+| 1 | **Binario:** sin rango 1★ Gerente, ¿se empareja (y se pierde) el volumen o sigue acumulado? ¿Se gasta primero el volumen más antiguo? | Sigue acumulado hasta que vence; se gasta primero el más antiguo. |
+| 2 | **Mentor Match:** ¿el rango que hace a un socio «generación» es su rango pagado de esa semana? | Sí, el rango pagado de esa semana. En la calculadora de inicio es **estimado** porque supone cómo están armados los equipos de tus directos. |
 | 3 | **Notas al pie** de la tabla: «55 PV*», «Vol. Calificable de Clientes*», «200**», «OL2L**», «Balance Binario***». El documento no incluye sus textos. | PV 200: regla de máx. 110 personales (presentación). Balance binario: lectura literal (pierna menor ≥ requisito). |
 | 4 | **Bono de Nivel Comprimido:** ¿sobre qué volumen? ¿Cómo funciona la compresión? Las celdas de los Presidenciales están vacías. | 10 % del volumen de tus directos; 10 % también para Presidenciales (presentación: «en todos los rangos»). |
 | 5 | **Volumen por producto:** la tabla da el QV de los paquetes de inscripción (Básico 180 … Premium 775), pero no el de un sobre suelto. | 77 PV por sobre (dato del propietario), y el mismo valor como volumen comisionable. |

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { simulate } from "../src/engine/simulate";
+import { binaryWeeks, simulate } from "../src/engine/simulate";
+import { d } from "../src/engine/decimal";
+import type { RankId } from "../src/plan/types";
 import { PLAN } from "../src/plan/plan-10-10-20";
 import { bp, cust, din, products, qin, quick, SOBRE } from "./helpers";
 
@@ -178,6 +180,34 @@ describe("Bono Binario: pierna débil acumulada (indicación del propietario)", 
     expect(c.weekly!.map(money)).toEqual(["0.00", "0.00", "100.00", "0.00"]);
     expect(money(c.monthly)).toBe("100.00");
   });
+  it("el volumen acumulado vence: 26 semanas en la pierna débil, 52 en la fuerte", () => {
+    // Sin rango binario no se empareja: el volumen sigue acumulado en ambas piernas.
+    const weeks = Array.from({ length: 60 }, (_, w) => ({ Lcv: d(w === 0 ? 300 : 0), Rcv: d(w === 0 ? 1000 : 0), rank: null as RankId | null }));
+    const s = binaryWeeks(weeks);
+    expect(s[25].L.toString()).toBe("300"); // semana 26: aún vigente
+    expect(s[26].L.toString()).toBe("0"); // vence en la pierna débil
+    expect(s[26].expired.toString()).toBe("300");
+    expect(s[51].R.toString()).toBe("1000");
+    expect(s[52].R.toString()).toBe("0"); // vence en la pierna fuerte
+  });
+  it("con tope, el volumen emparejado se gasta igual en ambas piernas", () => {
+    const s = binaryWeeks([
+      { Lcv: d(5000), Rcv: d(8000), rank: "m1" }, // 10 % × 5 000 = 500 → tope 100
+      { Lcv: d(0), Rcv: d(0), rank: "m1" },
+    ]);
+    expect(s[0].amount.toString()).toBe("100");
+    expect(s[0].capped).toBe(true);
+    expect([s[1].L.toString(), s[1].R.toString()]).toEqual(["0", "3000"]);
+  });
+  it("el volumen se acumula sin rango y se paga al calificar", () => {
+    const s = binaryWeeks([
+      { Lcv: d(400), Rcv: d(600), rank: null },
+      { Lcv: d(400), Rcv: d(200), rank: "m1" },
+    ]);
+    expect(s[0].amount.toString()).toBe("0");
+    expect(s[1].weak.toString()).toBe("800"); // 800 / 800 acumulados
+    expect(s[1].amount.toString()).toBe("80");
+  });
   it("Mentor Match en modo rápido: información insuficiente", () => {
     const c = comp(simulate(qin(org)), "mentor");
     expect(c.status).toBe("pendiente");
@@ -313,6 +343,29 @@ describe("Tope semanal del binario", () => {
     const c = comp(r, "binary");
     expect(money(c.weekly![0])).toBe("100.00");
     expect(c.capsHit.length).toBe(1);
+  });
+});
+
+describe("Mentor Match: generaciones = 1★ Director o más en cada línea de patrocinio", () => {
+  const unit = [{ ...SOBRE, qv: 1, cv: 1, retailMargin: null }];
+  it("salta a quien no es Director y busca hacia abajo; el siguiente Director es Gen 2", () => {
+    const people = [
+      bp("tu", null, null, 110), bp("a", "tu", ["tu", "L"], 110), bp("b", "tu", ["tu", "R"], 110),
+      // a: 1★ Director (Gen 1). Debajo, a1 es Director (Gen 2).
+      bp("a1", "a", ["a", "L"], 110), bp("a2", "a", ["a", "R"], 2500),
+      bp("a1x", "a1", ["a1", "L"], 2500), bp("a1y", "a1", ["a1", "R"], 2500),
+      // b no es Director (solo 110 PV propios y un patrocinado sin compra): se salta y b1 es Gen 1.
+      bp("b1", "b", ["b", "L"], 110), bp("b1x", "b1", ["b1", "L"], 2500), bp("b1y", "b1", ["b1", "R"], 2500),
+    ];
+    const r = simulate(din(people, { orderTiming: "semana1" }, unit));
+    const m = comp(r, "mentor");
+    const steps = m.steps.join("\n");
+    expect(r.paidRank).toBe("d2"); // 2 generaciones: 20 % / 15 %
+    expect(steps).toMatch(/Gen 1 · a \(1★ Director\): 20 % .* = USD.107\.20/);
+    expect(steps).toMatch(/Gen 2 · a1 \(1★ Director\): 15 % .* = USD.116\.25/);
+    expect(steps).toMatch(/Gen 1 · b1 \(1★ Director\): 20 % .* = USD.155\.00/); // b no es Director: se salta
+    expect(steps).not.toMatch(/· b \(/);
+    expect(money(m.monthly)).toBe("378.45");
   });
 });
 

@@ -59,6 +59,8 @@ export const PLAN: PlanRules = {
     { id: "premium", name: "Premium", bonus: 405, price: 1750, qv: 775, sleeves: "20 o 40" },
   ],
   pibMinPv: 55,
+  binaryExpiryWeeks: { weak: 26, strong: 52 },
+  mentorGenerationMinRank: "d1",
   rankBonusDoubling: { ranks: ["m2", "m3", "d1"], part1Weeks: 8, part2RequalWeeks: 4, part2WithinWeeks: 16 },
   rules: [
     {
@@ -121,18 +123,18 @@ export const PLAN: PlanRules = {
     {
       id: "binary", concept: "Bono Binario",
       rule: "Tasa semanal: Gerentes 10 % · Directores 11 % · Ejecutivos 12 % · Presidenciales 13 %. Máximo semanal de $100 (1★ Gerente) a $25 000 (2★ y 3★ Presidencial).",
-      formula: "Tasa del rango × volumen acumulado de la pierna débil de la semana, con el máximo semanal. Lo pagado se descuenta de ambas piernas; el sobrante de la pierna fuerte pasa a la semana siguiente.",
+      formula: "Tasa del rango × volumen acumulado de la pierna débil de la semana, con el máximo semanal. El volumen emparejado se gasta en ambas piernas aunque se alcance el tope; el sobrante pasa a la semana siguiente. El volumen acumulado vence a las 26 semanas en la pierna débil y a las 52 en la fuerte.",
       requirements: "Rango pagado desde 1★ Gerente.", period: "Semanal.", limits: "Máximo semanal por rango.",
-      sources: [O("p.2 · Bono Binario"), OWN("El Bono Binario paga un % del volumen acumulado de la pierna débil, con tope semanal según rango.")], status: "propietario",
-      note: "Tasas y topes: tabla oficial. Base (pierna débil acumulada): indicación del propietario. Supuesto del simulador: si se alcanza el tope, el volumen de la pierna débil se consume igualmente; no se publica vencimiento del volumen acumulado.",
+      sources: [O("p.2 · Bono Binario"), OWN("El Bono Binario paga un % del volumen acumulado de la pierna débil, con tope semanal según rango."), OWN("El volumen del binario que se acumula sí vence, en 26 semanas en la pierna débil y 52 semanas en la pierna fuerte. Si se llega al tope, el volumen de la pierna débil y de la pierna fuerte se gasta igual.")], status: "propietario",
+      note: "Tasas y topes: tabla oficial. Base, vencimiento y consumo con tope: indicación del propietario. Supuestos del simulador: sin rango 1★ Gerente no se empareja (el volumen sigue acumulado, que es cuando la pierna débil conserva volumen) y se gasta primero el volumen más antiguo.",
     },
     {
       id: "mentor", concept: "Bono de Igualación de Mentor (Mentor Match)",
       rule: "1★D G1 20 % · 2★D G1–2 (20/15) · 3★D G1–3 (20/15/10) · 1★E +G4 7 % · 2★E +G5 7 % · 3★E y 1★P +G6 5 % · 2★P y 3★P G6 7 %. Igualación máxima por socio $250 a $5 000.",
-      formula: "Cada semana: % de la generación × (Bono por Nivel + Bono Binario) de cada socio de tus generaciones, con la igualación máxima por socio.",
+      formula: "Cada semana: % de la generación × (Bono por Nivel + Bono Binario) de cada socio de tus generaciones, con la igualación máxima por socio y semana. Generación 1 = el primer 1★ Director o superior que aparece en cada línea de patrocinio, a cualquier profundidad; Generación 2 = el siguiente debajo de él, y así sucesivamente. Los socios por debajo de 1★ Director no son generación.",
       requirements: "Desde 1★ Director.", period: "Semanal.", limits: "Igualación máxima por socio (aplicada por semana).",
-      sources: [O("p.2 · Bono de Igualación de Mentor"), OWN("El Mentor Match se gana de la suma semanal de lo que el socio, a partir de Director, genera en su Bono por Nivel (10 % de sus directos) + Bono Binario.")], status: "propietario",
-      note: "Porcentajes y topes: tabla oficial. Base (Nivel + Binario, semanal): indicación del propietario. Generación = niveles de patrocinio de Socios de Marca (supuesto del simulador).",
+      sources: [O("p.2 · Bono de Igualación de Mentor"), OWN("El Mentor Match se gana de la suma semanal de lo que el socio, a partir de Director, genera en su Bono por Nivel (10 % de sus directos) + Bono Binario."), OWN("Una generación es un nivel en una línea de patrocinio. En cada línea de patrocinio y hacia el infinito busca 1era generación, a partir de Directores 1 Estrella y en adelante. El tope del Mentor Match es por socio por semana.")], status: "propietario",
+      note: "Porcentajes y topes: tabla oficial. Base (Nivel + Binario, semanal), definición de generación y tope por socio y semana: indicación del propietario. Supuesto del simulador: el rango que cuenta es el rango pagado de cada socio en esa semana.",
     },
     {
       id: "customer", concept: "Bono por Cliente (Customer Premium)",

@@ -100,6 +100,10 @@ export interface PlanRules {
   pib: { id: string; name: string; altName?: string; bonus: number; price: number | null; qv: number | null; sleeves: string | null }[];
   /** PV mínimo para cobrar el PIB (estar Activo). */
   pibMinPv: number;
+  /** Semanas que dura el volumen acumulado del binario en cada pierna. */
+  binaryExpiryWeeks: { weak: number; strong: number };
+  /** Rango mínimo que cuenta como generación en el Mentor Match. */
+  mentorGenerationMinRank: RankId;
   rankBonusDoubling: {
     ranks: RankId[];
     /** Parte 1 se duplica si el rango se alcanza dentro de estas semanas desde la inscripción. */

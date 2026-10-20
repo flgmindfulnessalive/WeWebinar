@@ -4,9 +4,9 @@
 
 | Área | Comprobación | Resultado |
 |---|---|---|
-| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos activos, 10 clientes preferentes, 1 sobre de 77 PV): 2★ Director · clientes $200 · 10 % $77 · Bono por Cliente $77 · binario $635,25 · Mentor Match estimado $323,40 · total $1 312,65 (sin estimados $989,25) · bono de rango $1 850. Con 4 minoristas + 6 preferentes: $320. Con 50 % de directos activos: total $1 091,27 | ✅ |
+| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos activos, 10 clientes preferentes, 1 sobre de 77 PV): 2★ Director · clientes $200 · 10 % $77 · Bono por Cliente $77 · binario $635,25 · Mentor Match $0 (cada directo queda en 1★ Gerente: no es generación) · total $989,25 · bono de rango $1 850. Con 4 minoristas + 6 preferentes: $320. Con 50 % de directos activos: total $929,57. Con 1 000 socios y 2 sobres: Mentor Match estimado $4 726,26 | ✅ |
 | Tabla oficial | Datos de los 13 rangos comparados con la tabla oficial (PV, QDV, MVR, OL2L, balance, Nivel Comprimido, binario, Mentor Match, bonos de rango); MVR solo desde 1★ Director; 10 % desde 1★ Gerente; PIB con 55 PV; duplicación por partes | ✅ |
-| Motor | 87 pruebas (Vitest): binario con pierna débil acumulada y arrastre, Mentor Match sobre Nivel + Binario, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 87/87 |
+| Motor | 92 pruebas (Vitest): binario con pierna débil acumulada, arrastre y vencimiento a 26/52 semanas, Mentor Match sobre Nivel + Binario con generaciones comprimidas desde 1★ Director, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 92/92 |
 | Solver inverso | Metas de US$250, 500, 1 000, 2 000 y 5 000: cada solución se vuelve a pasar por el motor directo, alcanza la meta y con N−1 compradores no | ✅ |
 | Escenarios | Los 9 casos se calculan en vivo; la prueba comprueba que el rango y las cifras citadas en el texto coinciden con el motor | ✅ (la prueba detectó y se corrigió un texto: el caso concentrado queda en 1★ Manager, no en 2★) |
 | Fichas «Entender» | Cada ejemplo numérico se calcula con el motor y se comprueba su importe | ✅ |
@@ -19,7 +19,7 @@
 
 - **Datos del plan:** la prueba «Reglas del plan (datos)» fija los 13 rangos tal como figuran en la tabla oficial (p.1 y p.2). Si alguien cambia una cifra, falla.
 - **Ejemplos oficiales:** las fuentes no incluyen ejemplos numéricos resueltos (solo tablas); por eso las pruebas usan casos construidos con volúmenes de prueba y comprueban cada regla por separado.
-- **Reglas del propietario:** binario = % de la pierna débil acumulada (con arrastre) y tope semanal; Mentor Match = % de la suma semanal de Bono por Nivel + Binario de cada socio de tus generaciones (desde 1★ Director); ganancia por sobre $50 (cliente minorista) o $20 (cliente preferente).
+- **Reglas del propietario:** binario = % de la pierna débil acumulada (con arrastre) y tope semanal; el volumen emparejado se gasta aunque haya tope y el acumulado vence a las 26 semanas (pierna débil) y a las 52 (pierna fuerte); Mentor Match = % de la suma semanal de Bono por Nivel + Binario de cada 1★ Director o superior de tus generaciones (Gen 1 = el primero en cada línea de patrocinio, a cualquier profundidad), con tope por socio y semana; ganancia por sobre $50 (cliente minorista) o $20 (cliente preferente).
 - **Pendientes:** el Mentor Match en modo rápido (sin árbol), el margen sin precio y los viajes/fondo presidencial devuelven **Pendiente** (importe `null`), nunca 0; está probado.
 
 ## Inventario de pruebas
@@ -60,6 +60,9 @@
 - engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > 10 % de la pierna débil con el rango 1★ Gerente
 - engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > tope semanal aplicado
 - engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > el sobrante de la pierna fuerte se acumula a la semana siguiente
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > el volumen acumulado vence: 26 semanas en la pierna débil, 52 en la fuerte
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > con tope, el volumen emparejado se gasta igual en ambas piernas
+- engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > el volumen se acumula sin rango y se paga al calificar
 - engine.test.ts > Bono Binario: pierna débil acumulada (indicación del propietario) > Mentor Match en modo rápido: información insuficiente
 - engine.test.ts > Mentor Match: % × (Nivel + Binario) de tus generaciones > 20 % de lo que gana cada directo en Nivel + Binario
 - engine.test.ts > Bonos puntuales > PIB por paquete: 2 Básico + 1 Premium = 475
@@ -79,6 +82,7 @@
 - engine.test.ts > Entradas inválidas y datos faltantes > margen minorista sin definir → pendiente
 - engine.test.ts > Totales separados > lo puntual no suma a lo recurrente
 - engine.test.ts > Tope semanal del binario > 1★ Gerente: 10 % de 2 000 = 200 → se paga el tope de 100
+- engine.test.ts > Mentor Match: generaciones = 1★ Director o más en cada línea de patrocinio > salta a quien no es Director y busca hacia abajo; el siguiente Director es Gen 2
 - engine.test.ts > Tope por socio del Mentor Match > 20 % de un binario de 2 500 = 500 → se paga el tope de 250 de 1★ Director
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > hay al menos 8 escenarios y una comparación
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > 1 · Socio nuevo con pocos clientes
@@ -99,6 +103,7 @@
 - simple.test.ts > Calculadora simple > sin compra propia no hay rango ni 10 %
 - simple.test.ts > Calculadora simple > clientes minoristas ($50) y preferentes ($20) por separado
 - simple.test.ts > Calculadora simple > directos inactivos: no compran, no suman volumen ni generan Mentor Match
+- simple.test.ts > Calculadora simple > Mentor Match: solo directos que llegan a 1★ Director; los inactivos no cuentan
 - simple.test.ts > Calculadora simple > valida entradas
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$250: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$500: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
