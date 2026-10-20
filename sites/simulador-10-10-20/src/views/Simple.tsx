@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { usd } from "../engine/decimal";
-import { activeDirects, simpleCalc, type LeaderTier, type SimpleInput, type SimpleLine } from "../engine/simple";
+import { activeDirects, inPeriod, simpleCalc, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
 import { rankById, rankIndex } from "../plan/plan-10-10-20";
 import type { RankId } from "../plan/types";
 import { t } from "../i18n";
@@ -106,8 +106,13 @@ function Constellation({ tiers }: { tiers: LeaderTier[] }) {
 export function SimpleView({ value, onChange, links = true }: { value: SimpleInput; onChange: (v: SimpleInput) => void; links?: boolean }) {
   const r = useMemo(() => simpleCalc(value), [value]);
   const set = (patch: Partial<SimpleInput>) => onChange({ ...value, ...patch });
+  const [period, setPeriodState] = useState<Period>(() => { try { return localStorage.getItem("sim101020:periodo") === "semana" ? "semana" : "mes"; } catch { return "mes"; } });
+  const setPeriod = (p: Period) => { setPeriodState(p); try { localStorage.setItem("sim101020:periodo", p); } catch { /* sin almacenamiento */ } };
+  const pv = useMemo(() => inPeriod(r, period), [r, period]);
+  const amountOf = (id: SimpleLine["id"]) => pv.lines.find((x) => x.id === id)!;
+  const per = period === "mes" ? "al mes" : "por semana";
   const total = r.errors.length ? 0 : num(r.total);
-  const shownTotal = useTween(total);
+  const shownTotal = useTween(r.errors.length ? 0 : num(pv.total));
   const [hot, setHot] = useState<string | null>(null);
 
   // El fondo gana amplitud con tu total.
@@ -179,11 +184,16 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
         ) : (
           <section className="sres" aria-label="Resultado">
             <div className="shero" ref={heroRef} {...tilt}>
-              <RankBadge rank={r.rank} up={up} />
-              <p className="shero__k">Total al mes</p>
+              <div className="shero__top">
+                <RankBadge rank={r.rank} up={up} />
+                <div className="speriod" role="radiogroup" aria-label="Mostrar importes">
+                  {(["semana", "mes"] as const).map((p) => <button key={p} type="button" role="radio" aria-checked={period === p} className="speriod__btn" onClick={() => setPeriod(p)}>{p === "semana" ? "Por semana" : "Por mes"}</button>)}
+                </div>
+              </div>
+              <p className="shero__k">Total {per}</p>
               <p className="shero__v" aria-hidden="true">{money(shownTotal)}</p>
-              <p className="sr" aria-live="polite">{usd(r.total)}</p>
-              <p className="shero__n">Sin los estimados: {usd(r.confirmed)} al mes.</p>
+              <p className="sr" aria-live="polite">{usd(pv.total)} {per}</p>
+              <p className="shero__n">Sin los estimados: {usd(pv.confirmed)} {per}.{period === "semana" && " Por semana = importe mensual × 12 / 52."}</p>
               <Composition lines={r.lines} total={total} hot={hot} />
             </div>
 
@@ -194,7 +204,7 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
                   <details onToggle={(e) => setHot((e.currentTarget as HTMLDetailsElement).open ? l.id : null)}>
                     <summary>
                       <span className="slines__name"><i className="slines__dot" aria-hidden="true" />{l.name}{l.estimated && <em className="tag-est">estimado</em>}{l.tag && <em className="tag-cap">{l.tag}</em>}</span>
-                      <b className="slines__amt">{usd(l.monthly)}</b>
+                      <b className="slines__amt">{usd(amountOf(l.id).amount)}{amountOf(l.id).average && <small className="slines__avg">promedio</small>}</b>
                     </summary>
                     <div className="slines__how">
                       {l.why && <p>{l.why}</p>}
@@ -230,7 +240,7 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
       {!r.errors.length && (
         <a className={`sbar${heroVisible ? "" : " is-on"}`} href="#main" aria-hidden={heroVisible} tabIndex={heroVisible ? -1 : 0}
           onClick={(e) => { e.preventDefault(); heroRef.current?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" }); }}>
-          <span><small>Total al mes</small><b>{r.rank ? rankById[r.rank].short : "Sin rango"}</b></span>
+          <span><small>Total {per}</small><b>{r.rank ? rankById[r.rank].short : "Sin rango"}</b></span>
           <strong>{money(shownTotal)}</strong>
         </a>
       )}

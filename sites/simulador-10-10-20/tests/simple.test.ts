@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SIMPLE, simpleCalc } from "../src/engine/simple";
+import { DEFAULT_SIMPLE, inPeriod, simpleCalc } from "../src/engine/simple";
 
 const line = (r: ReturnType<typeof simpleCalc>, id: string) => r.lines.find((l) => l.id === id)!.monthly.toFixed(2);
 
@@ -80,6 +80,19 @@ describe("Calculadora simple", () => {
     expect(b.tag).toBe("tope semanal");
     expect(r.base!.components.find((c) => c.id === "binary")!.weekly!.every((w) => w?.toFixed(2) === "25000.00")).toBe(true);
     expect(b.how[0]).toMatch(/Por semana: \$25,000/);
+  });
+  it("por semana: importe mensual × 12 / 52; lo que se genera por compra es promedio", () => {
+    const r = simpleCalc(DEFAULT_SIMPLE);
+    const w = inPeriod(r, "semana");
+    const get = (id: string) => w.lines.find((x) => x.id === id)!;
+    expect(get("binary").amount.toFixed(2)).toBe("117.28"); // 508,20 × 12 / 52
+    expect(get("binary").average).toBe(false);
+    expect(get("retail").amount.toFixed(2)).toBe("46.15"); // 200 × 12 / 52
+    expect(get("retail").average).toBe(true);
+    expect(w.total.toFixed(2)).toBe(w.lines.reduce((a, x) => a + Number(x.amount.toFixed(2)), 0).toFixed(2));
+    const big = inPeriod(simpleCalc({ ...DEFAULT_SIMPLE, partners: 20000, directs: 30, sachets: 2 }), "semana");
+    expect(big.lines.find((x) => x.id === "binary")!.amount.toFixed(2)).toBe("25000.00"); // el tope semanal, tal cual
+    expect(inPeriod(r, "mes").total.toFixed(2)).toBe(r.total.toFixed(2));
   });
   it("valida el reparto del binario", () => {
     expect(simpleCalc({ ...DEFAULT_SIMPLE, strongLegPct: 40 }).errors.length).toBeGreaterThan(0);

@@ -286,3 +286,20 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
     base: r,
   };
 }
+
+export type Period = "mes" | "semana";
+/** Formas de ganar que el plan paga cada semana; las demás se generan por compra. */
+const WEEKLY_NATIVE = new Set<SimpleLine["id"]>(["personal-team", "binary", "mentor"]);
+
+/**
+ * Importes de la calculadora en el periodo elegido. Por semana: importe
+ * mensual × 12 / 52 (cada importe redondeado a centavos; los totales son la
+ * suma de lo mostrado). Lo que no se paga por semana se marca como promedio.
+ */
+export function inPeriod(r: SimpleResult, period: Period) {
+  const conv = (m: D) => (period === "mes" ? m : cents(m.dividedBy(WEEKS_PER_MONTH)));
+  const lines = r.lines.map((l) => ({ id: l.id, amount: conv(l.monthly), average: period === "semana" && !WEEKLY_NATIVE.has(l.id) }));
+  const total = period === "mes" ? r.total : sum(lines.map((x) => x.amount));
+  const confirmed = period === "mes" ? r.confirmed : sum(lines.filter((x) => !r.lines.find((l) => l.id === x.id)!.estimated).map((x) => x.amount));
+  return { lines, total, confirmed };
+}
