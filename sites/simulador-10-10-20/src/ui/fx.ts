@@ -133,3 +133,21 @@ export const magnetic = {
   },
   onPointerLeave(e: RPointerEvent<HTMLElement>) { e.currentTarget.style.transform = ""; },
 };
+
+/** Tema: el que eligió el visitante, o el del sistema (claro u oscuro). ?tema=claro|oscuro lo fuerza. */
+export type Theme = "light" | "dark";
+const THEME_KEY = "sim101020:tema";
+export function initialTheme(): Theme {
+  const q = new URLSearchParams(location.search).get("tema");
+  if (q === "claro") return "light";
+  if (q === "oscuro") return "dark";
+  try { const v = localStorage.getItem(THEME_KEY); if (v === "light" || v === "dark") return v; } catch { /* sin almacenamiento */ }
+  return typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+export function applyTheme(t: Theme, remember = false) {
+  const root = document.documentElement;
+  if (t === "light") root.dataset.theme = "light"; else delete root.dataset.theme;
+  root.style.colorScheme = t;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t === "light" ? "#f4f5f9" : "#0a0e1a");
+  if (remember) try { localStorage.setItem(THEME_KEY, t); } catch { /* sin almacenamiento */ }
+}

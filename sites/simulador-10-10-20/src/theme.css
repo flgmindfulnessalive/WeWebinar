@@ -263,3 +263,14 @@ main { position: relative; z-index: 1; }
 .sgen-row__lock b { color: var(--text-2); }
 .sgen-row__lock span::before { content: "🔒 "; }
 @media (prefers-reduced-motion: reduce) { .sgen-row.is-new { animation: none; } }
+
+/* Botón de tema ☀️/🌙 */
+.top .brand { margin-right: auto; }
+.themebtn { flex: none; order: 3; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 1.15rem; cursor: pointer;
+  background: rgba(143, 183, 255, .1); border: 1px solid rgba(143, 183, 255, .25); transition: transform .3s var(--ease), background .25s, box-shadow .25s; }
+.themebtn:hover { background: rgba(143, 183, 255, .18); box-shadow: 0 0 20px rgba(60, 224, 255, .25); }
+.themebtn:active { transform: rotate(-20deg) scale(.94); }
+[data-theme="light"] .themebtn { background: #fff; border-color: var(--line); box-shadow: 0 4px 14px rgba(23, 26, 38, .08); }
+[data-theme="light"] .themebtn:hover { box-shadow: 0 6px 20px rgba(139, 108, 255, .25); }
+html, body, .top, .card, .shero, .slines > li.scard { transition: background-color .4s var(--ease), border-color .4s, color .3s; }
+@media (prefers-reduced-motion: reduce) { .themebtn { transition: none; } }

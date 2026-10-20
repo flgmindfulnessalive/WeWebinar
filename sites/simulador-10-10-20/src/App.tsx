@@ -12,7 +12,7 @@ import { LearnView, SourcesView } from "./views/Learn";
 import { AssumptionsCard, Catalog } from "./views/Setup";
 import { ScenariosView, SimulateView } from "./views/Simulate";
 import { SimpleView } from "./views/Simple";
-import { startSpotlight, startWaves } from "./ui/fx";
+import { applyTheme, startSpotlight, startWaves, type Theme } from "./ui/fx";
 
 type Route = "inicio" | "entender" | "simular" | "meta" | "escenarios" | "fuentes" | "catalogo";
 /** Lanzamiento: solo la calculadora de inicio. Las demás secciones quedan en el código, ocultas. */
@@ -39,6 +39,8 @@ export function App() {
   useEffect(() => { document.title = `${t("appName")} · ${route === "inicio" ? "Calcula tus ganancias" : NAV.find((n) => n.r === route)?.label ?? (route === "fuentes" ? t("navSources") : t("navSetup"))}`; }, [route]);
   const go = (r: Route) => { location.hash = `#/${r}`; };
   useEffect(() => { document.documentElement.classList.toggle("no-tabs", LAUNCH_SIMPLE_ONLY); }, []);
+  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === "light" ? "light" : "dark"));
+  const toggleTheme = () => { const t: Theme = theme === "light" ? "dark" : "light"; applyTheme(t, true); setTheme(t); };
   const waves = useRef<HTMLCanvasElement>(null);
   useEffect(() => { const a = waves.current ? startWaves(waves.current) : () => {}; const b = startSpotlight(); return () => { a(); b(); }; }, []);
 
@@ -56,6 +58,9 @@ export function App() {
       <a className="skip" href="#main">Saltar al contenido</a>
       <header className="top">
         <a className="brand" href="#/inicio" aria-label="Inicio"><span className="brand__mark" aria-hidden="true">10·10·20</span><span className="brand__txt"><b>Simulador</b><small>{t("appTag")}</small></span></a>
+        <button type="button" className="themebtn" onClick={toggleTheme} aria-label={theme === "light" ? "Cambiar a tema oscuro" : "Cambiar a tema claro"} title={theme === "light" ? "Tema oscuro" : "Tema claro"}>
+          <span aria-hidden="true">{theme === "light" ? "🌙" : "☀️"}</span>
+        </button>
         {!LAUNCH_SIMPLE_ONLY && <nav className="nav" aria-label="Secciones">
           {NAV.map((n) => <a key={n.r} href={`#/${n.r}`} aria-current={route === n.r ? "page" : undefined}><span className="nav__k">{n.k}</span>{n.label}</a>)}
           <a href="#/fuentes" aria-current={route === "fuentes" ? "page" : undefined}>{t("navSources")}</a>
