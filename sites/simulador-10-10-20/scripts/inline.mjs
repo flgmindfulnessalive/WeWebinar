@@ -8,8 +8,8 @@ import { extname, join, relative } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
 const dist = join(root, "dist");
 const out = join(root, "deploy/.inline");
-const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
-const BINARY = new Set([".woff2"]);
+const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2", ".jpg": "image/jpeg" };
+const BINARY = new Set([".woff2", ".jpg"]);
 const walk = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const entries = [];
 for (const f of walk(dist).sort()) {
