@@ -258,15 +258,19 @@ function retail(ctx: Ctx): ComponentResult {
   const s = ctx.snap("m");
   const units = s.customerUnits.filter((u) => u.qty.gt(0));
   if (!units.length) { c.status = "no_elegible"; c.monthly = ZERO; c.reasons.push("Sin ventas a clientes personales."); return c; }
-  const noMargin = units.filter((u) => ctx.idx[u.productId]?.retailMargin == null);
+  const marginOf = (u: (typeof units)[number]) => {
+    const p = ctx.idx[u.productId];
+    return u.kind === "cliente_preferente" && p?.preferredMargin != null ? p.preferredMargin : p?.retailMargin ?? null;
+  };
+  const noMargin = units.filter((u) => marginOf(u) == null);
   if (noMargin.length) {
     c.status = "pendiente"; c.monthly = null;
     c.missing.push(...new Set(noMargin.map((u) => `margen por unidad de «${ctx.idx[u.productId]?.name ?? u.productId}»`)));
     c.reasons.push("Las fuentes no incluyen precios: introduce tu margen por unidad para calcularlo.");
     return c;
   }
-  c.monthly = cents(units.reduce((a, u) => a.plus(u.qty.times(d(ctx.idx[u.productId]!.retailMargin!))), ZERO));
-  c.steps.push(...units.map((u) => `${vol(u.qty)} × ${ctx.idx[u.productId]!.name} × margen ${usd(ctx.idx[u.productId]!.retailMargin!)}`));
+  c.monthly = cents(units.reduce((a, u) => a.plus(u.qty.times(d(marginOf(u)!))), ZERO));
+  c.steps.push(...units.map((u) => `${vol(u.qty)} × ${ctx.idx[u.productId]!.name} (${u.kind === "cliente_preferente" ? "preferente" : "minorista"}) × margen ${usd(marginOf(u)!)}`));
   return c;
 }
 

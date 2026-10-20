@@ -16,7 +16,7 @@ export interface Snapshot {
   /** Volumen comisionable de tus clientes personales. */
   customersCv: D;
   /** Unidades compradas por tus clientes personales (para el margen minorista). */
-  customerUnits: { productId: string; qty: D }[];
+  customerUnits: { productId: string; qty: D; kind: "cliente" | "cliente_preferente" }[];
   /** Volumen de calificación de cada línea (para MVR y OL2L). `count` agrupa líneas idénticas. */
   lines: { label: string; qv: D; count: number; total: D }[];
   /** Piernas del binario: volumen de calificación y comisionable. */

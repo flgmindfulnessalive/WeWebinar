@@ -17,6 +17,7 @@ export function Catalog({ state, set }: { state: AppState; set: (p: Partial<AppS
             <NumberField unit="volume" label="Volumen de calificación por unidad" hint="Cuenta para PV, QDV, OL2L y piernas" value={p.qv} allowEmpty placeholder="Sin dato" step={0.01} onChange={(v) => upd(i, { qv: v })} />
             <NumberField unit="volume" label="Volumen comisionable por unidad" hint="Base de los bonos en %" value={p.cv} allowEmpty placeholder="Sin dato" step={0.01} onChange={(v) => upd(i, { cv: v })} />
             <NumberField unit="money" label="Tu margen por unidad vendida" hint="Precio de venta − tu costo (opcional)" value={p.retailMargin} allowEmpty placeholder="Sin dato" step={0.01} suffix="USD" onChange={(v) => upd(i, { retailMargin: v })} />
+            <NumberField unit="money" label="Margen por unidad a cliente preferente" hint="Si lo dejas vacío, se usa el de arriba" value={p.preferredMargin ?? null} allowEmpty placeholder="Igual que minorista" step={0.01} suffix="USD" onChange={(v) => upd(i, { preferredMargin: v })} />
           </div>
           {state.products.length > 1 && <button type="button" className="btn btn--ghost btn--sm" onClick={() => set({ products: state.products.filter((_, j) => j !== i) })}>Quitar producto</button>}
         </div>

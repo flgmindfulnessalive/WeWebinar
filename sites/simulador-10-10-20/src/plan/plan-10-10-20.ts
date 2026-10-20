@@ -145,10 +145,10 @@ export const PLAN: PlanRules = {
     {
       id: "retail", concept: "Ganancia Minorista",
       rule: "Una comisión por cada compra de un Cliente inscrito personalmente (Minorista, Preferente o Preferente Plus).",
-      formula: "$50 por cada sobre de X39 que compran tus clientes (editable por producto en Catálogo).",
+      formula: "Por cada sobre de X39: $50 si lo compra un cliente minorista y $20 si lo compra un cliente preferente (editable por producto en Catálogo).",
       requirements: "Clientes inscritos personalmente.", period: "Por compra.", limits: "—",
-      sources: [O("p.1 · 1. Ganancia Minorista"), OWN("La ganancia minorista es 50 dólares por 1 sobre de X39.")], status: "propietario",
-      note: "El importe lo indica el propietario; la tabla oficial no lo publica.",
+      sources: [O("p.1 · 1. Ganancia Minorista"), OWN("La ganancia minorista es 50 dólares por 1 sobre de X39."), OWN("Los preferentes en realidad dejan $ 20 dólares por 1 sobre de X39.")], status: "propietario",
+      note: "Los importes los indica el propietario; la tabla oficial no los publica.",
     },
     {
       id: "rank-bonus", concept: "Bonos por Avance de Rango",

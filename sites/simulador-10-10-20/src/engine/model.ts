@@ -12,6 +12,8 @@ export interface Product {
   cv: number | null;
   /** Margen minorista por unidad vendida a un cliente (precio de venta − tu costo). */
   retailMargin: number | null;
+  /** Margen por unidad cuando compra un cliente preferente (si falta, se usa retailMargin). */
+  preferredMargin?: number | null;
 }
 
 export interface OrderLine {

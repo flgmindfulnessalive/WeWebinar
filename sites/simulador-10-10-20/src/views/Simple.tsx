@@ -4,16 +4,16 @@ import { simpleCalc, type SimpleInput } from "../engine/simple";
 import { rankById } from "../plan/plan-10-10-20";
 import { t } from "../i18n";
 
-function Stepper(p: { label: string; hint?: string; value: number; step?: number; min?: number; onChange: (v: number) => void }) {
+function Stepper(p: { label: string; hint?: string; value: number; step?: number; min?: number; max?: number; onChange: (v: number) => void }) {
   const id = useId();
-  const step = p.step ?? 1, min = p.min ?? 0;
-  const set = (v: number) => p.onChange(Math.max(min, Math.round(v * 100) / 100));
+  const step = p.step ?? 1, min = p.min ?? 0, max = p.max ?? Infinity;
+  const set = (v: number) => p.onChange(Math.min(max, Math.max(min, Math.round(v * 100) / 100)));
   return (
     <div className="stp">
       <label htmlFor={id} className="stp__label">{p.label}{p.hint && <small>{p.hint}</small>}</label>
       <div className="stp__row">
         <button type="button" className="stp__btn" aria-label={`Restar a ${p.label}`} onClick={() => set(p.value - step)}>−</button>
-        <input id={id} type="number" inputMode="numeric" min={min} step={step} value={Number.isFinite(p.value) ? p.value : ""}
+        <input id={id} type="number" inputMode="numeric" min={min} max={p.max} step={step} value={Number.isFinite(p.value) ? p.value : ""}
           onChange={(e) => { const n = Number(e.target.value); if (e.target.value !== "" && Number.isFinite(n)) set(n); else if (e.target.value === "") p.onChange(0); }} />
         <button type="button" className="stp__btn" aria-label={`Sumar a ${p.label}`} onClick={() => set(p.value + step)}>+</button>
       </div>
@@ -34,11 +34,14 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
       <section className="card sform" aria-label="Tus datos">
         <Stepper label="Socios en tu organización" hint="Incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
         <Stepper label="De ellos, tus directos" hint="Los que inscribiste tú" value={value.directs} onChange={(v) => set({ directs: v })} />
-        <Stepper label="Tus clientes preferentes" value={value.customers} onChange={(v) => set({ customers: v })} />
+        <Stepper label="% de tus directos activos" hint="Los que compran cada mes" value={value.activeDirectsPct} step={5} max={100} onChange={(v) => set({ activeDirectsPct: v })} />
+        <Stepper label="Clientes minoristas" hint="Retail" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
+        <Stepper label="Clientes preferentes" value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
         <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />
         <Stepper label="Tus sobres al mes" value={value.ownSachets} onChange={(v) => set({ ownSachets: v })} />
         <Stepper label="PV por sobre" value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />
-        <Stepper label="Ganancia por sobre a clientes ($)" hint="Ganancia minorista" value={value.retailPerSachet ?? 50} step={5} onChange={(v) => set({ retailPerSachet: v })} />
+        <Stepper label="Ganancia por sobre: minorista ($)" value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
+        <Stepper label="Ganancia por sobre: preferente ($)" value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
       </section>
 
       {r.errors.length > 0 ? (

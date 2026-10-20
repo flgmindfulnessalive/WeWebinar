@@ -15,7 +15,7 @@ Estado al 20-oct-2026. Fuente principal: tabla oficial «Plan de Compensación L
 | Mentor Match Gen 2–6 «por confirmar» en la web | **Confirmados** en la tabla oficial. |
 | Base del binario | **Indicación del propietario:** % del volumen acumulado de la pierna débil, con tope semanal. |
 | Base del Mentor Match | **Indicación del propietario:** suma semanal de Bono por Nivel + Bono Binario de cada socio de tus generaciones (desde 1★ Director). |
-| Ganancia minorista | **Indicación del propietario:** $50 por sobre de X39. |
+| Ganancia minorista | **Indicación del propietario:** $50 por sobre de X39 si compra un cliente minorista; $20 si compra un cliente preferente. |
 
 ## Pendiente (la tabla oficial tampoco lo aclara)
 

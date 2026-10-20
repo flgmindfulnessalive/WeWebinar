@@ -121,7 +121,7 @@ export class DetailedVolumes {
     s.ownQv = this.ownQv(bp, w);
     s.customersQv = this.customersQv(bpId, w);
     s.customersCv = this.customersCv(bpId, w);
-    s.customerUnits = this.customers(bpId).flatMap((c) => c.orders.map((o) => ({ productId: o.productId, qty: share(d(o.qty), w, this.a.orderTiming, this.t.index.get(c.id) ?? 0) })));
+    s.customerUnits = this.customers(bpId).flatMap((c) => c.orders.map((o) => ({ productId: o.productId, qty: share(d(o.qty), w, this.a.orderTiming, this.t.index.get(c.id) ?? 0), kind: c.kind as "cliente" | "cliente_preferente" })));
     const kids = this.t.placeKids.get(bpId) ?? {};
     s.legs = {
       L: this.placeSubtree(kids.L, w, "qv"), R: this.placeSubtree(kids.R, w, "qv"),

@@ -63,7 +63,7 @@ export function quickSnapshot(q: QuickOrg, w: WindowId, a: Assumptions, idx: Pro
   s.ownQv = share(qvOf(q.personal, idx), w, a.orderTiming, 0);
   s.customersQv = groupVol(q.customers, w, a, idx, "qv");
   s.customersCv = groupVol(q.customers, w, a, idx, "cv");
-  s.customerUnits = q.customers.map((g) => ({ productId: g.productId, qty: groupCount(g.count, w, a.orderTiming).times(g.qty) }));
+  s.customerUnits = q.customers.map((g) => ({ productId: g.productId, qty: groupCount(g.count, w, a.orderTiming).times(g.qty), kind: g.kind }));
   const teamQv = groupVol([...q.sponsored, ...q.team], w, a, idx, "qv");
   const teamCv = groupVol([...q.sponsored, ...q.team], w, a, idx, "cv");
   s.sponsoredCv = groupVol(q.sponsored, w, a, idx, "cv");

@@ -4,9 +4,9 @@
 
 | Área | Comprobación | Resultado |
 |---|---|---|
-| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV): 2★ Director · minorista $500 · 10 % $77 · clientes $77 · binario $635,25 · Mentor Match estimado $323,40 · total $1 612,65 (sin estimados $1 289,25) · bono de rango $1 850 | ✅ |
+| Calculadora simple | Ejemplo del propietario (150 socios, 10 directos activos, 10 clientes preferentes, 1 sobre de 77 PV): 2★ Director · clientes $200 · 10 % $77 · Bono por Cliente $77 · binario $635,25 · Mentor Match estimado $323,40 · total $1 312,65 (sin estimados $989,25) · bono de rango $1 850. Con 4 minoristas + 6 preferentes: $320. Con 50 % de directos activos: total $1 091,27 | ✅ |
 | Tabla oficial | Datos de los 13 rangos comparados con la tabla oficial (PV, QDV, MVR, OL2L, balance, Nivel Comprimido, binario, Mentor Match, bonos de rango); MVR solo desde 1★ Director; 10 % desde 1★ Gerente; PIB con 55 PV; duplicación por partes | ✅ |
-| Motor | 85 pruebas (Vitest): binario con pierna débil acumulada y arrastre, Mentor Match sobre Nivel + Binario, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 85/85 |
+| Motor | 87 pruebas (Vitest): binario con pierna débil acumulada y arrastre, Mentor Match sobre Nivel + Binario, umbrales exactos e inmediatos, elegibilidad, topes, MVR, OL2L, PV 200/APAC, patrocinio frente a colocación, periodos, redondeo, entradas inválidas, totales separados | ✅ 87/87 |
 | Solver inverso | Metas de US$250, 500, 1 000, 2 000 y 5 000: cada solución se vuelve a pasar por el motor directo, alcanza la meta y con N−1 compradores no | ✅ |
 | Escenarios | Los 9 casos se calculan en vivo; la prueba comprueba que el rango y las cifras citadas en el texto coinciden con el motor | ✅ (la prueba detectó y se corrigió un texto: el caso concentrado queda en 1★ Manager, no en 2★) |
 | Fichas «Entender» | Cada ejemplo numérico se calcula con el motor y se comprueba su importe | ✅ |
@@ -19,7 +19,7 @@
 
 - **Datos del plan:** la prueba «Reglas del plan (datos)» fija los 13 rangos tal como figuran en la tabla oficial (p.1 y p.2). Si alguien cambia una cifra, falla.
 - **Ejemplos oficiales:** las fuentes no incluyen ejemplos numéricos resueltos (solo tablas); por eso las pruebas usan casos construidos con volúmenes de prueba y comprueban cada regla por separado.
-- **Reglas del propietario:** binario = % de la pierna débil acumulada (con arrastre) y tope semanal; Mentor Match = % de la suma semanal de Bono por Nivel + Binario de cada socio de tus generaciones (desde 1★ Director); ganancia minorista $50 por sobre.
+- **Reglas del propietario:** binario = % de la pierna débil acumulada (con arrastre) y tope semanal; Mentor Match = % de la suma semanal de Bono por Nivel + Binario de cada socio de tus generaciones (desde 1★ Director); ganancia por sobre $50 (cliente minorista) o $20 (cliente preferente).
 - **Pendientes:** el Mentor Match en modo rápido (sin árbol), el margen sin precio y los viajes/fondo presidencial devuelven **Pendiente** (importe `null`), nunca 0; está probado.
 
 ## Inventario de pruebas
@@ -94,9 +94,11 @@
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 1: clientes por debajo del primer tramo y PIB puntual
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 7: PV 77 no llega a los 110 de 1★ Director
 - scenarios.test.ts > Escenarios educativos: el texto coincide con el motor > caso 8: el volumen cae de 3 080 a 1 925
-- simple.test.ts > Calculadora simple > ejemplo del propietario: 150 socios, 10 directos, 10 clientes, 1 sobre de 77 PV
+- simple.test.ts > Calculadora simple > ejemplo del propietario: 150 socios, 10 directos (todos activos), 10 clientes preferentes, 1 sobre de 77 PV
 - simple.test.ts > Calculadora simple > Mentor Match es 0 por debajo de 1★ Director
 - simple.test.ts > Calculadora simple > sin compra propia no hay rango ni 10 %
+- simple.test.ts > Calculadora simple > clientes minoristas ($50) y preferentes ($20) por separado
+- simple.test.ts > Calculadora simple > directos inactivos: no compran, no suman volumen ni generan Mentor Match
 - simple.test.ts > Calculadora simple > valida entradas
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$250: cada solución pasa por el motor directo, alcanza la meta y con N−1 no
 - solver.test.ts > Calculadora de meta (búsqueda inversa) > meta US$500: cada solución pasa por el motor directo, alcanza la meta y con N−1 no

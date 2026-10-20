@@ -8,7 +8,7 @@ Fuente principal: **tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE.
 
 ## Inicio: calculadora simple
 
-Siete datos (socios, directos, clientes preferentes, sobres por persona, tus sobres, PV por sobre —77 por defecto— y ganancia minorista por sobre —$50 por defecto—) y el resultado: rango, cada forma de ganar con su total mensual (ganancia minorista, 10 %, Bono por Cliente, binario sobre la pierna débil acumulada y Mentor Match, este último marcado como **estimado**), bono por subir de rango aparte y lo que falta para el siguiente rango. Supuestos fijos y declarados: volumen comisionable = PV, organización equilibrada, todos compran cada mes. Cálculo en `src/engine/simple.ts` sobre el mismo motor.
+Diez datos (socios, directos, % de directos activos, clientes minoristas, clientes preferentes, sobres por persona, tus sobres, PV por sobre —77 por defecto— y ganancia por sobre —$50 minorista y $20 preferente por defecto—) y el resultado: rango, cada forma de ganar con su total mensual (ganancia por tus clientes, 10 %, Bono por Cliente, binario sobre la pierna débil acumulada y Mentor Match, este último marcado como **estimado**), bono por subir de rango aparte y lo que falta para el siguiente rango. Supuestos fijos y declarados: volumen comisionable = PV, organización equilibrada, los directos inactivos no compran y el resto de la organización compra cada mes. Cálculo en `src/engine/simple.ts` sobre el mismo motor.
 
 ## Modo avanzado: cuatro accesos
 
