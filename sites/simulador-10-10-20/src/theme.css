@@ -309,3 +309,21 @@ html, body, .top, .card, .shero, .slines > li.scard { transition: background-col
 [data-theme="light"] .langsw__btn { color: #5d6477; }
 [data-theme="light"] .langsw__btn[aria-checked="true"] { background: linear-gradient(180deg, #ffffff, #e6e8ee); color: #171a26; box-shadow: 0 2px 6px rgba(23, 26, 38, .2); }
 @media (max-width: 420px) { .brand__txt small { display: none; } }
+
+/* Cabecera en móvil: «Simulador» completo y ES | EN del mismo tamaño que el interruptor de tema */
+.langsw { padding: 3px; height: 32px; align-items: center; margin: 3px 0; }
+.langsw__btn { min-width: 26px; min-height: 0; height: 24px; padding: 0 7px; font-size: .68rem; line-height: 24px; }
+.themesw { padding: 1px; }
+.themesw__track { width: 58px; height: 32px; }
+.themesw__ico { top: 8px; }
+.themesw__knob { top: 4px; left: 4px; }
+.themesw .themesw__knob { transform: translateX(26px); }
+.themesw[aria-checked="true"] .themesw__knob { transform: none; }
+@media (max-width: 520px) {
+  .top { gap: 8px; padding: 10px 12px; }
+  .brand { gap: 8px; }
+  .brand__mark { font-size: .72rem; padding: 7px 8px; }
+  .brand__txt b { white-space: nowrap; }
+}
+.langsw { box-sizing: border-box; width: 58px; padding: 3px; gap: 0; }
+.langsw__btn { flex: 1; min-width: 0; padding: 0; font-size: .62rem; letter-spacing: .04em; }
