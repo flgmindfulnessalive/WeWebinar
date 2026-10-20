@@ -1,8 +1,35 @@
-import { useId, type ReactNode } from "react";
+import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import type { ComponentStatus, Classification } from "../engine/simulate";
 import type { RuleStatus } from "../plan/types";
 
 export type Unit = "money" | "volume" | "people";
+
+/**
+ * Campo numérico que se puede vaciar mientras escribes: el texto vive como
+ * borrador y solo se confirma cuando es un número. Al enfocarlo se selecciona
+ * todo (escribir reemplaza el valor); si lo dejas vacío, al salir vuelve a 0
+ * (o a «sin dato» cuando se permite vacío).
+ */
+export function NumberInput({ value, onValue, allowEmpty, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type"> & {
+  value: number | null; onValue: (v: number | null) => void; allowEmpty?: boolean;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? (value == null || !Number.isFinite(value) ? "" : String(value));
+  return (
+    <input
+      {...rest} type="number" value={shown}
+      onFocus={(e) => { setDraft(shown); e.currentTarget.select(); rest.onFocus?.(e); }}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setDraft(raw);
+        if (raw === "") { if (allowEmpty) onValue(null); return; }
+        const n = Number(raw);
+        if (Number.isFinite(n)) onValue(n);
+      }}
+      onBlur={(e) => { if (draft === "" && !allowEmpty) onValue(0); setDraft(null); rest.onBlur?.(e); }}
+    />
+  );
+}
 
 export function NumberField(p: {
   label: string; value: number | null; onChange: (v: number | null) => void; min?: number; max?: number; step?: number;
@@ -13,15 +40,9 @@ export function NumberField(p: {
     <label className={`field ${p.unit ? `u-${p.unit}` : ""}`} htmlFor={id}>
       <span className="field__label">{p.label}</span>
       <span className="field__box">
-        <input
-          id={id} type="number" inputMode="decimal" min={p.min ?? 0} max={p.max} step={p.step ?? 1}
-          value={p.value ?? ""} placeholder={p.placeholder}
-          onChange={(e) => {
-            const raw = e.target.value;
-            if (raw === "") return p.onChange(p.allowEmpty ? null : 0);
-            const n = Number(raw);
-            if (Number.isFinite(n)) p.onChange(n);
-          }}
+        <NumberInput
+          id={id} inputMode="decimal" min={p.min ?? 0} max={p.max} step={p.step ?? 1}
+          value={p.value} placeholder={p.placeholder} allowEmpty={p.allowEmpty} onValue={(v) => p.onChange(v)}
         />
         {p.suffix && <span className="field__suffix">{p.suffix}</span>}
       </span>

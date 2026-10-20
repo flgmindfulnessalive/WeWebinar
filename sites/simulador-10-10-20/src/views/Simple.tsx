@@ -3,6 +3,7 @@ import { usd } from "../engine/decimal";
 import { simpleCalc, type SimpleInput } from "../engine/simple";
 import { rankById } from "../plan/plan-10-10-20";
 import { t } from "../i18n";
+import { NumberInput } from "../ui/primitives";
 
 function Stepper(p: { label: string; hint?: string; value: number; step?: number; min?: number; max?: number; onChange: (v: number) => void }) {
   const id = useId();
@@ -13,8 +14,7 @@ function Stepper(p: { label: string; hint?: string; value: number; step?: number
       <label htmlFor={id} className="stp__label">{p.label}{p.hint && <small>{p.hint}</small>}</label>
       <div className="stp__row">
         <button type="button" className="stp__btn" aria-label={`Restar a ${p.label}`} onClick={() => set(p.value - step)}>−</button>
-        <input id={id} type="number" inputMode="numeric" min={min} max={p.max} step={step} value={Number.isFinite(p.value) ? p.value : ""}
-          onChange={(e) => { const n = Number(e.target.value); if (e.target.value !== "" && Number.isFinite(n)) set(n); else if (e.target.value === "") p.onChange(0); }} />
+        <NumberInput id={id} inputMode="numeric" min={min} max={p.max} step={step} value={p.value} onValue={(v) => set(v ?? 0)} />
         <button type="button" className="stp__btn" aria-label={`Sumar a ${p.label}`} onClick={() => set(p.value + step)}>+</button>
       </div>
     </div>
@@ -32,7 +32,8 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
       </header>
 
       <section className="card sform" aria-label="Tus datos">
-        <Stepper label="Socios en tu organización" hint="Incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
+        <p className="sform__note">Cuenta a tu organización como <b>activa</b> (todos compran cada mes). El % de inactivos solo se aplica a tus directos.</p>
+        <Stepper label="Socios en tu organización" hint="Activos · incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
         <Stepper label="De ellos, tus directos" hint="Los que inscribiste tú" value={value.directs} onChange={(v) => set({ directs: v })} />
         <Stepper label="% de tus directos activos" hint="Los que compran cada mes" value={value.activeDirectsPct} step={5} max={100} onChange={(v) => set({ activeDirectsPct: v })} />
         <Stepper label="Clientes minoristas" hint="Retail" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
