@@ -308,6 +308,8 @@ td.u-people, dd.u-people, b.u-people { color: var(--people); }
 .tabbar a { font-size: .68rem; letter-spacing: -.01em; overflow-wrap: anywhere; text-align: center; }
 
 /* Calculadora simple */
+.sdir { grid-column: 1 / -1; display: grid; gap: 6px; }
+.sdir__note { margin: 0; font-size: .8rem; color: var(--text-3); }
 .simple { max-width: 640px; margin: 0 auto; }
 .sform { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
 @media (max-width: 380px) { .sform { grid-template-columns: 1fr; } }

@@ -42,6 +42,13 @@ export function SimpleView({ value, onChange }: { value: SimpleInput; onChange: 
         <Stepper label="PV por sobre" value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />
         <Stepper label="Ganancia por sobre: minorista ($)" value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
         <Stepper label="Ganancia por sobre: preferente ($)" value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
+        <div className="sdir">
+          <Stepper label="Directores 1★ en tus líneas" hint={`Para el Mentor Match · caben ${r.directors.max.toLocaleString("es-419")}`}
+            value={value.directors ?? r.directors.used} max={r.directors.max} onChange={(v) => set({ directors: Math.round(v) })} />
+          {value.directors == null
+            ? <p className="sdir__note">Propuesta automática: los que caben con tu volumen.</p>
+            : <button type="button" className="btn btn--ghost btn--sm" onClick={() => set({ directors: null })}>Usar la propuesta automática ({r.directors.max.toLocaleString("es-419")})</button>}
+        </div>
       </section>
 
       {r.errors.length > 0 ? (

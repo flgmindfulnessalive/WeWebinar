@@ -26,7 +26,7 @@ Estado al 20-oct-2026. Fuente principal: tabla oficial «Plan de Compensación L
 | # | Pregunta | Qué hace el simulador mientras tanto |
 |---|---|---|
 | 1 | **Binario:** ¿se gasta primero el volumen más antiguo? | Sí (lo más antiguo primero). |
-| 2 | **Mentor Match en la calculadora de inicio:** cuántos Directores hay en tus líneas y de qué rango. | **Estimado:** supone que cada directo patrocinó a su propio equipo y que no hay Directores más abajo. |
+| 2 | **Mentor Match en la calculadora de inicio:** cuántos Directores hay en tus líneas y cuánto gana cada uno. | **Estimado.** Propuesta automática: los 1★ Director que caben con tu volumen, cada uno con lo mínimo para calificar (5 000), tus hábitos de compra, tu número de directos y 110 PV; todos como Gen 1. El número se puede cambiar (hasta el máximo que cabe). |
 | 3 | **Notas al pie** de la tabla: «55 PV*», «Vol. Calificable de Clientes*», «200**», «OL2L**», «Balance Binario***». El documento no incluye sus textos. | PV 200: regla de máx. 110 personales (presentación). Balance binario: lectura literal (pierna menor ≥ requisito). |
 | 4 | **Bono de Nivel Comprimido:** ¿sobre qué volumen? ¿Cómo funciona la compresión? Las celdas de los Presidenciales están vacías. | 10 % del volumen de tus directos; 10 % también para Presidenciales (presentación: «en todos los rangos»). |
 | 5 | **Volumen por producto:** la tabla da el QV de los paquetes de inscripción (Básico 180 … Premium 775), pero no el de un sobre suelto. | 77 PV por sobre (dato del propietario), y el mismo valor como volumen comisionable. |

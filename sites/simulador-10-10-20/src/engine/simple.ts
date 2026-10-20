@@ -29,11 +29,13 @@ export interface SimpleInput {
   retailPerSachet: number;
   /** Ganancia por sobre que compra un cliente preferente (USD). */
   preferredPerSachet: number;
+  /** 1★ Directores en tus líneas (Mentor Match). null = propuesta automática. */
+  directors: number | null;
 }
 
 export const DEFAULT_SIMPLE: SimpleInput = {
   partners: 150, directs: 10, activeDirectsPct: 100, retailCustomers: 0, preferredCustomers: 10,
-  sachets: 1, ownSachets: 1, pvPerSachet: 77, retailPerSachet: 50, preferredPerSachet: 20,
+  sachets: 1, ownSachets: 1, pvPerSachet: 77, retailPerSachet: 50, preferredPerSachet: 20, directors: null,
 };
 
 export interface SimpleLine {
@@ -55,6 +57,8 @@ export interface SimpleResult {
   rankBonusTotal: D;
   rankBonusRanks: string[];
   next: { rank: RankId; gaps: string[] } | null;
+  /** Directores 1★ en tus líneas: cuántos caben y cuántos se usan. */
+  directors: { max: number; used: number };
   assumptions: string[];
   base: SimulationResult | null;
 }
@@ -65,16 +69,11 @@ export function validateSimple(s: SimpleInput): string[] {
   const e: string[] = [];
   for (const [v, w] of [[s.partners, "Socios"], [s.directs, "Directos"], [s.retailCustomers, "Clientes minoristas"], [s.preferredCustomers, "Clientes preferentes"]] as const) if (!Number.isInteger(v) || v < 0) e.push(`${w}: escribe un número entero de 0 o más.`);
   for (const [v, w] of [[s.sachets, "Sobres por persona"], [s.ownSachets, "Tus sobres"], [s.pvPerSachet, "PV por sobre"], [s.retailPerSachet, "Ganancia por sobre (minorista)"], [s.preferredPerSachet, "Ganancia por sobre (preferente)"]] as const) if (!(v >= 0) || !Number.isFinite(v)) e.push(`${w}: escribe un número de 0 o más.`);
+  if (s.directors != null && (!Number.isInteger(s.directors) || s.directors < 0)) e.push("Directores en tus líneas: escribe un número entero de 0 o más.");
   if (!(s.activeDirectsPct >= 0 && s.activeDirectsPct <= 100)) e.push("Directos activos: escribe un % entre 0 y 100.");
   if (s.directs > s.partners) e.push("Los directos forman parte de tus socios: no pueden ser más que el total de socios.");
   if (s.partners > s.directs && s.directs === 0) e.push("Para tener socios en tu organización necesitas al menos un directo.");
   return e;
-}
-
-/** Reparte N personas entre k directos lo más igual posible: [{count, size}]. */
-function splitTeams(members: number, directs: number) {
-  const base = Math.floor(members / directs), extra = members % directs;
-  return [{ count: directs - extra, size: base }, { count: extra, size: base + 1 }].filter((g) => g.count > 0);
 }
 
 /** Directos que compran: el % redondeado al entero más cercano. */
@@ -94,16 +93,28 @@ const quickOrg = (own: number, retailC: number, preferredC: number, directs: num
   enrollments: [],
 });
 
-const GAP_LABEL = { pv: "PV personal (compras propias + clientes)", qdv: "volumen de organización", ol2l: "volumen fuera de sus 2 líneas mayores", balance: "volumen en su pierna débil" } as const;
-/** Qué le falta a un directo para 1★ Director (según la simulación de su equipo). */
-function dirGap(dr: SimulationResult): string {
-  const e = dr.ok ? dr.qualificationMonth?.evaluations.find((x) => x.rank === PLAN.mentorGenerationMinRank) : null;
-  const miss = e ? e.checks.filter((c) => !c.ok) : [];
-  return miss.length ? ` Para 1★ Director a cada uno le falta: ${miss.map((c) => `${fmt(Math.ceil(Number(c.gap.toString())))} de ${GAP_LABEL[c.key]}`).join("; ")}.` : "";
+/**
+ * Organización mínima de un 1★ Director con tus hábitos: busca el menor número
+ * de socios con el que el motor lo califica como 1★ Director y devuelve sus
+ * ganancias semanales de Nivel y Binario.
+ */
+function directorModel(s: SimpleInput, products: Product[]) {
+  const unitPv = s.sachets * s.pvPerSachet;
+  if (!(unitPv > 0)) return null;
+  const minRank = rankById[PLAN.mentorGenerationMinRank];
+  const own = Math.max(s.sachets, Math.ceil(minRank.pv / (s.pvPerSachet || 1)));
+  for (let size = Math.ceil(minRank.qdv! / unitPv); size <= Math.ceil(minRank.qdv! / unitPv) + 50; size++) {
+    const dd = Math.max(2, Math.min(s.directs, size));
+    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg(own, 0, 0, dd, 0, size - dd, s.sachets) });
+    if (!dr.ok || !atLeast(dr.paidRank, minRank.id)) continue;
+    const m = (id: string) => dr.components.find((c) => c.id === id)!.monthly ?? ZERO;
+    return { size, levelWeekly: m("personal-team").dividedBy(WEEKS_PER_MONTH), binaryWeekly: m("binary").dividedBy(WEEKS_PER_MONTH) };
+  }
+  return null;
 }
 
 export function simpleCalc(s: SimpleInput): SimpleResult {
-  const empty: SimpleResult = { errors: validateSimple(s), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, assumptions: [], base: null };
+  const empty: SimpleResult = { errors: validateSimple(s), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, directors: { max: 0, used: 0 }, assumptions: [], base: null };
   if (empty.errors.length) return empty;
 
   const products: Product[] = [{ id: "sobre", name: "Sobre X39", qv: s.pvPerSachet, cv: s.pvPerSachet, retailMargin: s.retailPerSachet, preferredMargin: s.preferredPerSachet }];
@@ -152,38 +163,36 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
     why: bi.status === "no_elegible" ? bi.reasons[0] : undefined,
   });
 
-  // Mentor Match estimado: % de la Gen 1 × (Bono por Nivel + Binario) semanal de
-  // cada directo que sea 1★ Director o más, suponiendo que cada directo
-  // patrocinó a su propio equipo, repartido por igual y en equilibrio. Ese
-  // equipo no tiene equipo propio, así que no hay Directores más abajo (Gen 2+).
-  // Un directo inactivo no cobra bonos, así que no genera igualación: se cuenta
-  // la parte activa de cada grupo (media ponderada por el % de activos).
+  // Mentor Match estimado. Generación = 1★ Director o superior en tus líneas.
+  // Propuesta automática: cuántos 1★ Director caben en tu organización si cada
+  // uno tiene lo mínimo para calificar (5 000 de volumen en su organización),
+  // con los mismos hábitos de compra y el mismo número de directos que tú, y
+  // llegando a sus 110 PV. Todos como Gen 1 (sin Directores anidados debajo).
   const gens = r.paidRank ? rankById[r.paidRank].mentorGens : [];
+  const leader = directorModel(s, products);
+  const available = team + active;
+  const maxDirectors = leader ? Math.floor(available / (leader.size + 1)) : 0;
+  const usedDirectors = Math.min(s.directors ?? maxDirectors, maxDirectors);
   let mentorWeekly = ZERO;
   const mHow: string[] = [];
-  if (gens.length && s.directs > 0) {
+  if (gens.length) {
     const cap = d(rankById[r.paidRank!].mentorCapPerBp!);
-    for (const g of splitTeams(team, s.directs)) {
-      const dr = simulate({ mode: "rapido", products, assumptions: a, quick: quickOrg(s.sachets, 0, 0, g.size, 0, 0, s.sachets) });
-      const m = (id: string) => (dr.ok ? dr.components.find((c) => c.id === id)!.monthly ?? ZERO : ZERO);
-      const lw = m("personal-team").dividedBy(WEEKS_PER_MONTH), bw = m("binary").dividedBy(WEEKS_PER_MONTH);
-      const isGen = atLeast(dr.ok ? dr.paidRank : null, PLAN.mentorGenerationMinRank);
-      const each = isGen ? pct(lw.plus(bw), gens[0]) : ZERO;
+    if (!leader) mHow.push("Con estos datos nadie en tu organización puede llegar a 1★ Director.");
+    else {
+      const each = pct(leader.levelWeekly.plus(leader.binaryWeekly), gens[0]);
       const paid = each.gt(cap) ? cap : each;
-      mentorWeekly = mentorWeekly.plus(paid.times(g.count).times(active).dividedBy(s.directs));
-      const rk = dr.ok && dr.paidRank ? rankById[dr.paidRank].short : "sin rango";
-      mHow.push(isGen
-        ? `${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${rk}, Nivel ≈ $${lw.toFixed(2)} + Binario ≈ $${bw.toFixed(2)} por semana → Gen 1: ${gens[0]} % ≈ $${paid.toFixed(2)}/semana cada uno.`
-        : `${fmt(g.count)} directo(s) con equipo de ${fmt(g.size)}: rango ${rk}. No son generación (hace falta 1★ Director o más), así que no generan Mentor Match.${dirGap(dr)}`);
+      mentorWeekly = paid.times(usedDirectors);
+      mHow.push(`Directores 1★ en tus líneas: ${fmt(usedDirectors)}${s.directors == null ? " (propuesta automática)" : ""}. Con tu volumen caben como máximo ${fmt(maxDirectors)}: cada uno necesita ${fmt(leader.size)} socios en su organización (≥ 5 000 de volumen).`);
+      if (s.directors != null && s.directors > maxDirectors) mHow.push(`Pusiste ${fmt(s.directors)}, pero solo caben ${fmt(maxDirectors)}: se usan ${fmt(maxDirectors)}.`);
+      mHow.push(`Cada Director: Nivel ≈ $${leader.levelWeekly.toFixed(2)} + Binario ≈ $${leader.binaryWeekly.toFixed(2)} por semana → Gen 1: ${gens[0]} % ≈ $${paid.toFixed(2)}/semana${each.gt(cap) ? ` (tope de $${fmt(rankById[r.paidRank!].mentorCapPerBp!)} por socio)` : ""}.`);
+      mHow.push("Supone que cada Director tiene lo mínimo para calificar, tus mismos hábitos de compra y tu número de directos, y que llega a sus 110 PV (con compras propias o clientes). No se cuentan Directores anidados (Gen 2+).");
     }
-    if (inactive) mHow.push(`Solo cuentan tus directos activos (${fmt(active)} de ${fmt(s.directs)}): un socio inactivo no cobra bonos y no genera igualación.`);
-    mHow.push("Generación = el primer 1★ Director o superior de cada línea de patrocinio. Se supone que cada directo patrocinó a su propio equipo y que ese equipo no tiene equipo propio, así que no hay más Directores debajo.");
   }
   const mentorMonthly = cents(mentorWeekly.times(WEEKS_PER_MONTH));
   lines.push({
     id: "mentor", name: "Mentor Match", monthly: mentorMonthly, estimated: true,
     how: gens.length ? mHow : [],
-    why: !gens.length ? "Empieza en 1★ Director." : undefined,
+    why: !gens.length ? `Empieza en 1★ Director.${maxDirectors ? ` En tus líneas caben ${fmt(maxDirectors)} Director(es) 1★ cuando llegues.` : ""}` : undefined,
   });
 
   const confirmed = cents(sum(lines.filter((l) => !l.estimated).map((l) => l.monthly)));
@@ -200,7 +209,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
     return `${fmt(n)} PV más en tu pierna débil`;
   };
   return {
-    errors: [], rank: r.paidRank, lines, confirmed, total,
+    errors: [], rank: r.paidRank, lines, confirmed, total, directors: { max: maxDirectors, used: usedDirectors },
     rankBonusTotal: d(reached.reduce((x, y) => x + (y.rankBonus ?? 0), 0)), rankBonusRanks: reached.map((x) => `${x.short} $${fmt(x.rankBonus!)}`),
     next: nextEval ? { rank: nextEval.rank, gaps: nextEval.checks.filter((c) => !c.ok).map((c) => gapText(c.key, c.gap)) } : null,
     assumptions: [
@@ -208,7 +217,7 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
       `${fmt(s.activeDirectsPct)} % de tus directos activos (${fmt(active)} de ${fmt(s.directs)}): los inactivos cuentan como socios pero no compran ni suman volumen. El resto de tu organización compra cada mes.`,
       "Tu organización está equilibrada: mitad en cada pierna y repartida por igual entre tus directos.",
       "Cálculo mensual.",
-      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los socios de tus líneas que sean 1★ Director o más; es estimado porque supone cómo están armados los equipos de tus directos.",
+      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los 1★ Director de tus líneas; es estimado porque supone cuántos hay (propuesta automática: los que caben con tu volumen) y cuánto gana cada uno.",
       "Reglas: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)».",
     ],
     base: r,
