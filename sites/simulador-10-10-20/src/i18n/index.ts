@@ -1,9 +1,10 @@
-// Textos de la interfaz. Para añadir inglés: crear en.ts con las mismas
-// claves y elegir el diccionario según `lang`.
+// Textos de la interfaz en español (base) e inglés.
+import { en } from "./en";
 import { es } from "./es";
 
 export type Key = keyof typeof es;
-const dict: Record<string, Record<Key, string>> = { es };
-let lang = "es";
-export const setLang = (l: string) => { if (dict[l]) lang = l; };
-export const t = (k: Key): string => dict[lang][k] ?? es[k];
+export type UiLang = "es" | "en";
+let current: UiLang = "es";
+export const setLang = (l: UiLang) => { current = l; };
+export const getLang = () => current;
+export const t = (k: Key, lang: UiLang = current): string => (lang === "en" ? en[k] : undefined) ?? es[k];

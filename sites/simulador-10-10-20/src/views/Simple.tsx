@@ -1,17 +1,19 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { usd } from "../engine/decimal";
 import { inPeriod, orgShape, simpleCalc, type GenInfo, type LeaderTier, type Period, type SimpleInput, type SimpleLine } from "../engine/simple";
-import { rankById, rankIndex } from "../plan/plan-10-10-20";
+import { rankIndex } from "../plan/plan-10-10-20";
 import type { RankId } from "../plan/types";
 import { t } from "../i18n";
+import { rankFamily, rankName, type Lang } from "../engine/simple-text";
+import { UI, type SimpleUI } from "./simple-ui";
 import { magnetic, reducedMotion, setWaveEnergy, tilt, useTween } from "../ui/fx";
 import { NumberInput } from "../ui/primitives";
 
-const fmt = (n: number) => n.toLocaleString("es-419");
+const fmt = (n: number) => n.toLocaleString("en-US");
 const money = (n: number) => `USD ${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const num = (x: { toString(): string }) => Number(x.toString());
 
-function Stepper(p: { label: string; hint?: string; value: number; step?: number; min?: number; max?: number; onChange: (v: number) => void }) {
+function Stepper(p: { label: string; hint?: string; value: number; step?: number; min?: number; max?: number; onChange: (v: number) => void; u: SimpleUI }) {
   const id = useId();
   const step = p.step ?? 1, min = p.min ?? 0, max = p.max ?? Infinity;
   const set = (v: number) => p.onChange(Math.min(max, Math.max(min, Math.round(v * 100) / 100)));
@@ -19,24 +21,23 @@ function Stepper(p: { label: string; hint?: string; value: number; step?: number
     <div className="stp">
       <label htmlFor={id} className="stp__label">{p.label}{p.hint && <small>{p.hint}</small>}</label>
       <div className="stp__row">
-        <button type="button" className="stp__btn" aria-label={`Restar a ${p.label}`} onClick={() => set(p.value - step)} {...magnetic}>−</button>
+        <button type="button" className="stp__btn" aria-label={p.u.minus(p.label)} onClick={() => set(p.value - step)} {...magnetic}>−</button>
         <NumberInput id={id} inputMode="numeric" min={min} max={p.max} step={step} value={p.value} onValue={(v) => set(v ?? 0)} />
-        <button type="button" className="stp__btn" aria-label={`Sumar a ${p.label}`} onClick={() => set(p.value + step)} {...magnetic}>+</button>
+        <button type="button" className="stp__btn" aria-label={p.u.plus(p.label)} onClick={() => set(p.value + step)} {...magnetic}>+</button>
       </div>
     </div>
   );
 }
 
 /** Estrellas del rango: se encienden según el nivel (1★, 2★, 3★). */
-function RankBadge({ rank, up }: { rank: RankId | null; up: boolean }) {
-  const short = rank ? rankById[rank].short : "Sin rango";
-  const stars = Number(/^(\d)★/.exec(short)?.[1] ?? 0);
-  const name = short.replace(/^\d★\s*/, "");
+function RankBadge({ rank, up, u, lang }: { rank: RankId | null; up: boolean; u: SimpleUI; lang: Lang }) {
+  const stars = rank && rank !== "abp" ? Number(rank[1]) : 0;
+  const name = rank ? rankFamily(rank, lang) : u.noRank;
   return (
     <p className={`srank${up ? " is-up" : ""}`}>
-      <span className="srank__k">Tu rango</span>
+      <span className="srank__k">{u.yourRank}</span>
       <span className="srank__stars" aria-hidden="true">{[1, 2, 3].map((i) => <i key={i} className={i <= stars ? "on" : ""} style={{ animationDelay: `${i * 0.12}s` }}>★</i>)}</span>
-      <strong>{stars ? <span className="sr">{stars} estrella{stars > 1 ? "s" : ""} </span> : null}{name}</strong>
+      <strong>{stars ? <span className="sr">{u.stars(stars)}</span> : null}{name}</strong>
     </p>
   );
 }
@@ -55,7 +56,7 @@ function Composition({ lines, total, hot }: { lines: SimpleLine[]; total: number
 }
 
 /** Bono binario: dos columnas de luz; la parte emparejada brilla. */
-function LegsViz({ left, right }: { left: number; right: number }) {
+function LegsViz({ left, right, u }: { left: number; right: number; u: SimpleUI }) {
   const max = Math.max(left, right, 1), weak = Math.min(left, right);
   const col = (v: number, label: string) => (
     <div className="slegs__col">
@@ -68,8 +69,8 @@ function LegsViz({ left, right }: { left: number; right: number }) {
   );
   return (
     <figure className="slegs">
-      <div className="slegs__cols">{col(left, "Izquierda")}{col(right, "Derecha")}</div>
-      <figcaption>La parte que brilla ({fmt(Math.round(weak))} PV al mes) se paga y se descuenta de las dos piernas; el sobrante de la pierna fuerte ({fmt(Math.round(Math.max(left, right) - weak))} PV) pasa a la semana siguiente.</figcaption>
+      <div className="slegs__cols">{col(left, u.left)}{col(right, u.right)}</div>
+      <figcaption>{u.legsCap(Math.round(weak), Math.round(Math.max(left, right) - weak))}</figcaption>
     </figure>
   );
 }
@@ -77,13 +78,13 @@ function LegsViz({ left, right }: { left: number; right: number }) {
 const family = (r: RankId) => (r.startsWith("p") ? "p" : r.startsWith("e") ? "e" : "d");
 
 /** Mentor Match: constelación de tus líderes, un anillo por generación y un color por familia de rango. */
-function Constellation({ tiers }: { tiers: LeaderTier[] }) {
+function Constellation({ tiers, u, lang }: { tiers: LeaderTier[]; u: SimpleUI; lang: Lang }) {
   const maxGen = Math.max(...tiers.map((x) => x.gen));
   const rings = Array.from({ length: maxGen }, (_, g) => tiers.filter((x) => x.gen === g + 1));
   const R = (g: number) => 34 + g * (116 / Math.max(1, maxGen));
   return (
     <figure className="sconst">
-      <svg viewBox="0 0 320 320" role="img" aria-label={rings.map((ts, g) => `Gen ${g + 1}: ${ts.map((x) => `${fmt(x.count)} ${rankById[x.rank].short}`).join(", ")}`).join(". ")}>
+      <svg viewBox="0 0 320 320" role="img" aria-label={rings.map((ts, g) => `Gen ${g + 1}: ${ts.map((x) => `${fmt(x.count)} ${rankName(x.rank, lang)}`).join(", ")}`).join(". ")}>
         {rings.map((_, g) => <circle key={`o${g}`} cx="160" cy="160" r={R(g)} className="sconst__orbit" />)}
         {rings.map((ts, g) => {
           const dots = ts.flatMap((x) => Array.from({ length: Math.min(x.count, 6) }, () => family(x.rank)));
@@ -95,16 +96,16 @@ function Constellation({ tiers }: { tiers: LeaderTier[] }) {
         })}
         <circle cx="160" cy="160" r="10" className="sconst__you" />
       </svg>
-      <figcaption><span className="f-d">● Directores</span> <span className="f-e">● Ejecutivos</span> <span className="f-p">● Presidenciales</span> · un anillo por generación</figcaption>
+      <figcaption><span className="f-d">● {u.famD}</span> <span className="f-e">● {u.famE}</span> <span className="f-p">● {u.famP}</span> · {u.ring}</figcaption>
       <table className="sgen">
-        <tbody>{rings.map((ts, g) => <tr key={g}><th scope="row">Gen {g + 1}</th><td>{ts.map((x) => `${fmt(x.count)} × ${rankById[x.rank].short}`).join(" · ")}</td></tr>)}</tbody>
+        <tbody>{rings.map((ts, g) => <tr key={g}><th scope="row">Gen {g + 1}</th><td>{ts.map((x) => `${fmt(x.count)} × ${rankName(x.rank, lang)}`).join(" · ")}</td></tr>)}</tbody>
       </table>
     </figure>
   );
 }
 
 /** Líderes por generación: se abren según tu rango, como en el «Camino al éxito». */
-function LeadersByGen({ value, onChange, gens }: { value: SimpleInput; onChange: (v: (number | null)[]) => void; gens: GenInfo[] }) {
+function LeadersByGen({ value, onChange, gens, u, lang }: { value: SimpleInput; onChange: (v: (number | null)[]) => void; gens: GenInfo[]; u: SimpleUI; lang: Lang }) {
   const limits = value.genLeaders ?? [];
   const open = gens.filter((g) => g.unlocked).length;
   const prevOpen = useRef(open);
@@ -121,37 +122,39 @@ function LeadersByGen({ value, onChange, gens }: { value: SimpleInput; onChange:
   return (
     <details className={`sgens${newFrom != null ? " is-new" : ""}`}>
       <summary className="sgens__sum">
-        <span className="sgens__title">Líderes por generación <small>Mentor Match · 1★ Director o más</small></span>
-        <span className="sgens__peek">{open ? gens.filter((g) => g.unlocked).map((g) => `Gen ${g.gen}: ${fmt(g.used)}`).join(" · ") : "Se abre en 1★ Director"}{open && open < 6 ? ` · ${6 - open} por abrir` : ""}</span>
+        <span className="sgens__title">{u.gensTitle} <small>{u.gensSub}</small></span>
+        <span className="sgens__peek">{open ? gens.filter((g) => g.unlocked).map((g) => `Gen ${g.gen}: ${fmt(g.used)}`).join(" · ") : u.opensAt(rankName("d1", lang))}{open && open < 6 ? ` · ${u.toOpen(6 - open)}` : ""}</span>
       </summary>
       <div className="sgens__body">
       {gens.map((g, i) => g.unlocked ? (
         <div key={g.gen} className={`sgen-row${newFrom != null && g.gen > newFrom ? " is-new" : ""}`}>
-          <Stepper label={`Gen ${g.gen} · ${g.pct} %`} hint={g.max ? `caben ${fmt(g.max)}${g.picks.length ? `: ${g.picks.map((x) => `${fmt(x.count)} × ${rankById[x.rank].short}`).join(" · ")}` : ""}` : "no caben líderes con este volumen"}
+          <Stepper u={u} label={`Gen ${g.gen} · ${g.pct}${lang === "es" ? " %" : "%"}`} hint={g.max ? `${u.fit(g.max)}${g.picks.length ? `: ${g.picks.map((x) => `${fmt(x.count)} × ${rankName(x.rank, lang)}`).join(" · ")}` : ""}` : u.noFit}
             value={g.used} max={g.max} onChange={(v) => setGen(i, Math.round(v))} />
         </div>
       ) : (
         <div key={g.gen} className="sgen-row is-locked">
-          <p className="sgen-row__lock"><b>Gen {g.gen} · {g.pct} %</b><span>Se abre en {rankById[g.unlockRank].short}</span></p>
+          <p className="sgen-row__lock"><b>Gen {g.gen} · {g.pct}{lang === "es" ? " %" : "%"}</b><span>{u.opensAt(rankName(g.unlockRank, lang))}</span></p>
         </div>
       ))}
       {manual
-        ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange([null, null, null, null, null, null])}>Usar la propuesta automática</button>
-        : <p className="sdir__note">Propuesta automática: los líderes que caben con tu volumen, de todos los rangos. Los de cada generación están dentro de las organizaciones de la generación de arriba.</p>}
+        ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange([null, null, null, null, null, null])}>{u.useAuto}</button>
+        : <p className="sdir__note">{u.autoNote}</p>}
       </div>
     </details>
   );
 }
 
-export function SimpleView({ value, onChange, links = true }: { value: SimpleInput; onChange: (v: SimpleInput) => void; links?: boolean }) {
-  const r = useMemo(() => simpleCalc(value), [value]);
+export function SimpleView({ value, onChange, links = true, lang = "es" }: { value: SimpleInput; onChange: (v: SimpleInput) => void; links?: boolean; lang?: Lang }) {
+  const u = UI[lang];
+  const r = useMemo(() => simpleCalc(value, lang), [value, lang]);
   const o = orgShape(value);
   const set = (patch: Partial<SimpleInput>) => onChange({ ...value, ...patch });
   const [period, setPeriodState] = useState<Period>(() => { try { return localStorage.getItem("sim101020:periodo") === "semana" ? "semana" : "mes"; } catch { return "mes"; } });
   const setPeriod = (p: Period) => { setPeriodState(p); try { localStorage.setItem("sim101020:periodo", p); } catch { /* sin almacenamiento */ } };
   const pv = useMemo(() => inPeriod(r, period), [r, period]);
   const amountOf = (id: SimpleLine["id"]) => pv.lines.find((x) => x.id === id)!;
-  const per = period === "mes" ? "al mes" : "por semana";
+  const wk = period === "semana";
+  const per = u.per(wk);
   const total = r.errors.length ? 0 : num(r.total);
   const shownTotal = useTween(r.errors.length ? 0 : num(pv.total));
   const [hot, setHot] = useState<string | null>(null);
@@ -192,46 +195,46 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
   return (
     <div className="view simple">
       <header className="view__head shead">
-        <p className="shead__k">Plan 10·10·20 · tabla oficial EE. UU.</p>
-        <h1>Calcula tus ganancias</h1>
-        <p>Cambia los números y mira cómo se mueve cada forma de ganar.</p>
+        <p className="shead__k">{u.kicker}</p>
+        <h1>{u.title}</h1>
+        <p>{u.lead}</p>
       </header>
 
       <div className="slay">
-        <section className="card sform" aria-label="Tus datos">
-          <Stepper label="Socios en tu organización" hint="Total de tu organización binaria · incluye a tus directos" value={value.partners} onChange={(v) => set({ partners: v })} />
-          <Stepper label="% de actividad de tu organización" hint={`= ${fmt(o.activeTeam)} de ${fmt(o.team)} socios (sin tus directos) compran cada mes`} value={value.orgActivePct} step={5} max={100} onChange={(v) => set({ orgActivePct: v })} />
-          <Stepper label="De ellos, tus directos" hint="Inscritos personalmente" value={value.directs} onChange={(v) => set({ directs: v, activeDirects: Math.min(value.activeDirects, v), buildingDirects: Math.min(value.buildingDirects, v) })} />
-          <Stepper label="Directos activos" hint={`Compran cada mes · = ${value.directs ? Math.round((Math.min(value.activeDirects, value.directs) / value.directs) * 100) : 0} % de tus directos`} value={value.activeDirects} max={value.directs}
+        <section className="card sform" aria-label={u.yourData}>
+          <Stepper u={u} label={u.partners} hint={u.partnersHint} value={value.partners} onChange={(v) => set({ partners: v })} />
+          <Stepper u={u} label={u.activity} hint={u.activityHint(o.activeTeam, o.team)} value={value.orgActivePct} step={5} max={100} onChange={(v) => set({ orgActivePct: v })} />
+          <Stepper u={u} label={u.directs} hint={u.directsHint} value={value.directs} onChange={(v) => set({ directs: v, activeDirects: Math.min(value.activeDirects, v), buildingDirects: Math.min(value.buildingDirects, v) })} />
+          <Stepper u={u} label={u.active} hint={u.activeHint(value.directs ? Math.round((Math.min(value.activeDirects, value.directs) / value.directs) * 100) : 0)} value={value.activeDirects} max={value.directs}
             onChange={(v) => set({ activeDirects: v, buildingDirects: Math.min(value.buildingDirects, v) })} />
-          <Stepper label="De ellos, construyendo" hint="Tienen equipo debajo: tu organización se reparte entre ellos" value={value.buildingDirects} max={value.activeDirects} onChange={(v) => set({ buildingDirects: v })} />
-          <Stepper label="Clientes de tu organización" hint={`De los socios de toda tu organización (no los tuyos) · equipo del patrocinador − organización binaria · activos: ${fmt(o.activeCustomers)} (≈ ${o.customersPerSocio.toFixed(2)} por socio activo)`} value={value.orgCustomers} onChange={(v) => set({ orgCustomers: v })} />
-          <Stepper label="Tus clientes minoristas" hint="Retail · los inscribiste tú" value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
-          <Stepper label="Tus clientes preferentes" hint="Los inscribiste tú" value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
-          <Stepper label="Sobres por persona al mes" hint="Socios y clientes" value={value.sachets} onChange={(v) => set({ sachets: v })} />
-          <Stepper label="Tus sobres al mes" value={value.ownSachets} onChange={(v) => set({ ownSachets: v })} />
-          <Stepper label="PV por sobre" value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />
-          <Stepper label="Pierna fuerte del binario (%)" hint={`Reparto ${fmt(value.strongLegPct)}/${fmt(100 - value.strongLegPct)} entre tus piernas`} value={value.strongLegPct} step={5} min={50} max={100} onChange={(v) => set({ strongLegPct: v })} />
-          <Stepper label="Ganancia por sobre: minorista ($)" value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
-          <Stepper label="Ganancia por sobre: preferente ($)" value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
-          <LeadersByGen value={value} onChange={(genLeaders) => set({ genLeaders })} gens={r.leaders.gens} />
+          <Stepper u={u} label={u.building} hint={u.buildingHint} value={value.buildingDirects} max={value.activeDirects} onChange={(v) => set({ buildingDirects: v })} />
+          <Stepper u={u} label={u.orgCust} hint={u.orgCustHint(o.activeCustomers, o.customersPerSocio.toFixed(2))} value={value.orgCustomers} onChange={(v) => set({ orgCustomers: v })} />
+          <Stepper u={u} label={u.retail} hint={u.retailHint} value={value.retailCustomers} onChange={(v) => set({ retailCustomers: v })} />
+          <Stepper u={u} label={u.preferred} hint={u.preferredHint} value={value.preferredCustomers} onChange={(v) => set({ preferredCustomers: v })} />
+          <Stepper u={u} label={u.sachets} hint={u.sachetsHint} value={value.sachets} onChange={(v) => set({ sachets: v })} />
+          <Stepper u={u} label={u.own} value={value.ownSachets} onChange={(v) => set({ ownSachets: v })} />
+          <Stepper u={u} label={u.pv} value={value.pvPerSachet} onChange={(v) => set({ pvPerSachet: v })} />
+          <Stepper u={u} label={u.leg} hint={u.legHint(value.strongLegPct)} value={value.strongLegPct} step={5} min={50} max={100} onChange={(v) => set({ strongLegPct: v })} />
+          <Stepper u={u} label={u.retailP} value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
+          <Stepper u={u} label={u.prefP} value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
+          <LeadersByGen u={u} lang={lang} value={value} onChange={(genLeaders) => set({ genLeaders })} gens={r.leaders.gens} />
         </section>
 
         {r.errors.length > 0 ? (
           <div className="notice notice--error" role="alert">{r.errors.map((e) => <p key={e}>{e}</p>)}</div>
         ) : (
-          <section className="sres" aria-label="Resultado">
+          <section className="sres" aria-label={u.result}>
             <div className="shero" ref={heroRef} {...tilt}>
               <div className="shero__top">
-                <RankBadge rank={r.rank} up={up} />
-                <div className="speriod" role="radiogroup" aria-label="Mostrar importes">
-                  {(["semana", "mes"] as const).map((p) => <button key={p} type="button" role="radio" aria-checked={period === p} className="speriod__btn" onClick={() => setPeriod(p)}>{p === "semana" ? "Por semana" : "Por mes"}</button>)}
+                <RankBadge rank={r.rank} up={up} u={u} lang={lang} />
+                <div className="speriod" role="radiogroup" aria-label={u.showAmounts}>
+                  {(["semana", "mes"] as const).map((p) => <button key={p} type="button" role="radio" aria-checked={period === p} className="speriod__btn" onClick={() => setPeriod(p)}>{p === "semana" ? u.perWeekBtn : u.perMonthBtn}</button>)}
                 </div>
               </div>
-              <p className="shero__k">Total {per}</p>
+              <p className="shero__k">{u.total(wk)}</p>
               <p className="shero__v" aria-hidden="true" style={{ "--chars": money(Math.max(shownTotal, r.errors.length ? 0 : num(pv.total))).length } as CSSProperties}>{money(shownTotal)}</p>
               <p className="sr" aria-live="polite">{usd(pv.total)} {per}</p>
-              <p className="shero__n">Sin los estimados: {usd(pv.confirmed)} {per}.{period === "semana" && " Por semana = importe mensual × 12 / 52."}</p>
+              <p className="shero__n">{u.noEst(usd(pv.confirmed), wk)}</p>
               <Composition lines={r.lines} total={total} hot={hot} />
             </div>
 
@@ -241,13 +244,13 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
                   onPointerEnter={() => setHot(l.id)} onPointerLeave={(e) => { setHot(null); tilt.onPointerLeave(e); }}>
                   <details onToggle={(e) => setHot((e.currentTarget as HTMLDetailsElement).open ? l.id : null)}>
                     <summary>
-                      <span className="slines__name"><i className="slines__dot" aria-hidden="true" />{l.name}{l.estimated && <em className="tag-est">estimado</em>}{l.tag && <em className="tag-cap">{l.tag}</em>}</span>
-                      <b className="slines__amt">{usd(amountOf(l.id).amount)}{amountOf(l.id).average && <small className="slines__avg">promedio</small>}</b>
+                      <span className="slines__name"><i className="slines__dot" aria-hidden="true" />{l.name}{l.estimated && <em className="tag-est">{u.estimate}</em>}{l.tag && <em className="tag-cap">{l.tag}</em>}</span>
+                      <b className="slines__amt">{usd(amountOf(l.id).amount)}{amountOf(l.id).average && <small className="slines__avg">{u.average}</small>}</b>
                     </summary>
                     <div className="slines__how">
                       {l.why && <p>{l.why}</p>}
-                      {l.id === "binary" && legs && num(l.monthly) > 0 && <LegsViz left={num(legs.Lcv)} right={num(legs.Rcv)} />}
-                      {l.id === "mentor" && r.leaders.tiers.length > 0 && num(l.monthly) > 0 && <Constellation tiers={r.leaders.tiers} />}
+                      {l.id === "binary" && legs && num(l.monthly) > 0 && <LegsViz u={u} left={num(legs.Lcv)} right={num(legs.Rcv)} />}
+                      {l.id === "mentor" && r.leaders.tiers.length > 0 && num(l.monthly) > 0 && <Constellation u={u} lang={lang} tiers={r.leaders.tiers} />}
                       {l.how.length > 0 && <ul>{l.how.map((h) => <li key={h}>{h}</li>)}</ul>}
                     </div>
                   </details>
@@ -257,18 +260,18 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
 
             {r.next && (
               <div className="snext">
-                <div className="snext__head"><b>Hacia {rankById[r.next.rank].short}</b><span>{Math.round(progress * 100)} %</span></div>
-                <div className="snext__bar" role="progressbar" aria-label={`Avance hacia ${rankById[r.next.rank].short}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}><span style={{ width: `${progress * 100}%` }} /></div>
-                <p className="snext__k">Te falta:</p>
+                <div className="snext__head"><b>{u.toward(rankName(r.next.rank, lang))}</b><span>{Math.round(progress * 100)} %</span></div>
+                <div className="snext__bar" role="progressbar" aria-label={u.progress(rankName(r.next.rank, lang))} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}><span style={{ width: `${progress * 100}%` }} /></div>
+                <p className="snext__k">{u.need}</p>
                 <ul>{r.next.gaps.map((g) => <li key={g}>{g}</li>)}</ul>
               </div>
             )}
 
             {r.rankBonusTotal.gt(0) && (
               <div className="sonce">
-                <span>Además, una sola vez: <b>bono por subir de rango</b></span>
+                <span>{u.onceLead} <b>{u.onceName}</b></span>
                 <strong>{usd(r.rankBonusTotal)}</strong>
-                <small>Si alcanzas estos rangos por primera vez ({r.rankBonusRanks.join(" · ")}). Se paga la mitad al calificar y la otra mitad al calificar por 4.ª vez. No se repite cada mes.</small>
+                <small>{u.onceNote(r.rankBonusRanks.join(" · "))}</small>
               </div>
             )}
           </section>
@@ -278,21 +281,21 @@ export function SimpleView({ value, onChange, links = true }: { value: SimpleInp
       {!r.errors.length && (
         <a className={`sbar${heroVisible ? "" : " is-on"}`} href="#main" aria-hidden={heroVisible} tabIndex={heroVisible ? -1 : 0}
           onClick={(e) => { e.preventDefault(); heroRef.current?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" }); }}>
-          <span><small>Total {per}</small><b>{r.rank ? rankById[r.rank].short : "Sin rango"}</b></span>
+          <span><small>{u.total(wk)}</small><b>{r.rank ? rankName(r.rank, lang) : u.noRank}</b></span>
           <strong>{money(shownTotal)}</strong>
         </a>
       )}
 
       <details className="card sassume">
-        <summary>Qué supone este cálculo</summary>
+        <summary>{u.assume}</summary>
         <ul>{r.assumptions.map((a) => <li key={a}>{a}</li>)}</ul>
-        <p className="muted">{t("disclaimer")}</p>
+        <p className="muted">{t("disclaimer", lang)}</p>
       </details>
 
       {links && <div className="slinks">
-        <a className="btn btn--ghost" href="#/entender">Entender cada forma de ganar</a>
-        <a className="btn btn--ghost" href="#/meta">¿Cuánto necesito para mi meta?</a>
-        <a className="btn btn--ghost" href="#/simular">Modo avanzado</a>
+        <a className="btn btn--ghost" href="#/entender">{u.learn}</a>
+        <a className="btn btn--ghost" href="#/meta">{u.goal}</a>
+        <a className="btn btn--ghost" href="#/simular">{u.advanced}</a>
       </div>}
     </div>
   );

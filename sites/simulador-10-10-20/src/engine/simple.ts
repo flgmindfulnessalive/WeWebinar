@@ -7,6 +7,7 @@ import { cents, d, pct, sum, WEEKS_PER_MONTH, ZERO, type D } from "./decimal";
 import { DEFAULT_ASSUMPTIONS, type Product, type QuickOrg } from "./model";
 import { atLeast } from "./simulate";
 import { simulate, type SimulationResult } from "./simulate";
+import { texts, type Lang } from "./simple-text";
 
 export interface SimpleInput {
   /** Socios (Brand Partners) en toda tu organización, incluidos tus directos (recuento total del back office). */
@@ -89,18 +90,19 @@ export interface SimpleResult {
   base: SimulationResult | null;
 }
 
-const fmt = (n: number) => n.toLocaleString("es-419");
+const money2 = (x: D) => Number(x.toFixed(2)).toLocaleString("en-US");
 
-export function validateSimple(s: SimpleInput): string[] {
+export function validateSimple(s: SimpleInput, lang: Lang = "es"): string[] {
+  const T = texts(lang), F = T.fields;
   const e: string[] = [];
-  for (const [v, w] of [[s.partners, "Socios"], [s.directs, "Directos"], [s.activeDirects, "Directos activos"], [s.buildingDirects, "Directos construyendo"], [s.orgCustomers, "Clientes de tu organización"], [s.retailCustomers, "Clientes minoristas"], [s.preferredCustomers, "Clientes preferentes"]] as const) if (!Number.isInteger(v) || v < 0) e.push(`${w}: escribe un número entero de 0 o más.`);
-  for (const [v, w] of [[s.sachets, "Sobres por persona"], [s.ownSachets, "Tus sobres"], [s.pvPerSachet, "PV por sobre"], [s.retailPerSachet, "Ganancia por sobre (minorista)"], [s.preferredPerSachet, "Ganancia por sobre (preferente)"]] as const) if (!(v >= 0) || !Number.isFinite(v)) e.push(`${w}: escribe un número de 0 o más.`);
-  (s.genLeaders ?? []).forEach((v, i) => { if (v != null && (!Number.isInteger(v) || v < 0)) e.push(`Líderes de la Gen ${i + 1}: escribe un número entero de 0 o más.`); });
-  if (!(s.strongLegPct >= 50 && s.strongLegPct <= 100)) e.push("Pierna fuerte del binario: escribe un % entre 50 y 100.");
-  if (!(s.orgActivePct >= 0 && s.orgActivePct <= 100)) e.push("Actividad de tu organización: escribe un % entre 0 y 100.");
-  if (orgShape(s).activeTeam > 0 && Math.min(s.buildingDirects, s.activeDirects) === 0) e.push("Tienes socios activos debajo de tus directos: indica cuántos de tus directos activos están construyendo (al menos 1).");
-  if (s.directs > s.partners) e.push("Los directos forman parte de tus socios: no pueden ser más que el total de socios.");
-  if (s.partners > s.directs && s.directs === 0) e.push("Para tener socios en tu organización necesitas al menos un directo.");
+  for (const [v, w] of [[s.partners, F.partners], [s.directs, F.directs], [s.activeDirects, F.active], [s.buildingDirects, F.building], [s.orgCustomers, F.orgCust], [s.retailCustomers, F.retail], [s.preferredCustomers, F.preferred]] as const) if (!Number.isInteger(v) || v < 0) e.push(T.errInt(w));
+  for (const [v, w] of [[s.sachets, F.sachets], [s.ownSachets, F.own], [s.pvPerSachet, F.pv], [s.retailPerSachet, F.retailP], [s.preferredPerSachet, F.prefP]] as const) if (!(v >= 0) || !Number.isFinite(v)) e.push(T.errNum(w));
+  (s.genLeaders ?? []).forEach((v, i) => { if (v != null && (!Number.isInteger(v) || v < 0)) e.push(T.errGen(i + 1)); });
+  if (!(s.strongLegPct >= 50 && s.strongLegPct <= 100)) e.push(T.errLeg);
+  if (!(s.orgActivePct >= 0 && s.orgActivePct <= 100)) e.push(T.errAct);
+  if (orgShape(s).activeTeam > 0 && Math.min(s.buildingDirects, s.activeDirects) === 0) e.push(T.errBuild);
+  if (s.directs > s.partners) e.push(T.errDirects);
+  if (s.partners > s.directs && s.directs === 0) e.push(T.errNoDirect);
   return e;
 }
 
@@ -237,8 +239,9 @@ function allocateLeaders(roots: LeaderNode[], limits: (number | null)[], maxGen:
 /** Primer rango que cobra la generación g (1–6). */
 const unlockRankOf = (g: number) => PLAN.ranks.find((r) => r.mentorGens.length >= g)!;
 
-export function simpleCalc(s: SimpleInput): SimpleResult {
-  const empty: SimpleResult = { errors: validateSimple(s), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, leaders: { gens: [], tiers: [] }, assumptions: [], base: null };
+export function simpleCalc(s: SimpleInput, lang: Lang = "es"): SimpleResult {
+  const T = texts(lang);
+  const empty: SimpleResult = { errors: validateSimple(s, lang), rank: null, lines: [], confirmed: ZERO, total: ZERO, rankBonusTotal: ZERO, rankBonusRanks: [], next: null, leaders: { gens: [], tiers: [] }, assumptions: [], base: null };
   if (empty.errors.length) return empty;
 
   const products: Product[] = [{ id: "sobre", name: "Sobre X39", qv: s.pvPerSachet, cv: s.pvPerSachet, retailMargin: s.retailPerSachet, preferredMargin: s.preferredPerSachet }];
@@ -255,28 +258,25 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
 
   const rt = comp("retail");
   lines.push({
-    id: "retail", name: "Ganancia por tus clientes", monthly: rt.monthly ?? ZERO, estimated: false,
-    how: [
-      `Minoristas: ${fmt(s.retailCustomers)} × ${fmt(sx)} sobre(s) × $${fmt(s.retailPerSachet)} = $${fmt(s.retailCustomers * sx * s.retailPerSachet)}`,
-      `Preferentes: ${fmt(s.preferredCustomers)} × ${fmt(sx)} sobre(s) × $${fmt(s.preferredPerSachet)} = $${fmt(s.preferredCustomers * sx * s.preferredPerSachet)}`,
-    ],
-    why: rt.status === "no_elegible" ? rt.reasons[0] : undefined,
+    id: "retail", name: T.retailName, monthly: rt.monthly ?? ZERO, estimated: false,
+    how: [T.retailHow(s.retailCustomers, sx, s.retailPerSachet), T.prefHow(s.preferredCustomers, sx, s.preferredPerSachet)],
+    why: rt.status === "no_elegible" ? T.retailWhy : undefined,
   });
 
   const pt = comp("personal-team");
   lines.push({
-    id: "personal-team", name: "10 % de tus directos", monthly: pt.monthly ?? ZERO, estimated: false,
-    how: [`${fmt(active)} directos activos (de ${fmt(s.directs)}) × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(active * sx * pv)} PV${inactive ? ` (${fmt(inactive)} inactivos no suman)` : ""}`, `10 % de ese volumen al mes (Bono de Nivel Comprimido, desde 1★ Gerente).`],
-    why: pt.status === "no_elegible" ? pt.reasons[0] : undefined,
+    id: "personal-team", name: T.levelName, monthly: pt.monthly ?? ZERO, estimated: false,
+    how: T.levelHow(active, s.directs, sx, pv, inactive),
+    why: pt.status === "no_elegible" ? (atLeast(r.paidRank, "m1") ? T.levelWhyNone : T.levelWhyRank) : undefined,
   });
 
   const cu = comp("customer");
   const cqv = customers * sx * pv;
   const tier = [...PLAN.customerBonusTiers].reverse().find((t) => cqv >= t.minQv);
   lines.push({
-    id: "customer", name: "Bono por Cliente", monthly: cu.monthly ?? ZERO, estimated: false,
-    how: [`${fmt(customers)} clientes (minoristas + preferentes) × ${fmt(sx)} sobre(s) × ${fmt(pv)} PV = ${fmt(cqv)} PV`, tier ? `Tramo del ${tier.pct} % (300+ PV → 5 %, 600+ → 10 %, 1 200+ → 20 %).` : "Por debajo de 300 PV no hay bono (300+ → 5 %, 600+ → 10 %, 1 200+ → 20 %)."],
-    why: cu.status === "no_elegible" ? cu.reasons[0] : undefined,
+    id: "customer", name: T.custName, monthly: cu.monthly ?? ZERO, estimated: false,
+    how: T.custHow(customers, sx, pv, tier ? tier.pct : null),
+    why: cu.status === "no_elegible" ? T.custWhy(cqv > 0 ? Math.ceil(PLAN.customerBonusTiers[0].minQv - cqv) : 0) : undefined,
   });
 
   const bi = comp("binary");
@@ -286,10 +286,12 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const bCapped = bi.capsHit.length > 0;
   const bWeekAvg = bWeeks.length ? sum(bWeeks).dividedBy(bWeeks.length) : ZERO;
   lines.push({
-    id: "binary", name: "Bono binario", monthly: bi.monthly ?? ZERO, estimated: false, tag: bCapped ? "tope semanal" : undefined,
+    id: "binary", name: T.binName, monthly: bi.monthly ?? ZERO, estimated: false, tag: bCapped ? T.capTag : undefined,
     how: [
-      ...(bWeeks.length && bi.monthly?.gt(0) ? [`Por semana: $${fmt(Number(bWeekAvg.toFixed(2)))}${bCapped ? ` — es el tope semanal de tu rango ($${fmt(bCap!)})` : ""}. Al mes: × 52 semanas / 12 meses = $${fmt(Number(bi.monthly!.toFixed(2)))}.`] : []),`Tu organización repartida ${fmt(s.strongLegPct)}/${fmt(100 - s.strongLegPct)} entre tus piernas: pierna débil ≈ ${fmt(Math.round(leg))} PV al mes (lo que sobra en la pierna fuerte se acumula).`, r.paidRank && rankById[r.paidRank].binaryPct ? `${rankById[r.paidRank].binaryPct} % por tu rango (${rankById[r.paidRank].short}), con tope semanal de $${fmt(rankById[r.paidRank].binaryWeeklyCap!)}.` : "Requiere al menos 1★ Gerente."],
-    why: bi.status === "no_elegible" ? bi.reasons[0] : undefined,
+      ...(bWeeks.length && bi.monthly?.gt(0) ? [T.binWeek(money2(bWeekAvg), bCapped, bCap, money2(bi.monthly!))] : []),
+      T.binSplit(s.strongLegPct, Math.round(leg)),
+      r.paidRank && rankById[r.paidRank].binaryPct ? T.binRate(rankById[r.paidRank].binaryPct!, r.paidRank, rankById[r.paidRank].binaryWeeklyCap!) : T.binNeed],
+    why: bi.status === "no_elegible" ? (atLeast(r.paidRank, "m1") ? T.binWhyLeg : T.binWhyRank) : undefined,
   });
 
   // Mentor Match estimado: líderes (1★ Director o más) que caben en tus líneas,
@@ -323,22 +325,22 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const mentorWeekly = sum(tiers.map((x) => x.paidWeekly.times(x.count)));
   const mHow: string[] = [];
   if (gens.length) {
-    if (!tiers.length) mHow.push("Con estos datos nadie en tu organización llega a 1★ Director.");
+    if (!tiers.length) mHow.push(T.mentorNone);
     else {
       for (const g of genInfo.filter((x) => x.unlocked)) {
-        mHow.push(`Gen ${g.gen} (${g.pct} %): ${fmt(g.used)} líder(es)${g.auto ? " (propuesta automática)" : ""}; caben ${fmt(g.max)}.`);
+        mHow.push(T.mentorGen(g.gen, g.pct, g.used, g.auto, g.max));
         const asked = limits[g.gen - 1];
-        if (asked != null && asked > g.max) mHow.push(`En la Gen ${g.gen} pusiste ${fmt(asked)}, pero solo caben ${fmt(g.max)}: se usan ${fmt(g.max)}.`);
+        if (asked != null && asked > g.max) mHow.push(T.mentorTooMany(g.gen, asked, g.max));
       }
-      for (const x of tiers) mHow.push(`Gen ${x.gen} · ${fmt(x.count)} × ${rankById[x.rank].short}: Nivel ≈ $${x.levelWeekly.toFixed(2)} + Binario ≈ $${x.binaryWeekly.toFixed(2)} por semana → ${gens[x.gen - 1]} % ≈ $${x.paidWeekly.toFixed(2)}/semana cada uno${x.paidWeekly.eq(cap) ? " (tope por socio)" : ""}.`);
-      mHow.push(`Cada línea cuenta como máximo la MVR del rango de arriba, así que bajo cada líder cabe, como mucho, el rango siguiente hacia abajo; los líderes de una generación están dentro de las organizaciones de la generación de arriba. Supone que cada líder tiene lo mínimo para calificar, tus hábitos de compra, tu número de directos (al menos 4) y el PV de su rango.`);
+      for (const x of tiers) mHow.push(T.mentorTier(x.gen, x.count, x.rank, x.levelWeekly.toFixed(2), x.binaryWeekly.toFixed(2), gens[x.gen - 1], x.paidWeekly.toFixed(2), x.paidWeekly.eq(cap)));
+      mHow.push(T.mentorRule);
     }
   }
   const mentorMonthly = cents(mentorWeekly.times(WEEKS_PER_MONTH));
   lines.push({
     id: "mentor", name: "Mentor Match", monthly: mentorMonthly, estimated: true,
     how: gens.length ? mHow : [],
-    why: !gens.length ? `Empieza en 1★ Director.${gen1Max ? ` En tus líneas caben ${fmt(gen1Max)} líder(es) 1★ Director cuando llegues.` : ""}` : undefined,
+    why: !gens.length ? T.mentorWhy(gen1Max) : undefined,
   });
 
   const confirmed = cents(sum(lines.filter((l) => !l.estimated).map((l) => l.monthly)));
@@ -349,25 +351,16 @@ export function simpleCalc(s: SimpleInput): SimpleResult {
   const nextMvr = r.nextRank ? rankById[r.nextRank].mvr : null;
   const gapText = (key: string, gap: D) => {
     const n = Math.ceil(Number(gap.toString()));
-    if (key === "pv") return `${fmt(n)} PV más de compra propia o de tus clientes`;
-    if (key === "qdv") return `${fmt(n)} PV más en tu organización (≈ ${fmt(Math.ceil(n / (sx * pv || 1)))} socios más comprando ${fmt(sx)} sobre(s)${nextMvr ? `; ninguna línea cuenta más de ${fmt(nextMvr)}` : ""})`;
-    if (key === "ol2l") return `${fmt(n)} PV más fuera de tus 2 líneas más grandes`;
-    return `${fmt(n)} PV más en tu pierna débil`;
+    if (key === "pv") return T.gapPv(n);
+    if (key === "qdv") return T.gapQdv(n, Math.ceil(n / (sx * pv || 1)), sx, nextMvr);
+    if (key === "ol2l") return T.gapOl2l(n);
+    return T.gapLeg(n);
   };
   return {
     errors: [], rank: r.paidRank, lines, confirmed, total, leaders: { gens: genInfo, tiers },
-    rankBonusTotal: d(reached.reduce((x, y) => x + (y.rankBonus ?? 0), 0)), rankBonusRanks: reached.map((x) => `${x.short} $${fmt(x.rankBonus!)}`),
+    rankBonusTotal: d(reached.reduce((x, y) => x + (y.rankBonus ?? 0), 0)), rankBonusRanks: reached.map((x) => T.bonusItem(x.id, x.rankBonus!)),
     next: nextEval ? { rank: nextEval.rank, gaps: nextEval.checks.filter((c) => !c.ok).map((c) => gapText(c.key, c.gap)) } : null,
-    assumptions: [
-      `Cada sobre suma ${fmt(pv)} PV (los porcentajes se calculan sobre ese mismo volumen) y deja $${fmt(s.retailPerSachet)} si lo compra un cliente minorista o $${fmt(s.preferredPerSachet)} si lo compra un cliente preferente.`,
-      `Organización: ${fmt(s.orgActivePct)} % activa (${fmt(activeTeam)} de ${fmt(o.team)} socios, sin contar a tus directos) y ${fmt(active)} de ${fmt(s.directs)} directos activos. Los inactivos cuentan como socios pero no compran ni suman volumen.`,
-      `Tu equipo está debajo de tus ${fmt(o.building)} directo(s) que construyen, repartido por igual entre ellos; tus otros directos activos son líneas de una sola persona.`,
-      `Clientes de tu organización: ${fmt(o.activeCustomers)} activos de ${fmt(s.orgCustomers)} (mismo % de actividad; ≈ ${o.customersPerSocio.toFixed(2)} por socio activo). Compran como los socios y su volumen suma a tus piernas y a tu organización, pero su ganancia y su Bono por Cliente son de sus socios. Los líderes del Mentor Match tienen esa misma media.`,
-      `Binario: ${fmt(s.strongLegPct)} % de tu volumen en la pierna fuerte y ${fmt(100 - s.strongLegPct)} % en la débil.`,
-      "Cálculo mensual.",
-      "Binario: % de la pierna débil acumulada, con tope semanal. Mentor Match: % × (Nivel + Binario) semanal de los líderes (1★ Director o más) de tus generaciones; es estimado porque supone cuántos hay y de qué rango (propuesta automática: los que caben con tu volumen) y cuánto gana cada uno.",
-      "Reglas: tabla oficial «Plan de Compensación LifeWave 10-10-20 (EE. UU.)».",
-    ],
+    assumptions: T.assumptions({ pv, rp: s.retailPerSachet, pp: s.preferredPerSachet, act: s.orgActivePct, at: activeTeam, team: o.team, a: active, d: s.directs, b: o.building, ac: o.activeCustomers, oc: s.orgCustomers, cps: o.customersPerSocio.toFixed(2), st: s.strongLegPct }),
     base: r,
   };
 }

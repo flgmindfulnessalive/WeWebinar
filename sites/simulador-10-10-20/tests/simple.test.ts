@@ -122,6 +122,15 @@ describe("Calculadora simple", () => {
     expect(big.lines.find((x) => x.id === "binary")!.amount.toFixed(2)).toBe("25000.00"); // el tope semanal, tal cual
     expect(inPeriod(r, "mes").total.toFixed(2)).toBe(r.total.toFixed(2));
   });
+  it("en inglés: nombres oficiales del plan y rangos «N Star …»", () => {
+    const r = simpleCalc(DEFAULT_SIMPLE, "en");
+    expect(r.lines.map((l) => l.name)).toEqual(["Retail Profit", "Level Earning · 10% of your directs", "Premium Customer Bonus", "Binary Bonus", "Mentor Match"]);
+    expect(r.rankBonusRanks).toEqual(["2 Star Manager $100", "3 Star Manager $250", "1 Star Director $500", "2 Star Director $1,000"]);
+    expect(r.total.toFixed(2)).toBe(simpleCalc(DEFAULT_SIMPLE).total.toFixed(2)); // mismos importes en los dos idiomas
+    const big = simpleCalc({ ...DEFAULT_SIMPLE, partners: 3000, directs: 20, activeDirects: 20, buildingDirects: 20, sachets: 2 }, "en");
+    expect(big.lines.find((l) => l.id === "mentor")!.how.join(" ")).toMatch(/3 Star Executive/);
+    expect(simpleCalc({ ...DEFAULT_SIMPLE, partners: -1 }, "en").errors[0]).toMatch(/enter a whole number/);
+  });
   it("valida el reparto del binario", () => {
     expect(simpleCalc({ ...DEFAULT_SIMPLE, strongLegPct: 40 }).errors.length).toBeGreaterThan(0);
   });
