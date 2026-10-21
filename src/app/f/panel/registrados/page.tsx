@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { LeadRow, type LeadCard, type LeadStatus } from "./lead-row";
 
@@ -109,7 +110,16 @@ export default async function PanelLeadsPage() {
       <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
         Personas registradas en tu página. Solo tú accedes a estos contactos: quien te
         regaló tu funnel no los ve. El botón de WhatsApp abre el chat con el mensaje
-        escrito; el envío automático de correos llega con un plan de WeWebinars.
+        escrito; el envío automático de correos llega con{" "}
+        <a
+          href={wefunnelAppUrl("/pricing")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-[var(--wf-accent)] no-underline"
+        >
+          un plan de WeWebinars
+        </a>
+        .
       </p>
     </div>
   );

@@ -14,7 +14,7 @@ import {
 import { uploadFunnelPhoto, type PhotoState } from "@/lib/actions/wefunnel-photo";
 import { DEFAULT_KICKER, KICKER_MAX, kickerOf } from "@/lib/wefunnels/kicker";
 import { CopyHelper } from "./copy-helper";
-import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
 import type { WeFunnelSite, checklist } from "@/lib/wefunnels/site";
 
 // The approved editor: five fields and a preview that changes as they type.
@@ -528,7 +528,18 @@ export function SiteEditor({
                     defaultValue={site.pixel_id ?? ""}
                     className={`${FIELD} mt-2`}
                   />
-                  <p className={HELP}>Necesita un plan de WeWebinars.</p>
+                  <p className={HELP}>
+                    Necesita{" "}
+                    <a
+                      href={wefunnelAppUrl("/pricing")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[var(--wf-accent)] no-underline"
+                    >
+                      un plan de WeWebinars
+                    </a>
+                    .
+                  </p>
                 </div>
               </div>
             </div>

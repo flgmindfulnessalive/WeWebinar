@@ -6,12 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { weFunnelSignOut } from "@/lib/actions/wefunnel-auth";
+import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 
 // El menú de la cuenta. Antes había un correo electrónico en un <span>: ni
 // desplegable, ni perfil, ni facturación, ni forma de cerrar la sesión --
 // literalmente ninguna, en todo el panel.
 //
-// Cinco entradas y las cinco llevan a algo que existe. La de ayuda es un
+// Seis entradas y las seis llevan a algo que existe. La de ayuda es un
 // mailto al buzón que de verdad atiende (el mismo que usa el soporte del
 // resto del producto), no un enlace a un centro de ayuda que no hemos
 // escrito.
@@ -22,6 +23,13 @@ const ITEMS = [
 ] as const;
 
 const SUPPORT_EMAIL = "operaciones@wewebinars.com";
+
+// WeWebinars vive en otro host (el panel está en el subdominio), así que
+// sin un enlace absoluto no hay forma de llegar haciendo clic desde aquí
+// dentro -- y hasta ahora no había ninguno en todo el panel. Este es el
+// sitio fijo: siempre en el mismo lugar, se lea o no el texto de las
+// pantallas. Pestaña nueva porque el panel es donde estaban trabajando.
+const WEWEBINARS_URL = wefunnelAppUrl("/");
 
 function initials(value: string): string {
   const parts = value.trim().split(/\s+/).filter(Boolean);
@@ -134,6 +142,16 @@ export function AccountMenu({
                 {item.label}
               </Link>
             ))}
+            <a
+              href={WEWEBINARS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="px-4 py-2.5 text-[length:var(--wf-small)] text-[var(--wf-fg-2)] no-underline hover:bg-[var(--wf-hover)] hover:text-[var(--wf-fg)] focus-visible:bg-[var(--wf-hover)] focus-visible:outline-none"
+            >
+              Ir a WeWebinars ↗
+            </a>
             <a
               href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Ayuda con WeFunnels")}`}
               role="menuitem"
