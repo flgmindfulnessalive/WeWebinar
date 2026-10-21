@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { kickerOf } from "@/lib/wefunnels/kicker";
 import { LeadForm } from "./lead-form";
 import { CountVisit } from "@/components/wefunnels/count-visit";
@@ -11,9 +12,72 @@ import { HeroGrid } from "@/components/wefunnels/hero-grid";
 
 type RouteParams = { slug: string };
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false, nocache: true },
-};
+// Lo que se lee cuando alguien comparte su página.
+//
+// Antes no había nada aquí, así que la tarjeta era la del layout raíz:
+// «WeWebinars · Plataforma de webinars evergreen para vender tus
+// productos». Quien pegaba su enlace en un grupo presentaba otra marca y
+// otro producto en vez de presentarse.
+//
+// Ahora va su nombre y su frase. Se lee con la sesión anónima: si la
+// página es un borrador o está suspendida, RLS no devuelve la fila y
+// queda el texto neutro -- el estado de la página de alguien no se
+// cuenta en una vista previa.
+//
+// Sigue sin indexarse. Son páginas personales que se reparten por enlace,
+// no escaparates que compitan en buscadores.
+const FALLBACK_TITLE = "Reclama tu embudo gratis de por vida";
+const FALLBACK_DESCRIPTION =
+  "Tu página para captar contactos, tu panel de registros y el curso para llevarles tráfico.";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<RouteParams>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: site } = await supabase
+    .from("wefunnel_sites")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  const live = site && site.status === "published" && !site.suspended_at ? site : null;
+  const title = live?.display_name?.trim() || FALLBACK_TITLE;
+  const description =
+    live?.headline?.trim() || live?.description?.trim() || FALLBACK_DESCRIPTION;
+
+  // Absoluta y en el host de WeFunnels, por lo mismo que en la página de
+  // regalo: declarar openGraph aquí desactiva la imagen del fichero, y una
+  // ruta relativa se resolvería contra el host de la aplicación.
+  const image = {
+    url: `https://${WEFUNNELS_HOST}/${encodeURIComponent(slug)}/opengraph-image`,
+    width: 1200,
+    height: 630,
+    alt: title,
+  };
+
+  return {
+    title,
+    description,
+    robots: { index: false, follow: false, nocache: true },
+    openGraph: {
+      title,
+      description,
+      url: `https://${WEFUNNELS_HOST}/${encodeURIComponent(slug)}`,
+      type: "profile",
+      locale: "es_ES",
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image.url],
+    },
+  };
+}
 
 const ACCENTS: Record<string, string> = {
   cyan: "#2BD7F5",
