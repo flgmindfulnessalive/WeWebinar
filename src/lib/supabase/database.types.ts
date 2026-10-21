@@ -1979,6 +1979,8 @@ export interface Database {
           whop_membership_id: string | null;
           activated_at: string;
           starter_until: string | null;
+          starter_warning_sent_at: string | null;
+          starter_ended_at: string | null;
           created_at: string;
                   license_source: "public" | "invited" | "granted" | null;
           license_price_usd: number | null;
@@ -2451,6 +2453,10 @@ export interface Database {
         Returns: undefined;
       };
       revert_canceled_account_to_wefunnels: {
+        Args: { p_account_id: string };
+        Returns: boolean;
+      };
+      end_wefunnel_starter_grant: {
         Args: { p_account_id: string };
         Returns: boolean;
       };

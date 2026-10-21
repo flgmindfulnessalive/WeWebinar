@@ -130,8 +130,10 @@ export default async function PanelSharePage() {
       {starterUntil && (
         <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
           Tus 2 meses de WeWebinars Starter van hasta el {DATE.format(starterUntil)}. Son una
-          prueba de la plataforma: si te sirve, siguen $15 al mes; si no, no pagas nada.
-          Repartir funnels, tu sala del curso y tu 20% no dependen de eso y no se apagan.
+          prueba de la plataforma: si te sirve, eliges un plan; si no, no pagas nada y ese
+          día se apaga solo el lado WeWebinars (tus webinarios quedan archivados, no
+          borrados). Repartir funnels, tu sala del curso y tu 20% no dependen de eso y no
+          se apagan nunca.
         </p>
       )}
     </div>

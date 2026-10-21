@@ -130,9 +130,11 @@ export default async function PanelBillingPage() {
                     justamente porque convertía a WeWebinars en algo que hay que
                     comprar para poder cobrar. */}
                 <p className={SMALL}>
-                  Cuando se acaban no se apaga nada: tu página, tus registros, tu curso,
-                  tu página de regalo y tu comisión del 20% son de por vida. No hace
-                  falta mantener ningún plan para seguir cobrándola.
+                  Cuando se acaban se apaga solo el lado WeWebinars: tus webinarios
+                  propios quedan archivados (no se borran, vuelven el día que elijas un
+                  plan) y te avisamos por correo una semana antes. Tu página, tus
+                  registros, tu curso, tu página de regalo y tu comisión del 20% son de
+                  por vida. No hace falta mantener ningún plan para seguir cobrándola.
                 </p>
               </>
             ) : (
