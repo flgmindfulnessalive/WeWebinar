@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePresenter } from "@/lib/presenter";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
 import { LiveRoomClient } from "./live-room-client";
@@ -100,14 +101,39 @@ export default async function LiveRoomPage({
   // once the response is already sent (no added latency to the room
   // loading), but -- unlike a bare unawaited call -- the platform won't
   // tear down the function before this fetch actually completes.
-  after(() =>
-    dispatchWebhookEvent(webinar.account_id, "attendance", {
+  //
+  // Una sola vez por registrado. Esta página se abre varias veces por la
+  // misma persona -- una recarga, volver atrás, reconectar tras perder la
+  // red -- y cada una mandaba otro evento idéntico al CRM del cliente. La
+  // marca la pone la base: si el insert entra, este es el primer aviso y
+  // se manda; si choca con la clave primaria, ya se mandó. Dos pestañas a
+  // la vez son dos peticiones en paralelo, así que la carrera tiene que
+  // resolverla la base, no una comprobación previa.
+  after(async () => {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("webinar_attendance_notices")
+      .insert({ registrant_id: session.registrant_id, webinar_id: webinar.id });
+
+    // 23505 es "ya estaba": el aviso salió en una visita anterior y aquí
+    // no hay nada que hacer.
+    if (error?.code === "23505") return;
+
+    // Cualquier otro fallo al marcar -- la tabla todavía sin migrar en
+    // este entorno (42P01), un corte -- se registra y se manda igual. El
+    // duplicado ocasional era el estado anterior y se tolera; quedarse sin
+    // avisar al CRM de un asistente real, no.
+    if (error) {
+      console.error("[live-room] no se pudo marcar el aviso de asistencia:", error);
+    }
+
+    await dispatchWebhookEvent(webinar.account_id, "attendance", {
       webinar_id: webinar.id,
       webinar_title: webinar.title,
       name: session.name,
       email: session.email,
-    })
-  );
+    });
+  });
 
   return (
     <LiveRoomClient

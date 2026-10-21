@@ -2055,6 +2055,37 @@ export interface Database {
           },
         ];
       };
+      webinar_attendance_notices: {
+        Row: {
+          registrant_id: string;
+          webinar_id: string;
+          created_at: string;
+        };
+        Insert: {
+          registrant_id: string;
+          webinar_id: string;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["webinar_attendance_notices"]["Row"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "webinar_attendance_notices_registrant_id_fkey";
+            columns: ["registrant_id"];
+            isOneToOne: true;
+            referencedRelation: "registrants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "webinar_attendance_notices_webinar_id_fkey";
+            columns: ["webinar_id"];
+            isOneToOne: false;
+            referencedRelation: "webinars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wefunnel_leads: {
         Row: {
           id: string;
