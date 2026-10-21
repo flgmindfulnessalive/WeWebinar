@@ -92,7 +92,12 @@ export default async function DemoOfferPage({
         code: promo.code,
         expires_at: newExpiresAt,
       });
-      if (!insertError) {
+      if (insertError) {
+        // El código ya existe en Whop; si la fila no se guarda, esta
+        // pantalla muestra el aviso de error sin decir por qué y el
+        // código queda huérfano. Que al menos quede en el registro.
+        console.error("[demo/oferta] no se pudo guardar el código emitido:", insertError);
+      } else {
         code = promo.code;
         expiresAt = newExpiresAt;
 

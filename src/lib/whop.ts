@@ -326,7 +326,23 @@ export async function createDemoDiscountCode({
   email: string;
   expiresAt: string;
 }): Promise<DemoDiscountCode | null> {
-  if (!whopConfigured() || !process.env.WHOP_ACCOUNT_ID) return null;
+  // Antes los dos casos de configuración devolvían null en silencio, y
+  // desde fuera eso se ve igual que un fallo de la API: la página de la
+  // oferta dice "hubo un problema" y no queda rastro de cuál. WHOP_ACCOUNT_ID
+  // es además la variable que más fácil se queda sin poner -- es la única
+  // que usa esta función y no aparece en DEPLOY.md.
+  if (!whopConfigured()) {
+    console.error(
+      "[whop] createDemoDiscountCode: falta WHOP_API_KEY, no se puede crear el código de la demo."
+    );
+    return null;
+  }
+  if (!process.env.WHOP_ACCOUNT_ID) {
+    console.error(
+      "[whop] createDemoDiscountCode: falta WHOP_ACCOUNT_ID (el id de negocio biz_... del panel de Whop). Sin él no se crea el código y /demo/oferta muestra el aviso de error."
+    );
+    return null;
+  }
 
   const code = `DEMO${randomBytes(4).toString("hex").toUpperCase()}`;
 
