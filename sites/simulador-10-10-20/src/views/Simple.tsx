@@ -42,6 +42,9 @@ function RankBadge({ rank, up, u, lang }: { rank: RankId | null; up: boolean; u:
   );
 }
 
+/** Rangos que puede tener un líder del Mentor Match (desde 1★ Director). */
+const LEADER_RANKS: RankId[] = ["d1", "d2", "d3", "e1", "e2", "e3", "p1", "p2", "p3"];
+
 const SEG_ORDER: SimpleLine["id"][] = ["retail", "personal-team", "customer", "binary", "mentor"];
 
 /** Barra del total: cada forma de ganar es un tramo; al pasar por una línea se ilumina su tramo. */
@@ -105,8 +108,9 @@ function Constellation({ tiers, u, lang }: { tiers: LeaderTier[]; u: SimpleUI; l
 }
 
 /** Líderes por generación: se abren según tu rango, como en el «Camino al éxito». */
-function LeadersByGen({ value, onChange, gens, u, lang }: { value: SimpleInput; onChange: (v: (number | null)[]) => void; gens: GenInfo[]; u: SimpleUI; lang: Lang }) {
+function LeadersByGen({ value, onChange, gens, warning, u, lang }: { value: SimpleInput; onChange: (v: { genLeaders: (number | null)[]; genRanks: (RankId | null)[] }) => void; gens: GenInfo[]; warning?: string; u: SimpleUI; lang: Lang }) {
   const limits = value.genLeaders ?? [];
+  const ranks = value.genRanks ?? [];
   const open = gens.filter((g) => g.unlocked).length;
   const prevOpen = useRef(open);
   // Al subir de rango, las generaciones que se abren destellan.
@@ -117,8 +121,10 @@ function LeadersByGen({ value, onChange, gens, u, lang }: { value: SimpleInput; 
     if (open > before) { setNewFrom(before); const id = setTimeout(() => setNewFrom(null), 1600); return () => clearTimeout(id); }
   }, [open]);
   if (!gens.length) return null;
-  const setGen = (i: number, v: number | null) => { const next = [0, 1, 2, 3, 4, 5].map((j) => limits[j] ?? null); next[i] = v; onChange(next); };
-  const manual = limits.some((x) => x != null);
+  const six = <T,>(a: (T | null)[]) => [0, 1, 2, 3, 4, 5].map((j) => a[j] ?? null);
+  const setGen = (i: number, v: number | null) => { const next = six(limits); next[i] = v; onChange({ genLeaders: next, genRanks: six(ranks) }); };
+  const setRank = (i: number, v: RankId | null) => { const next = six(ranks); next[i] = v; onChange({ genLeaders: six(limits), genRanks: next }); };
+  const manual = limits.some((x) => x != null) || ranks.some((x) => x != null);
   return (
     <details className={`sgens${newFrom != null ? " is-new" : ""}`}>
       <summary className="sgens__sum">
@@ -130,14 +136,21 @@ function LeadersByGen({ value, onChange, gens, u, lang }: { value: SimpleInput; 
         <div key={g.gen} className={`sgen-row${newFrom != null && g.gen > newFrom ? " is-new" : ""}`}>
           <Stepper u={u} label={`Gen ${g.gen} · ${g.pct}${lang === "es" ? " %" : "%"}`} hint={g.max ? `${u.fit(g.max)}${g.picks.length ? `: ${g.picks.map((x) => `${fmt(x.count)} × ${rankName(x.rank, lang)}`).join(" · ")}` : ""}` : u.noFit}
             value={g.used} max={g.max} onChange={(v) => setGen(i, Math.round(v))} />
+          <label className="sgen-row__rank"><span>{u.rankOf}</span>
+            <select value={g.rankChoice ?? ""} onChange={(e) => setRank(i, (e.target.value || null) as RankId | null)}>
+              <option value="">{u.autoRank}</option>
+              {LEADER_RANKS.map((rk) => <option key={rk} value={rk}>{rankName(rk, lang)}</option>)}
+            </select>
+          </label>
         </div>
       ) : (
         <div key={g.gen} className="sgen-row is-locked">
           <p className="sgen-row__lock"><b>Gen {g.gen} · {g.pct}{lang === "es" ? " %" : "%"}</b><span>{u.opensAt(rankName(g.unlockRank, lang))}</span></p>
         </div>
       ))}
+      {warning && <p className="sgens__warn" role="status">{warning}</p>}
       {manual
-        ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange([null, null, null, null, null, null])}>{u.useAuto}</button>
+        ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange({ genLeaders: [null, null, null, null, null, null], genRanks: [null, null, null, null, null, null] })}>{u.useAuto}</button>
         : <p className="sdir__note">{u.autoNote}</p>}
       </div>
     </details>
@@ -217,7 +230,7 @@ export function SimpleView({ value, onChange, links = true, lang = "es" }: { val
           <Stepper u={u} label={u.leg} hint={u.legHint(value.strongLegPct)} value={value.strongLegPct} step={5} min={50} max={100} onChange={(v) => set({ strongLegPct: v })} />
           <Stepper u={u} label={u.retailP} value={value.retailPerSachet} step={5} onChange={(v) => set({ retailPerSachet: v })} />
           <Stepper u={u} label={u.prefP} value={value.preferredPerSachet} step={5} onChange={(v) => set({ preferredPerSachet: v })} />
-          <LeadersByGen u={u} lang={lang} value={value} onChange={(genLeaders) => set({ genLeaders })} gens={r.leaders.gens} />
+          <LeadersByGen u={u} lang={lang} value={value} onChange={(x) => set(x)} gens={r.leaders.gens} warning={r.leaders.warning} />
         </section>
 
         {r.errors.length > 0 ? (

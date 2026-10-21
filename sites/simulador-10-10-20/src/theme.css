@@ -327,3 +327,12 @@ html, body, .top, .card, .shero, .slines > li.scard { transition: background-col
 }
 .langsw { box-sizing: border-box; width: 58px; padding: 3px; gap: 0; }
 .langsw__btn { flex: 1; min-width: 0; padding: 0; font-size: .62rem; letter-spacing: .04em; }
+
+/* Rango elegido por generación */
+.sgen-row__rank { display: grid; gap: 4px; margin-top: 6px; font-size: .75rem; color: var(--text-3); }
+.sgen-row__rank select { min-height: 40px; border-radius: 12px; border: 1px solid var(--line); background: rgba(10, 14, 26, .55); color: var(--text); font: 600 .85rem var(--font); padding: 0 10px; }
+.sgen-row__rank select:focus-visible { outline: 3px solid var(--brand-2); outline-offset: 1px; }
+.sgens__warn { grid-column: 1 / -1; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-bg); border: 1px solid rgba(255, 194, 74, .45); color: var(--text); font-size: .85rem; }
+[data-theme="light"] .sgen-row__rank select { background: #fff; color: var(--text); }
+[data-theme="light"] .sgens__warn { border-color: #d9ccff; }
+.sgen-row__rank select { width: 100%; min-width: 0; text-overflow: ellipsis; } .sgen-row { display: grid; min-width: 0; }

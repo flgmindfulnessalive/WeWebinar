@@ -100,6 +100,27 @@ describe("Calculadora simple", () => {
     expect(tooMany.lines.find((l) => l.id === "mentor")!.how.join(" ")).toMatch(/solo caben 5/);
     expect(line(simpleCalc({ ...base, genLeaders: [0, null, null, null, null, null] }), "mentor")).toBe("0.00");
   });
+  it("Mentor Match: rango elegido por generación (puede ser mayor que el tuyo) y compresión dinámica", () => {
+    const base = { ...DEFAULT_SIMPLE, partners: 20000, orgActivePct: 33, directs: 97, activeDirects: 15, buildingDirects: 3 };
+    const auto = simpleCalc(base);
+    expect(auto.rank).toBe("p1");
+    // Un 1★ Presidencial lejano (tu Gen 3) en una de tus líneas
+    const r = simpleCalc({ ...base, genLeaders: [null, null, 1, null, null, null], genRanks: [null, null, "p1", null, null, null] });
+    expect(r.leaders.gens[2]).toMatchObject({ used: 1, rankChoice: "p1" });
+    expect(r.leaders.gens[2].picks).toEqual([{ rank: "p1", count: 1 }]);
+    // Esa línea concentra el volumen: en cada línea solo te cuenta hasta la MVR, así que tu rango baja
+    expect(r.rank).toBe("e3");
+    expect(r.leaders.warning).toMatch(/1★ Presidencial a 3★ Ejecutivo/);
+    expect(r.base!.qualificationMonth!.snapshot.lines.map((l) => l.count)).toEqual([1, 2, 12]);
+    // Debajo del Presidencial la búsqueda sigue en su línea (Gen 4 y más)
+    expect(r.leaders.gens[3].used).toBe(1);
+    expect(Number(line(r, "mentor"))).toBeGreaterThan(Number(line(auto, "mentor")));
+    // Si no cabe en tu organización, avisa
+    const tooBig = simpleCalc({ ...base, partners: 3000, genRanks: ["p3", null, null, null, null, null] });
+    expect(tooBig.leaders.warning).toMatch(/necesitan al menos/);
+    // Elegir un rango que ya sale solo no cambia nada; sin elegir, nada cambia respecto al automático
+    expect(simpleCalc({ ...base, genRanks: [null, null, null, null, null, null] }).total.toFixed(2)).toBe(auto.total.toFixed(2));
+  });
   it("binario: tope de $25 000 por semana (3★ Presidencial) → $108 333,33 al mes", () => {
     const r = simpleCalc({ ...DEFAULT_SIMPLE, partners: 20000, directs: 30, sachets: 2 });
     expect(r.rank).toBe("p3");
