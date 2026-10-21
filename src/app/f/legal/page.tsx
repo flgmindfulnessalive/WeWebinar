@@ -145,6 +145,9 @@ export default function WeFunnelsLegalPage() {
             </strong>{" "}
             Quien te regaló tu funnel no los ve. No es una promesa de buena voluntad: la
             base de datos solo entrega las filas de una página a la cuenta que la posee.
+            Lo único que sí recibe esa persona es tu nombre y tu correo, cuando reclamas
+            el funnel que te regaló, para poder acompañarte con él; se te dice en la
+            pantalla donde creas la cuenta.
           </li>
           <li className={LI}>
             <strong className="font-semibold text-[#F3F7FF]">

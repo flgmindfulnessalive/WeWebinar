@@ -160,6 +160,10 @@ function questions(name: string): [string, string][] {
       "En tu panel. Allí podrás consultar la analítica de tu página y los datos que cada persona haya compartido contigo al registrarse. Cada usuario accede únicamente a los registros de su propia página.",
     ],
     [
+      `¿Qué ve ${name} de mí?`,
+      `Tu nombre y tu correo, en sus registros, para poder acompañarte con tu funnel. Lo que tú captes después con tu página no lo ve: esos registros son solo tuyos.`,
+    ],
+    [
       "¿Tengo que saber diseñar o programar?",
       "No. Partes de una página preparada, añades tu nombre y tu presentación, revisas cómo se ve y decides cuándo publicarla.",
     ],
