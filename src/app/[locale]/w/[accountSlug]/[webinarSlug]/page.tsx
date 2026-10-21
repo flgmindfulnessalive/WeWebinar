@@ -129,9 +129,23 @@ export default async function RegisterPage({
   // own registration page before going live. ?preview=1 lifts that, but
   // only for someone who actually manages this account: never make an
   // unpublished page reachable by a stranger who guesses the URL.
+  // Columnas nombradas, nunca "*". Desde 20260913000008 el rol anon no
+  // tiene permiso sobre la tabla entera -- solo sobre la lista de columnas
+  // que las pantallas públicas usan, y video_provider/video_source quedaron
+  // fuera a propósito. Un select("*") pide todas, así que Postgres lo
+  // rechaza con "permission denied for table webinars", PostgREST devuelve
+  // error, data llega nula y esta página respondía 404 a cualquier visitante
+  // anónimo: la página de registro de TODAS las cuentas, no solo la demo.
+  // Lo que se pide aquí es exactamente lo que se lee abajo, más los cuatro
+  // campos del presentador que resolvePresenter necesita.
   const { data: webinar } = await supabase
     .from("webinars")
-    .select("*")
+    // Una sola cadena literal, sin concatenar: supabase-js deduce el tipo
+    // de la fila leyendo este texto, y una suma de trozos le deja un
+    // GenericStringError en vez del webinar.
+    .select(
+      "id, title, description, category, status, schedule_mode, duration_seconds, just_in_time_offsets_minutes, facebook_pixel_id, presenter_user_id, presenter_name, presenter_avatar_url, presenter_bio"
+    )
     .eq("account_id", account.id)
     .eq("slug", webinarSlug)
     .maybeSingle();
