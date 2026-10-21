@@ -137,7 +137,7 @@ export default async function PanelSharePage() {
             rel="noopener noreferrer"
             className="font-semibold text-[var(--wf-accent)] no-underline"
           >
-            eliges un plan
+            siguen desde $15 al mes
           </a>
           ; si no, no pagas nada y ese
           día se apaga solo el lado WeWebinars (tus webinarios quedan archivados, no
