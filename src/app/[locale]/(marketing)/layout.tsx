@@ -1,4 +1,4 @@
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import NextLink from "next/link";
 
 import { Link } from "@/i18n/navigation";
@@ -34,11 +34,6 @@ export default async function MarketingLayout({
 }) {
   const t = await getTranslations("MarketingLayout");
   const tBlog = await getTranslations("Blog");
-  // The demo webinar itself isn't localized into Spanish yet -- following
-  // this link from the Spanish site would land an es visitor on an
-  // English-only page. Hide it there until the demo has a Spanish version;
-  // remove this gate then.
-  const showDemo = (await getLocale()) === "en";
 
   return (
     <div className="marketing-theme flex min-h-svh flex-col">
@@ -55,14 +50,17 @@ export default async function MarketingLayout({
             >
               {t("pricing")}
             </Link>
-            {showDemo && (
-              <Link
-                href="/demo"
-                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
-              >
-                {t("demo")}
-              </Link>
-            )}
+            {/* Hubo un tiempo en que esto solo salía en inglés, porque la
+                demo solo existía en inglés y mandar a un visitante en
+                español a una presentación que no entiende es peor que no
+                ofrecérsela. Ya hay una demo por idioma y /demo lleva a la
+                que toca, así que el enlace es para todos. */}
+            <Link
+              href="/demo"
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
+            >
+              {t("demo")}
+            </Link>
             <Link
               href="/blog"
               className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
@@ -85,7 +83,7 @@ export default async function MarketingLayout({
             </Button>
             <MobileMenu
               pricingLabel={t("pricing")}
-              demoLabel={showDemo ? t("demo") : null}
+              demoLabel={t("demo")}
               blogLabel={tBlog("navLabel")}
               loginLabel={t("login")}
             />
