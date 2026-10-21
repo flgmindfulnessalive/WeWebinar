@@ -11,16 +11,16 @@ describe("Calculadora simple", () => {
     expect(line(r, "personal-team")).toBe("77.00"); // 10 × 77 × 10 %
     expect(line(r, "customer")).toBe("77.00"); // 770 PV → 10 %
     expect(line(r, "binary")).toBe("508.20"); // reparto 60/40: 11 % × 4 620 (semanal → 52/12, un solo redondeo)
-    // caben 2 líderes 1★ Director en tu Gen 1 (bajo un 2★ Director, cada línea cuenta hasta 5 000)
+    // 10 líneas que construyen con 14 socios cada una: ningún constructor llega a 1★ Director
     expect(line(r, "retail")).toBe("200.00"); // 10 preferentes × 1 sobre × $20
-    expect(line(r, "mentor")).toBe("118.89");
-    expect(r.leaders.gens[0]).toMatchObject({ unlocked: true, max: 2, used: 2, pct: 20 });
+    expect(line(r, "mentor")).toBe("0.00");
+    expect(r.leaders.gens[0]).toMatchObject({ unlocked: true, max: 0, used: 0, pct: 20 });
     expect(r.leaders.gens[1]).toMatchObject({ unlocked: true, pct: 15, max: 0 }); // 2★ Director abre la Gen 2
     expect(r.leaders.gens[2]).toMatchObject({ unlocked: false, unlockRank: "d3", pct: 10 });
     expect(r.leaders.gens[5]).toMatchObject({ unlocked: false, unlockRank: "e3", pct: 5 });
-    expect(r.leaders.tiers.map((x) => [x.gen, x.rank, x.count])).toEqual([[1, "d1", 2]]);
+    expect(r.leaders.tiers).toEqual([]);
     expect(r.confirmed.toFixed(2)).toBe("862.20");
-    expect(r.total.toFixed(2)).toBe("981.09");
+    expect(r.total.toFixed(2)).toBe("862.20");
     expect(r.rankBonusTotal.toString()).toBe("1850"); // 100 + 250 + 500 + 1000
     expect(r.next!.rank).toBe("d3");
     expect(r.next!.gaps.join()).toMatch(/8,450|8.450/);
@@ -68,37 +68,37 @@ describe("Calculadora simple", () => {
   it("binario 50/50 si se elige", () => {
     expect(line(simpleCalc({ ...DEFAULT_SIMPLE, strongLegPct: 50 }), "binary")).toBe("635.25"); // 11 % × 5 775
   });
-  it("Mentor Match: líderes de todos los rangos y en varias generaciones", () => {
-    const big = simpleCalc({ ...DEFAULT_SIMPLE, partners: 1000, sachets: 2 });
-    expect(big.rank).toBe("e2"); // paga 5 generaciones
-    const g = (gen: number) => big.leaders.tiers.filter((x) => x.gen === gen).map((x) => `${x.count}×${x.rank}`);
-    expect(g(1)).toEqual(["3×e1", "1×d3", "1×d2"]); // bajo un 2★ Ejecutivo cada línea cuenta hasta 50 000 → 1★ Ejecutivo
-    expect(g(2)).toEqual(["3×d3", "4×d2", "5×d1"]);
-    expect(big.leaders.gens.map((x) => x.unlocked)).toEqual([true, true, true, true, true, false]);
-    expect(big.leaders.gens[0].max).toBe(5);
-    expect(line(big, "mentor")).toBe("3198.94");
-    const pres = simpleCalc({ ...DEFAULT_SIMPLE, partners: 3000, directs: 20, sachets: 2 });
-    expect(pres.rank).toBe("p1");
-    expect(pres.leaders.tiers.some((x) => x.rank === "e3")).toBe(true);
-    expect(Math.max(...pres.leaders.tiers.map((x) => x.gen))).toBe(6);
+  it("Mentor Match: como máximo un líder por línea que construye en cada generación", () => {
+    // 3★ Director con 5 líneas de 79 socios: Gen 1 = tus 5 constructores (1★ Director); más abajo no llegan
+    const d3 = simpleCalc({ ...DEFAULT_SIMPLE, partners: 400, directs: 5, activeDirects: 5, buildingDirects: 5 });
+    expect(d3.rank).toBe("d3");
+    expect(d3.leaders.gens.slice(0, 3).map((g) => [g.used, g.picks[0]?.rank ?? null])).toEqual([[5, "d1"], [0, null], [0, null]]);
+    expect(line(d3, "mentor")).toBe("306.15");
+    // 2★ Ejecutivo con 5 constructores: Gen 1 = 5 × 3★ Director, Gen 2 = 5 × 1★ Director
+    const e2 = simpleCalc({ ...DEFAULT_SIMPLE, partners: 1000, sachets: 2, buildingDirects: 5 });
+    expect(e2.rank).toBe("e2");
+    expect(e2.leaders.gens.map((g) => g.used)).toEqual([5, 5, 0, 0, 0, 0]);
+    expect(e2.leaders.tiers.map((x) => [x.gen, x.rank, x.count])).toEqual([[1, "d3", 5], [2, "d1", 5]]);
+    expect(line(e2, "mentor")).toBe("1669.52");
+    // Organización grande con 3 constructores: nunca más de 3 por generación
+    const p1 = simpleCalc({ ...DEFAULT_SIMPLE, partners: 25000, orgActivePct: 33, directs: 97, activeDirects: 15, buildingDirects: 3 });
+    expect(p1.rank).toBe("p1");
+    expect(p1.leaders.tiers.map((x) => [x.gen, x.rank, x.count])).toEqual([[1, "e3", 3], [2, "e1", 3], [3, "d3", 3], [4, "d1", 3]]);
+    expect(Math.max(...p1.leaders.gens.map((g) => g.max))).toBe(3);
+    expect(line(p1, "mentor")).toBe("8005.99");
   });
   it("Mentor Match: número manual por generación, con límite y en cascada", () => {
-    const one = simpleCalc({ ...DEFAULT_SIMPLE, genLeaders: [1, null, null, null, null, null] });
-    expect(line(one, "mentor")).toBe("59.44");
-    expect(one.leaders.gens[0]).toMatchObject({ max: 2, used: 1, auto: false });
-    const tooMany = simpleCalc({ ...DEFAULT_SIMPLE, genLeaders: [5, null, null, null, null, null] });
-    expect(tooMany.leaders.gens[0].used).toBe(2);
-    expect(tooMany.lines.find((l) => l.id === "mentor")!.how.join(" ")).toMatch(/solo caben 2/);
-    expect(line(simpleCalc({ ...DEFAULT_SIMPLE, genLeaders: [0, null, null, null, null, null] }), "mentor")).toBe("0.00");
-    // Bajar la Gen 1 reduce lo que cabe en la Gen 2; bajar la Gen 2 no cambia la Gen 1.
-    const base = { ...DEFAULT_SIMPLE, partners: 1000, sachets: 2 };
-    const auto = simpleCalc(base), g1 = simpleCalc({ ...base, genLeaders: [1, null, null, null, null, null] });
-    expect(g1.leaders.gens[1].max).toBeLessThan(auto.leaders.gens[1].max);
-    expect(g1.leaders.gens[0].picks).toEqual([{ rank: "e1", count: 1 }]); // se queda el de rango más alto
-    const g2 = simpleCalc({ ...base, genLeaders: [null, 2, null, null, null, null] });
-    expect(g2.leaders.gens[0].used).toBe(5);
-    expect(g2.leaders.gens[1].used).toBe(2);
+    const base = { ...DEFAULT_SIMPLE, partners: 1000, sachets: 2, buildingDirects: 5 };
+    const auto = simpleCalc(base);
+    const g2 = simpleCalc({ ...base, genLeaders: [null, 3, null, null, null, null] });
+    expect(g2.leaders.gens.map((g) => g.used).slice(0, 2)).toEqual([5, 3]);
     expect(Number(line(g2, "mentor"))).toBeLessThan(Number(line(auto, "mentor")));
+    const g1 = simpleCalc({ ...base, genLeaders: [2, null, null, null, null, null] });
+    expect(g1.leaders.gens[1].max).toBe(2); // solo siguen las 2 líneas elegidas arriba
+    const tooMany = simpleCalc({ ...base, genLeaders: [9, null, null, null, null, null] });
+    expect(tooMany.leaders.gens[0].used).toBe(5);
+    expect(tooMany.lines.find((l) => l.id === "mentor")!.how.join(" ")).toMatch(/solo caben 5/);
+    expect(line(simpleCalc({ ...base, genLeaders: [0, null, null, null, null, null] }), "mentor")).toBe("0.00");
   });
   it("binario: tope de $25 000 por semana (3★ Presidencial) → $108 333,33 al mes", () => {
     const r = simpleCalc({ ...DEFAULT_SIMPLE, partners: 20000, directs: 30, sachets: 2 });
@@ -127,7 +127,7 @@ describe("Calculadora simple", () => {
     expect(r.lines.map((l) => l.name)).toEqual(["Retail Profit", "Level Earning · 10% of your directs", "Premium Customer Bonus", "Binary Bonus", "Mentor Match"]);
     expect(r.rankBonusRanks).toEqual(["2 Star Manager $100", "3 Star Manager $250", "1 Star Director $500", "2 Star Director $1,000"]);
     expect(r.total.toFixed(2)).toBe(simpleCalc(DEFAULT_SIMPLE).total.toFixed(2)); // mismos importes en los dos idiomas
-    const big = simpleCalc({ ...DEFAULT_SIMPLE, partners: 3000, directs: 20, activeDirects: 20, buildingDirects: 20, sachets: 2 }, "en");
+    const big = simpleCalc({ ...DEFAULT_SIMPLE, partners: 25000, orgActivePct: 33, directs: 97, activeDirects: 15, buildingDirects: 3 }, "en");
     expect(big.lines.find((l) => l.id === "mentor")!.how.join(" ")).toMatch(/3 Star Executive/);
     expect(simpleCalc({ ...DEFAULT_SIMPLE, partners: -1 }, "en").errors[0]).toMatch(/enter a whole number/);
   });

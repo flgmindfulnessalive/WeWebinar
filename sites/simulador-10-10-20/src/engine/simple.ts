@@ -2,7 +2,7 @@
 // Traduce los datos a una organización del modo rápido con supuestos fijos y
 // declarados, y usa el mismo motor (simulate) para todo lo que calcula.
 import { PLAN, rankById, rankIndex } from "../plan/plan-10-10-20";
-import type { RankId, RankRule } from "../plan/types";
+import type { RankId } from "../plan/types";
 import { cents, d, pct, sum, WEEKS_PER_MONTH, ZERO, type D } from "./decimal";
 import { DEFAULT_ASSUMPTIONS, type Product, type QuickOrg } from "./model";
 import { atLeast } from "./simulate";
@@ -146,28 +146,29 @@ const quickOrg = (o: { own: number; retailC?: number; preferredC?: number; activ
 });
 
 type Leader = { rank: RankId; size: number; levelWeekly: D; binaryWeekly: D };
-/** Los líderes solo dependen de los hábitos (no del tamaño de tu organización): se guardan. */
+/** Los líderes solo dependen del tamaño de su organización y de los hábitos: se guardan. */
 const LEADERS = new Map<string, Leader | null>();
 
 /**
- * Organización mínima de un líder del rango indicado con tus hábitos (mismo
- * consumo, tus directos —al menos 4— y tu reparto del binario), llegando al PV
- * de su rango. Busca el menor número de socios con el que el motor lo califica
- * y devuelve sus ganancias semanales de Nivel y Binario.
+ * Rango y ganancias semanales (Nivel + Binario) de un socio con `size` socios
+ * activos debajo, armado como tú: `lines` líneas iguales que construyen, tus
+ * hábitos de compra, tu media de clientes y tu reparto del binario, llegando al
+ * PV del rango (para los de 200 PV solo cuentan 110 personales: el resto, con
+ * clientes). Devuelve el rango más alto con el que el motor lo califica, desde
+ * 1★ Director; si no llega, null.
  */
-function leaderModel(s: SimpleInput, products: Product[], rank: RankRule, cps: number): Leader | null {
+function leaderAt(s: SimpleInput, products: Product[], size: number, lines: number, cps: number): Leader | null {
   const unitPv = s.sachets * s.pvPerSachet;
-  if (!(unitPv > 0) || rank.qdv == null) return null;
-  // Para los rangos de 200 PV solo cuentan 110 personales: el resto, con clientes.
-  const ownPv = Math.min(rank.pv, PLAN.personalPvCapForPv200);
-  const own = Math.max(s.sachets, Math.ceil(ownPv / (s.pvPerSachet || 1)));
-  const counted = Math.min(own * s.pvPerSachet, rank.pv === 200 ? PLAN.personalPvCapForPv200 : Infinity);
-  const clients = Math.max(0, Math.ceil((rank.pv - counted) / unitPv));
-  let size = Math.ceil(rank.qdv / (unitPv * (1 + cps)));
-  for (let i = 0; i < 200; i++, size += Math.max(1, Math.ceil(size * 0.02))) {
-    const dd = Math.max(4, Math.min(s.directs, size));
-    if (dd > size) continue;
-    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg({ own, preferredC: clients, active: dd, building: dd, activeTeam: size - dd, orgCustomers: Math.round(cps * size), sachets: s.sachets, strongPct: s.strongLegPct }) });
+  if (!(unitPv > 0) || size < lines) return null;
+  const vol = size * unitPv * (1 + cps);
+  for (const rank of [...PLAN.ranks].reverse()) {
+    if (!atLeast(rank.id, PLAN.mentorGenerationMinRank)) break;
+    if (rank.qdv! > vol) continue;
+    const ownPv = Math.min(rank.pv, PLAN.personalPvCapForPv200);
+    const own = Math.max(s.sachets, Math.ceil(ownPv / (s.pvPerSachet || 1)));
+    const counted = Math.min(own * s.pvPerSachet, rank.pv === 200 ? PLAN.personalPvCapForPv200 : Infinity);
+    const clients = Math.max(0, Math.ceil((rank.pv - counted) / unitPv));
+    const dr = simulate({ mode: "rapido", products, assumptions: DEFAULT_ASSUMPTIONS, quick: quickOrg({ own, preferredC: clients, active: lines, building: lines, activeTeam: size - lines, orgCustomers: Math.round(cps * size), sachets: s.sachets, strongPct: s.strongLegPct }) });
     if (!dr.ok || !atLeast(dr.paidRank, rank.id)) continue;
     const m = (id: string) => dr.components.find((c) => c.id === id)!.monthly ?? ZERO;
     return { rank: dr.paidRank!, size, levelWeekly: m("personal-team").dividedBy(WEEKS_PER_MONTH), binaryWeekly: m("binary").dividedBy(WEEKS_PER_MONTH) };
@@ -175,63 +176,18 @@ function leaderModel(s: SimpleInput, products: Product[], rank: RankRule, cps: n
   return null;
 }
 
-type LeaderNode = { leader: Leader; n: number; children: LeaderNode[] };
-
 /**
- * Estructura de líderes que cabe en una organización. En cada línea cuenta como
- * máximo la MVR del rango de arriba, así que el líder más alto que cabe en una
- * línea es el que tiene un QDV ≤ esa MVR (p. ej., bajo un 1★ Presidencial,
- * 3★ Ejecutivos). Se colocan tantos como quepan, el resto con rangos menores
- * hasta 1★ Director, y dentro de cada líder se repite lo mismo para la
- * generación siguiente. Devuelve el árbol (hijos por cada líder).
+ * Una línea de patrocinio empieza en tu directo que construye y baja por quien
+ * él inscribió, y así sin fin. En cada generación la línea aporta como máximo
+ * un líder: el siguiente 1★ Director o más que aparece al bajar. El siguiente
+ * de la línea encabeza una de las `lines` líneas iguales de su organización.
  */
-function leaderTree(people: number, parent: RankId, maxGen: number, get: (r: RankRule) => Leader | null): LeaderNode[] {
-  const memo = new Map<string, LeaderNode[]>();
-  const fill = (avail: number, top: RankId, gen: number): LeaderNode[] => {
-    const cap = rankById[top].mvr;
-    if (gen > maxGen || cap == null) return [];
-    const k = `${avail}|${top}|${gen}`;
-    if (memo.has(k)) return memo.get(k)!;
-    const out: LeaderNode[] = [];
-    let rest = avail;
-    for (const r of PLAN.ranks.filter((x) => atLeast(x.id, PLAN.mentorGenerationMinRank) && x.qdv! <= cap).reverse()) {
-      const L = get(r);
-      if (!L) continue;
-      const n = Math.floor(rest / (L.size + 1));
-      if (!n) continue;
-      out.push({ leader: L, n, children: fill(L.size, L.rank, gen + 1) });
-      rest -= n * (L.size + 1);
-    }
-    memo.set(k, out);
-    return out;
-  };
-  return fill(people, parent, 1);
-}
-
-/**
- * Reparte los líderes generación a generación con los límites elegidos. Se
- * quedan primero los de rango más alto; los de la generación siguiente solo
- * existen debajo de los líderes elegidos arriba.
- */
-function allocateLeaders(roots: LeaderNode[], limits: (number | null)[], maxGen: number) {
-  const out: { max: number; used: number; picks: { leader: Leader; count: number }[] }[] = [];
-  let level = roots.map((node) => ({ node, avail: node.n }));
-  for (let g = 0; g < maxGen; g++) {
-    const sorted = [...level].sort((x, y) => rankIndex(y.node.leader.rank) - rankIndex(x.node.leader.rank));
-    const max = sorted.reduce((a, c) => a + c.avail, 0);
-    let left = Math.min(limits[g] ?? max, max);
-    const picks = new Map<RankId, { leader: Leader; count: number }>();
-    const next: typeof level = [];
-    for (const c of sorted) {
-      const k = Math.min(c.avail, left);
-      if (!k) continue;
-      left -= k;
-      const p = picks.get(c.node.leader.rank);
-      if (p) p.count += k; else picks.set(c.node.leader.rank, { leader: c.node.leader, count: k });
-      for (const ch of c.node.children) next.push({ node: ch, avail: ch.n * k });
-    }
-    out.push({ max, used: [...picks.values()].reduce((a, x) => a + x.count, 0), picks: [...picks.values()] });
-    level = next;
+function lineChain(headSize: number, lines: number, maxGen: number, at: (size: number) => Leader | null): Leader[] {
+  const out: Leader[] = [];
+  for (let size = Math.floor(headSize); out.length < maxGen && size >= lines; size = Math.floor(size / lines) - 1) {
+    const L = at(size);
+    if (!L) break; // más abajo hay menos volumen: tampoco llega
+    out.push(L);
   }
   return out;
 }
@@ -294,32 +250,42 @@ export function simpleCalc(s: SimpleInput, lang: Lang = "es"): SimpleResult {
     why: bi.status === "no_elegible" ? (atLeast(r.paidRank, "m1") ? T.binWhyLeg : T.binWhyRank) : undefined,
   });
 
-  // Mentor Match estimado: líderes (1★ Director o más) que caben en tus líneas,
-  // de todos los rangos y en todas las generaciones que paga tu rango.
+  // Mentor Match estimado: en cada una de tus líneas que construyen, el siguiente
+  // líder (1★ Director o más) de cada generación que paga tu rango; como máximo
+  // uno por línea y generación.
   const gens = r.paidRank ? rankById[r.paidRank].mentorGens : [];
   const m = Math.round(o.customersPerSocio * 100) / 100;
-  const key = [s.sachets, s.pvPerSachet, s.directs, s.strongLegPct, m].join("|");
-  const get = (rk: RankRule) => {
-    const k = `${key}|${rk.id}`;
-    if (!LEADERS.has(k)) { if (LEADERS.size > 500) LEADERS.clear(); LEADERS.set(k, leaderModel(s, products, rk, m)); }
+  const leaderLines = Math.max(3, o.building);
+  const key = [s.sachets, s.pvPerSachet, s.strongLegPct, m, leaderLines].join("|");
+  const at = (size: number) => {
+    const k = `${key}|${size}`;
+    if (!LEADERS.has(k)) { if (LEADERS.size > 2000) LEADERS.clear(); LEADERS.set(k, leaderAt(s, products, size, leaderLines, m)); }
     return LEADERS.get(k)!;
   };
-  const available = o.activeSocios;
-  const parent: RankId = gens.length ? r.paidRank! : PLAN.mentorGenerationMinRank;
   const openGens = Math.max(1, gens.length);
-  const limits = s.genLeaders ?? [];
-  const alloc = allocateLeaders(leaderTree(available, parent, openGens, get), gens.length ? limits : [], openGens);
+  const limits = gens.length ? s.genLeaders ?? [] : [];
+  const chain = o.building ? lineChain(activeTeam / o.building, leaderLines, openGens, at) : [];
+  // Cascada: en cada generación solo siguen las líneas elegidas en la de arriba.
+  const alloc: { max: number; used: number; leader: Leader | null }[] = [];
+  let prev = o.building;
+  for (let g = 0; g < openGens; g++) {
+    const max = chain[g] ? prev : 0;
+    const used = Math.min(limits[g] ?? max, max);
+    alloc.push({ max, used, leader: chain[g] ?? null });
+    prev = used;
+  }
   const cap = gens.length ? d(rankById[r.paidRank!].mentorCapPerBp!) : ZERO;
-  const tiers: LeaderTier[] = gens.length ? alloc.flatMap((g, i) => g.picks.map((x) => {
-    const each = pct(x.leader.levelWeekly.plus(x.leader.binaryWeekly), gens[i]);
-    return { gen: i + 1, rank: x.leader.rank, count: x.count, size: x.leader.size, levelWeekly: x.leader.levelWeekly, binaryWeekly: x.leader.binaryWeekly, paidWeekly: each.gt(cap) ? cap : each };
-  })) : [];
+  const tiers: LeaderTier[] = gens.length ? alloc.flatMap((g, i) => {
+    if (!g.leader || !g.used) return [];
+    const each = pct(g.leader.levelWeekly.plus(g.leader.binaryWeekly), gens[i]);
+    return [{ gen: i + 1, rank: g.leader.rank, count: g.used, size: g.leader.size, levelWeekly: g.leader.levelWeekly, binaryWeekly: g.leader.binaryWeekly, paidWeekly: each.gt(cap) ? cap : each }];
+  }) : [];
   const genInfo: GenInfo[] = [1, 2, 3, 4, 5, 6].map((g) => {
     const unlockRank = unlockRankOf(g);
     const unlocked = g <= gens.length;
     const a = unlocked ? alloc[g - 1] : null;
     return { gen: g, pct: unlocked ? gens[g - 1] : unlockRank.mentorGens[g - 1], unlocked, unlockRank: unlockRank.id, max: a?.max ?? 0, used: a?.used ?? 0, auto: limits[g - 1] == null,
-      picks: a ? a.picks.map((x) => ({ rank: x.leader.rank, count: x.count })) : [] };
+      picks: a?.leader && a.used ? [{ rank: a.leader.rank, count: a.used }] : [] };
   });
   const gen1Max = alloc[0]?.max ?? 0;
   const mentorWeekly = sum(tiers.map((x) => x.paidWeekly.times(x.count)));
@@ -333,7 +299,7 @@ export function simpleCalc(s: SimpleInput, lang: Lang = "es"): SimpleResult {
         if (asked != null && asked > g.max) mHow.push(T.mentorTooMany(g.gen, asked, g.max));
       }
       for (const x of tiers) mHow.push(T.mentorTier(x.gen, x.count, x.rank, x.levelWeekly.toFixed(2), x.binaryWeekly.toFixed(2), gens[x.gen - 1], x.paidWeekly.toFixed(2), x.paidWeekly.eq(cap)));
-      mHow.push(T.mentorRule);
+      mHow.push(T.mentorRule(o.building, leaderLines));
     }
   }
   const mentorMonthly = cents(mentorWeekly.times(WEEKS_PER_MONTH));
