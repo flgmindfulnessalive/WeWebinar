@@ -336,3 +336,9 @@ html, body, .top, .card, .shero, .slines > li.scard { transition: background-col
 [data-theme="light"] .sgen-row__rank select { background: #fff; color: var(--text); }
 [data-theme="light"] .sgens__warn { border-color: #d9ccff; }
 .sgen-row__rank select { width: 100%; min-width: 0; text-overflow: ellipsis; } .sgen-row { display: grid; min-width: 0; }
+
+/* Móvil: el aviso del pie queda por encima de la barra fija del total */
+@media (max-width: 1039px) {
+  .simple { padding-bottom: 0; }
+  .no-tabs main { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+}
