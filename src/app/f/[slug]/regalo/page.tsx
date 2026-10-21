@@ -14,9 +14,64 @@ import { BackToTop } from "@/components/wefunnels/back-to-top";
 
 type RouteParams = { slug: string };
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false, nocache: true },
-};
+// Lo que se lee cuando alguien pega este enlace en un chat.
+//
+// Hasta ahora no había nada aquí, así que la tarjeta heredaba la del
+// layout raíz: «WeWebinars» y «Plataforma de webinars evergreen para
+// vender tus productos». Otra marca y otro producto delante de alguien a
+// quien le están regalando algo.
+//
+// Tampoco va la marca propia. Quien recibe esto no sabe todavía qué es, y
+// un nombre que no le dice nada ocupa el sitio de lo único que importa en
+// esa línea: que el embudo es suyo y es gratis.
+const SHARE_TITLE = "Reclama tu embudo gratis de por vida";
+const SHARE_DESCRIPTION =
+  "Tu página para captar contactos, tu panel de registros y el curso para llevarles tráfico. Sin tarjeta y sin mensualidad.";
+const SHARE_ALT = "Reclama tu embudo de ventas gratis de por vida.";
+
+// La imagen va nombrada y absoluta, no por el fichero de al lado. En
+// cuanto una ruta declara su propio openGraph, Next deja de meterle la
+// imagen del fichero -- el objeto del segmento sustituye al del padre,
+// imágenes incluidas --, que es como la portada llegó a publicarse sin
+// og:image. Y en el host de WeFunnels el proxy antepone /f a todo, así
+// que la dirección buena ahí es la ruta sin ese prefijo: misma máquina
+// que la página compartida y sin salto de dominio.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<RouteParams>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const image = {
+    url: `https://${WEFUNNELS_HOST}/${encodeURIComponent(slug)}/regalo/opengraph-image`,
+    width: 1200,
+    height: 630,
+    alt: SHARE_ALT,
+  };
+
+  return {
+    title: SHARE_TITLE,
+    description: SHARE_DESCRIPTION,
+    robots: { index: false, follow: false, nocache: true },
+    // Redeclarado entero a propósito: al sustituir al del layout raíz se
+    // va con él su siteName, que era el último «WeWebinars» que quedaba
+    // en la tarjeta.
+    openGraph: {
+      title: SHARE_TITLE,
+      description: SHARE_DESCRIPTION,
+      url: `https://${WEFUNNELS_HOST}/${encodeURIComponent(slug)}/regalo`,
+      type: "website",
+      locale: "es_ES",
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: SHARE_TITLE,
+      description: SHARE_DESCRIPTION,
+      images: [image.url],
+    },
+  };
+}
 
 // A distributor's gift page: wefunnels.wewebinars.com/<slug>/regalo.
 //
