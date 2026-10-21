@@ -2064,7 +2064,7 @@ export interface Database {
           email: string | null;
           answer: string | null;
           answers: { q: string; a: string }[];
-          source: "form" | "course";
+          source: "form" | "course" | "claim";
           status: "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
           created_at: string;
         };

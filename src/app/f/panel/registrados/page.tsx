@@ -64,7 +64,9 @@ export default async function PanelLeadsPage() {
         </h1>
         <p className="m-0 mt-2 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
           {rows.length === 0
-            ? "Aquí aparecerá cada persona que llene tu formulario."
+            ? viewer.distributor
+              ? "Aquí aparecerá cada persona que llene tu formulario o reclame su funnel con tu enlace de regalo."
+              : "Aquí aparecerá cada persona que llene tu formulario."
             : pending > 0
               ? `${pending} ${pending === 1 ? "persona espera" : "personas esperan"} que les escribas.`
               : "Al día. No tienes registros nuevos sin contactar."}
@@ -75,7 +77,8 @@ export default async function PanelLeadsPage() {
         <div className="rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-6">
           <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
             Todavía no hay nadie en tu lista. Aparecen aquí en cuanto alguien llena tu
-            formulario, con todo lo que escribieron.
+            formulario, con todo lo que escribieron
+            {viewer.distributor ? ", y también quien reclama su funnel con tu enlace de regalo." : "."}
           </p>
         </div>
       ) : (

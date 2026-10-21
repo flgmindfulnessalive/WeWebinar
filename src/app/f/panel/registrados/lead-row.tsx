@@ -55,7 +55,7 @@ export type LeadCard = {
   // de 20261015000001 no tienen ninguno y traen su texto en `answer`.
   answers: { q: string; a: string }[];
   answer: string | null;
-  source: "form" | "course";
+  source: "form" | "course" | "claim";
   status: LeadStatus;
   createdAt: string;
   whatsappLink: string | null;
@@ -106,9 +106,11 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
                   {lead.name}
                 </h3>
                 <p className="m-0 mt-1 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
-                  {lead.source === "course"
-                    ? "Se registró al curso desde tu página de regalo."
-                    : "Solicitó más información sobre tu propuesta desde tu funnel."}
+                  {lead.source === "claim"
+                    ? "Reclamó su funnel gratis con tu enlace de regalo."
+                    : lead.source === "course"
+                      ? "Se registró al curso desde tu página de regalo."
+                      : "Solicitó más información sobre tu propuesta desde tu funnel."}
                 </p>
               </div>
 

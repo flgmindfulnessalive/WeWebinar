@@ -9,18 +9,20 @@ const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year
 
 // Written from their side, in the order a visitor moves through it. The
 // numbers live in wefunnel_site_stats (20261007000010).
+//
+// Dos pasos y no tres. El de en medio contaba registros al curso, y ese
+// camino dejó de existir cuando el botón de la página de regalo pasó a
+// llevar directo al alta: el número llevaba meses en cero sin que
+// significara nada, que es la peor clase de métrica -- parece un fallo del
+// que mira.
 const STEPS = [
   {
     label: "Abrieron tu página de regalo",
     body: "Visitas al enlace que repartes.",
   },
   {
-    label: "Se registraron al curso",
-    body: "Y te quedaron en Mis registrados.",
-  },
-  {
     label: "Reclamaron su funnel",
-    body: "Ya tienen su página, de por vida.",
+    body: "Ya tienen su página, y te quedan en Mis registros.",
   },
 ];
 
@@ -35,13 +37,6 @@ export default async function PanelSharePage() {
   // so the two screens never disagree about what "últimos 30 días" covers.
   const { data: stats } = await supabase.rpc("wefunnel_site_stats", { p_days: 30 });
   const visits = Number(stats?.[0]?.gift_visits ?? 0);
-  const registrations = Number(
-    (await supabase
-      .from("wefunnel_leads")
-      .select("id", { count: "exact", head: true })
-      .eq("site_id", viewer.site.id)
-      .eq("source", "course")).count ?? 0
-  );
   const claimed = Number(stats?.[0]?.claims ?? 0);
 
   // The rate that tells them which half to work on: traffic, or the page.
@@ -90,11 +85,10 @@ export default async function PanelSharePage() {
         </span>
       </div>
 
-      {/* The three steps of the gift page, in the order they happen.
-          Separated because each one fails for a different reason: no visits
-          is a traffic problem, visits without registrations is the gift
-          page, and registrations without claims is the course. A single
-          "reclamados" number could not tell them which. */}
+      {/* Los dos pasos de la página de regalo, en el orden en que pasan.
+          Separados porque cada uno falla por su cuenta: sin visitas es un
+          problema de tráfico, y visitas sin reclamos es la página. Un solo
+          número de "reclamados" no diría cuál de los dos. */}
       <div className="flex flex-col gap-5 rounded-2xl border border-[var(--wf-edge)] bg-[var(--wf-card)] p-6">
         <span className="text-[length:var(--wf-small)] font-semibold tracking-[0.08em] text-[var(--wf-fg-muted)] uppercase">
           Tu embudo
@@ -107,10 +101,10 @@ export default async function PanelSharePage() {
             >
               <span
                 className={`text-[44px] leading-none font-extrabold tracking-tighter tabular-nums ${
-                  index === 0 ? "text-[var(--wf-fg)]" : index === 1 ? "text-[var(--wf-fg-3)]" : "text-[var(--wf-accent)]"
+                  index === 0 ? "text-[var(--wf-fg)]" : "text-[var(--wf-accent)]"
                 }`}
               >
-                {[visits, registrations, claimed][index]}
+                {[visits, claimed][index]}
               </span>
               <span className="text-[length:var(--wf-body)] font-semibold">{step.label}</span>
               <span className="text-[length:var(--wf-body)] leading-snug text-[var(--wf-fg-muted)]">{step.body}</span>
@@ -122,13 +116,14 @@ export default async function PanelSharePage() {
             De cada 100 personas que abren tu página de regalo, {claimRate} se queda con su funnel.
           </span>
         )}
-        {/* The sentence that answers the question before it gets asked. The
-            giver never sees these people's leads -- each page belongs to the
-            account that received it, and that is enforced by the schema, not
-            by this screen choosing not to show them. */}
+        {/* La frase que contesta la pregunta antes de que la hagan. De cada
+            persona que reclama se ve su nombre y su correo, que es lo que
+            hace falta para acompañarla el primer día; sus registrados no,
+            y eso no lo decide esta pantalla al no enseñarlos: cada página
+            pertenece a la cuenta que la recibió. */}
         <span className="max-w-[52ch] border-t border-[var(--wf-edge-soft)] pt-4 text-[length:var(--wf-body)] leading-snug text-[var(--wf-fg-3)]">
-          De los funnels que repartiste solo ves cuántos: los registrados de cada uno son
-          de su dueño, igual que los tuyos son solo tuyos.
+          De quien reclama ves su nombre y su correo, en Mis registros. Lo que esa persona
+          capte con su funnel es suyo, igual que lo tuyo es solo tuyo.
         </span>
       </div>
 
