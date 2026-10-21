@@ -21,6 +21,8 @@ import {
   trialEndedEmail,
   trialExpiringEmail,
   wefunnelRetentionNoticeEmail,
+  wefunnelStarterEndedEmail,
+  wefunnelStarterEndingEmail,
 } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
@@ -86,6 +88,28 @@ async function accountsKeepingWeFunnels(
     ...(sites ?? []).map((row) => row.account_id),
     ...(distributors ?? []).map((row) => row.account_id),
   ]);
+}
+
+// Which of these distributor accounts are still riding the gifted Starter:
+// a plan attached with no subscription of their own behind it. An account
+// that pays for its own plan (billing_subscription_id) has nothing gifted
+// left to expire, and one with no plan at all is already off.
+// Name and locale come along because both steps below need them for the
+// email -- one round trip for the whole list instead of one per account.
+async function accountsStillOnTheGrant(
+  admin: SupabaseClient<Database>,
+  accountIds: string[]
+): Promise<Map<string, { name: string; locale: AccountLocale }>> {
+  if (accountIds.length === 0) return new Map();
+
+  const { data } = await admin
+    .from("accounts")
+    .select("id, name, locale")
+    .in("id", accountIds)
+    .not("plan_id", "is", null)
+    .is("billing_subscription_id", null);
+
+  return new Map((data ?? []).map((a) => [a.id, { name: a.name, locale: a.locale }]));
 }
 
 function isAuthorized(request: Request): boolean {
@@ -577,6 +601,151 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- Los dos meses de WeWebinars Starter que incluye el nivel
+  // distribuidor. Hasta 20261021000005 starter_until era una fecha que se
+  // enseñaba y nada más: la cuenta se quedaba con el plan 'core' puesto
+  // por wefunnel_activate_distributor para siempre.
+  //
+  // Dos pasos, con el mismo patrón de reclamar-antes-de-mandar que el
+  // resto del archivo: el aviso 7 días antes (una sola vez por
+  // distribuidor, marcado en starter_warning_sent_at) y el apagado el día
+  // de la fecha, sin período de gracia.
+  //
+  // Lo que se apaga es solo WeWebinars -- la cuenta vuelve al estado de
+  // una cuenta WeFunnels gratis y sus webinarios quedan archivados, no
+  // borrados. La página, los contactos, el panel, la sala del curso y el
+  // 20% son vitalicios y no los toca nadie. Toda esa transición vive en
+  // end_wefunnel_starter_grant para que el archivado y la baja de plan
+  // sean una sola transacción.
+  //
+  // Quien paga su propia suscripción (billing_subscription_id) queda
+  // fuera de los dos pasos: no hay nada regalado que vencerle.
+  const STARTER_WARNING_DAYS_BEFORE = 7;
+  let starterWarningsSent = 0;
+  let starterGrantsEnded = 0;
+
+  const starterWarningCutoff = new Date(
+    now.getTime() + STARTER_WARNING_DAYS_BEFORE * DAY_MS
+  ).toISOString();
+
+  const { data: starterDueForWarning } = await admin
+    .from("wefunnel_distributors")
+    .select("account_id, starter_until")
+    .is("starter_warning_sent_at", null)
+    .is("starter_ended_at", null)
+    .not("starter_until", "is", null)
+    .lte("starter_until", starterWarningCutoff);
+
+  const starterAccounts = await accountsStillOnTheGrant(
+    admin,
+    (starterDueForWarning ?? []).map((d) => d.account_id)
+  );
+
+  for (const distributor of starterDueForWarning ?? []) {
+    const account = starterAccounts.get(distributor.account_id);
+    if (!account) continue;
+
+    const { data: claimed, error: claimError } = await admin
+      .from("wefunnel_distributors")
+      .update({ starter_warning_sent_at: now.toISOString() })
+      .eq("account_id", distributor.account_id)
+      .is("starter_warning_sent_at", null)
+      .select("account_id")
+      .maybeSingle();
+    if (claimError) {
+      errors.push(`starter warning ${distributor.account_id}: ${claimError.message}`);
+      continue;
+    }
+    if (!claimed) continue;
+
+    try {
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", distributor.account_id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner?.email) {
+        // Un regalo que ya venció sin que nadie lo leyera (los que esta
+        // migración hereda) no se apaga hoy: end_wefunnel_starter_grant
+        // pide que el aviso tenga siete días, así que la fecha que vale
+        // para ellos es dentro de una semana y eso es lo que dice el
+        // correo. En el camino normal esto es la cuenta de siempre.
+        const remainingMs = new Date(distributor.starter_until!).getTime() - now.getTime();
+        const daysLeft =
+          remainingMs > 0
+            ? Math.max(1, Math.ceil(remainingMs / DAY_MS))
+            : STARTER_WARNING_DAYS_BEFORE;
+        const { subject, html } = wefunnelStarterEndingEmail(
+          account.name,
+          daysLeft,
+          account.locale
+        );
+        await sendEmail({ to: owner.email, subject, html });
+      }
+      starterWarningsSent++;
+    } catch (err) {
+      await admin
+        .from("wefunnel_distributors")
+        .update({ starter_warning_sent_at: null })
+        .eq("account_id", distributor.account_id);
+      errors.push(
+        `starter warning ${distributor.account_id}: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
+  const { data: starterDueToEnd } = await admin
+    .from("wefunnel_distributors")
+    .select("account_id")
+    .is("starter_ended_at", null)
+    .not("starter_until", "is", null)
+    .not("starter_warning_sent_at", "is", null)
+    .lte("starter_until", now.toISOString())
+    .lte(
+      "starter_warning_sent_at",
+      new Date(now.getTime() - STARTER_WARNING_DAYS_BEFORE * DAY_MS).toISOString()
+    );
+
+  const endingAccounts = await accountsStillOnTheGrant(
+    admin,
+    (starterDueToEnd ?? []).map((d) => d.account_id)
+  );
+
+  for (const distributor of starterDueToEnd ?? []) {
+    try {
+      // Todas las condiciones se vuelven a verificar dentro de la
+      // función, en el filtro de su propio update -- devuelve false sin
+      // tocar nada si otra corrida llegó primero o si entre el select de
+      // arriba y esta línea un webhook le activó una suscripción real.
+      const { data: ended, error: endError } = await admin.rpc("end_wefunnel_starter_grant", {
+        p_account_id: distributor.account_id,
+      });
+      if (endError) {
+        errors.push(`starter end ${distributor.account_id}: ${endError.message}`);
+        continue;
+      }
+      if (!ended) continue;
+      starterGrantsEnded++;
+
+      const account = endingAccounts.get(distributor.account_id);
+      const { data: owner } = await admin
+        .from("users")
+        .select("email")
+        .eq("account_id", distributor.account_id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (account && owner?.email) {
+        const { subject, html } = wefunnelStarterEndedEmail(account.name, account.locale);
+        await sendEmail({ to: owner.email, subject, html });
+      }
+    } catch (err) {
+      errors.push(
+        `starter end ${distributor.account_id}: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
   // --- Cancellation retention: a canceled Whop subscription (billing
   // lapse, self-serve) keeps its data for RETENTION_DAYS so a reactivation
   // restores everything exactly as it was, warns the owner
@@ -844,6 +1013,8 @@ export async function GET(request: Request) {
     digestsSent,
     activationNudgesSent,
     attendeeLimitNudgesSent,
+    starterWarningsSent,
+    starterGrantsEnded,
     deletionWarningsSent,
     accountsPurged,
     accountsRevertedToWeFunnels,

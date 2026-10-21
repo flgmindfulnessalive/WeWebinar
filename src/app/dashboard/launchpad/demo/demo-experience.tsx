@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, ExternalLink, PlayCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { demoWebinarUrl } from "@/lib/launchpad/demo-webinar";
 import { trackLaunchpadEvent } from "@/lib/launchpad/track";
 
 // La demo NO arma una experiencia paralela: apunta a un webinar
@@ -24,9 +25,12 @@ export function DemoExperience({
   initialCompleted: boolean;
 }) {
   const t = useTranslations("Launchpad.demo");
+  const locale = useLocale();
   const [completed, setCompleted] = useState(initialCompleted);
   const [saving, setSaving] = useState(false);
-  const baseDemoUrl = process.env.NEXT_PUBLIC_LAUNCHPAD_DEMO_WEBINAR_URL;
+  // Hay una demo por idioma: se le abre la del idioma en el que está
+  // usando el panel, no la que esté primero en la configuración.
+  const baseDemoUrl = demoWebinarUrl(locale);
   // Carries this project's id onto the registration page (?lp=<id>) so
   // register_for_webinar can stamp it on the registrant row it creates --
   // the live room then reads it back by access_token alone to

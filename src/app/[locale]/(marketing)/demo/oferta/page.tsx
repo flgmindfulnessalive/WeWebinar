@@ -7,27 +7,10 @@ import { demoDiscountEmail } from "@/lib/platform-email";
 import { sendEmail } from "@/lib/resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isOfficialDemo } from "@/lib/launchpad/demo-webinar";
 import { OfferPanel } from "./offer-panel";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
-
-// La demo oficial es un webinar real, la misma que usa el Launchpad --
-// NEXT_PUBLIC_LAUNCHPAD_DEMO_WEBINAR_URL sigue siendo la única fuente de
-// verdad de "cuál es". Se parsea acá (en vez de hardcodear el slug) para
-// que renombrar la cuenta (Configuración → General) no rompa esta
-// validación -- solo hay que actualizar esa variable de entorno una vez.
-function officialDemoSlugs(): { accountSlug: string; webinarSlug: string } | null {
-  const raw = process.env.NEXT_PUBLIC_LAUNCHPAD_DEMO_WEBINAR_URL;
-  if (!raw) return null;
-  try {
-    const segments = new URL(raw).pathname.split("/").filter(Boolean);
-    const wIndex = segments.indexOf("w");
-    if (wIndex === -1 || !segments[wIndex + 1] || !segments[wIndex + 2]) return null;
-    return { accountSlug: segments[wIndex + 1], webinarSlug: segments[wIndex + 2] };
-  } catch {
-    return null;
-  }
-}
 
 export default async function DemoOfferPage({
   searchParams,
@@ -59,13 +42,15 @@ export default async function DemoOfferPage({
     ? await admin.from("accounts").select("slug").eq("id", webinar.account_id).maybeSingle()
     : { data: null };
 
-  const expectedSlugs = officialDemoSlugs();
-  const isOfficialDemo =
-    webinar && account && expectedSlugs
-      ? webinar.slug === expectedSlugs.webinarSlug && account.slug === expectedSlugs.accountSlug
-      : false;
+  // El descuento es solo para quien vio una demo oficial de WeWebinars
+  // (la de su idioma o la del otro -- un token sigue siendo válido aunque
+  // cambie el locale). Los slugs se derivan de las URLs configuradas en
+  // vez de hardcodearse, para que renombrar la cuenta (Configuración →
+  // General) no rompa esta validación.
+  const fromOfficialDemo =
+    webinar && account ? isOfficialDemo(account.slug, webinar.slug) : false;
 
-  if (!isOfficialDemo) {
+  if (!fromOfficialDemo) {
     return <OfferMessage title={t("invalidTitle")} body={t("invalidBody")} />;
   }
 

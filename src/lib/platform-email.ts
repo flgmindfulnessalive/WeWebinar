@@ -428,6 +428,86 @@ export function wefunnelRetentionNoticeEmail(
   };
 }
 
+// Los dos meses de WeWebinars Starter que trae el nivel distribuidor se
+// terminan, y hay que decirlo con una semana de anticipación -- no el
+// mismo día. Las dos plantillas de abajo son el único aviso: no hay
+// período de gracia después de la fecha (decisión del dueño del
+// producto), así que este correo es lo que separa "se me apagó sin más"
+// de "lo sabía y decidí".
+//
+// El tono es deliberadamente distinto al de un trial que se vence: acá no
+// se cae la cuenta. Lo vitalicio (página, contactos, panel, la sala del
+// curso y el 20%) sigue igual, y decir lo contrario asustaría a alguien
+// que compró justamente eso.
+export function wefunnelStarterEndingEmail(
+  accountName: string,
+  daysLeft: number,
+  locale: AccountLocale
+): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const pricingLink = `${process.env.NEXT_PUBLIC_APP_URL}${locale === "en" ? "/en" : ""}/pricing`;
+
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Your included months</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your two months of WeWebinars end in ${daysLeft} days</h1>
+<p style="margin:0 0 20px;">The distributor tier came with two months of WeWebinars Starter, and for <strong style="color:#18181b;">${safeName}</strong> they end in ${daysLeft} days. On that date the WeWebinars side switches off: your own webinars get archived (not deleted -- pick a plan any time and they are where you left them).</p>
+<p style="margin:0 0 20px;">Everything you bought for life stays exactly as it is: your WeFunnels page, every contact you collected, your panel, the course room and your 20% on the people who arrive through you. Those were never part of the subscription.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${pricingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Choose a plan</a>
+</td></tr></table>`;
+    return {
+      subject: `${accountName}: your included WeWebinars months end in ${daysLeft} days`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
+
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Tus meses incluidos</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Tus dos meses de WeWebinars se terminan en ${daysLeft} días</h1>
+<p style="margin:0 0 20px;">El nivel distribuidor venía con dos meses de WeWebinars Starter, y a <strong style="color:#18181b;">${safeName}</strong> se le terminan en ${daysLeft} días. Ese día se apaga el lado WeWebinars: tus webinarios propios quedan archivados (no borrados -- eliges un plan cuando quieras y están tal como los dejaste).</p>
+<p style="margin:0 0 20px;">Todo lo que compraste de por vida se queda igual: tu página de WeFunnels, los contactos que juntaste, tu panel, la sala del curso y tu 20% sobre quien llegue por ti. Eso nunca fue parte de la suscripción.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${pricingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Elegir un plan</a>
+</td></tr></table>`;
+  return {
+    subject: `${accountName}: tus meses incluidos de WeWebinars se terminan en ${daysLeft} días`,
+    html: wrapPlatformEmailShell(inner, locale),
+  };
+}
+
+export function wefunnelStarterEndedEmail(
+  accountName: string,
+  locale: AccountLocale
+): { subject: string; html: string } {
+  const safeName = escapeHtml(accountName);
+  const pricingLink = `${process.env.NEXT_PUBLIC_APP_URL}${locale === "en" ? "/en" : ""}/pricing`;
+
+  if (locale === "en") {
+    const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Your included months</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Your two months of WeWebinars have ended</h1>
+<p style="margin:0 0 20px;">The two months of WeWebinars Starter included with the distributor tier have run out for <strong style="color:#18181b;">${safeName}</strong>. Your own webinars are archived -- nothing was deleted. Pick a plan and they come back exactly where you left them.</p>
+<p style="margin:0 0 20px;">Your WeFunnels page, your contacts, your panel, the course room and your 20% keep working as always. That part is yours for life.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${pricingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Turn WeWebinars back on</a>
+</td></tr></table>`;
+    return {
+      subject: `${accountName}: your included WeWebinars months have ended`,
+      html: wrapPlatformEmailShell(inner, locale),
+    };
+  }
+
+  const inner = `<p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:${BRAND};">Tus meses incluidos</p>
+<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;color:#18181b;">Se terminaron tus dos meses de WeWebinars</h1>
+<p style="margin:0 0 20px;">Los dos meses de WeWebinars Starter que incluía el nivel distribuidor se terminaron para <strong style="color:#18181b;">${safeName}</strong>. Tus webinarios propios quedaron archivados: no se borró nada. Eliges un plan y vuelven tal como los dejaste.</p>
+<p style="margin:0 0 20px;">Tu página de WeFunnels, tus contactos, tu panel, la sala del curso y tu 20% siguen funcionando como siempre. Esa parte es tuya de por vida.</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:8px;background:${BRAND};">
+  <a href="${pricingLink}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Volver a prender WeWebinars</a>
+</td></tr></table>`;
+  return {
+    subject: `${accountName}: se terminaron tus meses incluidos de WeWebinars`,
+    html: wrapPlatformEmailShell(inner, locale),
+  };
+}
+
 export function activationNudgeEmail(
   accountName: string,
   locale: AccountLocale
