@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getPanelViewer } from "@/lib/wefunnels/site";
-import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { CopyLink } from "@/components/wefunnels/copy-link";
 import { WaitingForLicence } from "./waiting";
 import { AddressPicker } from "./address-picker";
@@ -87,11 +87,25 @@ export default async function DistributorReadyPage() {
         >
           Personalizar mi página
         </Link>
+        {/* Acaban de pagar y los dos meses ya empezaron a correr, pero
+            WeWebinars vive en otro host: hasta aquí no había nada que los
+            llevara a usarlos. La sesión es la misma en los dos sitios (la
+            cookie está en .wewebinars.com), así que esto entra directo al
+            dashboard sin volver a pedir la clave. */}
+        <a
+          href={wefunnelAppUrl("/dashboard")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-[48px] items-center justify-center rounded-lg border border-[var(--wf-edge)] px-5 py-3.5 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] no-underline"
+        >
+          Entrar a WeWebinars ↗
+        </a>
       </div>
 
       <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
-        Tus 2 meses de Starter de WeWebinars ya están corriendo. Continuar después es
-        opcional: tu licencia, tu funnel y tu sala del curso permanecen activos.
+        Tus 2 meses de Starter de WeWebinars ya están corriendo y se usan ahí.
+        Continuar después es opcional: tu licencia, tu funnel y tu sala del curso
+        permanecen activos.
       </p>
     </div>
   );

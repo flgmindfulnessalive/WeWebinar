@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 
 export const metadata: Metadata = {
@@ -131,8 +132,16 @@ export default async function PanelBillingPage() {
                     comprar para poder cobrar. */}
                 <p className={SMALL}>
                   Cuando se acaban se apaga solo el lado WeWebinars: tus webinarios
-                  propios quedan archivados (no se borran, vuelven el día que elijas un
-                  plan) y te avisamos por correo una semana antes. Tu página, tus
+                  propios quedan archivados (no se borran, vuelven el día que{" "}
+                  <a
+                    href={wefunnelAppUrl("/pricing")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[var(--wf-accent)] no-underline"
+                  >
+                    elijas un plan
+                  </a>
+                  ) y te avisamos por correo una semana antes. Tu página, tus
                   registros, tu curso, tu página de regalo y tu comisión del 20% son de
                   por vida. No hace falta mantener ningún plan para seguir cobrándola.
                 </p>

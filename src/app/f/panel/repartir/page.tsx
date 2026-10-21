@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
-import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { CopyLink } from "@/components/wefunnels/copy-link";
 
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric" });
@@ -130,7 +130,16 @@ export default async function PanelSharePage() {
       {starterUntil && (
         <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
           Tus 2 meses de WeWebinars Starter van hasta el {DATE.format(starterUntil)}. Son una
-          prueba de la plataforma: si te sirve, eliges un plan; si no, no pagas nada y ese
+          prueba de la plataforma: si te sirve,{" "}
+          <a
+            href={wefunnelAppUrl("/pricing")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-[var(--wf-accent)] no-underline"
+          >
+            eliges un plan
+          </a>
+          ; si no, no pagas nada y ese
           día se apaga solo el lado WeWebinars (tus webinarios quedan archivados, no
           borrados). Repartir funnels, tu sala del curso y tu 20% no dependen de eso y no
           se apagan nunca.
