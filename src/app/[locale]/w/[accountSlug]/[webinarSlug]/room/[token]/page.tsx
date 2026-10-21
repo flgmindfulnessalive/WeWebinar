@@ -42,7 +42,16 @@ export default async function WaitingRoomPage({
   // domain (which only ever serves /<webinarSlug>/... at its root -- see
   // proxy.ts), so this is a full URL, used both for the immediate-start
   // redirect below and for the client-side countdown-elapsed redirect.
-  const liveRoomPath = `${webinarPublicUrl(accountSlug, webinarSlug, customDomainHostname, locale)}/live/${token}`;
+  const webinarUrl = webinarPublicUrl(accountSlug, webinarSlug, customDomainHostname, locale);
+  const liveRoomPath = `${webinarUrl}/live/${token}`;
+  // La que se guarda en el calendario es esta misma pantalla, no la sala.
+  // Un recordatorio se abre cuando a cada uno le llega el aviso, y abrir
+  // la sala antes de hora dejaba al asistente mirando el vídeo desde el
+  // segundo cero mientras su sesión todavía no había empezado -- y, al
+  // empezar de verdad, la corrección de deriva lo devolvía al principio.
+  // La sala de espera no tiene ese problema porque sabe esperar: si ya
+  // pasó la hora, redirige sola unas líneas más abajo.
+  const waitingRoomUrl = `${webinarUrl}/room/${token}`;
 
   const remainingMs =
     new Date(session.computed_session_start).getTime() - new Date(session.server_now).getTime();
@@ -81,6 +90,7 @@ export default async function WaitingRoomPage({
       webinarId={webinar.id}
       webinarTitle={webinar.title}
       liveRoomPath={liveRoomPath}
+      waitingRoomUrl={waitingRoomUrl}
       sessionStart={session.computed_session_start}
       serverNow={session.server_now}
       config={waitingRoom}

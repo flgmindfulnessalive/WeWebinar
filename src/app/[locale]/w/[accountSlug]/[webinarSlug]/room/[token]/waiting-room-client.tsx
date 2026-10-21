@@ -31,6 +31,7 @@ export function WaitingRoomClient({
   webinarId,
   webinarTitle,
   liveRoomPath,
+  waitingRoomUrl,
   sessionStart,
   serverNow,
   config,
@@ -48,6 +49,8 @@ export function WaitingRoomClient({
   webinarId: string;
   webinarTitle: string;
   liveRoomPath: string;
+  /** Absoluta y ya resuelta en el servidor (dominio propio incluido). */
+  waitingRoomUrl: string;
   sessionStart: string;
   serverNow: string;
   config: WaitingRoomConfig;
@@ -106,8 +109,6 @@ export function WaitingRoomClient({
     Array.isArray(config?.testimonials) ? config.testimonials : []
   ) as { name: string; text: string }[];
   const startDate = new Date(sessionStart);
-  const roomUrl =
-    typeof window !== "undefined" ? `${window.location.origin}${liveRoomPath}` : liveRoomPath;
 
   // No explicit timeZone: the visitor's timezone doesn't travel as a prop
   // to this component, so we lean on the browser's own local zone (the
@@ -141,7 +142,15 @@ export function WaitingRoomClient({
         href={buildIcsDataUri({
           title: webinarTitle,
           startsAt: startDate,
-          description: t("icsDescription", { url: roomUrl }),
+          // El campo propio del formato, además del texto: los
+          // calendarios que lo entienden ofrecen "Unirse" sin tener que
+          // pescar la dirección dentro de la descripción.
+          url: waitingRoomUrl,
+          // La dirección entra tal cual llega del servidor: ya es
+          // completa, y anteponerle el origen del navegador la duplicaba
+          // ("https://host" + "https://host/w/...") -- el enlace que se
+          // guardaba en el calendario no llevaba a ninguna parte.
+          description: t("icsDescription", { url: waitingRoomUrl }),
         })}
         download={`${webinarTitle}.ics`}
         className="flex items-center gap-2 rounded-lg border border-white/15 bg-white/6 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10"
@@ -153,7 +162,7 @@ export function WaitingRoomClient({
         href={googleCalendarUrl({
           title: webinarTitle,
           startsAt: startDate,
-          details: t("icsDescription", { url: roomUrl }),
+          details: t("icsDescription", { url: waitingRoomUrl }),
         })}
         target="_blank"
         rel="noreferrer"
