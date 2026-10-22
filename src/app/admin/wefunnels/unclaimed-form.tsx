@@ -29,7 +29,6 @@ export function GrantSiteForm({
     <form action={action} className="flex flex-col items-end gap-2">
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="name" value={name} />
-      <input type="hidden" name="refSlug" value={invitedSlug ?? ""} />
       <div className="flex items-center gap-2">
         <label htmlFor={`slug-${userId}`} className="sr-only">
           Dirección para {name}
@@ -38,7 +37,22 @@ export function GrantSiteForm({
           id={`slug-${userId}`}
           name="slug"
           defaultValue={proposedSlug}
-          className="h-9 w-44"
+          placeholder="su-direccion"
+          className="h-9 w-40"
+        />
+        {/* Editable, no oculto. Quien reparte sabe a quién invitó aunque
+            la invitación no quedara guardada -- se la mandó él --, y sin
+            esto esa página se crearía sin acreditar a nadie, que es
+            perder la comisión de alguien por un detalle técnico. */}
+        <label htmlFor={`ref-${userId}`} className="sr-only">
+          Quién invitó a {name}
+        </label>
+        <Input
+          id={`ref-${userId}`}
+          name="refSlug"
+          defaultValue={invitedSlug ?? ""}
+          placeholder="quien-invitó"
+          className="h-9 w-36"
         />
         <Submit />
       </div>
