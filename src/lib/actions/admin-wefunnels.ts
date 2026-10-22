@@ -147,8 +147,27 @@ const MIGRATION_PENDING =
   "Falta aplicar la migración: ejecuta «supabase db push» y vuelve a intentarlo. " +
   "Si ya la aplicaste, recarga la caché de esquema con «notify pgrst, 'reload schema';».";
 
+// Los mensajes que levantan las funciones de WeFunnels vienen con su
+// prefijo y, uno de ellos, en inglés. Quien los lee es un administrador
+// mirando su consola, no quien escribió la migración.
+const SQL_MESSAGES: Record<string, string> = {
+  "wefunnel: inviter is not a distributor":
+    "Esa dirección no es de un distribuidor, así que no puede invitar a nadie.",
+  "wefunnel: esa página ya está acreditada a alguien":
+    "Esa página ya está acreditada a alguien. Cambiarlo movería una comisión, así que no se hace desde aquí.",
+  "wefunnel: no hay ninguna página publicada con esa dirección":
+    "No hay ninguna página publicada con esa dirección.",
+  "wefunnel: nadie se invita a sí mismo": "Nadie se invita a sí mismo.",
+  "wefunnel: esa persona ya tiene cuenta": "Esa persona ya tiene cuenta y página.",
+  "wefunnel: ese usuario no existe": "Ese usuario ya no existe.",
+};
+
 function readable(error: { code?: string; message: string }): string {
-  return error.code === "PGRST202" ? MIGRATION_PENDING : error.message;
+  if (error.code === "PGRST202") return MIGRATION_PENDING;
+  for (const [sql, friendly] of Object.entries(SQL_MESSAGES)) {
+    if (error.message.includes(sql)) return friendly;
+  }
+  return error.message;
 }
 
 // Tres respuestas distintas, no una.
@@ -351,6 +370,39 @@ export async function grantSiteToSignup(
       refSlug ? ` · acreditada a /${refSlug}` : " · sin acreditar"
     }.`,
   };
+}
+
+// Acreditar una página a quien la regaló, desde la tabla de Páginas.
+//
+// No cambia una atribución existente: la función se niega y la columna
+// solo enseña el campo cuando no hay ninguna. Mover el 20% de un
+// distribuidor a otro no puede ser un campo que se edita.
+export async function setPageReferrer(
+  _prev: ConsoleState,
+  formData: FormData
+): Promise<ConsoleState> {
+  const denied = await assertAdmin();
+  if (denied) return { error: denied };
+
+  const siteId = String(formData.get("siteId") ?? "").trim();
+  const refSlug = normalizeSlug(String(formData.get("refSlug") ?? ""));
+
+  if (!siteId) return { error: "Falta la página." };
+  if (!refSlug) return { error: "Escribe la dirección de quien le invitó." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_admin_set_referrer", {
+    p_site_id: siteId,
+    p_ref_slug: refSlug,
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] set referrer failed:", error.message);
+    return { error: readable(error) };
+  }
+
+  refresh("/admin/wefunnels");
+  return { success: `Acreditada a /${refSlug}.` };
 }
 
 // =========================================================================
