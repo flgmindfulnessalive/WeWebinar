@@ -304,6 +304,55 @@ export async function grantDistributorLicense(
   return { success: `Licencia concedida a ${email}.` };
 }
 
+// Darle su página a quien se quedó a medias.
+//
+// Su cuenta existe -- se registró, quizá confirmó -- pero nunca llegó a
+// reclamar, así que no tiene ni cuenta de WeWebinars ni página ni ficha
+// en los registros de quien la invitó. "Crear una cuenta" de aquí arriba
+// no sirve: esa crea un usuario nuevo, y esta persona ya tiene el suyo.
+//
+// La dirección se propone a partir de su nombre, igual que haría el
+// reclamo normal, y la invitación que se acredita es la que su propia
+// alta dejó guardada. Si ya no vale -- página despublicada, sin licencia
+// -- la página se crea igual, sin acreditar a nadie: es mejor que esa
+// persona tenga su funnel sin atribución a que no lo tenga.
+export async function grantSiteToSignup(
+  _prev: ConsoleState,
+  formData: FormData
+): Promise<ConsoleState> {
+  const denied = await assertAdmin();
+  if (denied) return { error: denied };
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
+  const slug = normalizeSlug(String(formData.get("slug") ?? "") || proposeSlug(name));
+  const refSlug = String(formData.get("refSlug") ?? "").trim() || null;
+
+  if (!userId) return { error: "Falta el usuario." };
+  if (!name) return { error: "Escribe el nombre." };
+  if (!slug) return { error: "No se pudo proponer una dirección a partir del nombre." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("wefunnel_admin_grant_site", {
+    p_user_id: userId,
+    p_display_name: name,
+    p_slug: slug,
+    p_ref_slug: refSlug,
+  });
+
+  if (error) {
+    console.error("[wefunnel/admin] grant site failed:", error.message);
+    return { error: readable(error) };
+  }
+
+  refresh("/admin/wefunnels");
+  return {
+    success: `${name} ya tiene su página: ${WEFUNNELS_HOST}/${slug}${
+      refSlug ? ` · acreditada a /${refSlug}` : " · sin acreditar"
+    }.`,
+  };
+}
+
 // =========================================================================
 // Recursos: los cursos de anuncios y de contenido en redes.
 //

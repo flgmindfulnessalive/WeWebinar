@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, FilePen, FileText, Rocket } from "lucide-react";
+import { AlertTriangle, FilePen, FileText, Rocket, UserRoundX } from "lucide-react";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClearButton, SuspendButton } from "./moderation-actions";
 import { CreateAccountForm, GrantLicenseForm } from "./console-forms";
+import { GrantSiteForm } from "./unclaimed-form";
+import { proposeSlug } from "@/lib/wefunnels/slug";
 import { ResourceManager } from "./resource-forms";
 import { TemplateManager } from "./template-forms";
 import { createClient } from "@/lib/supabase/server";
@@ -129,6 +131,7 @@ export default async function AdminWeFunnelsPage({
     { data: reviews },
     { data: sites },
     { data: distributors, error: consoleError },
+    { data: unclaimedSignups },
     { data: licensed },
     { data: slugs },
     { data: resourceSections },
@@ -147,6 +150,10 @@ export default async function AdminWeFunnelsPage({
       .order("created_at", { ascending: false })
       .limit(100),
     asAdmin.rpc("wefunnel_admin_distributors"),
+    // Quien se registró y nunca llegó a reclamar. No sale en ninguna otra
+    // parte de esta consola porque todavía no tiene ni cuenta ni página:
+    // claim_wefunnel_site crea las dos, y esa gente no llegó hasta ahí.
+    asAdmin.rpc("wefunnel_admin_unclaimed_signups"),
     // Quién tiene licencia, para poder distinguir en la lista de páginas
     // una gratuita de la de un distribuidor. Sin esto las dos se ven
     // exactamente igual, que es lo que hacía parecer que las cuentas
@@ -177,6 +184,7 @@ export default async function AdminWeFunnelsPage({
   const allSites = sites ?? [];
   const siteById = new Map(allSites.map((site) => [site.id, site]));
   const allDistributors = distributors ?? [];
+  const unclaimed = unclaimedSignups ?? [];
   const licensedAccounts = new Set((licensed ?? []).map((row) => row.account_id));
   const slugBySiteId = new Map((slugs ?? []).map((row) => [row.id, row.slug]));
 
@@ -350,6 +358,25 @@ export default async function AdminWeFunnelsPage({
                 </p>
               </div>
               <FileText className="size-4 text-muted-foreground" aria-hidden="true" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Altas a medias. Es la única cifra de la fila que cuenta
+            personas en vez de páginas, y por eso va la última: no suma
+            con las otras tres. */}
+        <Link href="#altas-sin-reclamar" className="no-underline">
+          <Card
+            className={
+              unclaimed.length > 0 ? "border-amber-400/60 transition-colors" : "transition-colors hover:border-foreground/30"
+            }
+          >
+            <CardContent className="flex items-start justify-between gap-3 py-4">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Altas sin reclamar</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{unclaimed.length}</p>
+              </div>
+              <UserRoundX className="size-4 text-muted-foreground" aria-hidden="true" />
             </CardContent>
           </Card>
         </Link>
@@ -635,6 +662,88 @@ export default async function AdminWeFunnelsPage({
                           </td>
                         </tr>
                       ))
+                    )}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </section>
+
+          <section id="altas-sin-reclamar" className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Altas sin reclamar{" "}
+              <span className="text-muted-foreground">({unclaimed.length})</span>
+            </h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Se registraron con el enlace de regalo de alguien y nunca llegaron a elegir
+              la dirección de su funnel, así que no tienen cuenta ni página. Darles la
+              suya desde aquí hace lo mismo que el reclamo: crea su página y, si su
+              invitación sigue siendo válida, se la acredita a quien les invitó.
+            </p>
+            <Card>
+              <CardContent className="overflow-x-auto p-0">
+                <table className="w-full min-w-[720px] border-collapse text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Persona</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Se registró</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Confirmó</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Invitó</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {unclaimed.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-6 text-muted-foreground">
+                          Nadie se ha quedado a medias. Aquí caen los que se registran y
+                          no terminan.
+                        </td>
+                      </tr>
+                    ) : (
+                      unclaimed.map((signup) => {
+                        const name = signup.full_name ?? signup.email.split("@")[0];
+                        return (
+                          <tr key={signup.user_id}>
+                            <td className="border-b px-4 py-3">
+                              <div className="font-medium">{name}</div>
+                              <div className="text-xs text-muted-foreground">{signup.email}</div>
+                            </td>
+                            <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
+                              {DATE.format(new Date(signup.created_at))}
+                            </td>
+                            <td className="border-b px-4 py-3">
+                              {signup.confirmed ? (
+                                <Badge variant="secondary">Sí</Badge>
+                              ) : (
+                                <Badge variant="outline">Todavía no</Badge>
+                              )}
+                            </td>
+                            <td className="border-b px-4 py-3 whitespace-nowrap">
+                              {signup.invited_slug ? (
+                                <a
+                                  href={`https://${WEFUNNELS_HOST}/${signup.invited_slug}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-2"
+                                >
+                                  /{signup.invited_slug}
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                            <td className="border-b px-4 py-3">
+                              <GrantSiteForm
+                                userId={signup.user_id}
+                                name={name}
+                                proposedSlug={proposeSlug(name)}
+                                invitedSlug={signup.invited_slug}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
