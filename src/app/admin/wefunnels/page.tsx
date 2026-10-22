@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, FileText, Rocket, Timer } from "lucide-react";
+import { AlertTriangle, FilePen, FileText, Rocket } from "lucide-react";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
@@ -21,6 +21,8 @@ const DATE = new Intl.DateTimeFormat("es", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+const DATE_SHORT = new Intl.DateTimeFormat("es", { day: "numeric", month: "short" });
 
 const SOURCE_LABEL: Record<string, string> = {
   filter: "Filtro",
@@ -50,16 +52,55 @@ const ESTADOS: { key: Estado; label: string }[] = [
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Fuera del componente a propósito: leer el reloj dentro del render es
-// justo lo que el compilador de React marca como impuro, y este dato no
-// necesita estar ahí dentro -- es una cuenta sobre filas ya cargadas.
-function countStarterEndingSoon(rows: { starter_until: string | null }[]): number {
-  const now = Date.now();
-  return rows.filter((row) => {
-    if (!row.starter_until) return false;
-    const endsIn = new Date(row.starter_until).getTime() - now;
-    return endsIn > 0 && endsIn <= 7 * DAY_MS;
-  }).length;
+type StarterState = { label: string; urgent: boolean; muted: boolean };
+
+// Qué decir en la columna «Starter» de un distribuidor. Vivía arriba como
+// una tarjeta («Starter vence en 7 días») y de ahí se fue por dos razones:
+// marcaba cero casi todos los días -- y una fila de tarjetas siempre en
+// cero enseña a no mirar ninguna, incluida la que sí tiene que gritar --
+// y, peor, contaba también a quien ya paga su propio plan, a quien no se
+// le apaga nada. Aquí, al lado de la fecha, el mismo dato sí dice algo:
+// de los que recibieron dos meses gratis, quién acabó pagando.
+//
+// Fuera del componente porque lee el reloj, y eso dentro del render es
+// justo lo que el compilador de React marca como impuro.
+function describeStarter(row: {
+  starterUntil: string | null;
+  startedPaying: boolean;
+  endedAt: string | null;
+}): StarterState {
+  if (row.startedPaying) {
+    return { label: "Ya paga su plan", urgent: false, muted: false };
+  }
+  if (row.endedAt) {
+    return {
+      label: `Terminado el ${DATE_SHORT.format(new Date(row.endedAt))}`,
+      urgent: false,
+      muted: true,
+    };
+  }
+  if (!row.starterUntil) {
+    return { label: "—", urgent: false, muted: true };
+  }
+
+  const until = new Date(row.starterUntil);
+  const fecha = DATE_SHORT.format(until);
+  const days = Math.ceil((until.getTime() - Date.now()) / DAY_MS);
+
+  if (days < 0) {
+    // La fecha pasó y la cuenta sigue con el plan regalado: el cron de
+    // send-reminders todavía no ha llegado, o el aviso de 7 días aún no
+    // cumple su semana. Dura un rato, no es un error.
+    return { label: `${fecha} · venció`, urgent: true, muted: false };
+  }
+  if (days <= 7) {
+    return {
+      label: `${fecha} · ${days === 0 ? "vence hoy" : `vence en ${days} d`}`,
+      urgent: true,
+      muted: false,
+    };
+  }
+  return { label: `${fecha} · quedan ${days} d`, urgent: false, muted: true };
 }
 
 export default async function AdminWeFunnelsPage({
@@ -174,13 +215,42 @@ export default async function AdminWeFunnelsPage({
   // vacía sin decir por qué y los formularios fallarían uno a uno.
   const migrationPending = consoleError?.code === "PGRST202";
 
+  // Quién de los distribuidores paga ya su propio plan, y a quién se le
+  // acabó el regalo. La consola no puede saberlo sola:
+  // wefunnel_admin_distributors() no devuelve nada de facturación, y sin
+  // eso una fecha cercana parece un apagado inminente aunque la cuenta
+  // lleve meses pagando Pro. Dos consultas por una lista de doscientas
+  // filas como mucho.
+  const distributorAccountIds = allDistributors.map((d) => d.account_id);
+  const [{ data: distributorAccounts }, { data: starterEndings }] = distributorAccountIds.length
+    ? await Promise.all([
+        supabase
+          .from("accounts")
+          .select("id, billing_subscription_id")
+          .in("id", distributorAccountIds),
+        supabase
+          .from("wefunnel_distributors")
+          .select("account_id, starter_ended_at")
+          .in("account_id", distributorAccountIds),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  const payingAccounts = new Set(
+    (distributorAccounts ?? [])
+      .filter((row) => row.billing_subscription_id)
+      .map((row) => row.id)
+  );
+  const starterEndedAt = new Map(
+    (starterEndings ?? []).map((row) => [row.account_id, row.starter_ended_at])
+  );
+
   // Lo que se enseña arriba. Son cuentas de lo ya cargado, no consultas
   // nuevas: la página ya traía todas las filas para pintar las tablas.
   const publishedCount = allSites.filter(
     (site) => site.status === "published" && !site.suspended_at
   ).length;
   const suspendedCount = allSites.filter((site) => site.suspended_at).length;
-  const starterEndingSoon = countStarterEndingSoon(allDistributors);
+  const draftCount = allSites.length - publishedCount - suspendedCount;
 
   const needle = query.toLowerCase();
   const visibleSites = allSites.filter((site) => {
@@ -265,20 +335,36 @@ export default async function AdminWeFunnelsPage({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex items-start justify-between gap-3 py-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Páginas publicadas</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">
-                {publishedCount}{" "}
-                <span className="text-sm font-normal text-muted-foreground">
-                  de {allSites.length}
-                </span>
-              </p>
-            </div>
-            <FileText className="size-4 text-muted-foreground" aria-hidden="true" />
-          </CardContent>
-        </Card>
+        {/* Estas dos llevan a su filtro: son las únicas cifras de la fila
+            con un sitio al que ir. */}
+        <Link href={estadoHref("publicadas")} className="no-underline">
+          <Card className="transition-colors hover:border-foreground/30">
+            <CardContent className="flex items-start justify-between gap-3 py-4">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Páginas publicadas</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">
+                  {publishedCount}{" "}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    de {allSites.length}
+                  </span>
+                </p>
+              </div>
+              <FileText className="size-4 text-muted-foreground" aria-hidden="true" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href={estadoHref("borrador")} className="no-underline">
+          <Card className="transition-colors hover:border-foreground/30">
+            <CardContent className="flex items-start justify-between gap-3 py-4">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Sin publicar</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{draftCount}</p>
+              </div>
+              <FilePen className="size-4 text-muted-foreground" aria-hidden="true" />
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card>
           <CardContent className="flex items-start justify-between gap-3 py-4">
@@ -292,17 +378,6 @@ export default async function AdminWeFunnelsPage({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex items-start justify-between gap-3 py-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Starter vence en 7 días
-              </p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">{starterEndingSoon}</p>
-            </div>
-            <Timer className="size-4 text-muted-foreground" aria-hidden="true" />
-          </CardContent>
-        </Card>
       </div>
 
       <nav className="flex flex-wrap items-center gap-1 border-b" aria-label="Secciones">
@@ -572,6 +647,11 @@ export default async function AdminWeFunnelsPage({
               Distribuidores{" "}
               <span className="text-muted-foreground">({allDistributors.length})</span>
             </h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              La columna «Starter» dice en qué acabaron los dos meses incluidos: quién
+              convirtió a un plan de pago, a quién le quedan días y a quién ya se le
+              apagó el lado WeWebinars.
+            </p>
             <Card>
               <CardContent className="overflow-x-auto p-0">
                 <table className="w-full text-sm">
@@ -580,7 +660,7 @@ export default async function AdminWeFunnelsPage({
                       <th scope="col" className="border-b px-4 py-3 font-medium">Cuenta</th>
                       <th scope="col" className="border-b px-4 py-3 font-medium">Dirección</th>
                       <th scope="col" className="border-b px-4 py-3 font-medium">Licencia</th>
-                      <th scope="col" className="border-b px-4 py-3 font-medium">Starter hasta</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Starter</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -626,8 +706,27 @@ export default async function AdminWeFunnelsPage({
                               </span>
                             )}
                           </td>
-                          <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
-                            {d.starter_until ? DATE.format(new Date(d.starter_until)) : "—"}
+                          <td className="border-b px-4 py-3 whitespace-nowrap">
+                            {(() => {
+                              const starter = describeStarter({
+                                starterUntil: d.starter_until,
+                                startedPaying: payingAccounts.has(d.account_id),
+                                endedAt: starterEndedAt.get(d.account_id) ?? null,
+                              });
+                              return (
+                                <span
+                                  className={
+                                    starter.urgent
+                                      ? "font-medium text-amber-600 tabular-nums dark:text-amber-500"
+                                      : starter.muted
+                                        ? "text-muted-foreground tabular-nums"
+                                        : "font-medium tabular-nums"
+                                  }
+                                >
+                                  {starter.label}
+                                </span>
+                              );
+                            })()}
                           </td>
                         </tr>
                       ))
