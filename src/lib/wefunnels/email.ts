@@ -75,11 +75,22 @@ ${innerHtml}
 // Va separada del botón a propósito -- un bloque al pie, con su propia
 // línea -- para que nadie confunda el enlace permanente con el de un solo
 // uso que está arriba.
-function signInFooter(): string {
+//
+// Y por qué cambia la frase según el correo: en el de la contraseña, el
+// botón ya está usado cuando esto importa. En el del alta no -- ahí
+// arriba hay un paso sin hacer, y una invitación a "entrar" compite con
+// él. Quien entre sin confirmar llega al panel igual, pero no podrá
+// publicar su página hasta verificar, así que el pie dice "cuando ya lo
+// hayas confirmado" en vez de ofrecer un atajo.
+function signInFooter(after: "confirmar" | "siempre"): string {
   const url = wefunnelUrl("/entrar");
+  const lead =
+    after === "confirmar"
+      ? "Cuando ya lo hayas confirmado, entras por aquí:"
+      : "Para entrar en cualquier otro momento:";
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;border-top:1px solid #e4e4e7;">
 <tr><td style="padding:18px 0 0;font-size:13px;line-height:1.6;color:#71717a;font-family:${FONT_STACK};">
-  Para entrar en cualquier otro momento:<br>
+  ${lead}<br>
   <a href="${escapeHtml(url)}" style="font-weight:700;color:#1d7f8c;text-decoration:none;">${escapeHtml(`${WEFUNNELS_HOST}/entrar`)}</a>
 </td></tr></table>`;
 }
@@ -103,7 +114,7 @@ export function weFunnelsResetEmail(actionUrl: string): {
 <p style="margin:24px 0 0;font-size:13px;color:#71717a;">El enlace sirve una sola vez y caduca. Si no cabe en tu pantalla, cópialo entero:</p>
 <p style="margin:6px 0 0;font-size:12px;word-break:break-all;color:#52525b;">${safeUrl}</p>
 <p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no pediste esto, no hace falta que hagas nada: tu contraseña sigue siendo la de siempre y este enlace caduca solo.</p>
-${signInFooter()}`;
+${signInFooter("siempre")}`;
 
   return {
     subject: "Tu contraseña nueva de WeFunnels",
@@ -140,7 +151,7 @@ export function weFunnelsConfirmEmail(
 <p style="margin:24px 0 0;font-size:13px;color:#71717a;">El enlace sirve una sola vez y caduca. Si no cabe en tu pantalla, cópialo entero:</p>
 <p style="margin:6px 0 0;font-size:12px;word-break:break-all;color:#52525b;">${safeUrl}</p>
 <p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no creaste ninguna cuenta, no hace falta que hagas nada: sin confirmar, esta dirección no queda asociada a nada.</p>
-${signInFooter()}`;
+${signInFooter("confirmar")}`;
 
   return {
     subject: "Confirma tu email de WeFunnels",
