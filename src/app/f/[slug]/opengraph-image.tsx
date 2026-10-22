@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { kickerOf } from "@/lib/wefunnels/kicker";
 import {
   BODY,
@@ -76,16 +76,19 @@ async function photoDataUrl(url: string | null): Promise<string | null> {
 // 500. La página de al lado sí tiene que gritar cuando no puede leer --
 // ahí la diferencia es decirle a un visitante que la página de otro no
 // está publicada -- pero aquí lo único que se pierde es la miniatura.
-async function liveSite(slug: string) {
+async function shareableSite(slug: string) {
   try {
-    const supabase = await createClient();
-    const { data: site } = await supabase
+    const admin = createAdminClient();
+    const { data: site } = await admin
       .from("wefunnel_sites")
-      .select("*")
+      .select("display_name, headline, description, photo_url, accent, kicker, status, suspended_at")
       .eq("slug", slug)
       .maybeSingle();
 
-    return site && site.status === "published" && !site.suspended_at ? site : null;
+    // Un borrador también se presenta con su nombre y su foto: compartir
+    // el enlace antes de publicar es justo lo que hace quien acaba de
+    // elegir su dirección. Una suspendida no.
+    return site && !site.suspended_at ? site : null;
   } catch (err) {
     console.error("[wefunnel] og image: no se pudo leer la página:", slug, err);
     return null;
@@ -98,16 +101,20 @@ export default async function SiteOpengraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const live = await liveSite(slug);
+  const live = await shareableSite(slug);
   const [fonts, photo] = await Promise.all([
     ogFonts(),
     photoDataUrl(live?.photo_url ?? null),
   ]);
 
-  const name = live?.display_name?.trim() || "Reclama tu embudo gratis de por vida";
-  const headline = live
+  // El texto de reserva ya no es el de la página de regalo: ofrecer
+  // embudos gratis en la tarjeta de la página personal de alguien es
+  // ponerle en la boca una oferta que no es suya.
+  const name = live?.display_name?.trim() || "WeFunnels";
+  const published = live && live.status === "published";
+  const headline = published
     ? clamp(live.headline?.trim() || live.description?.trim() || "", MAX_HEADLINE)
-    : "Tu página para captar contactos, tu panel de registros y el curso para llevarles tráfico.";
+    : "";
 
   return new ImageResponse(
     (
