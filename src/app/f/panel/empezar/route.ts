@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 import { createClient } from "@/lib/supabase/server";
-import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
+import { resolveReferralTouch } from "@/lib/wefunnels/referral-server";
 import { proposeSlug } from "@/lib/wefunnels/slug";
 
 // Where the confirmation email lands, and the reason the approved package
@@ -38,7 +37,7 @@ export async function GET() {
     if (existing) redirect("/panel/pagina");
   }
 
-  const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+  const touch = await resolveReferralTouch();
   const displayName =
     (user.user_metadata?.full_name as string | undefined)?.trim() ||
     user.email?.split("@")[0] ||

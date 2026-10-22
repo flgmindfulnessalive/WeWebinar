@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { checklist, getPanelViewer } from "@/lib/wefunnels/site";
-import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
+import { resolveReferralTouch } from "@/lib/wefunnels/referral-server";
 import { ClaimForm } from "./claim-form";
 import { SiteEditor } from "./site-editor";
 
@@ -19,7 +18,7 @@ export default async function PanelPageEditor() {
   // picking a name and then refuse them at the last step, which is the
   // worst place to tell them.
   if (!viewer.site) {
-    const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+    const touch = await resolveReferralTouch();
 
     // The same two exceptions claim_wefunnel_site makes to the invitation
     // rule (20261007000014): a platform admin, so the first page in the

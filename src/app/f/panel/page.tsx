@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
-import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
+import { resolveReferralTouch } from "@/lib/wefunnels/referral-server";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { CopyLink } from "@/components/wefunnels/copy-link";
 import { PeriodStats } from "./period-stats";
@@ -21,7 +20,7 @@ export default async function PanelHomePage() {
   // form that would walk somebody through picking a name and refuse them at
   // the last step.
   if (!viewer.site) {
-    const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+    const touch = await resolveReferralTouch();
     let invited = false;
 
     if (touch) {

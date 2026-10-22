@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
@@ -9,6 +9,8 @@ import { sendEmail } from "@/lib/resend";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { wefunnelUrl } from "@/lib/wefunnels/host";
 import { weFunnelsConfirmEmail, weFunnelsFromEmail } from "@/lib/wefunnels/email";
+import { REFERRAL_COOKIE, parseTouch } from "@/lib/wefunnels/referral";
+import { REFERRAL_METADATA_KEY } from "@/lib/wefunnels/referral-server";
 
 export type WeFunnelSignUpState =
   | { error: string }
@@ -97,6 +99,19 @@ export async function weFunnelSignUp(
   return signUpWithOurOwnEmail({ email, password, fullName, destination, intent });
 }
 
+// La invitación que trae este navegador, para guardarla con la cuenta.
+//
+// Es el único momento en que se sabe con certeza que esta persona tiene
+// una: viene de abrir el enlace de regalo, en este mismo navegador, hace
+// un minuto. A partir de aquí el recorrido pasa por el correo, y el
+// correo casi siempre abre otro navegador -- donde la cookie no existe.
+// Guardada en los metadatos, la invitación viaja con la cuenta y no con
+// el navegador (ver lib/wefunnels/referral-server.ts).
+async function referralMetadata(): Promise<Record<string, string>> {
+  const raw = (await cookies()).get(REFERRAL_COOKIE)?.value;
+  return parseTouch(raw) ? { [REFERRAL_METADATA_KEY]: raw! } : {};
+}
+
 // El camino propio: la cuenta se crea con la API de administración, que no
 // manda ningún correo, y el correo lo manda WeFunnels.
 async function signUpWithOurOwnEmail({
@@ -118,7 +133,7 @@ async function signUpWithOurOwnEmail({
       type: "signup",
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { full_name: fullName, ...(await referralMetadata()) } },
     });
 
     if (error) {
@@ -194,7 +209,7 @@ async function signUpThroughSupabase({
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, ...(await referralMetadata()) },
         emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?next=${encodeURIComponent(destination)}`,
         ...(captchaToken ? { captchaToken } : {}),
       },
