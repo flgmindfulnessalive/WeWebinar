@@ -2324,6 +2324,8 @@ export interface Database {
         Args: Record<string, never>;
         Returns: {
           referred_at: string;
+          referred_name: string | null;
+          referred_slug: string | null;
           is_paying: boolean;
           plan_name: string | null;
           billing_period: "monthly" | "annual" | null;

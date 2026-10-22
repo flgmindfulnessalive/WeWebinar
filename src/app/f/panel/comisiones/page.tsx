@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", year: "numeric" });
 const MONEY = new Intl.NumberFormat("es", {
@@ -64,6 +65,7 @@ export default async function PanelCommissionsPage() {
           <table className="w-full min-w-[520px] border-collapse text-[length:var(--wf-body)]">
             <thead>
               <tr className="text-left text-[var(--wf-fg-muted)]">
+                <th scope="col" className="border-b border-[var(--wf-edge-soft)] px-5 py-3.5 text-[length:var(--wf-small)] font-semibold tracking-[0.08em] uppercase">Quién</th>
                 <th scope="col" className="border-b border-[var(--wf-edge-soft)] px-5 py-3.5 text-[length:var(--wf-small)] font-semibold tracking-[0.08em] uppercase">Llegó</th>
                 <th scope="col" className="border-b border-[var(--wf-edge-soft)] px-5 py-3.5 text-[length:var(--wf-small)] font-semibold tracking-[0.08em] uppercase">Plan</th>
                 <th scope="col" className="border-b border-[var(--wf-edge-soft)] px-5 py-3.5 text-[length:var(--wf-small)] font-semibold tracking-[0.08em] uppercase">Tu 20%</th>
@@ -72,6 +74,25 @@ export default async function PanelCommissionsPage() {
             <tbody>
               {rows.map((row, index) => (
                 <tr key={`${row.referred_at}-${index}`}>
+                  {/* El nombre con el que bautizó su página, que es el
+                      mismo que ya sale en Mis registros. Y su dirección,
+                      que es pública: desde aquí se puede ir a ver cómo le
+                      está quedando el funnel que le regalaste. */}
+                  <td className="border-b border-[var(--wf-edge-soft)] px-5 py-3.5">
+                    <div className="font-semibold text-[var(--wf-fg)]">
+                      {row.referred_name ?? "—"}
+                    </div>
+                    {row.referred_slug && (
+                      <a
+                        href={`https://${WEFUNNELS_HOST}/${row.referred_slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[length:var(--wf-small)] text-[var(--wf-accent)] no-underline"
+                      >
+                        /{row.referred_slug}
+                      </a>
+                    )}
+                  </td>
                   <td className="border-b border-[var(--wf-edge-soft)] px-5 py-3.5 whitespace-nowrap text-[var(--wf-fg-muted)] tabular-nums">
                     {DATE.format(new Date(row.referred_at))}
                   </td>
@@ -106,12 +127,14 @@ export default async function PanelCommissionsPage() {
         </div>
       )}
 
-      {/* Stated because the absence would read as an oversight. These rows
-          are a commission record, not a contact list: the people behind them
-          claimed a free page, they did not agree to become anybody's lead. */}
+      {/* Aquí iba una nota explicando por qué no había nombres. Dejó de
+          ser cierta el día que Mis registros empezó a enseñar quién
+          reclama un funnel, que es lo que hace falta para acompañarlo.
+          Lo que queda por decir es lo otro: el correo está, pero está en
+          su ficha, que es donde se le escribe. */}
       <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
-        Aquí no aparecen nombres ni correos. Quien llegó por ti recibió su propia página,
-        y sus datos son suyos — lo que se te debe no depende de saber quién es.
+        Para escribirle a alguien de esta lista, su ficha está en Mis registros, con su
+        correo y su estado de seguimiento.
       </p>
     </div>
   );
