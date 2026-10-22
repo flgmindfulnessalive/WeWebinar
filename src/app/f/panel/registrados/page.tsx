@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { LeadRow, type LeadCard, type LeadStatus } from "./lead-row";
 
@@ -107,19 +106,15 @@ export default async function PanelLeadsPage() {
         </div>
       )}
 
+      {/* Aquí iba además una frase sobre el botón de WhatsApp y sobre que
+          el envío automático de correos necesita un plan de WeWebinars.
+          Fuera: la primera explica un botón que se explica solo, y la
+          segunda vende en la pantalla donde alguien viene a escribirle a
+          sus contactos. Lo que queda es lo único que el lector no puede
+          deducir mirando: que estos contactos son suyos y de nadie más. */}
       <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
         Personas registradas en tu página. Solo tú accedes a estos contactos: quien te
-        regaló tu funnel no los ve. El botón de WhatsApp abre el chat con el mensaje
-        escrito; el envío automático de correos llega con{" "}
-        <a
-          href={wefunnelAppUrl("/pricing")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-[var(--wf-accent)] no-underline"
-        >
-          un plan de WeWebinars
-        </a>
-        .
+        regaló tu funnel no los ve.
       </p>
     </div>
   );
