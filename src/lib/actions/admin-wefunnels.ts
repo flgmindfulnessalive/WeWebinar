@@ -364,7 +364,7 @@ export async function grantSiteToSignup(
     return { error: readable(error) };
   }
 
-  refresh("/admin/wefunnels");
+  refresh("/admin/wefunnels", "/f/panel/registrados", "/f/panel/comisiones");
   return {
     success: `${name} ya tiene su página: ${WEFUNNELS_HOST}/${slug}${
       refSlug ? ` · acreditada a /${refSlug}` : " · sin acreditar"
@@ -401,7 +401,10 @@ export async function setPageReferrer(
     return { error: readable(error) };
   }
 
-  refresh("/admin/wefunnels");
+  // También el panel de quien recibe el crédito: esto le escribe una ficha
+  // en Mis registros y una fila en Mis comisiones, y son sus pantallas, no
+  // las de la consola.
+  refresh("/admin/wefunnels", "/f/panel/registrados", "/f/panel/comisiones");
   return { success: `Acreditada a /${refSlug}.` };
 }
 
