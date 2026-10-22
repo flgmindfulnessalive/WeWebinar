@@ -20,16 +20,25 @@ type RouteParams = { slug: string };
 // productos». Quien pegaba su enlace en un grupo presentaba otra marca y
 // otro producto en vez de presentarse.
 //
-// Ahora va su nombre y su frase. Se lee con la sesión anónima: si la
-// página es un borrador o está suspendida, RLS no devuelve la fila y
-// queda el texto neutro -- el estado de la página de alguien no se
-// cuenta en una vista previa.
+// Va su nombre y su frase. Y el texto de reserva ya no es el de la
+// página de regalo: «Reclama tu embudo gratis de por vida» es la oferta
+// de un distribuidor repartiendo, no lo que presenta la página personal
+// de alguien. Quien pegaba su enlace antes de publicar -- que es
+// exactamente cuando se comparte, para enseñar cuál va a ser -- salía
+// ofreciendo embudos gratis en su nombre.
+//
+// Un borrador también se presenta. La fila se lee con la clave de
+// servicio porque RLS esconde a los anónimos todo lo que no esté
+// publicado, y sin eso la vista previa del enlace que su dueño acaba de
+// copiar no diría nada de él. Solo el nombre: la frase de portada de un
+// borrador puede estar a medio escribir, y una suspendida no se presenta
+// en absoluto.
 //
 // Sigue sin indexarse. Son páginas personales que se reparten por enlace,
 // no escaparates que compitan en buscadores.
-const FALLBACK_TITLE = "Reclama tu embudo gratis de por vida";
-const FALLBACK_DESCRIPTION =
-  "Tu página para captar contactos, tu panel de registros y el curso para llevarles tráfico.";
+const FALLBACK_TITLE = "WeFunnels";
+const FALLBACK_DESCRIPTION = "Una página de WeFunnels.";
+const DRAFT_DESCRIPTION = "Esta página todavía no está publicada.";
 
 export async function generateMetadata({
   params,
@@ -37,17 +46,22 @@ export async function generateMetadata({
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: site } = await supabase
+  const admin = createAdminClient();
+  const { data: site } = await admin
     .from("wefunnel_sites")
-    .select("*")
+    .select("display_name, headline, description, status, suspended_at")
     .eq("slug", slug)
     .maybeSingle();
 
-  const live = site && site.status === "published" && !site.suspended_at ? site : null;
-  const title = live?.display_name?.trim() || FALLBACK_TITLE;
-  const description =
-    live?.headline?.trim() || live?.description?.trim() || FALLBACK_DESCRIPTION;
+  const shareable = site && !site.suspended_at ? site : null;
+  const published = shareable && shareable.status === "published" ? shareable : null;
+
+  const title = shareable?.display_name?.trim() || FALLBACK_TITLE;
+  const description = published
+    ? published.headline?.trim() || published.description?.trim() || FALLBACK_DESCRIPTION
+    : shareable
+      ? DRAFT_DESCRIPTION
+      : FALLBACK_DESCRIPTION;
 
   // Absoluta y en el host de WeFunnels, por lo mismo que en la página de
   // regalo: declarar openGraph aquí desactiva la imagen del fichero, y una
