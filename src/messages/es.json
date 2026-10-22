@@ -437,8 +437,10 @@
   },
   "DashboardNav": {
     "summary": "Resumen",
-    "launchpad": "Launchpad",
     "webinars": "Webinars",
+    "groupWork": "Tu trabajo",
+    "groupAccount": "Tu cuenta",
+    "createWebinar": "Crear webinar",
     "team": "Equipo",
     "settings": "Configuración"
   },
@@ -457,7 +459,15 @@
     "language": "Idioma"
   },
   "UserMenu": {
-    "signOut": "Salir"
+    "signOut": "Cerrar sesión",
+    "menuLabel": "Mi cuenta",
+    "profile": "Mi perfil",
+    "billing": "Facturación y plan",
+    "settings": "Configuración",
+    "launchpad": "Launchpad",
+    "language": "Idioma",
+    "theme": "Tema",
+    "help": "Ayuda y soporte"
   },
   "DashboardLayout": {
     "accountSuspended": "Tu cuenta está suspendida",
@@ -1097,9 +1107,23 @@
     "emptyState": "Todavía no creaste ningún webinar.",
     "createFirstWebinar": "Crear tu primer webinar",
     "registrantsCount": "{count, plural, one {# registrado} other {# registrados}}",
-    "view": "Ver",
-    "attentionFilter": "{count, plural, one {# necesita atención} other {# necesitan atención}}",
-    "attentionEmptyState": "Ningún webinar necesita atención ahora mismo."
+    "attentionEmptyState": "Ningún webinar necesita atención ahora mismo.",
+    "summaryLine": "{total, plural, one {# webinar} other {# webinars}} · {published} publicados · {registrants} registrados en total",
+    "searchLabel": "Buscar un webinar",
+    "searchPlaceholder": "Buscar por título",
+    "search": "Buscar",
+    "noMatches": "Ningún webinar coincide con este filtro.",
+    "createdOn": "Creado el {date}",
+    "noVideoYet": "Falta el vídeo",
+    "open": "Abrir",
+    "continue": "Seguir",
+    "filter": {
+      "todos": "Todos",
+      "publicados": "Publicados",
+      "borrador": "Borrador",
+      "archivados": "Archivados",
+      "atencion": "Necesita atención"
+    }
   },
   "WebinarAttention": {
     "noVideo": "Sin video",

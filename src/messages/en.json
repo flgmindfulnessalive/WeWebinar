@@ -437,8 +437,10 @@
   },
   "DashboardNav": {
     "summary": "Summary",
-    "launchpad": "Launchpad",
     "webinars": "Webinars",
+    "groupWork": "Your work",
+    "groupAccount": "Your account",
+    "createWebinar": "Create webinar",
     "team": "Team",
     "settings": "Settings"
   },
@@ -457,7 +459,15 @@
     "language": "Language"
   },
   "UserMenu": {
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "menuLabel": "My account",
+    "profile": "My profile",
+    "billing": "Billing and plan",
+    "settings": "Settings",
+    "launchpad": "Launchpad",
+    "language": "Language",
+    "theme": "Theme",
+    "help": "Help and support"
   },
   "DashboardLayout": {
     "accountSuspended": "Your account is suspended",
@@ -1097,9 +1107,23 @@
     "emptyState": "You haven't created any webinars yet.",
     "createFirstWebinar": "Create your first webinar",
     "registrantsCount": "{count, plural, one {# registrant} other {# registrants}}",
-    "view": "View",
-    "attentionFilter": "{count, plural, one {# needs attention} other {# need attention}}",
-    "attentionEmptyState": "No webinar needs attention right now."
+    "attentionEmptyState": "No webinar needs attention right now.",
+    "summaryLine": "{total, plural, one {# webinar} other {# webinars}} · {published} published · {registrants} registrants in total",
+    "searchLabel": "Search a webinar",
+    "searchPlaceholder": "Search by title",
+    "search": "Search",
+    "noMatches": "No webinar matches this filter.",
+    "createdOn": "Created on {date}",
+    "noVideoYet": "Video missing",
+    "open": "Open",
+    "continue": "Continue",
+    "filter": {
+      "todos": "All",
+      "publicados": "Published",
+      "borrador": "Draft",
+      "archivados": "Archived",
+      "atencion": "Needs attention"
+    }
   },
   "WebinarAttention": {
     "noVideo": "No video",
