@@ -302,7 +302,12 @@ export async function weFunnelSignOut(): Promise<void> {
   } catch (err) {
     console.error("[wefunnel] sign out failed:", err);
   }
-  redirect("/");
+  // A la pantalla de entrar, no a la portada: quien cierra sesión en el
+  // panel casi siempre va a volver, y dejarlo en la página de venta le
+  // obliga a buscar por dónde se entra -- que es justo la pregunta que
+  // nos llegó por WhatsApp. Es también donde termina
+  // weFunnelSignOutEverywhere, así que las dos salidas coinciden.
+  redirect("/entrar");
 }
 
 // Cerrar la sesión en todos los dispositivos, no solo en este navegador.

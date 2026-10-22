@@ -219,19 +219,6 @@ export default async function WeFunnelSignUpPage({
         <section className="min-w-0">
           <WeFunnelSignUpForm intent={buying ? "compra" : "regalo"} />
 
-          {/* Quien regala el funnel recibe el nombre y el correo de quien lo
-              reclama, en sus registros, para poder acompañarlo. Dicho aquí,
-              antes de crear la cuenta, y no en una política que nadie abre:
-              lo que se comparte se avisa donde se comparte. El resto -- lo
-              que esta persona capte luego con su página -- no sale de su
-              cuenta, y eso también se dice, porque es la duda que sigue. */}
-          {referrer && (
-            <p className="m-0 mt-5 max-w-[52ch] text-[length:var(--wf-small)] leading-relaxed text-[#8498B4]">
-              {referrer.name} verá tu nombre y tu correo en su panel, para poder
-              acompañarte con tu funnel. Lo que registres después en tu página es solo
-              tuyo: nadie más lo ve.
-            </p>
-          )}
         </section>
       </main>
 

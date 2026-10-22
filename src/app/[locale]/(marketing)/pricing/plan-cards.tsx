@@ -56,7 +56,10 @@ function featureList(
 }
 
 export function PlanCards({ plans }: { plans: Plan[] }) {
-  const [billing, setBilling] = useState<"annual" | "monthly">("annual");
+  // Mensual por defecto. El anual sale más barato y el selector sigue
+  // ahí al lado, pero abrir en la cifra grande del año asusta a quien
+  // viene a ver cuánto cuesta esto al mes.
+  const [billing, setBilling] = useState<"annual" | "monthly">("monthly");
   const t = useTranslations("Pricing");
 
   return (

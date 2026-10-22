@@ -106,15 +106,10 @@ export default async function PanelLeadsPage() {
         </div>
       )}
 
-      {/* Aquí iba además una frase sobre el botón de WhatsApp y sobre que
-          el envío automático de correos necesita un plan de WeWebinars.
-          Fuera: la primera explica un botón que se explica solo, y la
-          segunda vende en la pantalla donde alguien viene a escribirle a
-          sus contactos. Lo que queda es lo único que el lector no puede
-          deducir mirando: que estos contactos son suyos y de nadie más. */}
+      {/* En plural: en esta lista caen los de la página personal y los de
+          la página de regalo, que son dos orígenes y una sola lista. */}
       <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-muted)]">
-        Personas registradas en tu página. Solo tú accedes a estos contactos: quien te
-        regaló tu funnel no los ve.
+        Personas registradas en tus páginas. Solo tú accedes a estos contactos.
       </p>
     </div>
   );
