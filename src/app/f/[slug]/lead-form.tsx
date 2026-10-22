@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 
 import { submitWeFunnelLead, type WeFunnelLeadState } from "@/lib/actions/wefunnel-leads";
+import { trackAdPixelLead, type AdPixelProvider } from "@/components/ad-pixel";
 
 const FIELD =
   "w-full rounded-[10px] border border-[#23233A] bg-[#050509] px-3.5 py-3.5 text-[16px] text-white outline-none focus-visible:border-[#2BD7F5]";
@@ -27,16 +28,28 @@ export function LeadForm({
   ownerName,
   questions,
   disabled,
+  pixelProvider = null,
 }: {
   siteId: string;
   ownerName: string;
   questions: string[];
   disabled: boolean;
+  pixelProvider?: AdPixelProvider | null;
 }) {
   const [state, formAction] = useActionState<WeFunnelLeadState, FormData>(
     submitWeFunnelLead,
     null
   );
+
+  const submitted = Boolean(state && "success" in state);
+
+  // La conversión del píxel del dueño, una sola vez y cuando de verdad se
+  // guardó. En un efecto y no en el camino del render porque disparar un
+  // evento es un efecto secundario: React puede volver a renderizar esto
+  // sin que nadie haya enviado nada otra vez.
+  useEffect(() => {
+    if (submitted) trackAdPixelLead(pixelProvider);
+  }, [submitted, pixelProvider]);
 
   // The thank-you screen replaces the form in place, on the same URL. It
   // never becomes its own page: nothing extra to moderate, the back button

@@ -91,7 +91,10 @@ export default async function PricingPage() {
       <JsonLd data={faqJsonLd(faqItems)} />
       <div className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
-        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+        {/* Aquí iba "Todos los planes incluyen Commercial Rights
+            ilimitados". Fuera: lo que el visitante quiere de esta pantalla
+            son los precios, y los Commercial Rights siguen explicados en
+            la lista de cada plan y en las preguntas frecuentes. */}
         <div
           className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium"
           style={{ borderColor: "var(--brand)", color: "var(--brand)" }}

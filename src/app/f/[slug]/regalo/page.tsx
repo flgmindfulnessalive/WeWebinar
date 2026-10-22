@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { courseTemplateWebinarId } from "@/lib/wefunnels/course-room";
+import { AdPixel, type AdPixelProvider } from "@/components/ad-pixel";
 import { CountVisit } from "@/components/wefunnels/count-visit";
 import { HeroGrid } from "@/components/wefunnels/hero-grid";
 import { Reveal } from "@/components/wefunnels/reveal";
@@ -254,6 +255,15 @@ export default async function WeFunnelGiftPage({
   return (
     <div>
       <CountVisit slug={site.slug} surface="gift" />
+      {/* El mismo píxel que la página personal: la de regalo es la otra
+          cara de lo que esta persona reparte, y quien paga anuncios para
+          traer gente aquí necesita medir las dos. */}
+      {site.pixel_id && (
+        <AdPixel
+          provider={(site.pixel_provider as AdPixelProvider | null) ?? "meta"}
+          pixelId={site.pixel_id}
+        />
+      )}
       <Reveal />
       {/* La página es larga y su CTA vive arriba del todo: sin esto, quien
           llega al final solo puede volver arrastrando. */}

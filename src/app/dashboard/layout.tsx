@@ -8,13 +8,12 @@ import { getCurrentAccount } from "@/lib/data/account";
 import { signOut } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, isPast } from "@/lib/time";
+import { attentionReason } from "@/lib/webinar-attention";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { DashboardNav } from "./dashboard-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserMenu } from "./user-menu";
-import { ThemeToggle } from "./theme-toggle";
-import { LanguageToggle } from "./language-toggle";
 import { CheckoutButton } from "./settings/billing/billing-buttons";
 import { SupportChatWidget } from "./support-chat-widget";
 import { TrialBanner } from "./trial-banner";
@@ -199,6 +198,20 @@ export default async function DashboardLayout({
     );
   }
 
+  // El aviso de "necesita atención" ya se calculaba en dos pantallas y
+  // solo se veía entrando en ellas. Una consulta más, de columnas
+  // mínimas y acotada a la cuenta, para poder enseñarlo en el menú.
+  const dashboardSupabase = await createClient();
+  const { data: attentionRows } = await dashboardSupabase
+    .from("webinars")
+    .select("status, video_source, created_at")
+    .eq("account_id", current.account.id)
+    .eq("status", "draft");
+  const tAttention = await getTranslations("WebinarAttention");
+  const attentionCount = (attentionRows ?? []).filter(
+    (webinar) => attentionReason(webinar, tAttention) !== null
+  ).length;
+
   const trialDaysLeft =
     current.account.subscription_status === "trialing"
       ? daysUntil(current.account.trial_ends_at)
@@ -217,13 +230,13 @@ export default async function DashboardLayout({
             <Logo />
             WeWebinars
           </Link>
-          <DashboardNav role={current.user.role} />
+          <DashboardNav role={current.user.role} attentionCount={attentionCount} />
         </aside>
 
         <div className="flex flex-col">
           <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
             <div className="flex items-center gap-2">
-              <MobileNav role={current.user.role} />
+              <MobileNav role={current.user.role} attentionCount={attentionCount} />
               <Link
                 href="/dashboard"
                 className="flex items-center gap-2 text-lg font-semibold tracking-tight md:hidden"
@@ -234,24 +247,19 @@ export default async function DashboardLayout({
                     sidebar (desktop) already carries the full brand. */}
                 <span className="hidden sm:inline">WeWebinars</span>
               </Link>
-              <div className="hidden text-sm text-muted-foreground md:block">
-                {current.account.name} ·{" "}
-                <span className="capitalize">{current.plan.key}</span>
-              </div>
+
             </div>
             <div className="flex shrink-0 items-center gap-3">
-              {/* Mobile carries these inside the hamburger panel instead
-                  (see MobileNav) -- crowded otherwise next to the
-                  hamburger, "Salir", and a possible trial banner all in
-                  the same 56px row. */}
-              <div className="hidden items-center gap-3 md:flex">
-                <LanguageToggle />
-                <ThemeToggle />
-              </div>
+              {/* Idioma y tema eran dos controles sueltos aquí al lado.
+                  Se mudan dentro del menú de la cuenta, que es donde se
+                  buscan los ajustes y donde tienen sitio para una
+                  etiqueta; en móvil siguen en el panel del hamburguesa. */}
               <UserMenu
                 email={current.user.email}
                 displayName={current.user.display_name}
                 avatarUrl={current.user.avatar_url}
+                accountName={current.account.name}
+                planLabel={current.plan.key}
               />
             </div>
           </header>

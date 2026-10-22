@@ -25,7 +25,13 @@ import type { UserRole } from "@/lib/supabase/database.types";
 // competing for the same 56px-tall row, a header that also carried two
 // more segmented controls read as cluttered; folded into the panel they
 // get real labels and breathing room instead.
-export function MobileNav({ role }: { role: UserRole }) {
+export function MobileNav({
+  role,
+  attentionCount = 0,
+}: {
+  role: UserRole;
+  attentionCount?: number;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -49,7 +55,7 @@ export function MobileNav({ role }: { role: UserRole }) {
 
       {open && (
         <div className="fixed inset-0 top-14 z-40 overflow-y-auto bg-background p-4">
-          <DashboardNav role={role} />
+          <DashboardNav role={role} attentionCount={attentionCount} />
           <div className="mt-6 flex flex-col gap-3 border-t pt-4">
             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {t("preferences")}

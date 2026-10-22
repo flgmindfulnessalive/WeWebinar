@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { kickerOf } from "@/lib/wefunnels/kicker";
+import { AdPixel, type AdPixelProvider } from "@/components/ad-pixel";
 import { LeadForm } from "./lead-form";
 import { CountVisit } from "@/components/wefunnels/count-visit";
 import { HeroGrid } from "@/components/wefunnels/hero-grid";
@@ -235,6 +236,14 @@ export default async function WeFunnelSitePage({
             else, so counting it would start everyone's panel at a number made
             of their own reloads. */}
         {isLive && <CountVisit slug={site.slug} surface="funnel" />}
+        {/* El píxel de quien es dueño de la página, solo cuando está viva:
+            en un borrador las únicas visitas serían las suyas recargando. */}
+        {isLive && site.pixel_id && (
+          <AdPixel
+            provider={(site.pixel_provider as AdPixelProvider | null) ?? "meta"}
+            pixelId={site.pixel_id}
+          />
+        )}
 
         {!isLive && (
           <div className="-mx-6 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#A855F7] bg-gradient-to-br from-[#10163A] to-[#250F3D] px-5 py-3.5">
@@ -344,6 +353,11 @@ export default async function WeFunnelSitePage({
             ownerName={site.display_name}
             questions={site.questions ?? []}
             disabled={!isLive}
+            pixelProvider={
+              isLive && site.pixel_id
+                ? ((site.pixel_provider as AdPixelProvider | null) ?? "meta")
+                : null
+            }
           />
         </div>
 
