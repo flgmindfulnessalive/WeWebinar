@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ClearButton, SuspendButton } from "./moderation-actions";
 import { CreateAccountForm, GrantLicenseForm } from "./console-forms";
 import { GrantSiteForm } from "./unclaimed-form";
+import { ReferrerForm } from "./referrer-form";
 import { proposeSlug } from "@/lib/wefunnels/slug";
 import { ResourceManager } from "./resource-forms";
 import { TemplateManager } from "./template-forms";
@@ -620,7 +621,7 @@ export default async function AdminWeFunnelsPage({
                               <Badge variant="outline">Gratis</Badge>
                             )}
                           </td>
-                          <td className="border-b px-4 py-3 whitespace-nowrap">
+                          <td className="border-b px-4 py-3">
                             {/* Sin fila de referido no hay a quién atribuirla: o la
                                 creó la consola de arriba, o la reclamó alguien que
                                 llegó sin pasar por una página de regalo. */}
@@ -628,6 +629,12 @@ export default async function AdminWeFunnelsPage({
                               const from = site.account_id
                                 ? referrerByAccount.get(site.account_id)
                                 : undefined;
+                              // Sin fila de referido no hay a quién
+                              // atribuirla -- la creó la consola, o la
+                              // reclamó alguien que llegó sin pasar por
+                              // una página de regalo -- pero quien
+                              // reparte sí lo sabe. El guion deja de ser
+                              // el final y pasa a ser un campo.
                               return from ? (
                                 <a
                                   href={`https://${WEFUNNELS_HOST}/${from}`}
@@ -638,7 +645,7 @@ export default async function AdminWeFunnelsPage({
                                   /{from}
                                 </a>
                               ) : (
-                                <span className="text-muted-foreground">—</span>
+                                <ReferrerForm siteId={site.id} />
                               );
                             })()}
                           </td>

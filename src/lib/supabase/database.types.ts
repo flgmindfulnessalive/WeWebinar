@@ -2335,6 +2335,10 @@ export interface Database {
           full_name: string | null;
         }[];
       };
+      wefunnel_admin_set_referrer: {
+        Args: { p_site_id: string; p_ref_slug: string };
+        Returns: boolean;
+      };
       wefunnel_admin_grant_site: {
         Args: {
           p_user_id: string;
