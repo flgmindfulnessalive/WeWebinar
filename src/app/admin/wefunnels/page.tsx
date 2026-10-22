@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { AlertTriangle, FileText, Rocket, Timer } from "lucide-react";
+
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +27,53 @@ const SOURCE_LABEL: Record<string, string> = {
   report: "Reporte",
 };
 
-export default async function AdminWeFunnelsPage() {
+type View = "vigilar" | "altas" | "contenido";
+type Estado = "todas" | "publicadas" | "borrador" | "suspendidas";
+
+// Las pestañas y los filtros viven en la URL, no en estado de cliente:
+// esta pantalla ya es un componente de servidor con todos los datos en la
+// mano, así que filtrar aquí no cuesta una consulta más y a cambio cada
+// vista queda enlazable -- «mándame el enlace de las suspendidas» es un
+// enlace de verdad, y recargar no pierde dónde estabas.
+const VIEWS: { key: View; label: string }[] = [
+  { key: "vigilar", label: "Vigilar" },
+  { key: "altas", label: "Altas manuales" },
+  { key: "contenido", label: "Contenido del panel" },
+];
+
+const ESTADOS: { key: Estado; label: string }[] = [
+  { key: "todas", label: "Todas" },
+  { key: "publicadas", label: "Publicadas" },
+  { key: "borrador", label: "Borrador" },
+  { key: "suspendidas", label: "Suspendidas" },
+];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Fuera del componente a propósito: leer el reloj dentro del render es
+// justo lo que el compilador de React marca como impuro, y este dato no
+// necesita estar ahí dentro -- es una cuenta sobre filas ya cargadas.
+function countStarterEndingSoon(rows: { starter_until: string | null }[]): number {
+  const now = Date.now();
+  return rows.filter((row) => {
+    if (!row.starter_until) return false;
+    const endsIn = new Date(row.starter_until).getTime() - now;
+    return endsIn > 0 && endsIn <= 7 * DAY_MS;
+  }).length;
+}
+
+export default async function AdminWeFunnelsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ v?: string; estado?: string; q?: string }>;
+}) {
+  const params = await searchParams;
+  const view: View = VIEWS.some((v) => v.key === params.v) ? (params.v as View) : "vigilar";
+  const estado: Estado = ESTADOS.some((e) => e.key === params.estado)
+    ? (params.estado as Estado)
+    : "todas";
+  const query = (params.q ?? "").trim();
+
   // Service role on purpose: wefunnel_reviews has no client policies, and
   // the queue has to show pages that are already suspended -- which RLS
   // hides from everyone but their owner.
@@ -125,15 +174,62 @@ export default async function AdminWeFunnelsPage() {
   // vacía sin decir por qué y los formularios fallarían uno a uno.
   const migrationPending = consoleError?.code === "PGRST202";
 
+  // Lo que se enseña arriba. Son cuentas de lo ya cargado, no consultas
+  // nuevas: la página ya traía todas las filas para pintar las tablas.
+  const publishedCount = allSites.filter(
+    (site) => site.status === "published" && !site.suspended_at
+  ).length;
+  const suspendedCount = allSites.filter((site) => site.suspended_at).length;
+  const starterEndingSoon = countStarterEndingSoon(allDistributors);
+
+  const needle = query.toLowerCase();
+  const visibleSites = allSites.filter((site) => {
+    const matchesEstado =
+      estado === "todas" ||
+      (estado === "suspendidas" && site.suspended_at) ||
+      (estado === "publicadas" && site.status === "published" && !site.suspended_at) ||
+      (estado === "borrador" && site.status !== "published" && !site.suspended_at);
+    if (!matchesEstado) return false;
+    if (!needle) return true;
+    const email = (site.account_id && emailByAccount.get(site.account_id)) ?? "";
+    return (
+      site.slug.toLowerCase().includes(needle) ||
+      site.display_name.toLowerCase().includes(needle) ||
+      email.toLowerCase().includes(needle)
+    );
+  });
+
+  const viewHref = (next: View) => `/admin/wefunnels?v=${next}`;
+  const estadoHref = (next: Estado) =>
+    `/admin/wefunnels?v=vigilar&estado=${next}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
+
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">WeFunnels</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Todas las páginas comparten dominio registrable con wewebinars.com, así que lo
-          que se publica aquí afecta la reputación de los enlaces de los clientes que
-          pagan. Bajar una página es inmediato y no necesita deploy.
-        </p>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight">WeFunnels</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Todas las páginas comparten dominio registrable con wewebinars.com, así que lo
+            que se publica aquí afecta la reputación de los enlaces de los clientes que
+            pagan. Bajar una página es inmediato y no necesita deploy.
+          </p>
+        </div>
+        {/* Dar de alta es una acción, no una sección que se lee: sube a la
+            cabecera y la pestaña queda para el formulario entero. */}
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Link
+            href={viewHref("altas")}
+            className="inline-flex h-9 items-center rounded-md border px-3.5 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            Dar licencia
+          </Link>
+          <Link
+            href={viewHref("altas")}
+            className="inline-flex h-9 items-center rounded-md bg-foreground px-3.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          >
+            Crear cuenta
+          </Link>
+        </div>
       </div>
 
       {migrationPending && (
@@ -145,311 +241,475 @@ export default async function AdminWeFunnelsPage() {
         </div>
       )}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">Crear una cuenta</h2>
-        <p className="text-sm text-muted-foreground">
-          Crea la cuenta y la página de alguien sin que pase por el embudo ni pague.
-          Queda en borrador, a su nombre, y con el email ya confirmado para que pueda
-          publicarla. La licencia que se da aquí se marca como regalada: no entra en
-          los ingresos.
-        </p>
-        <Card>
-          <CardContent className="pt-6">
-            <CreateAccountForm />
+      {/* Cuatro cifras, y la primera es la única que puede ponerse roja:
+          un panel donde todo grita no avisa de nada. */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Card className={openReviews.length > 0 ? "border-destructive/50" : undefined}>
+          <CardContent className="flex items-start justify-between gap-3 py-4">
+            <div>
+              <p
+                className={`text-xs font-medium ${openReviews.length > 0 ? "text-destructive" : "text-muted-foreground"}`}
+              >
+                En revisión
+              </p>
+              <p
+                className={`mt-1 text-2xl font-semibold tabular-nums ${openReviews.length > 0 ? "text-destructive" : ""}`}
+              >
+                {openReviews.length}
+              </p>
+            </div>
+            <AlertTriangle
+              className={`size-4 ${openReviews.length > 0 ? "text-destructive" : "text-muted-foreground"}`}
+              aria-hidden="true"
+            />
           </CardContent>
         </Card>
-      </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Dar la licencia a una cuenta que ya existe
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Para quien ya se registró y solo le falta el nivel Distribuidor.
-        </p>
         <Card>
-          <CardContent className="pt-6">
-            <GrantLicenseForm />
+          <CardContent className="flex items-start justify-between gap-3 py-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Páginas publicadas</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">
+                {publishedCount}{" "}
+                <span className="text-sm font-normal text-muted-foreground">
+                  de {allSites.length}
+                </span>
+              </p>
+            </div>
+            <FileText className="size-4 text-muted-foreground" aria-hidden="true" />
           </CardContent>
         </Card>
-      </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Distribuidores <span className="text-muted-foreground">({allDistributors.length})</span>
-        </h2>
         <Card>
-          <CardContent className="overflow-x-auto p-0">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th className="border-b px-4 py-3 font-medium">Cuenta</th>
-                  <th className="border-b px-4 py-3 font-medium">Dirección</th>
-                  <th className="border-b px-4 py-3 font-medium">Licencia</th>
-                  <th className="border-b px-4 py-3 font-medium">Starter hasta</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allDistributors.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-6 text-muted-foreground" colSpan={4}>
-                      Todavía no hay distribuidores.
-                    </td>
-                  </tr>
-                ) : (
-                  allDistributors.map((d) => (
-                    <tr key={d.account_id}>
-                      <td className="border-b px-4 py-3">
-                        <div className="font-medium">{d.account_name}</div>
-                        <div className="text-xs text-muted-foreground">{d.owner_email}</div>
-                      </td>
-                      <td className="border-b px-4 py-3 whitespace-nowrap">
-                        {d.slug ? (
-                          <a
-                            href={`https://${WEFUNNELS_HOST}/${d.slug}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="underline underline-offset-2"
-                          >
-                            /{d.slug}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">sin página</span>
-                        )}
-                        {d.site_status === "draft" && (
-                          <Badge variant="secondary" className="ml-2">
-                            Borrador
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="border-b px-4 py-3 whitespace-nowrap">
-                        {d.license_source === "granted" ? (
-                          <Badge variant="secondary">Regalada</Badge>
-                        ) : (
-                          <span className="tabular-nums">
-                            {d.license_source === "invited" ? "Invitación" : "Público"}
-                            {d.license_price_usd != null && ` · $${d.license_price_usd}`}
-                          </span>
-                        )}
-                      </td>
-                      <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
-                        {d.starter_until ? DATE.format(new Date(d.starter_until)) : "—"}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <CardContent className="flex items-start justify-between gap-3 py-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Distribuidores</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">
+                {allDistributors.length}
+              </p>
+            </div>
+            <Rocket className="size-4 text-muted-foreground" aria-hidden="true" />
           </CardContent>
         </Card>
-      </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Cola de revisión
-          {openReviews.length > 0 && (
-            <span className="ml-2 text-muted-foreground">{openReviews.length}</span>
-          )}
-        </h2>
-
-        {openReviews.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-sm text-muted-foreground">
-              Nada pendiente. Aquí caen los avisos del filtro de términos y los reportes
-              de visitantes.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {openReviews.map((review) => {
-              const site = siteById.get(review.site_id);
-              return (
-                <Card key={review.id}>
-                  <CardContent className="flex flex-wrap items-start justify-between gap-4 py-4">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={review.source === "report" ? "destructive" : "secondary"}>
-                          {SOURCE_LABEL[review.source] ?? review.source}
-                        </Badge>
-                        <span className="font-medium">{review.rule}</span>
-                        {site?.suspended_at && <Badge variant="outline">Ya suspendida</Badge>}
-                      </div>
-                      <p className="mt-1 text-sm break-all text-muted-foreground">
-                        {site ? (
-                          <a
-                            href={`https://${WEFUNNELS_HOST}/${site.slug}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {WEFUNNELS_HOST}/{site.slug}
-                          </a>
-                        ) : (
-                          "página borrada"
-                        )}
-                        {site && ` · ${site.display_name}`}
-                      </p>
-                      {review.detail && (
-                        <p className="mt-1 text-sm">{review.detail}</p>
-                      )}
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {DATE.format(new Date(review.created_at))}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <ClearButton reviewId={review.id} />
-                      {site && (
-                        <SuspendButton
-                          siteId={site.id}
-                          suspended={Boolean(site.suspended_at)}
-                          rule={review.rule}
-                        />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Recursos{" "}
-          <span className="text-muted-foreground">
-            ({resourceSections?.length ?? 0} cursos · {resourceItems?.length ?? 0} vídeos)
-          </span>
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Los cursos de anuncios y de contenido en redes que ve todo el mundo en su
-          panel, gratuito o distribuidor. Van aparte del curso de WeFunnels y de su PDF:
-          esto se añade y se reordena sin tocar código. Un curso sin publicar no se ve, y
-          uno publicado sin vídeos visibles tampoco se dibuja.
-        </p>
-        <ResourceManager
-          sections={resourceSections ?? []}
-          resources={resourceItems ?? []}
-        />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Plantillas de contenido{" "}
-          <span className="text-muted-foreground">({templates?.length ?? 0})</span>
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Textos para que un distribuidor cuente que regala funnels: publicaciones y
-          guiones de reel. Solo las ve quien tiene licencia, porque son material para
-          repartir funnels y eso es lo que compra el nivel. Nada de lo que se escriba
-          aquí debería prometer ingresos ni mencionar ganar por traer gente: las normas
-          de Meta sobre fraude lo prohíben y el modelo tampoco paga por eso.
-        </p>
-        <TemplateManager templates={templates ?? []} />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Páginas <span className="text-muted-foreground">({allSites.length})</span>
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Todas, gratuitas y de distribuidor. Una página gratuita solo nace cuando
-          alguien reclama por el enlace de regalo de un distribuidor, así que la
-          columna «Invitó» dice de quién vino cada una.
-        </p>
         <Card>
-          <CardContent className="overflow-x-auto p-0">
-            <table className="w-full min-w-[880px] border-collapse text-sm">
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th scope="col" className="border-b px-4 py-3 font-medium">Dirección</th>
-                  <th scope="col" className="border-b px-4 py-3 font-medium">Dueño</th>
-                  <th scope="col" className="border-b px-4 py-3 font-medium">Tipo</th>
-                  <th scope="col" className="border-b px-4 py-3 font-medium">Invitó</th>
-                  <th scope="col" className="border-b px-4 py-3 font-medium">Estado</th>
-                  <th scope="col" className="border-b px-4 py-3 font-medium">Creada</th>
-                  <th scope="col" className="border-b px-4 py-3 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {allSites.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-6 text-muted-foreground">
-                      Todavía no hay páginas.
-                    </td>
-                  </tr>
-                ) : (
-                  allSites.map((site) => (
-                    <tr key={site.id}>
-                      <td className="border-b px-4 py-3 break-all">
-                        <a
-                          href={`https://${WEFUNNELS_HOST}/${site.slug}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          /{site.slug}
-                        </a>
-                      </td>
-                      <td className="border-b px-4 py-3">
-                        <div className="font-medium">{site.display_name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {(site.account_id && emailByAccount.get(site.account_id)) ?? "—"}
+          <CardContent className="flex items-start justify-between gap-3 py-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">
+                Starter vence en 7 días
+              </p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">{starterEndingSoon}</p>
+            </div>
+            <Timer className="size-4 text-muted-foreground" aria-hidden="true" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <nav className="flex flex-wrap items-center gap-1 border-b" aria-label="Secciones">
+        {VIEWS.map((item) => {
+          const active = item.key === view;
+          return (
+            <Link
+              key={item.key}
+              href={viewHref(item.key)}
+              aria-current={active ? "page" : undefined}
+              className={`-mb-px border-b-2 px-3.5 py-2.5 text-sm no-underline transition-colors ${
+                active
+                  ? "border-foreground font-semibold text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {item.label}
+              {item.key === "vigilar" && openReviews.length > 0 && (
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[11px] font-semibold text-white tabular-nums">
+                  {openReviews.length}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {view === "vigilar" && (
+        <>
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Cola de revisión
+              {openReviews.length > 0 && (
+                <span className="ml-2 text-muted-foreground">{openReviews.length}</span>
+              )}
+            </h2>
+
+            {openReviews.length === 0 ? (
+              <Card>
+                <CardContent className="py-6 text-sm text-muted-foreground">
+                  Nada pendiente. Aquí caen los avisos del filtro de términos y los reportes
+                  de visitantes.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {openReviews.map((review) => {
+                  const site = siteById.get(review.site_id);
+                  return (
+                    <Card key={review.id} className="border-destructive/40">
+                      <CardContent className="flex flex-wrap items-start justify-between gap-4 py-4">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant={review.source === "report" ? "destructive" : "secondary"}>
+                              {SOURCE_LABEL[review.source] ?? review.source}
+                            </Badge>
+                            <span className="font-medium">{review.rule}</span>
+                            {site?.suspended_at && <Badge variant="outline">Ya suspendida</Badge>}
+                          </div>
+                          <p className="mt-1 text-sm break-all text-muted-foreground">
+                            {site ? (
+                              <a
+                                href={`https://${WEFUNNELS_HOST}/${site.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {WEFUNNELS_HOST}/{site.slug}
+                              </a>
+                            ) : (
+                              "página borrada"
+                            )}
+                            {site && ` · ${site.display_name}`}
+                          </p>
+                          {review.detail && <p className="mt-1 text-sm">{review.detail}</p>}
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {DATE.format(new Date(review.created_at))}
+                          </p>
                         </div>
-                      </td>
-                      <td className="border-b px-4 py-3 whitespace-nowrap">
-                        {site.account_id && licensedAccounts.has(site.account_id) ? (
-                          <Badge variant="secondary">Distribuidor</Badge>
-                        ) : (
-                          <Badge variant="outline">Gratis</Badge>
-                        )}
-                      </td>
-                      <td className="border-b px-4 py-3 whitespace-nowrap">
-                        {/* Sin fila de referido no hay a quién atribuirla: o la
-                            creó la consola de arriba, o la reclamó alguien que
-                            llegó sin pasar por una página de regalo. */}
-                        {(() => {
-                          const from = site.account_id
-                            ? referrerByAccount.get(site.account_id)
-                            : undefined;
-                          return from ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <ClearButton reviewId={review.id} />
+                          {site && (
+                            <SuspendButton
+                              siteId={site.id}
+                              suspended={Boolean(site.suspended_at)}
+                              rule={review.rule}
+                            />
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Páginas{" "}
+                  <span className="text-muted-foreground">
+                    {visibleSites.length === allSites.length
+                      ? allSites.length
+                      : `${visibleSites.length} de ${allSites.length}`}
+                  </span>
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                  Todas, gratuitas y de distribuidor. Una página gratuita solo nace cuando
+                  alguien reclama por el enlace de regalo de un distribuidor, así que la
+                  columna «Invitó» dice de quién vino cada una.
+                </p>
+              </div>
+              {/* Un GET de toda la vida: sin JavaScript, el buscador sigue
+                  funcionando y el resultado se puede enlazar. */}
+              <form method="get" action="/admin/wefunnels" className="flex shrink-0 gap-2">
+                <input type="hidden" name="v" value="vigilar" />
+                <input type="hidden" name="estado" value={estado} />
+                <label htmlFor="q" className="sr-only">
+                  Buscar una página
+                </label>
+                <input
+                  id="q"
+                  name="q"
+                  type="search"
+                  defaultValue={query}
+                  placeholder="Dirección, nombre o correo"
+                  className="h-9 w-56 rounded-full border bg-background px-3.5 text-sm"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex h-9 items-center rounded-full border px-3.5 text-sm font-medium transition-colors hover:bg-accent"
+                >
+                  Buscar
+                </button>
+              </form>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {ESTADOS.map((item) => {
+                const active = item.key === estado;
+                const count =
+                  item.key === "todas"
+                    ? allSites.length
+                    : item.key === "publicadas"
+                      ? publishedCount
+                      : item.key === "suspendidas"
+                        ? suspendedCount
+                        : allSites.length - publishedCount - suspendedCount;
+                return (
+                  <Link
+                    key={item.key}
+                    href={estadoHref(item.key)}
+                    aria-current={active ? "true" : undefined}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium no-underline transition-colors ${
+                      active
+                        ? "border-foreground bg-foreground text-background"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {item.label}
+                    <span className="tabular-nums opacity-70">{count}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <Card>
+              <CardContent className="overflow-x-auto p-0">
+                <table className="w-full min-w-[880px] border-collapse text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Dirección</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Dueño</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Tipo</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Invitó</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Estado</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Creada</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleSites.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-6 text-muted-foreground">
+                          {allSites.length === 0
+                            ? "Todavía no hay páginas."
+                            : "Ninguna página coincide con este filtro."}
+                        </td>
+                      </tr>
+                    ) : (
+                      visibleSites.map((site) => (
+                        <tr key={site.id}>
+                          <td className="border-b px-4 py-3 break-all">
                             <a
-                              href={`https://${WEFUNNELS_HOST}/${from}`}
+                              href={`https://${WEFUNNELS_HOST}/${site.slug}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="underline underline-offset-2"
                             >
-                              /{from}
+                              /{site.slug}
                             </a>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          );
-                        })()}
-                      </td>
-                      <td className="border-b px-4 py-3">
-                        {site.suspended_at ? (
-                          <Badge variant="destructive">Suspendida</Badge>
-                        ) : site.status === "published" ? (
-                          <Badge>Publicada</Badge>
-                        ) : (
-                          <Badge variant="secondary">Borrador</Badge>
-                        )}
-                      </td>
-                      <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
-                        {DATE.format(new Date(site.created_at))}
-                      </td>
-                      <td className="border-b px-4 py-3 text-right">
-                        <SuspendButton
-                          siteId={site.id}
-                          suspended={Boolean(site.suspended_at)}
-                        />
-                      </td>
+                          </td>
+                          <td className="border-b px-4 py-3">
+                            <div className="font-medium">{site.display_name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {(site.account_id && emailByAccount.get(site.account_id)) ?? "—"}
+                            </div>
+                          </td>
+                          <td className="border-b px-4 py-3 whitespace-nowrap">
+                            {site.account_id && licensedAccounts.has(site.account_id) ? (
+                              <Badge variant="secondary">Distribuidor</Badge>
+                            ) : (
+                              <Badge variant="outline">Gratis</Badge>
+                            )}
+                          </td>
+                          <td className="border-b px-4 py-3 whitespace-nowrap">
+                            {/* Sin fila de referido no hay a quién atribuirla: o la
+                                creó la consola de arriba, o la reclamó alguien que
+                                llegó sin pasar por una página de regalo. */}
+                            {(() => {
+                              const from = site.account_id
+                                ? referrerByAccount.get(site.account_id)
+                                : undefined;
+                              return from ? (
+                                <a
+                                  href={`https://${WEFUNNELS_HOST}/${from}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-2"
+                                >
+                                  /{from}
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              );
+                            })()}
+                          </td>
+                          <td className="border-b px-4 py-3">
+                            {site.suspended_at ? (
+                              <Badge variant="destructive">Suspendida</Badge>
+                            ) : site.status === "published" ? (
+                              <Badge>Publicada</Badge>
+                            ) : (
+                              <Badge variant="secondary">Borrador</Badge>
+                            )}
+                          </td>
+                          <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
+                            {DATE.format(new Date(site.created_at))}
+                          </td>
+                          <td className="border-b px-4 py-3 text-right">
+                            <SuspendButton
+                              siteId={site.id}
+                              suspended={Boolean(site.suspended_at)}
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Distribuidores{" "}
+              <span className="text-muted-foreground">({allDistributors.length})</span>
+            </h2>
+            <Card>
+              <CardContent className="overflow-x-auto p-0">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Cuenta</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Dirección</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Licencia</th>
+                      <th scope="col" className="border-b px-4 py-3 font-medium">Starter hasta</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      </section>
+                  </thead>
+                  <tbody>
+                    {allDistributors.length === 0 ? (
+                      <tr>
+                        <td className="px-4 py-6 text-muted-foreground" colSpan={4}>
+                          Todavía no hay distribuidores.
+                        </td>
+                      </tr>
+                    ) : (
+                      allDistributors.map((d) => (
+                        <tr key={d.account_id}>
+                          <td className="border-b px-4 py-3">
+                            <div className="font-medium">{d.account_name}</div>
+                            <div className="text-xs text-muted-foreground">{d.owner_email}</div>
+                          </td>
+                          <td className="border-b px-4 py-3 whitespace-nowrap">
+                            {d.slug ? (
+                              <a
+                                href={`https://${WEFUNNELS_HOST}/${d.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline underline-offset-2"
+                              >
+                                /{d.slug}
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground">sin página</span>
+                            )}
+                            {d.site_status === "draft" && (
+                              <Badge variant="secondary" className="ml-2">
+                                Borrador
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="border-b px-4 py-3 whitespace-nowrap">
+                            {d.license_source === "granted" ? (
+                              <Badge variant="secondary">Regalada</Badge>
+                            ) : (
+                              <span className="tabular-nums">
+                                {d.license_source === "invited" ? "Invitación" : "Público"}
+                                {d.license_price_usd != null && ` · $${d.license_price_usd}`}
+                              </span>
+                            )}
+                          </td>
+                          <td className="border-b px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">
+                            {d.starter_until ? DATE.format(new Date(d.starter_until)) : "—"}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      )}
+
+      {view === "altas" && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">Crear una cuenta</h2>
+            <p className="text-sm text-muted-foreground">
+              Crea la cuenta y la página de alguien sin que pase por el embudo ni pague.
+              Queda en borrador, a su nombre, y con el email ya confirmado para que pueda
+              publicarla. La licencia que se da aquí se marca como regalada: no entra en
+              los ingresos.
+            </p>
+            <Card>
+              <CardContent className="pt-6">
+                <CreateAccountForm />
+              </CardContent>
+            </Card>
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Dar la licencia a una cuenta que ya existe
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Para quien ya se registró y solo le falta el nivel Distribuidor.
+            </p>
+            <Card>
+              <CardContent className="pt-6">
+                <GrantLicenseForm />
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+      )}
+
+      {view === "contenido" && (
+        <>
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Recursos{" "}
+              <span className="text-muted-foreground">
+                ({resourceSections?.length ?? 0} cursos · {resourceItems?.length ?? 0} vídeos)
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Los cursos de anuncios y de contenido en redes que ve todo el mundo en su
+              panel, gratuito o distribuidor. Van aparte del curso de WeFunnels y de su PDF:
+              esto se añade y se reordena sin tocar código. Un curso sin publicar no se ve, y
+              uno publicado sin vídeos visibles tampoco se dibuja.
+            </p>
+            <ResourceManager
+              sections={resourceSections ?? []}
+              resources={resourceItems ?? []}
+            />
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Plantillas de contenido{" "}
+              <span className="text-muted-foreground">({templates?.length ?? 0})</span>
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Textos para que un distribuidor cuente que regala funnels: publicaciones y
+              guiones de reel. Solo las ve quien tiene licencia, porque son material para
+              repartir funnels y eso es lo que compra el nivel. Nada de lo que se escriba
+              aquí debería prometer ingresos ni mencionar ganar por traer gente: las normas
+              de Meta sobre fraude lo prohíben y el modelo tampoco paga por eso.
+            </p>
+            <TemplateManager templates={templates ?? []} />
+          </section>
+        </>
+      )}
     </div>
   );
 }

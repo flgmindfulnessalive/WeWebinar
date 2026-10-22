@@ -346,6 +346,9 @@
   },
   "Register": {
     "preview": "Vista previa — este webinar todavía no está publicado. Solo tú puedes ver esta página.",
+    "demoBanner": "Estás viendo una demo real de WeWebinars — esta misma página es el producto.",
+    "demoBannerShort": "Demo real de WeWebinars",
+    "demoBannerCta": "Conocer WeWebinars",
     "presents": "{name} presenta",
     "defaultBadge": "WEBINAR GRATUITO",
     "reserveTitle": "Reserva tu lugar",
