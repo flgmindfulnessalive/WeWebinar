@@ -532,7 +532,10 @@ export function SiteEditor({
                       Era falso por partida doble: nada lo comprueba al
                       guardar, y el píxel va en la página de esta persona,
                       que es suya y gratis de por vida. */}
-                  <p className={HELP}>Tu píxel de anuncios, si llevas tráfico pagado.</p>
+                  <p className={HELP}>
+                    Tu píxel de anuncios. Cuenta las visitas de tu página y la de regalo,
+                    y marca la conversión cuando alguien te deja sus datos.
+                  </p>
                 </div>
               </div>
             </div>
