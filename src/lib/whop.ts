@@ -356,6 +356,17 @@ export async function createDemoDiscountCode({
       promo_duration_months: 3,
       new_users_only: false,
       one_per_customer: true,
+      // Obligatorio desde la versión 2026-09-02-2 de la API: sin stock ni
+      // unlimited_stock, Whop devuelve 400 "You must specify stock if not
+      // using unlimited stock" y no se crea nada -- que es exactamente lo
+      // que estaba pasando. Los dos campos son opcionales en los tipos del
+      // SDK, así que esto no lo cazaba el compilador; solo el 400.
+      //
+      // Un uso, no ilimitado: cada asistente recibe su propio código
+      // (DEMO + 8 caracteres, guardado en demo_discount_offers), así que
+      // un código que se filtre no sirve para cien personas.
+      unlimited_stock: false,
+      stock: 1,
       expires_at: expiresAt,
       plan_ids: allSelfServePlanIds(),
     });
