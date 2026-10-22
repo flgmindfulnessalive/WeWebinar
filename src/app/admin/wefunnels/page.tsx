@@ -131,7 +131,7 @@ export default async function AdminWeFunnelsPage({
     { data: reviews },
     { data: sites },
     { data: distributors, error: consoleError },
-    { data: unclaimedSignups },
+    { data: unclaimedSignups, error: unclaimedError },
     { data: licensed },
     { data: slugs },
     { data: resourceSections },
@@ -677,8 +677,10 @@ export default async function AdminWeFunnelsPage({
             <p className="max-w-2xl text-sm text-muted-foreground">
               Se registraron con el enlace de regalo de alguien y nunca llegaron a elegir
               la dirección de su funnel, así que no tienen cuenta ni página. Darles la
-              suya desde aquí hace lo mismo que el reclamo: crea su página y, si su
-              invitación sigue siendo válida, se la acredita a quien les invitó.
+              suya desde aquí hace lo mismo que el reclamo: crea su página y se la
+              acredita a quien les invitó. Los dos campos son la dirección que tendrá su
+              funnel y quién le invitó; el segundo viene puesto si su alta lo guardó, y
+              se puede escribir si no.
             </p>
             <Card>
               <CardContent className="overflow-x-auto p-0">
@@ -693,7 +695,26 @@ export default async function AdminWeFunnelsPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {unclaimed.length === 0 ? (
+                    {/* Un cero puede significar dos cosas muy distintas:
+                        que no hay nadie atascado, o que esta consulta no
+                        corrió. Decirlas igual sería enseñar "nadie se
+                        quedó a medias" mientras la gente se queda a
+                        medias, que es peor que no enseñar nada. */}
+                    {unclaimedError ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-6 text-sm text-destructive">
+                          No se pudo leer el listado ({unclaimedError.code ?? "error"}).
+                          {unclaimedError.code === "PGRST202" && (
+                            <>
+                              {" "}
+                              Falta aplicar <code>20261022000003_unclaimed_signups.sql</code>,
+                              o la caché de esquema no se ha recargado:{" "}
+                              <code>notify pgrst, &apos;reload schema&apos;;</code>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ) : unclaimed.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-4 py-6 text-muted-foreground">
                           Nadie se ha quedado a medias. Aquí caen los que se registran y
