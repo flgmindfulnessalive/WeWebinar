@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { weFunnelsFromEmail, weFunnelsResetEmail } from "./email";
+import { weFunnelsConfirmEmail, weFunnelsFromEmail, weFunnelsResetEmail } from "./email";
+import { WEFUNNELS_HOST } from "./host";
 
 const saved = {
   from: process.env.RESEND_FROM_EMAIL,
@@ -72,5 +73,29 @@ describe("weFunnelsResetEmail", () => {
   it("dice qué hacer si no fue quien lo recibe", () => {
     const { html } = weFunnelsResetEmail(url);
     expect(html).toContain("Si no pediste esto");
+  });
+});
+
+// Los dos correos llevan un botón que sirve una sola vez. Usado ese
+// enlace, lo único que queda para volver a entrar es esta línea: si
+// desaparece, la persona se queda sin dirección y la pregunta vuelve por
+// WhatsApp, que es exactamente de donde salió este bloque.
+describe("por dónde se vuelve a entrar", () => {
+  it("el correo de confirmación lleva la dirección permanente", () => {
+    const { html } = weFunnelsConfirmEmail("https://x.test/confirmar?token=abc");
+    expect(html).toContain(`${WEFUNNELS_HOST}/entrar`);
+  });
+
+  it("el de la contraseña también", () => {
+    const { html } = weFunnelsResetEmail("https://x.test/nueva-clave?token=abc");
+    expect(html).toContain(`${WEFUNNELS_HOST}/entrar`);
+  });
+
+  it("no se confunde con el enlace de un solo uso: van por separado", () => {
+    const { html } = weFunnelsConfirmEmail("https://x.test/confirmar?token=abc");
+    const permanente = html.indexOf(`${WEFUNNELS_HOST}/entrar`);
+    const unSoloUso = html.indexOf("https://x.test/confirmar");
+    expect(unSoloUso).toBeGreaterThan(-1);
+    expect(permanente).toBeGreaterThan(unSoloUso);
   });
 });

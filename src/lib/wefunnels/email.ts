@@ -1,6 +1,7 @@
 import "server-only";
 
 import { escapeHtml } from "@/lib/email-templates";
+import { wefunnelUrl, WEFUNNELS_HOST } from "./host";
 
 // El correo de WeFunnels, con la cara de WeFunnels.
 //
@@ -63,6 +64,26 @@ ${innerHtml}
 </html>`;
 }
 
+// La dirección por la que se vuelve a entrar, en los dos correos que
+// alguien recibe antes de tener una.
+//
+// Los dos llevan un botón que sirve UNA sola vez, y al usarlo no queda en
+// todo el correo ninguna dirección a la que volver. Quien confirma su
+// email, cierra la pestaña y al día siguiente quiere entrar, no tiene
+// nada que buscar: nos pasó, y la pregunta llegó por WhatsApp.
+//
+// Va separada del botón a propósito -- un bloque al pie, con su propia
+// línea -- para que nadie confunda el enlace permanente con el de un solo
+// uso que está arriba.
+function signInFooter(): string {
+  const url = wefunnelUrl("/entrar");
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;border-top:1px solid #e4e4e7;">
+<tr><td style="padding:18px 0 0;font-size:13px;line-height:1.6;color:#71717a;font-family:${FONT_STACK};">
+  Para entrar en cualquier otro momento:<br>
+  <a href="${escapeHtml(url)}" style="font-weight:700;color:#1d7f8c;text-decoration:none;">${escapeHtml(`${WEFUNNELS_HOST}/entrar`)}</a>
+</td></tr></table>`;
+}
+
 // El correo de contraseña nueva.
 //
 // Dice de dónde viene y qué pasa si no fue la persona quien lo pidió, que
@@ -81,7 +102,8 @@ export function weFunnelsResetEmail(actionUrl: string): {
 </td></tr></table>
 <p style="margin:24px 0 0;font-size:13px;color:#71717a;">El enlace sirve una sola vez y caduca. Si no cabe en tu pantalla, cópialo entero:</p>
 <p style="margin:6px 0 0;font-size:12px;word-break:break-all;color:#52525b;">${safeUrl}</p>
-<p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no pediste esto, no hace falta que hagas nada: tu contraseña sigue siendo la de siempre y este enlace caduca solo.</p>`;
+<p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no pediste esto, no hace falta que hagas nada: tu contraseña sigue siendo la de siempre y este enlace caduca solo.</p>
+${signInFooter()}`;
 
   return {
     subject: "Tu contraseña nueva de WeFunnels",
@@ -117,7 +139,8 @@ export function weFunnelsConfirmEmail(
 </td></tr></table>
 <p style="margin:24px 0 0;font-size:13px;color:#71717a;">El enlace sirve una sola vez y caduca. Si no cabe en tu pantalla, cópialo entero:</p>
 <p style="margin:6px 0 0;font-size:12px;word-break:break-all;color:#52525b;">${safeUrl}</p>
-<p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no creaste ninguna cuenta, no hace falta que hagas nada: sin confirmar, esta dirección no queda asociada a nada.</p>`;
+<p style="margin:24px 0 0;font-size:13px;color:#71717a;">Si no creaste ninguna cuenta, no hace falta que hagas nada: sin confirmar, esta dirección no queda asociada a nada.</p>
+${signInFooter()}`;
 
   return {
     subject: "Confirma tu email de WeFunnels",
