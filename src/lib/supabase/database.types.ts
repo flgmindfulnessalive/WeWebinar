@@ -2097,7 +2097,7 @@ export interface Database {
           email: string | null;
           answer: string | null;
           answers: { q: string; a: string }[];
-          source: "form" | "course" | "claim";
+          source: "form" | "course" | "claim" | "signup";
           status: "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
           created_at: string;
         };
@@ -2319,6 +2319,30 @@ export interface Database {
           p_license_source?: "public" | "invited" | "granted";
         };
         Returns: Database["public"]["Tables"]["wefunnel_distributors"]["Row"];
+      };
+      wefunnel_record_signup_lead: {
+        Args: { p_ref_slug: string; p_name: string; p_email: string };
+        Returns: boolean;
+      };
+      wefunnel_admin_unclaimed_signups: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          email: string;
+          created_at: string;
+          confirmed: boolean;
+          invited_slug: string | null;
+          full_name: string | null;
+        }[];
+      };
+      wefunnel_admin_grant_site: {
+        Args: {
+          p_user_id: string;
+          p_display_name: string;
+          p_slug: string;
+          p_ref_slug?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["wefunnel_sites"]["Row"];
       };
       wefunnel_commissions: {
         Args: Record<string, never>;

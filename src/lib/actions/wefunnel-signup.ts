@@ -112,6 +112,33 @@ async function referralMetadata(): Promise<Record<string, string>> {
   return parseTouch(raw) ? { [REFERRAL_METADATA_KEY]: raw! } : {};
 }
 
+// La ficha en Mis registros de quien regaló, ahora mismo.
+//
+// Antes se escribía al final del recorrido, dentro del reclamo. Quien se
+// caía a mitad -- y el correo de confirmación hace que mucha gente se
+// caiga a mitad -- no existía para nadie: su invitador veía subir el
+// contador de visitas y ningún nombre al que escribirle. Justo al revés
+// de lo que hace falta, porque a quien más hay que acompañar es al que
+// se quedó a medias.
+//
+// Best-effort y silenciosa: si esto falla, la cuenta ya está creada y lo
+// último que debe pasar es que el alta devuelva un error por una ficha.
+async function recordSignupLead(fullName: string, email: string): Promise<void> {
+  try {
+    const touch = parseTouch((await cookies()).get(REFERRAL_COOKIE)?.value);
+    if (!touch) return;
+    const admin = createAdminClient();
+    const { error } = await admin.rpc("wefunnel_record_signup_lead", {
+      p_ref_slug: touch.slug,
+      p_name: fullName,
+      p_email: email,
+    });
+    if (error) console.error("[wefunnel] signup lead failed:", error.message);
+  } catch (err) {
+    console.error("[wefunnel] signup lead failed:", err);
+  }
+}
+
 // El camino propio: la cuenta se crea con la API de administración, que no
 // manda ningún correo, y el correo lo manda WeFunnels.
 async function signUpWithOurOwnEmail({
@@ -185,6 +212,8 @@ async function signUpWithOurOwnEmail({
     };
   }
 
+  await recordSignupLead(fullName, email);
+
   return { sent: email };
 }
 
@@ -234,6 +263,8 @@ async function signUpThroughSupabase({
     if (data.user && (data.user.identities?.length ?? 0) === 0) {
       return { exists: true };
     }
+
+    await recordSignupLead(fullName, email);
   } catch (err) {
     console.error("[wefunnel] signup failed:", err);
     const t = await getTranslations("AuthActions");
