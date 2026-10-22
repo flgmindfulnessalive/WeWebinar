@@ -346,6 +346,9 @@
   },
   "Register": {
     "preview": "Preview — this webinar isn't published yet. Only you can see this page.",
+    "demoBanner": "You're watching a live WeWebinars demo — this page is the product.",
+    "demoBannerShort": "A live WeWebinars demo",
+    "demoBannerCta": "Explore WeWebinars",
     "presents": "{name} presents",
     "defaultBadge": "FREE WEBINAR",
     "reserveTitle": "Reserve your spot",

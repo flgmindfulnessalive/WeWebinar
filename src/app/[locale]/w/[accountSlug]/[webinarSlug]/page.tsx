@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { Clock, Sparkles } from "lucide-react";
+import { ArrowRight, Clock, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
@@ -18,6 +18,8 @@ import { PoweredByBadge } from "@/components/powered-by-badge";
 import { PromoVideoEmbed } from "@/components/promo-video-embed";
 import { getActiveCustomDomainHostname, webinarPublicUrl } from "@/lib/domains/public-url";
 import { isBulletIntroLine } from "@/lib/audience-bullets";
+import { Link } from "@/i18n/navigation";
+import { isOfficialDemo } from "@/lib/launchpad/demo-webinar";
 import { RegistrationForm } from "./registration-form";
 
 type RouteParams = { locale: string; accountSlug: string; webinarSlug: string };
@@ -303,6 +305,38 @@ export default async function RegisterPage({
     </span>
   );
 
+  // Solo en las demos oficiales de WeWebinars, nunca en el webinar de un
+  // cliente: esta misma plantilla sirve las páginas de todos, y mandar a
+  // los registrantes de alguien que paga hacia otro sitio sería quitarle
+  // tráfico suyo. El «Powered by WeWebinars» del pie es lo correcto allí
+  // -- discreto a propósito -- y por eso mismo se queda corto en la
+  // nuestra, que es lo único que existe para enseñar el producto.
+  //
+  // La condición es la misma que valida el descuento de /demo/oferta, así
+  // que reconoce las dos demos y sigue cualquier cambio de slug sin tocar
+  // esto.
+  const isDemo = isOfficialDemo(accountSlug, webinarSlug);
+
+  const demoBanner = isDemo ? (
+    <div className="flex items-center justify-between gap-4 border-b border-white/10 bg-[#0b0f19] px-5 py-2.5 sm:px-7">
+      <p className="m-0 min-w-0 text-sm text-white/75">
+        {/* El texto largo explica qué está mirando; en móvil no cabe y la
+            versión corta dice lo imprescindible sin empujar al botón. */}
+        <span className="hidden sm:inline">{t("demoBanner")}</span>
+        <span className="sm:hidden">{t("demoBannerShort")}</span>
+      </p>
+      <Link
+        href="/"
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/25 px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-white no-underline transition-colors hover:bg-white/10"
+      >
+        {t("demoBannerCta")}
+        <ArrowRight className="size-3.5" aria-hidden="true" />
+      </Link>
+    </div>
+  ) : null;
+
   return (
     <div className="min-h-svh bg-[#fafafa]">
       {isPreview && (
@@ -310,9 +344,15 @@ export default async function RegisterPage({
           {t("preview")}
         </div>
       )}
+      {demoBanner}
       {webinar.facebook_pixel_id && <FacebookPixel pixelId={webinar.facebook_pixel_id} />}
-      {/* Desktop: brand panel + form, same split-panel language as /login. */}
-      <div className="hidden min-h-svh md:grid md:grid-cols-2">
+      {/* Desktop: brand panel + form, same split-panel language as /login.
+          Con la barra de la demo encima, el alto del panel se descuenta:
+          si no, la página entera gana 53 px de scroll que no lleva a
+          ninguna parte. */}
+      <div
+        className={`hidden md:grid md:grid-cols-2 ${isDemo ? "md:min-h-[calc(100svh-53px)]" : "min-h-svh"}`}
+      >
         <div className="relative flex flex-col justify-center gap-8 overflow-hidden bg-[#0b0f19] px-14 py-16 text-white">
           {heroBackground}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-transparent to-transparent" />

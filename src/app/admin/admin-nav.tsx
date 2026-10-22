@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, Mail, Layers, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Building2, Mail, Layers, Rocket } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -16,7 +16,11 @@ const NAV_ITEMS: {
   { href: "/admin/accounts", labelKey: "accounts", icon: Building2 },
   { href: "/admin/leads", labelKey: "leads", icon: Mail },
   { href: "/admin/plans", labelKey: "plans", icon: Layers },
-  { href: "/admin/wefunnels", labelKey: "wefunnels", icon: ShieldAlert },
+  // Un cohete, no el escudo con exclamación que había antes: ese es el
+  // icono de "algo va mal", y estaba encendido todos los días aunque no
+  // hubiera nada que revisar. Lo que WeFunnels hace es repartir, no
+  // vigilar; la alarma vive en la consola, donde sí sabe si hay cola.
+  { href: "/admin/wefunnels", labelKey: "wefunnels", icon: Rocket },
 ];
 
 export function AdminNav() {
