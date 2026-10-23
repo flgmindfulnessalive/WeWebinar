@@ -479,6 +479,8 @@
     "reactivateContactSupport": "Escríbenos a <email>{supportEmail}</email> para reactivar tu cuenta.",
     "canceledNonOwnerMessage": "El dueño de la cuenta necesita reactivar el plan para que puedas volver a entrar.",
     "signOut": "Cerrar sesión",
+    "noPlanTitle": "Tu cuenta no tiene un plan de WeWebinars",
+    "noPlanMessage": "Elige un plan para crear y publicar webinars. Tu cuenta y tus datos siguen ahí.",
     "trialBanner": "Prueba gratis: {days, plural, one {vence en # día} other {vencen en # días}}. Después de eso, elige un plan en Facturación para seguir usando tu cuenta.",
     "trialBannerDismiss": "Cerrar aviso",
     "passwordBanner": "Todavía no tienes una contraseña — crea una para entrar más rápido la próxima vez, sin depender de un email.",

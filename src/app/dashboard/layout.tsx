@@ -38,8 +38,46 @@ export default async function DashboardLayout({
   const messages = await getMessages();
   const t = await getTranslations("DashboardLayout");
 
+  // getCurrentAccount() devuelve null por dos motivos que no son el mismo,
+  // y hasta ahora los dos acababan en /onboarding. El segundo se quedaba
+  // dando vueltas: quien reclamó su funnel gratis SÍ tiene cuenta -- con
+  // plan_id null a propósito, porque esa página es gratis y WeWebinars no
+  // viene incluido --, y getCurrentAccount() la descarta por no tener plan.
+  // /onboarding ve que ya tiene account_id y lo devuelve a /dashboard, que
+  // lo devuelve a /onboarding: un bucle de redirecciones, que es lo que
+  // veía esa persona en lugar de una explicación.
+  //
+  // Sin cuenta ninguna sigue yendo a /onboarding, que es su sitio.
   if (!current) {
-    redirect("/onboarding");
+    const gateSupabase = await createClient();
+    const {
+      data: { user: gateUser },
+    } = await gateSupabase.auth.getUser();
+    const { data: gateProfile } = gateUser
+      ? await gateSupabase.from("users").select("account_id").eq("id", gateUser.id).maybeSingle()
+      : { data: null };
+
+    if (!gateProfile?.account_id) {
+      redirect("/onboarding");
+    }
+
+    return (
+      <NextIntlClientProvider messages={messages}>
+        <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
+          <CircleAlert className="size-10 text-muted-foreground" />
+          <h1 className="text-xl font-semibold">{t("noPlanTitle")}</h1>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("noPlanMessage")}</p>
+          <Link href="/pricing" className="text-sm underline underline-offset-4">
+            {t("viewPlans")}
+          </Link>
+          <form action={signOut}>
+            <Button type="submit" variant="outline" size="sm">
+              {t("signOut")}
+            </Button>
+          </form>
+        </div>
+      </NextIntlClientProvider>
+    );
   }
 
   if (current.account.subscription_status === "suspended") {
