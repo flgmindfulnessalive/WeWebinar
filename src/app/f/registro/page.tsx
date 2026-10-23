@@ -211,6 +211,18 @@ export default async function WeFunnelSignUpPage({
             ))}
           </div>
 
+          {/* Debajo de los tres, no como un cuarto: los tres son de por
+              vida y se leen como un conjunto. Solo para quien viene a
+              recoger su regalo --- quien compra la licencia ya tiene sus
+              dos meses en su propia lista. */}
+          {!buying && (
+            <p className="m-0 mt-6 max-w-[40ch] text-[length:var(--wf-small)] leading-relaxed text-[#9FB3CD]">
+              Incluye además un mes de WeWebinars Starter para probar tus
+              presentaciones como webinar automático. Opcional, sin tarjeta, y tu
+              funnel no depende de él.
+            </p>
+          )}
+
           {/* La ficha de quien invita vivía aquí y ahora es la cabecera, que
               es donde la vio en la página anterior. Repetirla dos veces en la
               misma pantalla la convertía en decoración. */}
