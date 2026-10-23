@@ -3,6 +3,7 @@ import { AlertTriangle, FilePen, FileText, Rocket, UserRoundX } from "lucide-rea
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { describeLicenseRevenue } from "@/lib/wefunnels/licenses";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClearButton, SuspendButton } from "./moderation-actions";
@@ -26,6 +27,11 @@ const DATE = new Intl.DateTimeFormat("es", {
 });
 
 const DATE_SHORT = new Intl.DateTimeFormat("es", { day: "numeric", month: "short" });
+const MONEY = new Intl.NumberFormat("es", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 const SOURCE_LABEL: Record<string, string> = {
   filter: "Filtro",
@@ -185,6 +191,7 @@ export default async function AdminWeFunnelsPage({
   const allSites = sites ?? [];
   const siteById = new Map(allSites.map((site) => [site.id, site]));
   const allDistributors = distributors ?? [];
+  const licenses = describeLicenseRevenue(allDistributors);
   const unclaimed = unclaimedSignups ?? [];
   const licensedAccounts = new Set((licensed ?? []).map((row) => row.account_id));
   const slugBySiteId = new Map((slugs ?? []).map((row) => [row.id, row.slug]));
@@ -394,15 +401,39 @@ export default async function AdminWeFunnelsPage({
           </Card>
         </Link>
 
+        {/* Aquí había un contador de distribuidores, que es el número que
+            menos falta hace: la tabla de abajo lo dice contando filas. El
+            dinero no estaba en ninguna parte.
+
+            El reparto público / invitación es lo que de verdad se mira con
+            el tiempo: cada licencia por invitación son 99 dólares que se
+            cambiaron por un referido, y ese ratio es lo único de esta fila
+            que puede cambiar una decisión. */}
         <Card>
           <CardContent className="flex items-start justify-between gap-3 py-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Distribuidores</p>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-muted-foreground">Licencias</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">
-                {allDistributors.length}
+                {MONEY.format(licenses.total)}
               </p>
+              <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+                {licenses.sold} {licenses.sold === 1 ? "vendida" : "vendidas"}
+                {licenses.thisMonth > 0 && ` · ${MONEY.format(licenses.thisMonth)} este mes`}
+              </p>
+              {licenses.sold > 0 && (
+                <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+                  {licenses.publicCount} público · {licenses.invitedCount} invitación
+                </p>
+              )}
+              {(licenses.granted > 0 || licenses.refunded > 0) && (
+                <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+                  {licenses.granted > 0 && `${licenses.granted} regalada${licenses.granted === 1 ? "" : "s"}`}
+                  {licenses.granted > 0 && licenses.refunded > 0 && " · "}
+                  {licenses.refunded > 0 && `${licenses.refunded} devuelta${licenses.refunded === 1 ? "" : "s"}`}
+                </p>
+              )}
             </div>
-            <Rocket className="size-4 text-muted-foreground" aria-hidden="true" />
+            <Rocket className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </CardContent>
         </Card>
 
@@ -837,10 +868,23 @@ export default async function AdminWeFunnelsPage({
                             {d.license_source === "granted" ? (
                               <Badge variant="secondary">Regalada</Badge>
                             ) : (
-                              <span className="tabular-nums">
+                              <span
+                                className={
+                                  d.refunded_at
+                                    ? "text-muted-foreground line-through tabular-nums"
+                                    : "tabular-nums"
+                                }
+                              >
                                 {d.license_source === "invited" ? "Invitación" : "Público"}
                                 {d.license_price_usd != null && ` · $${d.license_price_usd}`}
                               </span>
+                            )}
+                            {/* Tachado y además dicho: el tachado solo se
+                                entiende si ya sabes qué buscas. */}
+                            {d.refunded_at && (
+                              <Badge variant="secondary" className="ml-2">
+                                Devuelta
+                              </Badge>
                             )}
                           </td>
                           <td className="border-b px-4 py-3 whitespace-nowrap">

@@ -1982,8 +1982,9 @@ export interface Database {
           starter_warning_sent_at: string | null;
           starter_ended_at: string | null;
           created_at: string;
-                  license_source: "public" | "invited" | "granted" | null;
+          license_source: "public" | "invited" | "granted" | null;
           license_price_usd: number | null;
+          refunded_at: string | null;
         };
         Insert: Partial<
           Database["public"]["Tables"]["wefunnel_distributors"]["Row"]
@@ -2441,6 +2442,7 @@ export interface Database {
           license_price_usd: number | null;
           starter_until: string | null;
           created_at: string;
+          refunded_at: string | null;
         }[];
       };
       wefunnel_ai_use_allowed: {
@@ -2492,6 +2494,10 @@ export interface Database {
       };
       wefunnel_start_included_month: {
         Args: { p_account_id: string };
+        Returns: boolean;
+      };
+      wefunnel_mark_license_refunded: {
+        Args: { p_membership_id: string };
         Returns: boolean;
       };
       accounts_over_attendee_limit: {
