@@ -35,9 +35,14 @@ export default async function PanelCommissionsPage() {
           <span className="text-[48px] leading-none font-extrabold tracking-tighter text-[var(--wf-accent)] tabular-nums">
             {MONEY.format(earning)}
           </span>
+          {/* Con cero pagando, la frase de siempre salía como «20% de lo
+              que pagan 0 cuentas que llegaron por ti», que no la dice
+              nadie. Y es el estado normal al principio: todos reclaman
+              gratis antes de contratar nada. */}
           <span className="text-[length:var(--wf-body)] leading-snug text-[var(--wf-fg-3)]">
-            20% de lo que pagan {paying} {paying === 1 ? "cuenta" : "cuentas"} que llegaron
-            por ti
+            {paying === 0
+              ? "Nadie de tu lista tiene plan todavía. Cuando alguien contrate uno, su 20% empieza a contar aquí."
+              : `20% de lo que pagan ${paying} ${paying === 1 ? "cuenta" : "cuentas"} que llegaron por ti`}
           </span>
         </div>
         <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-2.5 rounded-2xl border border-[var(--wf-edge)] bg-[var(--wf-card)] p-6">
