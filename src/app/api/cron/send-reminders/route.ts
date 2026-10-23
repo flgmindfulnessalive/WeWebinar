@@ -347,6 +347,20 @@ export async function GET(request: Request) {
     .eq("subscription_status", "trialing")
     .lte("trial_ends_at", new Date(Date.now() - TRIAL_EXPIRY_GRACE_MS).toISOString());
 
+  // Quien llegó por WeFunnels no se queda noventa días en 'canceled'
+  // esperando a la purga. Su página nunca se canceló --- es gratis de por
+  // vida --- y lo único que termina es el mes de WeWebinars que venía
+  // incluido con ella. revert_canceled_account_to_wefunnels (20261007000008)
+  // lo devuelve exactamente a lo que era: cuenta activa sin plan, con su
+  // página y sus registros intactos y sus webinars archivados. Lo que ya
+  // hacía la purga, pero el mismo día, para que no pasen tres meses con
+  // una cuenta marcada como cancelada que nadie canceló --- y para que no
+  // le llegue el aviso de borrado de una cuenta que no se va a borrar.
+  const expiredKeepWeFunnels = await accountsKeepingWeFunnels(
+    admin,
+    (expiredTrials ?? []).map((a) => a.id)
+  );
+
   for (const account of expiredTrials ?? []) {
     const { data: claimed, error: claimError } = await admin
       .from("accounts")
@@ -360,6 +374,18 @@ export async function GET(request: Request) {
       continue;
     }
     if (!claimed) continue;
+
+    if (expiredKeepWeFunnels.has(account.id)) {
+      const { error: revertError } = await admin.rpc("revert_canceled_account_to_wefunnels", {
+        p_account_id: account.id,
+      });
+      // Un fallo aquí no cancela el correo ni el recuento: la cuenta queda
+      // 'canceled', que es lo que era hasta hoy, y la purga la revierte
+      // igual cuando le toque.
+      if (revertError) {
+        errors.push(`trial revert ${account.id}: ${revertError.message}`);
+      }
+    }
 
     try {
       const { data: owner } = await admin
