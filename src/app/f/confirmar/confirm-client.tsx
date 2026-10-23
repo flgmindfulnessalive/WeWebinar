@@ -53,6 +53,7 @@ export function WeFunnelsConfirmClient() {
   const [error, setError] = useState<string | null>(null);
 
   const ready = Boolean(tokenHash) && isOtpType(type);
+  const signup = type === "signup" || type === "invite";
 
   async function confirm() {
     if (!tokenHash || !isOtpType(type)) return;
@@ -70,8 +71,16 @@ export function WeFunnelsConfirmClient() {
         verifyError.code === "otp_expired" ||
         verifyError.message.toLowerCase().includes("expired")
       ) {
+        // Quien viene de un alta no ha olvidado ninguna contraseña:
+        // todavía no tiene. Mandarlo a «Olvidé mi contraseña» le dice
+        // que se ha equivocado de puerta cuando no lo ha hecho, y ahí
+        // es donde se abandona. La pantalla es la misma --- lo único
+        // que hace es mandar otro enlace --- y con ?motivo=alta se lee
+        // como lo que es.
         setError(
-          "Ese enlace ya no vale: sirve una sola vez y caduca. Pide uno nuevo desde «Olvidé mi contraseña»."
+          signup
+            ? "Ese enlace ya no vale: sirve una sola vez y caduca. Pide otro aquí abajo y te lo mandamos al correo."
+            : "Ese enlace ya no vale: sirve una sola vez y caduca. Pide uno nuevo desde «Olvidé mi contraseña»."
         );
         return;
       }
@@ -113,10 +122,10 @@ export function WeFunnelsConfirmClient() {
             {error}
           </p>
           <Link
-            href="/recuperar"
+            href={signup ? "/recuperar?motivo=alta" : "/recuperar"}
             className="self-start text-[length:var(--wf-small)] font-semibold text-[#43E2EE] no-underline hover:underline"
           >
-            Pedir un enlace nuevo
+            {signup ? "Mandarme un enlace nuevo" : "Pedir un enlace nuevo"}
           </Link>
         </>
       )}

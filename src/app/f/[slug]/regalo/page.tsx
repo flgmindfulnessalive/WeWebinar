@@ -347,6 +347,17 @@ export default async function WeFunnelGiftPage({
               <p className={`${SMALL} mt-4`}>
                 Sin tarjeta · Con tu nombre · Con tu propio enlace
               </p>
+              {/* El mes de WeWebinars va aquí y no en el bloque de arriba
+                  a propósito: ese bloque son tres cosas de por vida y se
+                  leen como un conjunto. Un cuarto que caduca, metido ahí,
+                  pone en duda lo que esta página viene a prometer. Aquí
+                  llega después de que la promesa principal ya aterrizó, y
+                  la última frase la protege. */}
+              <p className={`${SMALL} mt-3`}>
+                Incluye además un mes de WeWebinars Starter para probar tus
+                presentaciones como webinar automático. Opcional, sin tarjeta, y tu
+                funnel no depende de él.
+              </p>
 
               {/* Aquí iba la descripción de su funnel, y era un error de los
                   que solo se ven en pantalla: ese campo se escribe para los

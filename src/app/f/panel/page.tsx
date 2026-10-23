@@ -4,9 +4,21 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPanelViewer } from "@/lib/wefunnels/site";
 import { resolveReferralTouch } from "@/lib/wefunnels/referral-server";
-import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
+import { WEFUNNELS_HOST, wefunnelAppUrl } from "@/lib/wefunnels/host";
 import { CopyLink } from "@/components/wefunnels/copy-link";
 import { PeriodStats } from "./period-stats";
+
+const MONTH_DAY = new Intl.DateTimeFormat("es", { day: "numeric", month: "long" });
+
+// Fuera del componente a propósito: react-hooks/purity prohíbe Date.now()
+// en el cuerpo de uno.
+function describeIncludedMonth(trialEndsAt: string) {
+  const until = new Date(trialEndsAt);
+  return {
+    daysLeft: Math.max(0, Math.ceil((until.getTime() - Date.now()) / 86_400_000)),
+    until: MONTH_DAY.format(until),
+  };
+}
 
 // Mi panel: what their page did, where it lives, their course, and the
 // distributor offer. The editor moved to /panel/pagina -- this screen is
@@ -53,6 +65,24 @@ export default async function PanelHomePage() {
 
   const site = viewer.site;
   const isPublished = site.status === "published" && !site.suspended_at;
+
+  // El mes de WeWebinars que viene con el funnel. Se lee de la cuenta y no
+  // se calcula aquí: lo pone wefunnel_start_included_month cuando nace la
+  // página, y quien lo termina es el mismo reloj que el de cualquier
+  // prueba de WeWebinars. Un distribuidor no entra por aquí --- los suyos
+  // son dos meses y se cuentan en Funnels repartidos.
+  let includedMonth: { daysLeft: number; until: string } | null = null;
+  if (!viewer.distributor && viewer.accountId) {
+    const supabase = await createClient();
+    const { data: account } = await supabase
+      .from("accounts")
+      .select("subscription_status, trial_ends_at")
+      .eq("id", viewer.accountId)
+      .maybeSingle();
+    if (account?.subscription_status === "trialing" && account.trial_ends_at) {
+      includedMonth = describeIncludedMonth(account.trial_ends_at);
+    }
+  }
   const siteUrl = `https://${WEFUNNELS_HOST}/${site.slug}`;
   const firstName = site.display_name.split(/\s+/)[0] ?? site.display_name;
 
@@ -106,6 +136,34 @@ export default async function PanelHomePage() {
           </Link>
         </div>
       </section>
+
+      {includedMonth && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.4vw,24px)]">
+          <div className="min-w-0">
+            <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
+              También incluido
+            </p>
+            <strong className="mt-2 block text-[16px] font-semibold text-[var(--wf-fg)]">
+              Un mes de WeWebinars Starter
+            </strong>
+            <p className="m-0 mt-1.5 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
+              Convierte una presentación grabada en un webinar que corre solo.{" "}
+              {includedMonth.daysLeft > 0
+                ? `Te quedan ${includedMonth.daysLeft} ${
+                    includedMonth.daysLeft === 1 ? "día" : "días"
+                  }, hasta el ${includedMonth.until}.`
+                : "Termina hoy."}{" "}
+              Tu funnel no depende de esto: sigue siendo gratis de por vida.
+            </p>
+          </div>
+          <a
+            href={wefunnelAppUrl("/dashboard")}
+            className="shrink-0 rounded-lg border border-[var(--wf-edge)] px-4 py-2.5 text-[length:var(--wf-body)] font-semibold text-[var(--wf-fg-2)] no-underline"
+          >
+            Entrar a WeWebinars →
+          </a>
+        </section>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="flex min-w-0 flex-col gap-3 rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)] p-[clamp(18px,2.4vw,24px)]">

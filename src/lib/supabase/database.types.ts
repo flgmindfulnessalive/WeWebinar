@@ -2490,6 +2490,10 @@ export interface Database {
         Args: { p_account_id: string };
         Returns: boolean;
       };
+      wefunnel_start_included_month: {
+        Args: { p_account_id: string };
+        Returns: boolean;
+      };
       accounts_over_attendee_limit: {
         Args: { p_days?: number; p_min_days?: number };
         Returns: {
