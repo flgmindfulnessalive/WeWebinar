@@ -32,12 +32,18 @@ export default async function PanelLeadsPage() {
   if (!viewer.site) redirect("/panel");
 
   const supabase = await createClient();
-  const { data: leads } = await supabase
+  // El error no se traga. Una lectura fallida no es una lista vacía, y la
+  // pantalla de "todavía no hay nadie" es exactamente lo que no hay que
+  // enseñarle a alguien que sí tiene registros: se pasa el resto del día
+  // creyendo que su página no captura. Mejor el límite de error.
+  const { data: leads, error } = await supabase
     .from("wefunnel_leads")
     .select("id, name, whatsapp, email, answer, answers, source, status, created_at")
     .eq("site_id", viewer.site.id)
     .order("created_at", { ascending: false })
     .limit(200);
+
+  if (error) throw new Error(`wefunnel_leads: ${error.message}`);
 
   const rows: LeadCard[] = (leads ?? []).map((lead) => ({
     id: lead.id,

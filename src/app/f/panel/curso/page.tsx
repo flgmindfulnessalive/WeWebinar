@@ -125,11 +125,13 @@ export default async function PanelCoursePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Sin antetítulo. El que había decía de qué plan colgaba el curso
+          --- licencia o cuenta gratuita ---, que es lo que menos importa a
+          quien ya lo tiene abierto, y chocaba con el de la tarjeta de
+          abajo, que sí habla del curso. Lo de la permanencia sigue dicho
+          al pie de esa tarjeta, que es donde responde a una duda. */}
       <div>
-        <p className="m-0 text-[length:var(--wf-kicker)] font-bold tracking-[0.155em] text-[var(--wf-accent-soft)] uppercase">
-          {licensed ? "Incluido con tu licencia Distribuidor" : "Incluido con tu funnel gratuito"}
-        </p>
-        <h1 className="m-0 mt-2.5 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[var(--wf-fg)] text-balance">
+        <h1 className="m-0 text-[clamp(26px,4.2vw,36px)] leading-[1.08] font-extrabold tracking-[-0.035em] text-[var(--wf-fg)] text-balance">
           Cómo NUNCA quedarte sin prospectos
         </h1>
         <p className="m-0 mt-3 max-w-[58ch] text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
