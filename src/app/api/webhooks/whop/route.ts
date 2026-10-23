@@ -328,6 +328,32 @@ export async function POST(request: Request): Promise<Response> {
     if (disputeAccountId) {
       await suspendAccountForDispute(createAdminClient(), disputeAccountId);
     }
+
+    // Y, si lo devuelto fue la licencia de WeFunnels, que deje de contar
+    // como dinero cobrado en la consola. Por id de membresía y no por
+    // cuenta: una cuenta puede tener detrás una suscripción de WeWebinars
+    // Y una licencia, y marcar por cuenta daría por devuelta la licencia
+    // cuando lo devuelto fue el otro cobro.
+    //
+    // Best-effort como todo lo demás de esta rama: el aviso a operaciones
+    // ya garantiza que un humano lo ve, y un fallo aquí no puede
+    // convertirse en un error de procesado del webhook --- que haría que
+    // Whop reintentara, y con él la suspensión y el correo.
+    if (event.data.metadata?.product === WEFUNNELS_DISTRIBUTOR_METADATA && event.data.id) {
+      try {
+        const { data: marked, error } = await createAdminClient().rpc(
+          "wefunnel_mark_license_refunded",
+          { p_membership_id: event.data.id }
+        );
+        if (error) {
+          console.error("[whop webhook] mark license refunded failed:", error.message);
+        } else if (marked) {
+          console.info(`[whop webhook] licencia marcada como devuelta: ${event.data.id}`);
+        }
+      } catch (err) {
+        console.error("[whop webhook] mark license refunded threw:", err);
+      }
+    }
   }
 
   if (SYNCED_EVENTS.has(event.type)) {
