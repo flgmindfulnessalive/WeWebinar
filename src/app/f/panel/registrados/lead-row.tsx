@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { setLeadStatus, type SaveState } from "@/lib/actions/wefunnel-site";
+import { WEFUNNELS_HOST } from "@/lib/wefunnels/host";
 
 export type LeadStatus = "nuevo" | "contactado" | "en_conversacion" | "no_interesado";
 
@@ -46,6 +47,42 @@ function SaveStatus() {
   );
 }
 
+// En qué punto está el funnel de alguien a quien este distribuidor se lo
+// regaló. Null para una ficha que no es un referido suyo --- alguien que
+// llenó el formulario de su página personal no tiene funnel que publicar,
+// y una insignia vacía ahí sería ruido en la mayoría de las filas.
+export type FunnelState = {
+  slug: string | null;
+  state: "publicada" | "borrador" | "suspendida" | "sin_pagina";
+};
+
+const FUNNEL_LABEL: Record<FunnelState["state"], string> = {
+  publicada: "Publicó su funnel",
+  borrador: "Su funnel está en borrador",
+  suspendida: "Su funnel está suspendido",
+  sin_pagina: "Todavía no eligió su dirección",
+};
+
+// Ámbar lo que pide una mano, verde lo que ya está. El borrador y el «sin
+// dirección» son el motivo de que esta insignia exista, así que son los
+// que se ven desde lejos.
+const FUNNEL_STYLE: Record<FunnelState["state"], string> = {
+  publicada: "border-[var(--wf-ok)] text-[var(--wf-ok)]",
+  borrador: "border-[var(--wf-warn)] text-[var(--wf-warn)]",
+  suspendida: "border-[var(--wf-danger)] text-[var(--wf-danger)]",
+  sin_pagina: "border-[var(--wf-warn)] text-[var(--wf-warn)]",
+};
+
+export function FunnelPill({ funnel }: { funnel: FunnelState }) {
+  return (
+    <span
+      className={`inline-block rounded-full border px-2.5 py-0.5 text-[length:var(--wf-kicker)] whitespace-nowrap ${FUNNEL_STYLE[funnel.state]}`}
+    >
+      {FUNNEL_LABEL[funnel.state]}
+    </span>
+  );
+}
+
 export type LeadCard = {
   id: string;
   name: string;
@@ -59,6 +96,7 @@ export type LeadCard = {
   status: LeadStatus;
   createdAt: string;
   whatsappLink: string | null;
+  funnel: FunnelState | null;
 };
 
 // The ficha, opened per row. Inline rather than on its own route: the whole
@@ -78,6 +116,27 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
           <span className="block text-[length:var(--wf-small)] break-all text-[var(--wf-fg-muted)]">
             {lead.email ?? lead.whatsapp ?? "—"}
           </span>
+          {/* Debajo del correo y no en una columna propia: la tabla ya
+              pide 620px de ancho, y una quinta columna la empujaría fuera
+              del teléfono, que es donde se hace este seguimiento. */}
+          {lead.funnel && (
+            <span className="mt-1.5 flex flex-wrap items-center gap-2">
+              <FunnelPill funnel={lead.funnel} />
+              {/* Solo se enlaza lo publicado: un borrador abierto desde
+                  aquí enseña «esta página todavía no está publicada», que
+                  es un viaje para leer lo que ya dice la insignia. */}
+              {lead.funnel.slug && lead.funnel.state === "publicada" && (
+                <a
+                  href={`https://${WEFUNNELS_HOST}/${lead.funnel.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[length:var(--wf-small)] text-[var(--wf-accent)] no-underline"
+                >
+                  /{lead.funnel.slug}
+                </a>
+              )}
+            </span>
+          )}
         </td>
         <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5 text-[length:var(--wf-body)] whitespace-nowrap text-[var(--wf-fg-muted)] tabular-nums">
           {lead.createdAt}

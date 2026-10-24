@@ -2500,6 +2500,15 @@ export interface Database {
         Args: { p_membership_id: string };
         Returns: boolean;
       };
+      wefunnel_referred_pages: {
+        Args: Record<string, never>;
+        Returns: {
+          email: string | null;
+          slug: string | null;
+          site_status: WeFunnelSiteStatus | null;
+          suspended: boolean;
+        }[];
+      };
       accounts_over_attendee_limit: {
         Args: { p_days?: number; p_min_days?: number };
         Returns: {
