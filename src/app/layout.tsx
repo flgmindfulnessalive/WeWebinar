@@ -20,14 +20,24 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://wewebinars.com"),
   title: "WeWebinars",
   description: siteDescription,
-  // Renders <meta name="google-site-verification"> only once the token
-  // from Google Search Console (Settings -> Ownership verification -> HTML
-  // tag) is set -- omitted entirely otherwise rather than rendering an
-  // empty tag. Public by design, same as the Whop pixel's business id:
-  // this value is meant to ship in the page's own HTML.
-  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
-    : {}),
+  // Las etiquetas de verificación de propiedad del dominio. Públicas por
+  // diseño, igual que el business id del píxel de Whop: su sitio es el
+  // HTML de la propia página, que es donde el verificador las busca.
+  //
+  // La de Google viaja en una variable de entorno y solo se dibuja cuando
+  // está puesta --- antes que dibujar una etiqueta vacía, no se dibuja
+  // ninguna. La de WeAudit va escrita aquí porque su valor ya lo tenemos y
+  // no cambia: con un literal no existe el caso de la etiqueta vacía que
+  // motivó lo otro, y así no hace falta tocar Vercel para que empiece a
+  // salir.
+  verification: {
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : {}),
+    other: {
+      "weaudit-site-verification": "HVLk8kvraZkSUC-42waGe2WfhQWjrTD3X9VWGqaIpy8",
+    },
+  },
   openGraph: {
     title: "WeWebinars",
     description: siteDescription,
