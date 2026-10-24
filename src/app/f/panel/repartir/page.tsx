@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +45,21 @@ export default async function PanelSharePage() {
   // as a judgement.
   const claimRate = visits > 0 ? Math.round((claimed / visits) * 100) : null;
 
+  // Una página sin publicar no reparte nada, y esta pantalla no lo decía.
+  //
+  // claim_wefunnel_site exige que la página de quien invita esté publicada
+  // y sin suspender; si no, levanta «invitation required» y quien abrió el
+  // enlace de regalo se topa con «WeFunnels es por invitación» sin
+  // entender por qué. Así que quien reparte puede estar repartiendo un
+  // enlace muerto sin enterarse: su Mi panel le dice que su página está en
+  // borrador, pero hablando de captar registros --- la consecuencia menor.
+  // La grave es esta, y es la que faltaba.
+  const giftBlocked = viewer.site.suspended_at
+    ? ("suspendida" as const)
+    : viewer.site.status !== "published"
+      ? ("borrador" as const)
+      : null;
+
   const siteUrl = `https://${WEFUNNELS_HOST}/${viewer.site.slug}`;
   const giftUrl = `${siteUrl}/regalo`;
   const starterUntil = viewer.distributor.starter_until
@@ -53,6 +69,30 @@ export default async function PanelSharePage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="m-0 text-[28px] font-bold tracking-tight">Funnels repartidos</h1>
+
+      {/* Antes del enlace y no después: lo que viene debajo es una tarjeta
+          para copiar y repartir una dirección que hoy no lleva a ninguna
+          parte. */}
+      {giftBlocked && (
+        <section className="flex flex-col gap-2.5 rounded-2xl border border-[var(--wf-warn)] bg-[var(--wf-card)] p-6">
+          <strong className="text-[16px] font-semibold text-[var(--wf-warn)]">
+            {giftBlocked === "borrador"
+              ? "Tu enlace de regalo todavía no funciona"
+              : "Tu enlace de regalo no está funcionando"}
+          </strong>
+          <p className="m-0 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-fg-body)]">
+            {giftBlocked === "borrador"
+              ? "Mientras tu página esté en borrador, quien abra tu enlace de regalo verá que WeFunnels es por invitación y no podrá reclamar su funnel. Publícala y el enlace empieza a repartir."
+              : "Tu página está suspendida, así que quien abra tu enlace de regalo no podrá reclamar su funnel. Se arregla al levantar la suspensión."}
+          </p>
+          <Link
+            href="/panel/pagina"
+            className="mt-1 inline-flex min-h-[46px] items-center justify-center self-start rounded-lg border border-[var(--wf-warn)] px-5 py-3 text-[length:var(--wf-body)] font-semibold text-[var(--wf-warn)] no-underline"
+          >
+            {giftBlocked === "borrador" ? "Publicar mi página →" : "Ver mi página →"}
+          </Link>
+        </section>
+      )}
 
       {/* The two links the course tells them to keep straight, in the same
           order it does: the gift page is what they share to give the
