@@ -87,6 +87,14 @@ export function DistributorCheckoutButton({ price }: { price: string }) {
       >
         {busy ? "Abriendo el pago…" : `Activar Licencia Distribuidor · ${price} →`}
       </button>
+      {/* Dicho antes de pulsar, no después. El botón saca a la persona del
+          sitio en el paso que decide la compra, y un salto a un dominio que
+          no reconoce --- justo cuando va a escribir su tarjeta --- se
+          abandona. Que lo sepa de antemano es casi todo lo que daba tener
+          el formulario dentro. */}
+      <p className="m-0 text-center text-[length:var(--wf-small)] leading-relaxed text-[var(--wf-fg-muted)]">
+        El pago lo procesa Whop, nuestra pasarela. Vuelves aquí en cuanto termines.
+      </p>
       {error && (
         <p role="alert" className="m-0 text-[length:var(--wf-body)] text-[var(--wf-danger)]">
           {error}
