@@ -112,8 +112,11 @@ function whopClient(): WhopClient {
 // Creates a Whop checkout configuration scoped to one account + plan, so
 // the resulting membership's metadata.account_id reliably identifies
 // which WeWebinars account to activate -- see the module comment above.
-// Returns the configuration id to pass as WhopCheckoutEmbed's `sessionId`
-// prop (not `planId`).
+// Devuelve el id de la configuración y su purchase_url. El id NO sirve
+// como `sessionId` de WhopCheckoutEmbed, aunque este comentario lo dijera
+// durante meses: ese prop quiere una sesión de checkout, que es otro
+// objeto, y el formulario contesta «This checkout is no longer available».
+// Lo que se usa es purchase_url.
 async function createCheckoutConfig({
   planId,
   planKey,

@@ -6,9 +6,11 @@ import { Checkout } from "@/components/checkout";
 
 // Reached after signup when the host picked a specific plan's "Empezar"
 // on Pricing -- Starter, Pro, or Business, mensual o anual (see
-// actions/account.ts) -- renders the embedded Whop checkout in place of a
-// redirect to a hosted purchase_url, so payment happens without leaving
-// the site. This is Camino B: card required, 7-day trial, first charge
+// actions/account.ts) -- crea la configuración de cobro y manda a la
+// página de pago de Whop. Aquí se dibujaba un formulario incrustado, con
+// la idea de no sacar a nadie del sitio, pero no funcionaba: ver el
+// comentario de components/checkout.tsx. This is Camino B: card required,
+// 7-day trial, first charge
 // on day 8 (see createTrialCheckoutConfig in lib/whop.ts). Requires an
 // existing account: Checkout needs an accountId to scope the checkout
 // configuration to, which only exists once signup has actually run.
