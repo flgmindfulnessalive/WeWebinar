@@ -260,7 +260,15 @@ export async function createDistributorCheckout(
     }
     return { id: config.id, url: config.purchase_url ?? null };
   } catch (err) {
-    console.error("[whop] createDistributorCheckout failed:", err);
+    // Con el id delante. Whop contesta «Plan not found» sin decir qué id
+    // buscó, y entonces desde el log no se puede distinguir un id que no
+    // existe de uno que existe en otra compañía o de uno con un espacio
+    // pegado al copiarlo. No es un secreto: un id de plan viaja en la
+    // propia dirección del checkout que ve el comprador.
+    console.error(
+      `[whop] createDistributorCheckout failed (source=${source}, plan_id=${planId}):`,
+      err
+    );
     return null;
   }
 }
