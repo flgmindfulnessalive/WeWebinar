@@ -57,10 +57,10 @@ export type FunnelState = {
 };
 
 const FUNNEL_LABEL: Record<FunnelState["state"], string> = {
-  publicada: "Publicó su funnel",
-  borrador: "Su funnel está en borrador",
-  suspendida: "Su funnel está suspendido",
-  sin_pagina: "Todavía no eligió su dirección",
+  publicada: "Publicada",
+  borrador: "En borrador",
+  suspendida: "Suspendida",
+  sin_pagina: "Sin dirección",
 };
 
 // Ámbar lo que pide una mano, verde lo que ya está. El borrador y el «sin
@@ -116,11 +116,14 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
           <span className="block text-[length:var(--wf-small)] break-all text-[var(--wf-fg-muted)]">
             {lead.email ?? lead.whatsapp ?? "—"}
           </span>
-          {/* Debajo del correo y no en una columna propia: la tabla ya
-              pide 620px de ancho, y una quinta columna la empujaría fuera
-              del teléfono, que es donde se hace este seguimiento. */}
-          {lead.funnel && (
-            <span className="mt-1.5 flex flex-wrap items-center gap-2">
+        </td>
+        {/* Su funnel, en columna propia y junto a la persona. Estaba
+            debajo del correo para no ensanchar la tabla, y el sitio
+            equivocado: esto se recorre de arriba abajo buscando a quién
+            le falta una mano, y para eso tiene que leerse en vertical. */}
+        <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5">
+          {lead.funnel ? (
+            <span className="flex flex-col items-start gap-1">
               <FunnelPill funnel={lead.funnel} />
               {/* Solo se enlaza lo publicado: un borrador abierto desde
                   aquí enseña «esta página todavía no está publicada», que
@@ -130,12 +133,17 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
                   href={`https://${WEFUNNELS_HOST}/${lead.funnel.slug}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[length:var(--wf-small)] text-[var(--wf-accent)] no-underline"
+                  className="text-[length:var(--wf-small)] break-all text-[var(--wf-accent)] no-underline"
                 >
                   /{lead.funnel.slug}
                 </a>
               )}
             </span>
+          ) : (
+            // Quien llenó el formulario de su página personal no tiene
+            // funnel que publicar. Un guion y no un hueco: el hueco se
+            // lee como un fallo de la pantalla.
+            <span className="text-[length:var(--wf-body)] text-[var(--wf-fg-faint)]">—</span>
           )}
         </td>
         <td className="border-b border-[var(--wf-edge-soft-3)] px-5 py-3.5 text-[length:var(--wf-body)] whitespace-nowrap text-[var(--wf-fg-muted)] tabular-nums">
@@ -158,7 +166,7 @@ export function LeadRow({ lead }: { lead: LeadCard }) {
 
       {open && (
         <tr>
-          <td colSpan={4} className="border-b border-[var(--wf-edge-soft-3)] bg-[var(--wf-strip)] px-5 py-5">
+          <td colSpan={5} className="border-b border-[var(--wf-edge-soft-3)] bg-[var(--wf-strip)] px-5 py-5">
             <div className="flex flex-col gap-4">
               <div>
                 <h3 className="m-0 text-[17px] font-semibold text-[var(--wf-fg)]">
