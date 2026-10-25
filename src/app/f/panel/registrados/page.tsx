@@ -56,6 +56,12 @@ export default async function PanelLeadsPage() {
     supabase.rpc("wefunnel_referred_pages"),
   ]);
 
+  // Antes solo se escribía en el log, y eso convirtió un fallo en una
+  // columna de guiones que parecía un dato: «ninguno de tus referidos
+  // tiene página». Son dos cosas muy distintas y la pantalla tiene que
+  // poder decir cuál de las dos. Sigue sin tumbar la lista --- los
+  // registros se ven igual ---, pero lo dice.
+  const funnelStateFailed = Boolean(pagesResult.error);
   if (pagesResult.error) {
     console.error("[wefunnel] referred pages failed:", pagesResult.error.message);
   }
@@ -141,10 +147,10 @@ export default async function PanelLeadsPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-[14px] border border-[var(--wf-edge)] bg-[var(--wf-card)]">
-          <table className="w-full min-w-[620px] border-collapse text-[length:var(--wf-body)]">
+          <table className="w-full min-w-[760px] border-collapse text-[length:var(--wf-body)]">
             <thead>
               <tr className="text-left">
-                {["Persona", "Fecha", "Estado", "Ficha"].map((head) => (
+                {["Persona", "Su funnel", "Fecha", "Estado", "Ficha"].map((head) => (
                   <th
                     key={head}
                     scope="col"
@@ -162,6 +168,14 @@ export default async function PanelLeadsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {funnelStateFailed && (
+        <p className="m-0 rounded-[14px] border border-[var(--wf-warn)] bg-[var(--wf-card)] p-4 text-[length:var(--wf-body)] leading-relaxed text-[var(--wf-warn)]">
+          No pudimos leer en qué punto está el funnel de tus referidos, así que la
+          columna «Su funnel» sale vacía. Tus registros son correctos; vuelve a cargar
+          en un momento.
+        </p>
       )}
 
       {/* En plural: en esta lista caen los de la página personal y los de
