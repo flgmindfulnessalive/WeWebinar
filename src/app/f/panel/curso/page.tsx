@@ -333,8 +333,8 @@ function CourseOffer() {
           "Funnels ilimitados para regalar de por vida.",
           "Tu página de regalo y tu sala del curso.",
           "Panel con tus registros y analítica.",
-          "2 meses de Starter de WeWebinars.",
-          "20% sobre las suscripciones de tus referidos directos.",
+          "2 meses gratis del Plan Starter de WeWebinars.",
+          "20% de ganancia sobre las suscripciones de tus referidos directos (WeWebinars).",
         ].map((item) => (
           <li key={item} className="flex gap-2.5 text-[length:var(--wf-body)] text-[var(--wf-fg-2)]">
             <span className="text-[var(--wf-accent-soft)]" aria-hidden="true">

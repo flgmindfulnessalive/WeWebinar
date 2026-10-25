@@ -103,7 +103,7 @@ export function DistributorCheckoutButton({ price }: { price: string }) {
         disabled={busy}
         className="wf-cta inline-flex min-h-[52px] items-center justify-center rounded-lg bg-gradient-to-r from-[#3FE4EC] to-[#83B9FF] px-6 py-4 text-[16px] font-bold text-[var(--wf-on-cta)] disabled:opacity-60"
       >
-        {busy ? "Abriendo…" : `Activar Distribuidor · ${price} →`}
+        {busy ? "Abriendo…" : `Activar Licencia Distribuidor · ${price} →`}
       </button>
       {error && (
         <p role="alert" className="m-0 text-[length:var(--wf-body)] text-[var(--wf-danger)]">
