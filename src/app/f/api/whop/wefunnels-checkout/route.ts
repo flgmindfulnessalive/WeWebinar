@@ -8,6 +8,18 @@ import { createDistributorCheckout } from "@/lib/whop";
 // getCurrentAccount() -- which returns null for a free WeFunnels account on
 // purpose, since it has no plan. This is exactly the person buying.
 //
+// Bajo /f/api y no bajo /api, que es donde estaba y por eso no funcionaba
+// nunca. El proxy reescribe TODO lo que entra por el host de WeFunnels
+// sobre /f, así que el fetch relativo a /api/whop/wefunnels-checkout que
+// hace el botón --- en una página servida desde ese host --- acababa
+// pidiendo /f/api/whop/wefunnels-checkout, que no existía: 404 con cuerpo
+// HTML, response.json() reventaba, y la pantalla decía «revisa tu
+// conexión» por un fallo que no tenía nada que ver con la conexión.
+//
+// Es el mismo sitio donde ya vivía /f/api/visita, que sí funciona y por
+// eso mismo. Y el botón no cambia: su dirección relativa era la correcta
+// desde el principio.
+//
 // The price is decided here, from wefunnel_license_price(), which reads the
 // account's own referral rows. The body of this request is not consulted
 // for it and does not need to be: $100 is a fact about who invited you, and
